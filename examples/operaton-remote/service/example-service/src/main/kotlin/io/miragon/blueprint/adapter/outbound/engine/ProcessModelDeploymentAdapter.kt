@@ -1,0 +1,80 @@
+package io.miragon.blueprint.adapter.outbound.engine
+
+import mu.KotlinLogging
+import org.springframework.boot.context.event.ApplicationReadyEvent
+import org.springframework.context.event.EventListener
+import org.springframework.core.io.Resource
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver
+import org.springframework.http.MediaType
+import org.springframework.stereotype.Component
+import org.springframework.util.LinkedMultiValueMap
+import org.springframework.web.client.RestClient
+
+/**
+ * Deploys the process model (owned by this service, carried by `common-package`) into the **remote**
+ * engine at start-up — the remote counterpart to the embedded engine's classpath auto-deployment.
+ *
+ * This realises the "the service owns and deploys its process" ownership pattern: the engine host stays
+ * model-agnostic and this outbound adapter pushes its BPMN/DMN/forms to
+ * `POST /engine-rest/deployment/create`. The deployment is **idempotent** (`enable-duplicate-filtering`
+ * + `deploy-changed-only`), so restarts and multiple worker instances never create duplicate
+ * deployments. It retries briefly so the worker can start alongside a not-yet-ready engine.
+ *
+ * (For the alternative "the engine owns the model" pattern — a shared process fulfilled by several
+ * services — remove this bean and let the engine deploy from its own classpath; see the engine-service
+ * README.)
+ */
+@Component
+class ProcessModelDeploymentAdapter(
+    private val engineRestClient: RestClient,
+) {
+
+    private val log = KotlinLogging.logger {}
+    private val resolver = PathMatchingResourcePatternResolver()
+
+    @EventListener(ApplicationReadyEvent::class)
+    fun deployProcessModel() {
+        val resources = MODEL_PATTERNS.flatMap { resolver.getResources(it).asList() }
+        if (resources.isEmpty()) {
+            log.warn { "No process resources found on the classpath — nothing to deploy" }
+            return
+        }
+        repeat(MAX_ATTEMPTS) { attempt ->
+            try {
+                deploy(resources)
+                log.info { "Deployed ${resources.size} process resources to the remote engine: ${resources.mapNotNull { it.filename }}" }
+                return
+            } catch (e: Exception) {
+                if (attempt == MAX_ATTEMPTS - 1) {
+                    log.error(e) { "Could not deploy the process model after $MAX_ATTEMPTS attempts — is the engine running?" }
+                    return
+                }
+                log.warn { "Engine not reachable yet (attempt ${attempt + 1}/$MAX_ATTEMPTS), retrying in ${RETRY_DELAY_MS}ms" }
+                Thread.sleep(RETRY_DELAY_MS)
+            }
+        }
+    }
+
+    private fun deploy(resources: List<Resource>) {
+        val body = LinkedMultiValueMap<String, Any>().apply {
+            add("deployment-name", DEPLOYMENT_NAME)
+            add("deployment-source", "example-service")
+            add("enable-duplicate-filtering", "true")
+            add("deploy-changed-only", "true")
+            resources.forEach { add(it.filename ?: error("classpath resource without a filename: $it"), it) }
+        }
+        engineRestClient.post()
+            .uri("/deployment/create")
+            .contentType(MediaType.MULTIPART_FORM_DATA)
+            .body(body)
+            .retrieve()
+            .toBodilessEntity()
+    }
+
+    private companion object {
+        const val DEPLOYMENT_NAME = "bike-leasing"
+        val MODEL_PATTERNS = listOf("classpath*:**/*.bpmn", "classpath*:**/*.dmn", "classpath*:**/*.form")
+        const val MAX_ATTEMPTS = 20
+        const val RETRY_DELAY_MS = 3_000L
+    }
+}

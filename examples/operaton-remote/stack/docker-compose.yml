@@ -1,0 +1,19 @@
+# Local development stack. Not intended for production use.
+#
+# The remote blueprint runs two Spring Boot apps against their own databases:
+#   - `bikeleasing_engine` — the CIB seven engine host (engine-service, port 8081)
+#   - `bikeleasing_app`    — the worker's domain store (example-service, port 8082)
+# Both are created on first start by the init script below.
+services:
+  postgres:
+    image: postgres:18.4
+    container_name: bikeleasing-postgres
+    ports:
+      - "5432:5432"
+    restart: always
+    environment:
+      POSTGRES_DB: bikeleasing_engine
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    volumes:
+      - ./init-databases.sql:/docker-entrypoint-initdb.d/init-databases.sql:ro

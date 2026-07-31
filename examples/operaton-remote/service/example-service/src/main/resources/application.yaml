@@ -1,0 +1,38 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: cibseven-example-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/bikeleasing_app
+    username: admin
+    password: admin
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+# CIB seven external-task client — connects to the *remote* engine hosted by `engine-service` and
+# fetches/locks/completes the external service-tasks. Topic subscriptions are declared via
+# @ExternalTaskSubscription annotations on the handlers in adapter/inbound/cibseven.
+camunda:
+  bpm:
+    client:
+      base-url: http://localhost:8081/engine-rest
+      worker-id: bikeLeasing-worker
+      lock-duration: 20000
+      # Pick up external tasks promptly. The default exponential backoff grows to 60s while idle.
+      async-response-timeout: 1000
+      disable-backoff-strategy: true
+      # Only needed if the engine's REST API is protected:
+      # basic-auth:
+      #   username: admin
+      #   password: admin
+
+# Base URL the RestClient uses to start the process, complete user tasks and correlate messages.
+bike-leasing:
+  engine-rest-base-url: http://localhost:8081/engine-rest

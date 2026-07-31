@@ -1,0 +1,110 @@
+package io.miragon.blueprint.adapter.outbound.engine
+
+import io.miragon.blueprint.domain.bike.BikeId
+import io.miragon.blueprint.domain.leasing.testLeasingApplication
+import org.assertj.core.api.Assertions.assertThat
+import org.hamcrest.Matchers.containsString
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.springframework.http.HttpMethod
+import org.springframework.http.MediaType
+import org.springframework.test.web.client.MockRestServiceServer
+import org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath
+import org.springframework.test.web.client.match.MockRestRequestMatchers.method
+import org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo
+import org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess
+import org.springframework.web.client.RestClient
+
+/**
+ * Verifies the outbound adapter speaks the expected CIB seven REST dialect: the [ApplicationId] is used
+ * as the business key, the message-start carries typed process variables, and the user task is looked
+ * up by business key before being completed.
+ */
+class RemoteLeasingProcessAdapterTest {
+
+    private lateinit var server: MockRestServiceServer
+    private lateinit var underTest: RemoteLeasingProcessAdapter
+
+    @BeforeEach
+    fun setUp() {
+        val builder = RestClient.builder().baseUrl("http://engine/engine-rest")
+        server = MockRestServiceServer.bindTo(builder).build()
+        underTest = RemoteLeasingProcessAdapter(builder.build())
+    }
+
+    @Test
+    fun `submitRequest starts the process via its message start event with typed variables`() {
+
+        // given: a valid application and an engine that accepts the start message
+        val application = testLeasingApplication()
+        server.expect(requestTo("http://engine/engine-rest/message"))
+            .andExpect(method(HttpMethod.POST))
+            .andExpect(jsonPath("$.messageName").value("miravelo.leasingRequestReceived"))
+            .andExpect(jsonPath("$.businessKey").value(application.id.value.toString()))
+            .andExpect(jsonPath("$.processVariables.applicationId.value").value(application.id.value.toString()))
+            .andExpect(jsonPath("$.processVariables.bikeId.value").value(application.bikeId.value))
+            .andExpect(jsonPath("$.processVariables.monthlyNetIncome.type").value("Double"))
+            .andExpect(jsonPath("$.processVariables.age.type").value("Integer"))
+            .andRespond(withSuccess())
+
+        // when: the request is submitted
+        underTest.submitRequest(application)
+
+        // then: exactly the expected call was made
+        server.verify()
+    }
+
+    @Test
+    fun `correlateContractSigned sends the message correlated by business key`() {
+
+        // given: an engine that accepts the correlation
+        val application = testLeasingApplication()
+        server.expect(requestTo("http://engine/engine-rest/message"))
+            .andExpect(method(HttpMethod.POST))
+            .andExpect(jsonPath("$.messageName").value("miravelo.contractSigned"))
+            .andExpect(jsonPath("$.businessKey").value(application.id.value.toString()))
+            .andRespond(withSuccess())
+
+        // when: the contract-signed message is correlated
+        underTest.correlateContractSigned(application.id)
+
+        // then: the message was sent
+        server.verify()
+    }
+
+    @Test
+    fun `completeAlternativeClarification looks up the task by business key and completes it`() {
+
+        // given: one active clarify-alternative task for the application
+        val application = testLeasingApplication()
+        server.expect(requestTo(containsString("/task?")))
+            .andExpect(method(HttpMethod.GET))
+            .andRespond(withSuccess("""[{"id":"task-1"}]""", MediaType.APPLICATION_JSON))
+        server.expect(requestTo("http://engine/engine-rest/task/task-1/complete"))
+            .andExpect(method(HttpMethod.POST))
+            .andExpect(jsonPath("$.variables.alternativeFound.value").value(true))
+            .andExpect(jsonPath("$.variables.bikeId.value").value("BIKE-100"))
+            .andRespond(withSuccess())
+
+        // when: the alternative is confirmed with a replacement bike
+        underTest.completeAlternativeClarification(application.id, alternativeFound = true, bikeId = BikeId("BIKE-100"))
+
+        // then: both the lookup and completion happened
+        server.verify()
+    }
+
+    @Test
+    fun `findTaskId fails when no active task exists`() {
+
+        // given: the engine reports no active task
+        val application = testLeasingApplication()
+        server.expect(requestTo(containsString("/task?")))
+            .andExpect(method(HttpMethod.GET))
+            .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON))
+
+        // when / then: completing the clarification surfaces the missing task
+        val error = runCatching { underTest.completeAlternativeClarification(application.id, alternativeFound = false) }
+        assertThat(error.exceptionOrNull()).isInstanceOf(IllegalStateException::class.java)
+        server.verify()
+    }
+}

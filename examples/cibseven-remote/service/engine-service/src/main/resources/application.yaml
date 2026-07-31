@@ -1,0 +1,44 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: cibseven-engine
+  datasource:
+    url: jdbc:postgresql://localhost:5432/bikeleasing_engine
+    username: admin
+    password: admin
+    driver-class-name: org.postgresql.Driver
+  # The engine host has no JPA entities of its own — the CIB seven engine manages its own schema (see
+  # `camunda.bpm.database` below). JPA is only present to provide the shared DataSource.
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+
+camunda:
+  bpm:
+    admin-user:
+      id: admin
+      password: admin
+    # This engine ships no model of its own — the `example-service` deploys the process over REST at
+    # start-up (it owns the process). An empty pattern disables the starter's default classpath
+    # auto-deployment. To switch to the "engine owns the model" pattern, depend on `common-package` and
+    # restore the classpath pattern (see this module's README).
+    deployment-resource-pattern: []
+    webapp:
+      application-path: /camunda
+    database:
+      type: postgres
+      schema-update: true
+    # Poll async-continuation jobs quickly so the process advances promptly between wait states.
+    job-execution:
+      wait-time-in-millis: 250
+      max-wait: 1000
+
+cibseven:
+  webclient:
+    authentication:
+      # WARNING: This is a development/example secret key.
+      # DO NOT use this in production! Generate your own secure secret key.
+      jwtSecret: RtURHZ7SQYfLoX902wcjlvduW2qe9g0bjMUczmffjiTjzU9phbv3mK54zHMqeGK6cqgoEBTIUE6RqwvemSqbpD40qUPXVRElvDHGhn4OAEfjeEP2ANah8GJejSA08E820mForcQHBmediqg2DzIrxnDXyf2

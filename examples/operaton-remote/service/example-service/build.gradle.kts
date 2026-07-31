@@ -17,6 +17,7 @@ plugins {
  */
 dependencies {
     implementation(project(":service:common-package"))
+    implementation(project(":service:common-cibseven-client"))
     implementation(libs.bundles.defaultService)
     implementation(libs.bundles.database)
     implementation(libs.bundles.externalTaskClient)

@@ -10,6 +10,7 @@ archunit_version = "1.4.2"
 konsist_version = "0.17.3"
 cib7_jgiven_version = "2.1.0"
 jgiven_kotlin_version = "2.0.2.1"
+openapi_generator_version = "7.24.0"
 
 [libraries]
 web = { module = "org.springframework.boot:spring-boot-starter-web", version.ref = "spring_version" }
@@ -27,6 +28,14 @@ cib7-rest = { module = "org.cibseven.bpm.springboot:cibseven-bpm-spring-boot-sta
 # CIB seven external-task client — used by the remote worker (example-service) to fetch/lock/complete
 # the engine's external service-tasks over /engine-rest.
 cib7-external-task-client = { module = "org.cibseven.bpm.springboot:cibseven-bpm-spring-boot-starter-external-task-client-4", version.ref = "cib7_version" }
+
+# CIB seven engine REST OpenAPI document — the official spec (bundled openapi.json), consumed only as the
+# input for client generation in common-cibseven-client. Pinned to the engine version so client and
+# engine never drift.
+cib7-rest-openapi = { module = "org.cibseven.bpm:cibseven-engine-rest-openapi", version.ref = "cib7_version" }
+
+# Jakarta annotations — the generated client references @jakarta.annotation.Generated.
+jakarta-annotation-api = { module = "jakarta.annotation:jakarta.annotation-api", version = "3.0.0" }
 
 # JAXB — the external-task client (de)serializes typed variables via JAXB, which is not on the
 # classpath of a standalone worker, so it is provided explicitly.
@@ -82,3 +91,4 @@ kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin_version"
 springframework = { id = "org.springframework.boot", version.ref = "spring_version" }
 spring-dependency = { id = "io.spring.dependency-management", version.ref = "spring_dependency_version" }
 bpmnToCode = { id = "io.miragon.bpmn-to-code-gradle", version.ref = "bpmn_to_code_version" }
+openapiGenerator = { id = "org.openapi.generator", version.ref = "openapi_generator_version" }

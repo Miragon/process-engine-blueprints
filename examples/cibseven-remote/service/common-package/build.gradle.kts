@@ -17,11 +17,11 @@ plugins {
 dependencies {
     api(libs.bpmn.to.code.runtime)
     testImplementation(libs.bpmn.to.code.testing)
-    testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
-    testImplementation("org.assertj:assertj-core:3.27.3")
+    testImplementation("org.junit.jupiter:junit-jupiter:6.1.2")
+    testImplementation("org.assertj:assertj-core:3.27.7")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     // bpmn-to-code-testing logs via kotlin-logging/slf4j; provide a binding on the test runtime.
-    testRuntimeOnly("org.slf4j:slf4j-simple:2.0.16")
+    testRuntimeOnly("org.slf4j:slf4j-simple:2.0.18")
 }
 
 // Generates the typed `*ProcessApi` objects (element ids, messages, timers, variables, external-task

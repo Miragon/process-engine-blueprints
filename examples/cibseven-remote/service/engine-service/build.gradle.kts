@@ -20,10 +20,12 @@ configurations.all {
  * `/engine-rest` + Cockpit/Tasklist at `/camunda`, but ships **no** process model of its own — the
  * `example-service` (which owns the process) deploys the model into it over REST at start-up.
  *
- * It therefore has no dependency on `common-package`. To switch to the alternative "engine owns the
- * model" pattern (a shared process fulfilled by several services), add
- * `implementation(project(":service:common-package"))` here and the deployment-resource-pattern in
- * `application.yaml` — see this module's README.
+ * It ships no process model of its own — the `example-service` owns the whole contract and deploys it
+ * over REST at start-up. The engine host carries only the two **execution/task-listener** beans:
+ * listeners have no external-task equivalent and always run *inside* the engine. It deliberately does
+ * **not** depend on the worker (that would drag the worker's business code + JPA into the engine), so
+ * those listeners reference process variables by **plain string name** rather than the worker's
+ * generated `*ProcessApi` contract — the price of letting a single service own the whole model.
  */
 dependencies {
     implementation(libs.bundles.defaultService)

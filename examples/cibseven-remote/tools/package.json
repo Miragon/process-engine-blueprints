@@ -4,7 +4,7 @@
   "private": true,
   "description": "Dev tooling for the CIB seven remote bike-leasing blueprint: BPMN linting (bpmnlint). Run from the repo root via `npm --prefix tools run <script>`.",
   "scripts": {
-    "lint:bpmn": "bpmnlint \"../service/common-package/src/main/resources/bpmn/*.bpmn\""
+    "lint:bpmn": "bpmnlint \"../service/example-service/src/main/resources/bpmn/*.bpmn\""
   },
   "devDependencies": {
     "bpmnlint": "11.12.1"

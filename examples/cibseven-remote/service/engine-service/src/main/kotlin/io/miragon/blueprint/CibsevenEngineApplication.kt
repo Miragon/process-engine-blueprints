@@ -4,9 +4,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
 /**
- * The remote CIB seven engine host. Boots the embedded engine, deploys the process contract from
- * `common-package`, and exposes `/engine-rest` and the Cockpit/Tasklist at `/camunda`. All service-task
- * logic lives in the separate `example-service` worker and is consumed as external tasks.
+ * The remote CIB seven engine host. Boots the engine and exposes `/engine-rest` and the
+ * Cockpit/Tasklist at `/camunda`. It ships no model of its own — the separate `example-service` owns
+ * the process and deploys it over REST — and all service-task logic runs in that worker as external
+ * tasks. The one exception is **execution/task listeners** (`io.miragon.blueprint.listener`): those
+ * have no external-task equivalent and run inside the engine, so their beans live here.
  */
 @SpringBootApplication
 class CibsevenEngineApplication

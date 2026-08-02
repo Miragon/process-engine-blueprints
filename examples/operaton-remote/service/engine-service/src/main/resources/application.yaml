@@ -9,8 +9,6 @@ spring:
     username: admin
     password: admin
     driver-class-name: org.postgresql.Driver
-  # The engine host has no JPA entities of its own — the CIB seven engine manages its own schema (see
-  # `camunda.bpm.database` below). JPA is only present to provide the shared DataSource.
   jpa:
     hibernate:
       ddl-auto: none
@@ -21,10 +19,6 @@ camunda:
     admin-user:
       id: admin
       password: admin
-    # This engine ships no model of its own — the `example-service` deploys the process over REST at
-    # start-up (it owns the process). An empty pattern disables the starter's default classpath
-    # auto-deployment. To switch to the "engine owns the model" pattern, depend on `common-package` and
-    # restore the classpath pattern (see this module's README).
     deployment-resource-pattern: []
     webapp:
       application-path: /camunda

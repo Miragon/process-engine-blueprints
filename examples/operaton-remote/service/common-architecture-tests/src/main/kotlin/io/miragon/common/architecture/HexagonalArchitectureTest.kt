@@ -17,10 +17,9 @@ import org.junit.jupiter.api.TestInstance
  * resolved bytecode graph. Naming conventions live in [NamingConventionArchitectureTest].
  *
  * The `adapter.process` and `process` packages hold the **generated** BPMN process API and
- * process-engine configuration (in this remote blueprint the contract lives in the shared
- * `common-package` under `..process..`). They are a technical seam that does not fit the
- * inbound/outbound split, so they are excluded from the adapter-location rule and ignored by the
- * layered-architecture completeness check.
+ * process-engine configuration (in this remote blueprint the worker owns the contract, generated under
+ * `..process..`). They are a technical seam that does not fit the inbound/outbound split, so they are
+ * excluded from the adapter-location rule and ignored by the layered-architecture completeness check.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class HexagonalArchitectureTest(

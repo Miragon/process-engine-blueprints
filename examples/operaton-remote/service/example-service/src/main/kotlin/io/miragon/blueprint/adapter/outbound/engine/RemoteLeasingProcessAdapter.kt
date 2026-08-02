@@ -25,7 +25,8 @@ import org.springframework.stereotype.Component
  * `common-cibseven-client`, so URIs, request/response shapes and the typed-variable payload are typed
  * rather than hand-built. As in the embedded blueprint, the [ApplicationId] is used as the **process
  * business key**, so messages and user-task lookups correlate to the right instance by business key.
- * Variable and element names come from the typed process API generated from `bike-leasing.bpmn`.
+ * Variable and element names come from the typed process API this service generates from its own
+ * `bike-leasing.bpmn`.
  */
 @Component
 class RemoteLeasingProcessAdapter(

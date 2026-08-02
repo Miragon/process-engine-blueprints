@@ -11,8 +11,9 @@ import org.springframework.util.LinkedMultiValueMap
 import org.springframework.web.client.RestClient
 
 /**
- * Deploys the process model (owned by this service, carried by `common-package`) into the **remote**
- * engine at start-up — the remote counterpart to the embedded engine's classpath auto-deployment.
+ * Deploys the process model (owned and carried by this service, from its own `src/main/resources`) into
+ * the **remote** engine at start-up — the remote counterpart to the embedded engine's classpath
+ * auto-deployment.
  *
  * This realises the "the service owns and deploys its process" ownership pattern: the engine host stays
  * model-agnostic and this outbound adapter pushes its BPMN/DMN/forms to

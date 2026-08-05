@@ -1,0 +1,35 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/bikeleasing
+    username: admin
+    password: admin
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+operaton:
+  bpm:
+    admin-user:
+      id: admin
+      password: admin
+    # Deploy BPMN, DMN and Camunda Forms from the classpath so the .form files resolve in the Tasklist.
+    deployment-resource-pattern:
+      - classpath*:**/*.bpmn
+      - classpath*:**/*.dmn
+      - classpath*:**/*.form
+    webapp:
+      application-path: /operaton
+    database:
+      type: postgres
+      schema-update: true
+    # Poll async-continuation jobs quickly so the process advances promptly between wait states.
+    job-execution:
+      wait-time-in-millis: 250
+      max-wait: 1000

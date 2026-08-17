@@ -1,0 +1,27 @@
+meta {
+  name: Assert an incident was raised on the order task
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{engineRest}}/incident?processInstanceId={{processInstanceId}}&incidentType=failedExternalTask
+  body: none
+  auth: none
+}
+
+script:pre-request {
+  // The order external task retries 3 times, 10s apart, before its retries hit 0 and the engine raises
+  // the incident. Wait out the retry window so the incident exists by the time we query. Failed remote
+  // external tasks raise a `failedExternalTask` incident (not the embedded engine's `failedJob`); the
+  // failing activity is carried in `activityId` (the external task is its own activity, so there is no
+  // separate `failedActivityId`).
+  await new Promise((resolve) => setTimeout(resolve, 40000));
+}
+
+assert {
+  res.status: eq 200
+  res.body: length 1
+  res.body[0].incidentType: eq failedExternalTask
+  res.body[0].activityId: eq serviceTask_orderBike
+}

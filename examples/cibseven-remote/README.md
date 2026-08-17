@@ -170,6 +170,13 @@ http://localhost:8081/camunda.
   tasks and fires timer jobs so the whole flow runs in the pipeline without real 14-day waits.
 - **Dependabot** keeps Gradle, the Postgres image and GitHub Actions current.
 
+## Incident demo
+
+Want to teach **transaction boundaries, retries and incidents**? Submit a request for the poison bike
+`BIKE-FAIL`: the simulated dealer "outage" fails the *Order bike from dealer* external task, its
+retries count down (3 attempts, 10s apart), and an **incident** appears in the CIB seven Cockpit to
+analyze and retry. A ready-to-run Bruno collection lives in `bruno/06-incident-demo/`.
+
 ## Contributing
 
 Contributions are welcome. Please open an issue to discuss substantial changes first, keep the

@@ -5,6 +5,8 @@ A ready-to-fork **fullstack** starting point for automating a business process e
 sibling engine blueprints, plus a **React frontend** and the family's first **AI-agent setup** —
 one complete, runnable BPMN application with an enforced architecture on *both* sides of the stack.
 
+![MiraVelo's React frontend — the leasing applications list with each case's bike and live status, a link to the CIB seven Cockpit, and a German/English language switch](docs/frontend-applications.png)
+
 ## The scenario
 
 Meet **MiraVelo** — a (fictional) lifestyle bike brand for the quarter-life-crisis crowd: gravel

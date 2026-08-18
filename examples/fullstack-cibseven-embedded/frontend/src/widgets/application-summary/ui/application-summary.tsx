@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui";
-import { copy } from "@/shared/i18n";
+import { useCopy } from "@/shared/i18n";
 import { formatDateTime, formatEuro } from "@/shared/lib";
 import { StatusBadge, type LeasingApplicationDto } from "@/entities/leasing-application";
 
@@ -15,6 +15,7 @@ function Row({ label, value }: { label: string; value: ReactNode }) {
 
 /** Header card for the detail page: who, which bike, status, money and the audit fields. */
 export function ApplicationSummary({ application }: { application: LeasingApplicationDto }) {
+  const copy = useCopy();
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">

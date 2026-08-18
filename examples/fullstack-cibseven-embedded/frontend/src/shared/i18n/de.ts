@@ -1,9 +1,11 @@
 /**
- * The single source of all user-facing copy. One locale, one frozen object — so the brand's tone of
- * voice becomes testable (see de.tone.test.ts): lowercase starts, no "Sie", proper umlauts, no
- * em-dashes. Tokens like MiraVelo, BPMN and BIKE-… keep their casing (allowlisted in the tone test).
+ * The German locale and the master shape every other locale mirrors (`Copy` is derived from this
+ * object, so a translation with a missing or extra key fails `tsc`). The brand's tone of voice is
+ * testable here (see de.tone.test.ts): lowercase starts, no "Sie", proper umlauts, no em-dashes.
+ * Tokens like MiraVelo, BPMN and BIKE-… keep their casing (allowlisted in the tone test).
  *
- * Components never hard-code German; they read from here.
+ * Components never hard-code copy; they read the active locale through `useCopy()` (see
+ * locale-context.tsx). Pure helpers that run outside React take the resolved `copy` as an argument.
  */
 export const de = {
   app: {
@@ -14,6 +16,8 @@ export const de = {
     applications: "anträge",
     tasks: "aufgaben",
     newApplication: "neuer antrag",
+    cockpit: "cockpit",
+    language: "sprache",
   },
   common: {
     retry: "erneut versuchen",

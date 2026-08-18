@@ -1,8 +1,9 @@
 import { Button } from "@/shared/ui";
-import { copy } from "@/shared/i18n";
+import { useCopy } from "@/shared/i18n";
 import { useWithdrawApplicationAction } from "../api/use-withdraw-application";
 
 export function WithdrawApplicationButton({ applicationId }: { applicationId: string }) {
+  const copy = useCopy();
   const mutation = useWithdrawApplicationAction(applicationId);
   return (
     <Button

@@ -21,6 +21,17 @@ npm --prefix frontend ci
 archive = "docker compose -f stack/docker-compose.yml down -v || true"
 
 # Named run targets — none is defaulted, so nothing autostarts. Start what you need from the Run menu.
+
+# Whole stack in one process group:
+[scripts.run.stack]
+command = '''
+docker compose -f stack/docker-compose.yml up -d && \
+npx --yes concurrently --kill-others --names backend,frontend --prefix-colors blue,magenta \
+  "./gradlew :service:app:bootRun" \
+  "npm --prefix frontend run dev"
+'''
+icon = "layers"
+
 [scripts.run.infra]
 command = "docker compose -f stack/docker-compose.yml up"
 

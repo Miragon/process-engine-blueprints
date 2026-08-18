@@ -13,13 +13,14 @@ import {
   THead,
   TR,
 } from "@/shared/ui";
-import { copy } from "@/shared/i18n";
+import { useCopy } from "@/shared/i18n";
 import { formatDateTime } from "@/shared/lib";
 import type { PendingClarificationDto } from "@/entities/user-task";
 import { ClarifyAlternativeForm } from "@/features/clarify-alternative";
 
 /** The back-office inbox table; each row opens the clarify-alternative feature in a dialog. */
 export function TaskInboxList({ items }: { items: PendingClarificationDto[] }) {
+  const copy = useCopy();
   const [active, setActive] = useState<PendingClarificationDto | null>(null);
 
   return (

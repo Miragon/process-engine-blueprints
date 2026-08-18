@@ -1,7 +1,8 @@
 import { Button, EmptyState } from "@/shared/ui";
-import { copy } from "@/shared/i18n";
+import { useCopy } from "@/shared/i18n";
 
 export function NotFoundPage({ onHome }: { onHome: () => void }) {
+  const copy = useCopy();
   return (
     <EmptyState
       title={copy.notFound.title}

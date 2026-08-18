@@ -1,6 +1,6 @@
 import { Inbox } from "lucide-react";
 import { Button, EmptyState, QueryBoundary, Skeleton } from "@/shared/ui";
-import { copy } from "@/shared/i18n";
+import { useCopy } from "@/shared/i18n";
 import { useListLeasingApplications, type LeasingStatus } from "@/entities/leasing-application";
 import { ApplicationTable } from "@/widgets/application-table";
 
@@ -26,6 +26,7 @@ export function ApplicationListPage({
   onSelect: (applicationId: string) => void;
   onNew: () => void;
 }) {
+  const copy = useCopy();
   const query = useListLeasingApplications(status ? { status } : undefined);
   const items = query.data?.items ?? [];
   const isUnfilteredEmpty =

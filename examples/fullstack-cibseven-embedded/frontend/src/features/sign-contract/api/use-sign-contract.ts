@@ -1,11 +1,12 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/shared/ui";
-import { copy } from "@/shared/i18n";
+import { useCopy } from "@/shared/i18n";
 import { useSignContract } from "@/shared/api/generated/endpoints";
 import { leasingApplicationKeys } from "@/entities/leasing-application";
 
 /** Owns the WRITE: sign the contract, then refresh the list and this case. */
 export function useSignContractAction(applicationId: string) {
+  const copy = useCopy();
   const queryClient = useQueryClient();
   return useSignContract({
     mutation: {

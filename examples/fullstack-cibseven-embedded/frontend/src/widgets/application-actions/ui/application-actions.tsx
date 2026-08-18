@@ -1,16 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui";
-import { copy } from "@/shared/i18n";
+import { useCopy } from "@/shared/i18n";
 import { isTerminal, type LeasingStatus } from "@/entities/leasing-application";
 import { SignContractButton } from "@/features/sign-contract";
 import { ReportHandoverButton } from "@/features/report-handover";
 import { WithdrawApplicationButton } from "@/features/withdraw-application";
 import { availableActions } from "../model/available-actions";
-
-const TERMINAL_NOTE: Record<string, string> = {
-  ACTIVE: copy.actions.terminalActive,
-  REJECTED: copy.actions.terminalRejected,
-  CANCELLED: copy.actions.terminalCancelled,
-};
 
 /** Composes the write features into the detail action bar; terminal cases explain instead of act. */
 export function ApplicationActions({
@@ -20,7 +14,14 @@ export function ApplicationActions({
   applicationId: string;
   status: LeasingStatus | string;
 }) {
+  const copy = useCopy();
   const actions = availableActions(status);
+
+  const terminalNote: Record<string, string> = {
+    ACTIVE: copy.actions.terminalActive,
+    REJECTED: copy.actions.terminalRejected,
+    CANCELLED: copy.actions.terminalCancelled,
+  };
 
   return (
     <Card>
@@ -31,7 +32,7 @@ export function ApplicationActions({
         <div aria-live="polite">
           {isTerminal(status) || actions.length === 0 ? (
             <p className="text-body text-schwarz/70">
-              {TERMINAL_NOTE[status] ?? copy.actions.terminalActive}
+              {terminalNote[status] ?? copy.actions.terminalActive}
             </p>
           ) : (
             <div className="flex flex-wrap gap-3">

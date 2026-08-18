@@ -2,7 +2,7 @@ import * as React from "react";
 import { Alert, AlertDescription, AlertTitle } from "./alert";
 import { Button } from "./button";
 import { HttpError } from "@/shared/api";
-import { copy } from "@/shared/i18n";
+import { useCopy } from "@/shared/i18n";
 
 interface QueryBoundaryProps {
   isLoading: boolean;
@@ -44,6 +44,7 @@ export function QueryBoundary({
   empty,
   children,
 }: QueryBoundaryProps) {
+  const copy = useCopy();
   if (isLoading) return <>{skeleton}</>;
 
   if (isError) {

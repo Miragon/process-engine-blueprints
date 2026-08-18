@@ -1,6 +1,6 @@
 import { Check, Circle, X } from "lucide-react";
 import { cn } from "@/shared/lib";
-import { copy } from "@/shared/i18n";
+import { useCopy } from "@/shared/i18n";
 import type { LeasingStatus } from "@/entities/leasing-application";
 
 /**
@@ -8,12 +8,6 @@ import type { LeasingStatus } from "@/entities/leasing-application";
  * Named `leasing-progress`, never `process-view` — in this codebase "process" means the BPMN model,
  * and the FSD `processes` layer is banned.
  */
-const MAIN_STEPS: { status: LeasingStatus; label: string }[] = [
-  { status: "RECEIVED", label: copy.progress.received },
-  { status: "ORDERED", label: copy.progress.ordered },
-  { status: "ACTIVE", label: copy.progress.active },
-];
-
 const ORDER: Record<LeasingStatus, number> = {
   RECEIVED: 0,
   ORDERED: 1,
@@ -23,12 +17,18 @@ const ORDER: Record<LeasingStatus, number> = {
 };
 
 export function LeasingProgress({ status }: { status: LeasingStatus | string }) {
+  const copy = useCopy();
+  const mainSteps: { status: LeasingStatus; label: string }[] = [
+    { status: "RECEIVED", label: copy.progress.received },
+    { status: "ORDERED", label: copy.progress.ordered },
+    { status: "ACTIVE", label: copy.progress.active },
+  ];
   const current = ORDER[status as LeasingStatus] ?? 0;
   const offRamp = status === "REJECTED" || status === "CANCELLED";
 
   return (
     <ol className="flex flex-col gap-3" aria-label={copy.progress.title}>
-      {MAIN_STEPS.map((step, index) => {
+      {mainSteps.map((step, index) => {
         const done = !offRamp && index < current;
         const active = !offRamp && index === current;
         return (

@@ -1,6 +1,6 @@
 import { CheckCircle2 } from "lucide-react";
 import { EmptyState, QueryBoundary, Skeleton } from "@/shared/ui";
-import { copy } from "@/shared/i18n";
+import { useCopy } from "@/shared/i18n";
 import { useListPendingClarifications } from "@/entities/user-task";
 import { TaskInboxList } from "@/widgets/task-inbox-list";
 
@@ -15,6 +15,7 @@ function InboxSkeleton() {
 }
 
 export function TaskInboxPage() {
+  const copy = useCopy();
   const query = useListPendingClarifications();
   const items = query.data ?? [];
 

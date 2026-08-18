@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { de, en } from "@/shared/i18n";
 import { isTerminal, LEASING_STATUSES, statusLabel, statusTone } from "./status";
 
 describe("leasing status model", () => {
@@ -18,9 +19,10 @@ describe("leasing status model", () => {
     expect(isTerminal(null)).toBe(false);
   });
 
-  it("has a German label and a badge tone for every status", () => {
+  it("has a label in every locale and a badge tone for every status", () => {
     for (const status of LEASING_STATUSES) {
-      expect(statusLabel(status)).toMatch(/\p{L}/u);
+      expect(statusLabel(status, de)).toMatch(/\p{L}/u);
+      expect(statusLabel(status, en)).toMatch(/\p{L}/u);
       expect(["neutral", "success", "warning", "danger", "info"]).toContain(statusTone(status));
     }
   });

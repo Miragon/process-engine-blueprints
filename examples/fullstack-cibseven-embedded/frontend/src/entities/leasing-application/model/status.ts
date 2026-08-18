@@ -1,4 +1,4 @@
-import { copy } from "@/shared/i18n";
+import type { Copy } from "@/shared/i18n";
 
 /** The leasing lifecycle, mirrored from the backend enum. */
 export const LEASING_STATUSES = ["RECEIVED", "ORDERED", "ACTIVE", "REJECTED", "CANCELLED"] as const;
@@ -18,8 +18,8 @@ export function isTerminal(status: LeasingStatus | string | undefined | null): b
   return status != null && TERMINAL_STATUSES.includes(status as LeasingStatus);
 }
 
-/** German label for a status; falls back to the raw value for an unknown status. */
-export function statusLabel(status: LeasingStatus | string): string {
+/** Localized label for a status; falls back to the raw value for an unknown status. */
+export function statusLabel(status: LeasingStatus | string, copy: Copy): string {
   return copy.status[status as LeasingStatus] ?? status;
 }
 

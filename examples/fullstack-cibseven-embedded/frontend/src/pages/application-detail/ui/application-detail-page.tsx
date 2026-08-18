@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle, QueryBoundary, Skeleton } from "@/shared/ui";
-import { copy } from "@/shared/i18n";
+import { useCopy } from "@/shared/i18n";
 import { POLL_INTERVAL_MS } from "@/shared/config";
 import { isTerminal, useGetLeasingApplication } from "@/entities/leasing-application";
 import { ApplicationSummary } from "@/widgets/application-summary";
@@ -21,6 +21,7 @@ function DetailSkeleton() {
  * ACTIVE | REJECTED | CANCELLED. See "warum pollt die detailseite?" in frontend/README.md.
  */
 export function ApplicationDetailPage({ applicationId }: { applicationId: string }) {
+  const copy = useCopy();
   const query = useGetLeasingApplication(applicationId, {
     query: {
       refetchInterval: (q) => (isTerminal(q.state.data?.status) ? false : POLL_INTERVAL_MS),

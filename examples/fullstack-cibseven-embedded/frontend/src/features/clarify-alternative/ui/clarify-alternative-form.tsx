@@ -10,7 +10,7 @@ import {
   SelectValue,
   toast,
 } from "@/shared/ui";
-import { copy } from "@/shared/i18n";
+import { useCopy } from "@/shared/i18n";
 import { useSelectAlternative } from "@/shared/api/generated/endpoints";
 import { leasingApplicationKeys } from "@/entities/leasing-application";
 import { pendingClarificationKeys } from "@/entities/user-task";
@@ -28,6 +28,7 @@ export function ClarifyAlternativeForm({
   applicationId: string;
   onResolved?: () => void;
 }) {
+  const copy = useCopy();
   const queryClient = useQueryClient();
   const bikes = useListBikes();
   const [bikeId, setBikeId] = useState<string>("");

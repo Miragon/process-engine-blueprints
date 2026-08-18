@@ -11,7 +11,7 @@ import {
   THead,
   TR,
 } from "@/shared/ui";
-import { copy } from "@/shared/i18n";
+import { useCopy } from "@/shared/i18n";
 import { formatDateTime } from "@/shared/lib";
 import {
   LEASING_STATUSES,
@@ -35,6 +35,7 @@ export function ApplicationTable({
   onStatusChange: (status: LeasingStatus | null) => void;
   onSelect: (applicationId: string) => void;
 }) {
+  const copy = useCopy();
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-3">
@@ -50,7 +51,7 @@ export function ApplicationTable({
             <SelectItem value={ALL}>{copy.list.filterAll}</SelectItem>
             {LEASING_STATUSES.map((s) => (
               <SelectItem key={s} value={s}>
-                {statusLabel(s)}
+                {statusLabel(s, copy)}
               </SelectItem>
             ))}
           </SelectContent>

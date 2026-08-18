@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
@@ -12,19 +13,22 @@ import {
   SelectValue,
   toast,
 } from "@/shared/ui";
-import { copy } from "@/shared/i18n";
+import { useCopy } from "@/shared/i18n";
 import { useSubmitLeasingRequest } from "@/shared/api/generated/endpoints";
 import { leasingApplicationKeys } from "@/entities/leasing-application";
 import { bikeOptionLabel, useListBikes, type BikeDto } from "@/entities/bike";
-import { submitFormSchema, type SubmitFormValues } from "../model/submit-form-schema";
+import { makeSubmitFormSchema, type SubmitFormValues } from "../model/submit-form-schema";
 
 /**
  * Owns the WRITE: create a leasing application. On success it invalidates the list and hands the new
  * id back to the page, which owns navigation.
  */
 export function SubmitLeasingForm({ onCreated }: { onCreated: (applicationId: string) => void }) {
+  const copy = useCopy();
   const queryClient = useQueryClient();
   const bikes = useListBikes();
+
+  const schema = useMemo(() => makeSubmitFormSchema(copy), [copy]);
 
   const {
     register,
@@ -33,7 +37,7 @@ export function SubmitLeasingForm({ onCreated }: { onCreated: (applicationId: st
     setValue,
     formState: { errors },
   } = useForm<SubmitFormValues>({
-    resolver: zodResolver(submitFormSchema),
+    resolver: zodResolver(schema),
     defaultValues: { customerName: "", email: "", bikeId: "", bikeModel: "" },
   });
 
@@ -98,7 +102,7 @@ export function SubmitLeasingForm({ onCreated }: { onCreated: (applicationId: st
               <SelectContent>
                 {bikeList.map((bike) => (
                   <SelectItem key={bike.bikeId} value={bike.bikeId}>
-                    {bikeOptionLabel(bike)}
+                    {bikeOptionLabel(bike, copy)}
                   </SelectItem>
                 ))}
               </SelectContent>

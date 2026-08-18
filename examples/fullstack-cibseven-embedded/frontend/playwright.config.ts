@@ -14,6 +14,7 @@ export default defineConfig({
   reporter: process.env.CI ? [["html", { open: "never" }], ["list"]] : "list",
   use: {
     baseURL: process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:5173",
+    locale: "de-DE",
     trace: "on-first-retry",
   },
   // pre-merge runs chromium; the nightly cross-browser job selects firefox/webkit via --project.

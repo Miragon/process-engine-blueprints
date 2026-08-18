@@ -5,6 +5,9 @@
 # only wraps the JS dev server, while 3 of this stack's 4 collisions are Postgres, Spring and the
 # engine schema. See docs/adr/0008-fixed-ports-for-v1-portless-as-the-upgrade.md.
 
+"$schema" = "https://conductor.build/schemas/settings.repo.schema.json"
+
+[scripts]
 run_mode = "nonconcurrent"
 
 # One-time setup per workspace: install BPMN tooling + git hooks, and the frontend deps.
@@ -18,26 +21,20 @@ npm --prefix frontend ci
 archive = "docker compose -f stack/docker-compose.yml down -v || true"
 
 # Named run targets — none is defaulted, so nothing autostarts. Start what you need from the Run menu.
-[[run]]
-name = "infra"
+[scripts.run.infra]
 command = "docker compose -f stack/docker-compose.yml up"
 
-[[run]]
-name = "backend"
+[scripts.run.backend]
 command = "./gradlew :service:app:bootRun"
 
-[[run]]
-name = "frontend"
+[scripts.run.frontend]
 command = "npm --prefix frontend run dev"
 
-[[run]]
-name = "test"
+[scripts.run.test]
 command = "npm --prefix frontend run verify"
 
-[[run]]
-name = "smoke"
+[scripts.run.smoke]
 command = "cd bruno && npx --yes @usebruno/cli run . --env local -r"
 
-[[run]]
-name = "e2e"
+[scripts.run.e2e]
 command = "npm --prefix frontend run e2e"

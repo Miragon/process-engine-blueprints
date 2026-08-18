@@ -15,7 +15,8 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="flex min-h-screen flex-col bg-grau">
       <header className="border-b border-schwarz/10 bg-weiss">
         <div className="mx-auto flex max-w-[var(--container-page)] items-center justify-between px-6 py-4">
-          <Link to="/" className="font-sans text-h3 font-bold text-schwarz">
+          <Link to="/" className="flex items-center gap-2 font-sans text-h3 font-bold text-schwarz">
+            <img src="/favicon.svg" alt="" width={28} height={28} className="rounded-sm" />
             {copy.app.name}
           </Link>
           <nav className="flex gap-1">

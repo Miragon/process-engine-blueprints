@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Repo-wide pre-commit hook. Install once with: npm --prefix tools run hooks:install
+#
+# It is the single git hooks path for the repo (frontend does NOT use husky, so the two hook
+# systems can't fight over core.hooksPath). It runs two cheap, high-value checks on what you staged:
+#   1. bpmnlint on any changed BPMN model — layout/wiring bugs live in the diagram, invisible in a diff.
+#   2. frontend lint-staged (eslint --fix + prettier) on any changed frontend TS/CSS.
+set -euo pipefail
+
+root="$(git rev-parse --show-toplevel)"
+staged="$(git diff --cached --name-only --diff-filter=ACMR)"
+
+# 1) BPMN models
+if echo "$staged" | grep -q '\.bpmn$'; then
+  echo "pre-commit: linting BPMN models"
+  npm --prefix "$root/tools" run --silent lint:bpmn
+fi
+
+# 2) Frontend staged files
+if echo "$staged" | grep -qE '^frontend/.*\.(ts|tsx|css)$'; then
+  echo "pre-commit: running frontend lint-staged"
+  (cd "$root/frontend" && npx --no-install lint-staged)
+fi
+
+exit 0

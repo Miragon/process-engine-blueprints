@@ -1,0 +1,43 @@
+# Conductor workspace settings for the fullstack bike-leasing blueprint.
+#
+# This stack binds fixed ports (Postgres 5432, backend 8080, Vite 5173), so only one workspace can
+# run the app at a time — hence run_mode = "nonconcurrent". portless is deliberately deferred: it
+# only wraps the JS dev server, while 3 of this stack's 4 collisions are Postgres, Spring and the
+# engine schema. See docs/adr/0008-fixed-ports-for-v1-portless-as-the-upgrade.md.
+
+run_mode = "nonconcurrent"
+
+# One-time setup per workspace: install BPMN tooling + git hooks, and the frontend deps.
+setup = """
+npm --prefix tools ci
+npm --prefix tools run hooks:install
+npm --prefix frontend ci
+"""
+
+# Tear down the local Postgres container when a workspace is archived.
+archive = "docker compose -f stack/docker-compose.yml down -v || true"
+
+# Named run targets — none is defaulted, so nothing autostarts. Start what you need from the Run menu.
+[[run]]
+name = "infra"
+command = "docker compose -f stack/docker-compose.yml up"
+
+[[run]]
+name = "backend"
+command = "./gradlew :service:app:bootRun"
+
+[[run]]
+name = "frontend"
+command = "npm --prefix frontend run dev"
+
+[[run]]
+name = "test"
+command = "npm --prefix frontend run verify"
+
+[[run]]
+name = "smoke"
+command = "cd bruno && npx --yes @usebruno/cli run . --env local -r"
+
+[[run]]
+name = "e2e"
+command = "npm --prefix frontend run e2e"

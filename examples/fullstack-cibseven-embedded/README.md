@@ -1,5 +1,11 @@
 # Fullstack Bike-Leasing Blueprint
 
+> [!NOTE]
+> **🚧 Work in progress.** This is a **solution template** — a reference to fork and build on, for
+> our consultants and anyone else — not a product that ships. It's still being fleshed out, so parts
+> may be incomplete and it may not yet fully demonstrate what it's meant to. Treat it as a
+> living example, and expect it to keep evolving.
+
 A ready-to-fork **fullstack** starting point for automating a business process end to end: the same
 [CIB seven](https://cibseven.org) (community fork of Camunda 7) **embedded-engine** backend as the
 sibling engine blueprints, plus a **React frontend** and the family's first **AI-agent setup** —

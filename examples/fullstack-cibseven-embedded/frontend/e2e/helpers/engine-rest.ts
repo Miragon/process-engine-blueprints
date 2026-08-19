@@ -42,6 +42,29 @@ export async function fireTimer(
 }
 
 /**
+ * Waits until the process instance has an execution parked at the given activity — i.e. it has
+ * reached that wait state. Use this before an action that must compensate earlier steps: the UI
+ * status badge is driven by an async read-model projection and can flip to "bestellt" a beat before
+ * the engine has committed the order/contract/insurance activities and registered their compensation
+ * boundaries. Withdrawing in that window makes the saga skip `cancelBikeOrder` (and its
+ * `clarify-return` task) entirely. Mirrors the deliberate pre-withdraw wait in bruno/03-abort.
+ */
+export async function waitForWaitState(
+  request: APIRequestContext,
+  applicationId: string,
+  activityId: string,
+): Promise<void> {
+  const instanceId = await processInstanceId(request, applicationId);
+  await expect(async () => {
+    const executions = await request.get(
+      `${ENGINE_REST}/execution?processInstanceId=${instanceId}&activityId=${activityId}`,
+    );
+    const list = (await executions.json()) as Array<{ id: string }>;
+    expect(list.length, `not yet parked at ${activityId}`).toBeGreaterThan(0);
+  }).toPass({ timeout: 15_000 });
+}
+
+/**
  * Completes an open user task through the engine (the same as a human submitting its Camunda Form).
  * Used only for `userTask_clarifyReturn`, which has no UI on purpose.
  */

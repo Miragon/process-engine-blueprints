@@ -103,4 +103,5 @@ jobs:
           echo "Vite did not start in time"; tail -n 100 vite.log; exit 1
 
       - name: Run Playwright specs
-        run: npm --prefix frontend exec -- playwright test --project=${{ matrix.browser }}
+        working-directory: frontend
+        run: npx playwright test --project=${{ matrix.browser }}

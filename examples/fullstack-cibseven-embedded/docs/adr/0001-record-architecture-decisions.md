@@ -28,6 +28,5 @@ skill automates the numbering, slug, and drafting.
 - **Positive:** a forker inherits the *why*, not just the *what*; agents can read the constraints
   before touching code; decisions are reviewable in PRs like any other change.
 - **Negative / trade-offs:** a small discipline cost — a real decision now means writing a paragraph.
-- **Neutral:** `docs/adr/` becomes the canonical index of cross-cutting decisions; narrower topics
-  keep their own long-form docs (e.g. [`docs/mutation-testing.md`](../mutation-testing.md)) which the
-  ADRs link to.
+- **Neutral:** `docs/adr/` becomes the canonical index of cross-cutting decisions; each ADR carries
+  its own detail in its Decision section rather than delegating to a separate long-form guide.

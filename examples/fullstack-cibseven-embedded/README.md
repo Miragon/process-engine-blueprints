@@ -11,7 +11,7 @@ A ready-to-fork **fullstack** starting point for automating a business process e
 **React frontend**, and an **AI-agent setup** — one complete, runnable BPMN application with an
 enforced architecture on *both* sides of the stack.
 
-![MiraVelo's React frontend — the leasing applications list with each case's bike and live status, a link to the CIB seven Cockpit, and a German/English language switch](docs/frontend-applications.png)
+![MiraVelo's React frontend — the leasing applications list with each case's bike and live status, a link to the CIB seven Cockpit, and a German/English language switch](docs/assets/frontend-applications.png)
 
 ## Why this template exists
 
@@ -59,7 +59,7 @@ UI-less `clarify-return` task stay engine concerns.
   drift-gated**; orval regenerates the frontend's typed TanStack Query client from it. No contract,
   no fullstack story.
 - **AI-ready** — `AGENTS.md` + `frontend/AGENTS.md`, eight skills and two review subagents in
-  `.claude/`, and eleven ADRs (0001–0011) in `docs/adr/`.
+  `.claude/`, and the ADRs in `docs/adr/`.
 
 ## Technology choices
 
@@ -71,14 +71,16 @@ Every non-obvious decision is recorded as an ADR — read the *why* before chang
   behind ports; ArchUnit + Konsist fail the build on a violation — [ADR-0002](docs/adr/0002-hexagonal-architecture-for-the-backend.md)
 - **Feature-Sliced Design frontend** (and why `processes/` is banned) — [ADR-0003](docs/adr/0003-feature-sliced-design-for-the-frontend.md)
 - **OpenAPI as the checked-in contract** — the backend is the single source of truth; drift fails
-  CI — [ADR-0004](docs/adr/0004-openapi-as-the-checked-in-contract.md) · see [docs/api-contract.md](docs/api-contract.md)
+  CI — [ADR-0004](docs/adr/0004-openapi-as-the-checked-in-contract.md)
 - **Frontend stays out of the Gradle build** — npm-only, so `./gradlew build` needs no Node — [ADR-0005](docs/adr/0005-frontend-stays-out-of-the-gradle-build.md)
 - **Mutation testing as a blocking PR gate** — a test that runs without asserting fails at score
-  80 — [ADR-0006](docs/adr/0006-mutation-testing-as-a-blocking-pr-gate.md) · see [docs/mutation-testing.md](docs/mutation-testing.md)
+  80 — [ADR-0006](docs/adr/0006-mutation-testing-as-a-blocking-pr-gate.md)
 - **`AGENTS.md` as the single source** of agent instructions — [ADR-0007](docs/adr/0007-agents-md-as-the-single-source.md)
 - **Fixed ports for v1, portless as the upgrade** — [ADR-0008](docs/adr/0008-fixed-ports-for-v1-portless-as-the-upgrade.md)
 - **Always on the latest major** — a deliberate stance, not drift: the template shows the current
   technological stand (and AI-driven development against it), gated so bumps stay safe — [ADR-0011](docs/adr/0011-track-the-latest-major-versions.md)
+- **Production-shaped from the start** — actuator health/liveness/readiness probes and a Prometheus
+  scrape endpoint ship out of the box — [ADR-0012](docs/adr/0012-actuator-probes-and-prometheus-metrics.md)
 
 ## Getting started
 
@@ -96,8 +98,8 @@ npm --prefix frontend run dev
 
 Then open <http://localhost:5173>, submit an application with the out-of-stock bike, sign the
 contract, open `/aufgaben`, resolve the clarification with an available bike, and watch the detail
-page's status advance on its own. See [docs/local-development.md](docs/local-development.md) for the
-full loop (Bruno, Playwright, contract regeneration).
+page's status advance on its own. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full dev loop (Bruno,
+Playwright, contract regeneration).
 
 Verify the whole thing:
 
@@ -121,7 +123,7 @@ fullstack-example/
 ├── bruno/                           # 6 API scenario collections
 ├── tools/                           # bpmnlint + git-hook installer
 ├── stack/docker-compose.yml         # Postgres 18.4
-├── docs/{README.md, adr/, api-contract.md, local-development.md, mutation-testing.md}
+├── docs/{README.md, adr/, assets/}  # ADRs (decisions) + diagrams
 ├── .claude/{skills/, agents/}       # 8 skills, 2 subagents
 └── .github/workflows/               # pre-merge (5 parallel jobs) + nightly
 ```
@@ -130,14 +132,13 @@ fullstack-example/
 orval · Vite · Vitest · Playwright.
 
 **Ports:** Postgres `5432` · backend + engine `8080` · Cockpit `8080/camunda` · spec
-`8080/v3/api-docs` · Vite `5173`.
+`8080/v3/api-docs` · actuator `8080/actuator` · Vite `5173`.
 
 ## Documentation
 
-The README stays deliberately compact; deeper context lives in [`docs/`](docs/README.md). Start at the
-[docs index](docs/README.md), which links the topic guides ([local development](docs/local-development.md),
-the [API contract](docs/api-contract.md), [mutation testing](docs/mutation-testing.md)) and the eleven
-Architecture Decision Records under [`docs/adr/`](docs/adr/).
+The README stays deliberately compact; the reasoning behind its shape lives as the Architecture
+Decision Records under [`docs/adr/`](docs/adr/) — start at the [docs index](docs/README.md). Setup, the
+ports, the dev loop and the manual smoke test are in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Contributing
 

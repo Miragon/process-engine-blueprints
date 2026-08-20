@@ -28,7 +28,8 @@ import kotlin.io.path.exists
  * keeps POSIX tools happy.
  *
  * This is not really an assertion test — it is a code generator wearing a JUnit costume so it runs
- * inside `./gradlew build` with a live application context. See docs/api-contract.md.
+ * inside `./gradlew build` with a live application context. See ADR-0004
+ * (docs/adr/0004-openapi-as-the-checked-in-contract.md).
  */
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,

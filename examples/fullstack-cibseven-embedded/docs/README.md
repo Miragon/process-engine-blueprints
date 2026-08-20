@@ -1,26 +1,14 @@
 # Documentation
 
-Deeper context that the [README](../README.md) deliberately leaves out. The README is the compact
-entry point; this folder is where individual decisions and workflows are explained a level down.
+Deeper context that the [README](../README.md) deliberately leaves out — the *why* behind the repo's
+shape. This folder holds the **Architecture Decision Records** (the decisions) and the **diagrams**.
 
-Two kinds of document live here, and the split is intentional:
-
-- **ADRs** capture a **decision** — the *why* behind a structural choice. They are dated, numbered,
-  and effectively immutable once accepted (a reversal gets a new ADR, not an edit).
-- **Guides** are **how-to / reference** — the *how* of running or changing something. They evolve
-  freely with the code.
-
-So not everything is an ADR because most of this folder isn't a decision: "how to run the dev loop"
-or "how the contract is regenerated" is a procedure, not a choice to be defended. Where a guide has a
-decision behind it, it links the ADR (e.g. the API-contract guide points at ADR-0004).
-
-## Topic guides
-
-| Guide | What it covers |
-|---|---|
-| [local-development.md](local-development.md) | Prerequisites, ports, the dev loop, the manual smoke test, and how to change the API or the process. |
-| [api-contract.md](api-contract.md) | How `openapi/openapi.json` is generated, committed, and drift-gated — and how a backend change reaches the typed frontend client. |
-| [mutation-testing.md](mutation-testing.md) | Why PIT mutation testing gates PRs at 80, and how to read and improve a mutation score. |
+An ADR captures a **decision** — dated, numbered, and effectively immutable once accepted (a reversal
+gets a new ADR, not an edit). Procedures are not decisions, so they live elsewhere: setup, the ports,
+the dev loop and the smoke test in [CONTRIBUTING.md](../CONTRIBUTING.md); the day-to-day workflow and
+the skills in [AGENTS.md](../AGENTS.md). Where a procedure has a decision behind it, that reasoning is
+in the relevant ADR's own Decision section (e.g. the contract flow in ADR-0004, the mutation gate in
+ADR-0006).
 
 ## Architecture Decision Records
 
@@ -42,8 +30,9 @@ copied from [`adr/0000-adr-template.md`](adr/0000-adr-template.md). Write a new 
 | [0009](adr/0009-two-test-layers-bruno-and-playwright.md) | Two test layers: Bruno API scenarios and Playwright browser journeys. |
 | [0010](adr/0010-two-architecture-test-tools-archunit-and-konsist.md) | Two architecture-test tools: ArchUnit (bytecode) and Konsist (source). |
 | [0011](adr/0011-track-the-latest-major-versions.md) | Deliberately track the latest major versions across the stack. |
+| [0012](adr/0012-actuator-probes-and-prometheus-metrics.md) | Actuator health/liveness/readiness probes and Prometheus metrics, exposed out of the box. |
 
 ## Diagrams
 
-- `bike-leasing.png` — the BPMN process at a glance.
-- `frontend-applications.png` — the React frontend's applications list.
+- [`assets/bike-leasing.png`](assets/bike-leasing.png) — the BPMN process at a glance.
+- [`assets/frontend-applications.png`](assets/frontend-applications.png) — the React frontend's applications list.

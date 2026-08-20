@@ -15,7 +15,24 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
   mvc:
     problemdetails:
-      # Let Spring's own handlers (404, 400, …) also emit RFC 9457 application/problem+json.
+      enabled: true
+
+# A minimal, deploy/ops-ready surface. Everything else stays disabled.
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      # Component detail is hidden. To expose it, set: show-details: always
+      show-details: never
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
       enabled: true
 
 springdoc:
@@ -31,7 +48,6 @@ camunda:
     admin-user:
       id: admin
       password: admin
-    # Deploy BPMN, DMN and Camunda Forms from the classpath so the .form files resolve in the Tasklist.
     deployment-resource-pattern:
       - classpath*:**/*.bpmn
       - classpath*:**/*.dmn

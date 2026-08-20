@@ -24,6 +24,10 @@ jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin"
 # OpenAPI — springdoc generates the contract served at /v3/api-docs and the Swagger UI
 springdoc = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc_version" }
 
+# Observability — actuator probes (health/liveness/readiness, info, metrics) and a Prometheus registry
+actuator = { module = "org.springframework.boot:spring-boot-starter-actuator", version.ref = "spring_version" }
+prometheus = { module = "io.micrometer:micrometer-registry-prometheus" }   # version pinned by the Spring Boot BOM
+
 # CIB seven (Camunda 7 fork) — Spring Boot 4 starters
 cib7-webapp = { module = "org.cibseven.bpm.springboot:cibseven-bpm-spring-boot-starter-webapp-4", version.ref = "cib7_version" }
 cib7-rest = { module = "org.cibseven.bpm.springboot:cibseven-bpm-spring-boot-starter-rest-4", version.ref = "cib7_version" }
@@ -56,7 +60,7 @@ jgiven-kotlin = { module = "io.toolisticon.testing:jgiven-kotlin", version.ref =
 jgiven-junit5 = { module = "com.tngtech.jgiven:jgiven-junit5", version = "2.0.3" }
 
 [bundles]
-defaultService = ["kotlin-reflect", "kotlin_logging", "jackson-kotlin", "devtools", "web"]
+defaultService = ["kotlin-reflect", "kotlin_logging", "jackson-kotlin", "devtools", "web", "actuator", "prometheus"]
 database = ["jpa", "postgres"]
 cibseven = ["cib7-webapp", "cib7-rest"]
 test = ["spring_test", "spring_web_test", "spring_data_jpa_test", "mockito", "mockk", "spring_mockk", "kotlin_mockito"]

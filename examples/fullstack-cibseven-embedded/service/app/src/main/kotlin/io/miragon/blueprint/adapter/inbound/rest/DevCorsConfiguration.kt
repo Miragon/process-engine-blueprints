@@ -9,7 +9,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
  * Documented escape hatch you should NOT need. In development the Vite dev server proxies `/api`,
  * `/v3/api-docs`, `/engine-rest` and `/camunda` to the backend, so the browser sees a single origin
  * and there is no CORS on the production path. This bean only activates under the `dev` profile — if
- * you ever run the frontend against the backend cross-origin, enable it. See docs/local-development.md.
+ * you ever run the frontend against the backend cross-origin, enable it. See CONTRIBUTING.md.
  */
 @Configuration
 @Profile("dev")

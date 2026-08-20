@@ -15,11 +15,11 @@ plugins {
     alias(libs.plugins.pitest)
 }
 
+springBoot {
+    buildInfo()
+}
+
 configurations.all {
-    // CIB seven 2.2.0 pulls in both the generic `cibseven-webclient-web` and the Spring-Boot-4
-    // variant `cibseven-webclient-web-spring-boot-4`. The generic one calls
-    // PathMatchConfigurer.setUseSuffixPatternMatch(...), which was removed in Spring 7 / Spring
-    // Boot 4, and crashes the app on start-up. Drop it so only the SB4 variant remains.
     exclude(group = "org.cibseven.webapp", module = "cibseven-webclient-web")
 }
 
@@ -36,8 +36,6 @@ dependencies {
     testImplementation(project(":service:common-architecture-tests"))
 }
 
-// Generates the typed `*ProcessApi` objects (element ids, messages, timers, variables, …) from the
-// BPMN models, so workers and tests reference process elements as compile-checked constants.
 tasks.register<GenerateBpmnModelsTask>("generateBpmnModels") {
     baseDir = projectDir.toString()
     filePattern = "src/main/resources/bpmn/*.bpmn"
@@ -56,7 +54,6 @@ tasks.test {
     forkEvery = 1
 }
 
-// PIT mutation testing — see docs/mutation-testing.md.
 pitest {
     junit5PluginVersion.set("1.2.2")
     targetClasses.set(listOf("io.miragon.blueprint.*"))

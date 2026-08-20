@@ -23,6 +23,11 @@ What becomes true once this is in place — the good, the bad, and the merely di
 - **Negative / trade-offs:** what gets harder, or what we accept as a cost.
 - **Neutral:** what simply changes.
 
+## Implementation notes (optional)
+
+Concrete gotchas, wiring details, or non-obvious mechanics worth recording next to the decision.
+Always the **last** section, and omitted entirely when there is nothing to add.
+
 <!--
 How to use this template:
 - Copy it to docs/adr/NNNN-kebab-case-title.md, NNNN = highest existing number + 1, zero-padded.

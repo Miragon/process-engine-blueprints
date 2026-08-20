@@ -89,7 +89,7 @@ jobs:
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
 
       # Fails if the mutation score drops below the threshold in service/app/build.gradle.kts.
-      # If this job exceeds 5 minutes, switch to diff-scoped PR runs — see docs/mutation-testing.md.
+      # If this job exceeds 5 minutes, switch to diff-scoped PR runs — see ADR-0006 (the 5-minute escape clause).
       - name: Run PIT mutation testing
         run: ./gradlew :service:app:pitest --no-daemon
 

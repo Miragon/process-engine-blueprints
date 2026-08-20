@@ -50,3 +50,18 @@ The [`sync-api-client`](../../.claude/skills/sync-api-client/SKILL.md) skill run
   failure mode — the gate is what makes that safe, so it must never be disabled.
 - **Neutral:** determinism is a hard requirement of the export test — any non-deterministic serialisation
   would make the gate flap.
+
+## Implementation notes
+
+Two things bite when this runs on the embedded CIB seven engine:
+
+- **Swagger UI vs. the CIB seven webclient.** The webapp registers its own resource handlers *and* its
+  own `OpenAPI` bean. `OpenApiConfiguration`'s bean is marked `@Primary` so springdoc serves ours for
+  `/api/**`, and `/camunda`, `/swagger-ui.html` and `/v3/api-docs` coexist (verified at build time). If
+  a future upgrade breaks that, swap to `springdoc-openapi-starter-webmvc-api` (spec only, no UI) — the
+  frontend only needs `/v3/api-docs`.
+- **Jackson 3 date-time.** Spring Boot 4 ships Jackson 3, which defaults `WRITE_DATES_AS_TIMESTAMPS` on,
+  and the webclient serves `/api` with its own mapper that ignores global config. springdoc types the
+  fields as `string/date-time`, so DTO date fields are pinned with `@JsonFormat(shape = STRING)` to keep
+  payload and contract in sync. Operation ids are set explicitly (`@Operation(operationId = …)`) so the
+  generated hook names stay clean and stable (e.g. `useListLeasingApplications`).

@@ -24,8 +24,33 @@ docker compose -f stack/docker-compose.yml up -d   # Postgres
 npm --prefix frontend run dev                       # UI on :5173 (proxies /api to :8080)
 ```
 
-See [docs/local-development.md](docs/local-development.md) for the ports, the manual smoke test, and
-the full dev loop.
+### Ports
+
+| What | Port |
+|---|---|
+| Postgres | 5432 |
+| Backend (REST + `/engine-rest`) | 8080 |
+| CIB seven Cockpit / webapps | 8080/camunda (admin/admin) |
+| OpenAPI spec · Swagger UI | 8080/v3/api-docs · 8080/swagger-ui.html |
+| Actuator (health · liveness/readiness · prometheus) | 8080/actuator |
+| Vite dev server | 5173 |
+
+Vite proxies `/api`, `/v3/api-docs`, `/engine-rest` and `/camunda` to `:8080`, so the browser sees one
+origin and no CORS code runs on the production path. Under Conductor the ports are fixed and the
+workspace runs `nonconcurrent` (see [ADR-0008](docs/adr/0008-fixed-ports-for-v1-portless-as-the-upgrade.md)).
+
+### Manual smoke test
+
+Open <http://localhost:5173> and:
+
+1. submit an application choosing **Mountain Trail 600 (BIKE-OOS)** — deliberately out of stock;
+2. sign the contract; the order finds it unavailable and parks the case;
+3. open `/aufgaben`, resolve the clarification choosing **Gravel Explorer 900**;
+4. back on the detail page, report the handover and watch the status advance on its own (the page
+   polls while the case is non-terminal).
+
+Confirm <http://localhost:8080/camunda> (admin/admin), <http://localhost:8080/swagger-ui.html> and
+<http://localhost:8080/actuator/health> (status `UP`) all load.
 
 ## Scripts
 

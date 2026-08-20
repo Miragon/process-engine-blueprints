@@ -33,5 +33,9 @@ How to use this template:
 - Copy it to docs/adr/NNNN-kebab-case-title.md, NNNN = highest existing number + 1, zero-padded.
 - Keep an ADR to roughly one screenful. One decision per record.
 - Commit the ADR in the same commit as the change it documents, so decision and code travel together.
+- An ADR always describes the **current** state as if it had always been so — write it in the present
+  tense, and never add "Update", "Changelog", or dated-amendment sections. When a decision changes,
+  rewrite the record in place (bump the Date) or supersede it with a new ADR and flip this one's Status
+  to "Superseded by …". The reader should never have to reconstruct the current state from a diff.
 - The `/create-adr` skill automates numbering, the slug, and drafting from this template.
 -->

@@ -74,7 +74,7 @@ Every non-obvious decision is recorded as an ADR — read the *why* before chang
   CI — [ADR-0004](docs/adr/0004-openapi-as-the-checked-in-contract.md)
 - **Frontend stays out of the Gradle build** — npm-only, so `./gradlew build` needs no Node — [ADR-0005](docs/adr/0005-frontend-stays-out-of-the-gradle-build.md)
 - **Mutation testing as a blocking PR gate** — a test that runs without asserting fails at score
-  80 — [ADR-0006](docs/adr/0006-mutation-testing-as-a-blocking-pr-gate.md)
+  80; the PR gate is diff-scoped, the full-module sweep runs nightly — [ADR-0006](docs/adr/0006-mutation-testing-as-a-blocking-pr-gate.md)
 - **`AGENTS.md` as the single source** of agent instructions — [ADR-0007](docs/adr/0007-agents-md-as-the-single-source.md)
 - **Fixed ports for v1, portless as the upgrade** — [ADR-0008](docs/adr/0008-fixed-ports-for-v1-portless-as-the-upgrade.md)
 - **Always on the latest major** — a deliberate stance, not drift: the template shows the current

@@ -81,7 +81,8 @@ npm --prefix tools run lint:bpmn        # bpmnlint the .bpmn models
   `refactor:`, `test:`, `chore:`). Write everything in **English**.
 - **Keep the gates green.** The architecture (ArchUnit + Konsist), contract-drift, mutation (≥ 80)
   and FSD gates run in CI on every PR. They are fitness functions, not style guides — a violation
-  fails the build.
+  fails the build. The mutation gate is **diff-scoped** on PRs (only the classes you changed); the
+  full-module gate-80 sweep runs nightly.
 - **Add tests.** This is a TDD codebase; match the test style to the layer (see `AGENTS.md`).
   Mutation testing means a test that runs without asserting will fail CI.
 - **Changing the API or the process?** Use the `sync-api-client` / `automate-process` skills so the

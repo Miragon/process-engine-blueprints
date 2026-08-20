@@ -54,10 +54,14 @@ tasks.test {
     forkEvery = 1
 }
 
+val mutationTargetClasses = (project.findProperty("mutationTargetClasses") as String?)
+    ?.split(",")?.map(String::trim)?.filter(String::isNotEmpty)
+
 pitest {
     junit5PluginVersion.set("1.2.2")
-    targetClasses.set(listOf("io.miragon.blueprint.*"))
+    targetClasses.set(mutationTargetClasses ?: listOf("io.miragon.blueprint.*"))
     targetTests.set(listOf("io.miragon.blueprint.*"))
+    failWhenNoMutations.set(false)
     excludedClasses.set(
         listOf(
             "io.miragon.blueprint.adapter.process.*ProcessApi*",

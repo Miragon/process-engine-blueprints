@@ -4,10 +4,11 @@
   "private": true,
   "description": "Dev tooling for the fullstack bike-leasing blueprint: BPMN linting (bpmnlint) and git hook installation. Run from the repo root via `npm --prefix tools run <script>`.",
   "scripts": {
-    "lint:bpmn": "bpmnlint \"../service/app/src/main/resources/bpmn/*.bpmn\"",
+    "lint:bpmn": "bpmnlint --max-warnings=0 \"../service/app/src/main/resources/bpmn/*.bpmn\"",
     "hooks:install": "git -C .. config core.hooksPath .githooks"
   },
   "devDependencies": {
-    "bpmnlint": "11.12.1"
+    "@miragon/bpmnlint-plugin-rules": "0.5.0",
+    "bpmnlint": "11.13.0"
   }
 }

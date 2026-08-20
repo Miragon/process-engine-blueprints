@@ -158,7 +158,7 @@ class BikeLeasingProcessTest {
             .isEnded
             .hasPassed(
                 Elements.EVENT_SIGNATURE_DEADLINE.value,
-                Elements.BOUNDARY_CONTRACT_NOT_SIGNED.value,
+                Elements.EVENT_CONTRACT_NOT_SIGNED.value,
                 Elements.SERVICE_TASK_SEND_REJECTION.value,
                 Elements.END_EVENT_APPLICATION_REJECTED.value,
             )

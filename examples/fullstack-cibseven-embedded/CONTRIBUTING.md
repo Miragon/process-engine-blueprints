@@ -86,6 +86,12 @@ npm --prefix tools run lint:bpmn        # bpmnlint the .bpmn models
   Mutation testing means a test that runs without asserting will fail CI.
 - **Changing the API or the process?** Use the `sync-api-client` / `automate-process` skills so the
   committed `openapi/openapi.json` contract and the generated code stay in sync.
+- **Changing the database schema?** Flyway owns it. Add a new forward-only migration
+  `V{n}__description.sql` under `service/app/src/main/resources/db/migration/` in the same change as
+  the entity edit — never edit an already-applied migration. Hibernate runs `validate`, so a mismatch
+  fails startup. A dev database first created by the old `ddl-auto: create` has no Flyway history;
+  reset it once with `docker compose -f stack/docker-compose.yml down -v` before running. See
+  [ADR-0013](docs/adr/0013-flyway-for-database-migrations.md).
 
 ## Before opening a PR
 

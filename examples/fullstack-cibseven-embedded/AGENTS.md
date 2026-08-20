@@ -133,7 +133,7 @@ generated client → FSD slice → Bruno → Playwright and report what's missin
 
 ## ADRs
 
-Architecture decisions are recorded in `docs/adr/` (0001–0008). Read them to understand *why* the
+Architecture decisions are recorded in `docs/adr/` (0001–0013). Read them to understand *why* the
 repo is shaped this way before proposing structural changes.
 
 ## Personality

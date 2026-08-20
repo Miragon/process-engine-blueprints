@@ -31,6 +31,7 @@ copied from [`adr/0000-adr-template.md`](adr/0000-adr-template.md). Write a new 
 | [0010](adr/0010-two-architecture-test-tools-archunit-and-konsist.md) | Two architecture-test tools: ArchUnit (bytecode) and Konsist (source). |
 | [0011](adr/0011-track-the-latest-major-versions.md) | Deliberately track the latest major versions across the stack. |
 | [0012](adr/0012-actuator-probes-and-prometheus-metrics.md) | Actuator health/liveness/readiness probes and Prometheus metrics, exposed out of the box. |
+| [0013](adr/0013-flyway-for-database-migrations.md) | Flyway for versioned schema migrations; Hibernate switches to `validate`. |
 
 ## Diagrams
 

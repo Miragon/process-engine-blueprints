@@ -17,6 +17,8 @@ web = { module = "org.springframework.boot:spring-boot-starter-web", version.ref
 devtools = { module = "org.springframework.boot:spring-boot-devtools", version.ref = "spring_version" }
 jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa", version.ref = "spring_version" }
 postgres = { module = "org.postgresql:postgresql", version = "42.7.12" }
+flyway = { module = "org.springframework.boot:spring-boot-starter-flyway", version.ref = "spring_version" }
+flyway-postgres = { module = "org.flywaydb:flyway-database-postgresql" }
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin_version" }
 kotlin_logging = { module = "io.github.microutils:kotlin-logging", version.ref = "kotlin_logging_version" }
 jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin" }
@@ -61,7 +63,7 @@ jgiven-junit5 = { module = "com.tngtech.jgiven:jgiven-junit5", version = "2.0.3"
 
 [bundles]
 defaultService = ["kotlin-reflect", "kotlin_logging", "jackson-kotlin", "devtools", "web", "actuator", "prometheus"]
-database = ["jpa", "postgres"]
+database = ["jpa", "postgres", "flyway", "flyway-postgres"]
 cibseven = ["cib7-webapp", "cib7-rest"]
 test = ["spring_test", "spring_web_test", "spring_data_jpa_test", "mockito", "mockk", "spring_mockk", "kotlin_mockito"]
 archunit = ["archunit"]

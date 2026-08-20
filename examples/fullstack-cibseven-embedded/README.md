@@ -81,6 +81,8 @@ Every non-obvious decision is recorded as an ADR — read the *why* before chang
   technological stand (and AI-driven development against it), gated so bumps stay safe — [ADR-0011](docs/adr/0011-track-the-latest-major-versions.md)
 - **Production-shaped from the start** — actuator health/liveness/readiness probes and a Prometheus
   scrape endpoint ship out of the box — [ADR-0012](docs/adr/0012-actuator-probes-and-prometheus-metrics.md)
+- **Versioned schema migrations** — Flyway owns the schema and Hibernate only `validate`s it, so a
+  fork evolves its database with reviewable, repeatable SQL instead of `ddl-auto: create` — [ADR-0013](docs/adr/0013-flyway-for-database-migrations.md)
 
 ## Getting started
 

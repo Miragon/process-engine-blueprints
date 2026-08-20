@@ -6,6 +6,7 @@ export const LEASING_STATUSES = [
   "ORDERED",
   "HANDED_OVER",
   "ACTIVE",
+  "WITHDRAWN",
   "REJECTED",
   "CANCELLED",
 ] as const;
@@ -35,6 +36,7 @@ const TONES: Record<LeasingStatus, StatusTone> = {
   ORDERED: "info",
   HANDED_OVER: "info",
   ACTIVE: "success",
+  WITHDRAWN: "warning",
   REJECTED: "danger",
   CANCELLED: "warning",
 };

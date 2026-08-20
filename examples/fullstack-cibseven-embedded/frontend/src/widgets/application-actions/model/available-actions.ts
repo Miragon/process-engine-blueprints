@@ -13,6 +13,7 @@ const MATRIX: Record<LeasingStatus, LeasingAction[]> = {
   ORDERED: ["handover", "withdraw"],
   HANDED_OVER: ["withdraw"],
   ACTIVE: [],
+  WITHDRAWN: [],
   REJECTED: [],
   CANCELLED: [],
 };

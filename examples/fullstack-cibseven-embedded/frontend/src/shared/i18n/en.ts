@@ -15,6 +15,7 @@ export const en: Copy = {
     tasks: "tasks",
     newApplication: "new application",
     cockpit: "cockpit",
+    tasklist: "tasklist",
     language: "language",
   },
   common: {
@@ -29,6 +30,7 @@ export const en: Copy = {
     ORDERED: "ordered",
     HANDED_OVER: "handed over",
     ACTIVE: "active",
+    WITHDRAWN: "being withdrawn",
     REJECTED: "rejected",
     CANCELLED: "cancelled",
   },
@@ -85,6 +87,7 @@ export const en: Copy = {
     ordered: "ordered",
     handedOver: "handed over",
     active: "active",
+    withdrawn: "being withdrawn",
     rejected: "rejected",
     cancelled: "cancelled",
   },
@@ -99,6 +102,9 @@ export const en: Copy = {
     signSuccess: "the contract was signed.",
     handoverSuccess: "the handover was reported.",
     withdrawSuccess: "the application was withdrawn.",
+    withdrawRequestedTitle: "withdrawal requested",
+    withdrawRequestedNote:
+      "the cancellation is being processed. complete the open task in the tasklist to move the status to cancelled.",
     error: "the action could not be performed.",
     terminalActive: "the leasing is active. no further steps are needed.",
     terminalRejected: "the application was rejected. no actions are possible.",

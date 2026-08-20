@@ -49,6 +49,16 @@ class LeasingApplicationTest {
     }
 
     @Test
+    fun `withdraw moves the application to WITHDRAWN`() {
+        // given: a handed-over application
+        val application = testLeasingApplication(status = LeasingStatus.HANDED_OVER)
+        // when: the customer withdraws
+        val withdrawn = application.withdraw()
+        // then: the status is WITHDRAWN
+        assertThat(withdrawn.status).isEqualTo(LeasingStatus.WITHDRAWN)
+    }
+
+    @Test
     fun `reportHandover moves the application to HANDED_OVER`() {
         // given: an ordered application
         val application = testLeasingApplication(status = LeasingStatus.ORDERED)

@@ -15,4 +15,8 @@ describe("availableActions", () => {
     expect(availableActions("REJECTED")).toEqual([]);
     expect(availableActions("CANCELLED")).toEqual([]);
   });
+
+  it("offers nothing while a withdrawal is being processed", () => {
+    expect(availableActions("WITHDRAWN")).toEqual([]);
+  });
 });

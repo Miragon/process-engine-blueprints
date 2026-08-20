@@ -1,4 +1,12 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/shared/ui";
 import { useCopy } from "@/shared/i18n";
 import { isTerminal, type LeasingStatus } from "@/entities/leasing-application";
 import { SignContractButton } from "@/features/sign-contract";
@@ -30,7 +38,12 @@ export function ApplicationActions({
       </CardHeader>
       <CardContent>
         <div aria-live="polite">
-          {isTerminal(status) || actions.length === 0 ? (
+          {status === "WITHDRAWN" ? (
+            <Alert variant="warning">
+              <AlertTitle>{copy.actions.withdrawRequestedTitle}</AlertTitle>
+              <AlertDescription>{copy.actions.withdrawRequestedNote}</AlertDescription>
+            </Alert>
+          ) : isTerminal(status) || actions.length === 0 ? (
             <p className="text-body text-schwarz/70">
               {terminalNote[status] ?? copy.actions.terminalActive}
             </p>

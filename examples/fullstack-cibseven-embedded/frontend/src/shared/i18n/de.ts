@@ -17,6 +17,7 @@ export const de = {
     tasks: "aufgaben",
     newApplication: "neuer antrag",
     cockpit: "cockpit",
+    tasklist: "tasklist",
     language: "sprache",
   },
   common: {
@@ -31,6 +32,7 @@ export const de = {
     ORDERED: "bestellt",
     HANDED_OVER: "übergeben",
     ACTIVE: "aktiv",
+    WITHDRAWN: "wird zurückgezogen",
     REJECTED: "abgelehnt",
     CANCELLED: "storniert",
   },
@@ -87,6 +89,7 @@ export const de = {
     ordered: "bestellt",
     handedOver: "übergeben",
     active: "aktiv",
+    withdrawn: "wird zurückgezogen",
     rejected: "abgelehnt",
     cancelled: "storniert",
   },
@@ -101,6 +104,9 @@ export const de = {
     signSuccess: "vertrag wurde unterschrieben.",
     handoverSuccess: "übergabe wurde gemeldet.",
     withdrawSuccess: "antrag wurde zurückgezogen.",
+    withdrawRequestedTitle: "widerruf angefordert",
+    withdrawRequestedNote:
+      "der storno wird bearbeitet. schließe dazu die offene aufgabe in der tasklist ab, dann wechselt der status auf storniert.",
     error: "die aktion konnte nicht ausgeführt werden.",
     terminalActive: "das leasing ist aktiv. es sind keine weiteren schritte nötig.",
     terminalRejected: "der antrag wurde abgelehnt. es sind keine aktionen möglich.",

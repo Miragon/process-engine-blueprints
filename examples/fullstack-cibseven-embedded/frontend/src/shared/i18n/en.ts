@@ -27,6 +27,7 @@ export const en: Copy = {
   status: {
     RECEIVED: "received",
     ORDERED: "ordered",
+    HANDED_OVER: "handed over",
     ACTIVE: "active",
     REJECTED: "rejected",
     CANCELLED: "cancelled",

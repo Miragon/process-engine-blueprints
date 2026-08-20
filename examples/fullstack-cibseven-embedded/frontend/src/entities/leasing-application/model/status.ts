@@ -1,7 +1,14 @@
 import type { Copy } from "@/shared/i18n";
 
 /** The leasing lifecycle, mirrored from the backend enum. */
-export const LEASING_STATUSES = ["RECEIVED", "ORDERED", "ACTIVE", "REJECTED", "CANCELLED"] as const;
+export const LEASING_STATUSES = [
+  "RECEIVED",
+  "ORDERED",
+  "HANDED_OVER",
+  "ACTIVE",
+  "REJECTED",
+  "CANCELLED",
+] as const;
 
 export type LeasingStatus = (typeof LEASING_STATUSES)[number];
 
@@ -26,6 +33,7 @@ export function statusLabel(status: LeasingStatus | string, copy: Copy): string 
 const TONES: Record<LeasingStatus, StatusTone> = {
   RECEIVED: "info",
   ORDERED: "info",
+  HANDED_OVER: "info",
   ACTIVE: "success",
   REJECTED: "danger",
   CANCELLED: "warning",

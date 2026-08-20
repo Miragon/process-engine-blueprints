@@ -49,6 +49,26 @@ class LeasingApplicationTest {
     }
 
     @Test
+    fun `reportHandover moves the application to HANDED_OVER`() {
+        // given: an ordered application
+        val application = testLeasingApplication(status = LeasingStatus.ORDERED)
+        // when: the handover is reported
+        val handedOver = application.reportHandover()
+        // then: the status is HANDED_OVER
+        assertThat(handedOver.status).isEqualTo(LeasingStatus.HANDED_OVER)
+    }
+
+    @Test
+    fun `activate moves the application to ACTIVE`() {
+        // given: a handed-over application
+        val application = testLeasingApplication(status = LeasingStatus.HANDED_OVER)
+        // when: the leasing is activated
+        val active = application.activate()
+        // then: the status is ACTIVE
+        assertThat(active.status).isEqualTo(LeasingStatus.ACTIVE)
+    }
+
+    @Test
     fun `validate fails when the monthly net income is zero`() {
         // given: an application without income
         val application = testLeasingApplication(monthlyNetIncome = 0.0)

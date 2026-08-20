@@ -22,8 +22,18 @@ archive = "docker compose -f stack/docker-compose.yml down -v || true"
 
 # Named run targets — none is defaulted, so nothing autostarts. Start what you need from the Run menu.
 
-# Whole stack in one process group:
-[scripts.run.stack]
+# Bruno API smoke tests against a running local stack.
+[scripts.run.smoke]
+command = "cd bruno && npx --yes @usebruno/cli run . --env local -r"
+icon = "flask"
+
+# Playwright browser end-to-end tests against a running local stack.
+[scripts.run.e2e]
+command = "npm --prefix frontend run e2e"
+icon = "monitor"
+
+# Full local dev stack: Postgres + backend + Vite (current branch).
+[scripts.run.full-dev]
 command = '''
 docker compose -f stack/docker-compose.yml up -d && \
 npx --yes concurrently --kill-others --names backend,frontend --prefix-colors blue,magenta \
@@ -32,20 +42,7 @@ npx --yes concurrently --kill-others --names backend,frontend --prefix-colors bl
 '''
 icon = "layers"
 
-[scripts.run.infra]
-command = "docker compose -f stack/docker-compose.yml up"
-
-[scripts.run.backend]
-command = "./gradlew :service:app:bootRun"
-
-[scripts.run.frontend]
-command = "npm --prefix frontend run dev"
-
-[scripts.run.test]
-command = "npm --prefix frontend run verify"
-
-[scripts.run.smoke]
-command = "cd bruno && npx --yes @usebruno/cli run . --env local -r"
-
-[scripts.run.e2e]
-command = "npm --prefix frontend run e2e"
+# Full stack from OCI images (last merged build via docker-compose.full.yml).
+[scripts.run.full-docker]
+command = "docker compose -f stack/docker-compose.full.yml up"
+icon = "package"

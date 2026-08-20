@@ -29,6 +29,7 @@ export const de = {
   status: {
     RECEIVED: "eingegangen",
     ORDERED: "bestellt",
+    HANDED_OVER: "übergeben",
     ACTIVE: "aktiv",
     REJECTED: "abgelehnt",
     CANCELLED: "storniert",

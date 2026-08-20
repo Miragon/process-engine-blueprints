@@ -1,6 +1,7 @@
 package io.miragon.blueprint.adapter.inbound.rest
 
 import mu.KotlinLogging
+import org.cibseven.bpm.engine.MismatchingMessageCorrelationException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ProblemDetail
 import org.springframework.web.bind.annotation.ExceptionHandler
@@ -32,6 +33,13 @@ class GlobalExceptionConfiguration {
     fun handleIllegalState(exception: IllegalStateException): ProblemDetail {
         log.debug { "Unprocessable: ${exception.message}" }
         return problem(HttpStatus.NOT_FOUND, "Resource not found", exception.message)
+    }
+
+    /** Action not available — the process token is no longer at the expected wait state. */
+    @ExceptionHandler(MismatchingMessageCorrelationException::class)
+    fun handleMismatchingCorrelation(exception: MismatchingMessageCorrelationException): ProblemDetail {
+        log.debug { "Mismatching correlation: ${exception.message}" }
+        return problem(HttpStatus.CONFLICT, "Action not available in the current state", exception.message)
     }
 
     private fun problem(status: HttpStatus, title: String, detail: String?): ProblemDetail =

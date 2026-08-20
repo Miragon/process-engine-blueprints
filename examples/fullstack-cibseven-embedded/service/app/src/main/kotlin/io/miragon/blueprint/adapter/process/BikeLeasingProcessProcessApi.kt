@@ -140,6 +140,8 @@ object BikeLeasingProcessProcessApi {
 
     val MIRAVELO_HANDOVER_REPORTED: MessageName = MessageName("miravelo.handoverReported")
 
+    val MIRAVELO_LEASING_ACTIVATED: MessageName = MessageName("miravelo.leasingActivated")
+
     val MIRAVELO_LEASING_REQUEST_RECEIVED: MessageName =
         MessageName("miravelo.leasingRequestReceived")
   }
@@ -149,6 +151,8 @@ object BikeLeasingProcessProcessApi {
    * Kept as `const val String` because annotation arguments must be compile-time constants.
    */
   object ServiceTasks {
+    const val ACTIVATE_LEASING_DELEGATE: String = "#{activateLeasingDelegate}"
+
     const val CANCEL_CONTRACT_DELEGATE: String = "#{cancelContractDelegate}"
 
     const val CANCEL_POLICY_DELEGATE: String = "#{cancelPolicyDelegate}"

@@ -11,6 +11,7 @@ import type { LeasingStatus } from "@/entities/leasing-application";
 const ORDER: Record<LeasingStatus, number> = {
   RECEIVED: 0,
   ORDERED: 1,
+  HANDED_OVER: 1,
   ACTIVE: 2,
   REJECTED: -1,
   CANCELLED: -1,

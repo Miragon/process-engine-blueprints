@@ -11,6 +11,7 @@ export type LeasingAction = "sign" | "handover" | "withdraw";
 const MATRIX: Record<LeasingStatus, LeasingAction[]> = {
   RECEIVED: ["sign", "withdraw"],
   ORDERED: ["handover", "withdraw"],
+  HANDED_OVER: ["withdraw"],
   ACTIVE: [],
   REJECTED: [],
   CANCELLED: [],

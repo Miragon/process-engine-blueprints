@@ -42,7 +42,10 @@ npx --yes concurrently --kill-others --names backend,frontend --prefix-colors bl
 '''
 icon = "layers"
 
-# Full stack from OCI images (last merged build via docker-compose.full.yml).
+# Full stack from freshly built images (current branch). Rebuilds the backend OCI image via
+# buildpacks (bootBuildImage) and the frontend image, then runs. `--build` alone only rebuilds the
+# frontend — the app service has no build context — so the bootBuildImage step is required to avoid
+# silently running a stale backend.
 [scripts.run.full-docker]
-command = "docker compose -f stack/docker-compose.full.yml up"
+command = "./gradlew :service:app:bootBuildImage && docker compose -f stack/docker-compose.full.yml up --build"
 icon = "package"

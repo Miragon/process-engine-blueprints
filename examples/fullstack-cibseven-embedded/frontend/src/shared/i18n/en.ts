@@ -83,6 +83,7 @@ export const en: Copy = {
     title: "process flow",
     received: "received",
     ordered: "ordered",
+    handedOver: "handed over",
     active: "active",
     rejected: "rejected",
     cancelled: "cancelled",

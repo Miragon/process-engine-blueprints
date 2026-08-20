@@ -85,6 +85,7 @@ export const de = {
     title: "prozessverlauf",
     received: "eingegangen",
     ordered: "bestellt",
+    handedOver: "übergeben",
     active: "aktiv",
     rejected: "abgelehnt",
     cancelled: "storniert",

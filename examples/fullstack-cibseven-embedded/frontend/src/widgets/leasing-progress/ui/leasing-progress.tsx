@@ -4,15 +4,17 @@ import { useCopy } from "@/shared/i18n";
 import type { LeasingStatus } from "@/entities/leasing-application";
 
 /**
- * A BPMN-shaped step rail: eingegangen → bestellt → aktiv, with abgelehnt/storniert as off-ramps.
+ * A BPMN-shaped step rail: eingegangen → bestellt → übergeben → aktiv, with abgelehnt/storniert as
+ * off-ramps. `HANDED_OVER` is its own step (the bike is handed over and the case waits out the
+ * withdrawal period before it goes `ACTIVE`) — it must advance the rail past "bestellt".
  * Named `leasing-progress`, never `process-view` — in this codebase "process" means the BPMN model,
  * and the FSD `processes` layer is banned.
  */
 const ORDER: Record<LeasingStatus, number> = {
   RECEIVED: 0,
   ORDERED: 1,
-  HANDED_OVER: 1,
-  ACTIVE: 2,
+  HANDED_OVER: 2,
+  ACTIVE: 3,
   REJECTED: -1,
   CANCELLED: -1,
 };
@@ -22,6 +24,7 @@ export function LeasingProgress({ status }: { status: LeasingStatus | string }) 
   const mainSteps: { status: LeasingStatus; label: string }[] = [
     { status: "RECEIVED", label: copy.progress.received },
     { status: "ORDERED", label: copy.progress.ordered },
+    { status: "HANDED_OVER", label: copy.progress.handedOver },
     { status: "ACTIVE", label: copy.progress.active },
   ];
   const current = ORDER[status as LeasingStatus] ?? 0;

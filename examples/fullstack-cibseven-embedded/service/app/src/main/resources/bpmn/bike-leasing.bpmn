@@ -5,8 +5,8 @@
   <bpmn:message id="Message_HandoverReported" name="miravelo.handoverReported" />
   <bpmn:message id="Message_ApplicationWithdrawn" name="miravelo.applicationWithdrawn" />
   <bpmn:message id="Message_LeasingActivated" name="miravelo.leasingActivated" />
-  <bpmn:error id="Error_ApplicationInvalid" name="Application Invalid" errorCode="applicationInvalid" />
-  <bpmn:escalation id="Escalation_ContractNotSigned" name="Contract Not Signed" escalationCode="contractNotSigned" />
+  <bpmn:error id="Error_ApplicationInvalid" name="Application_Invalid" errorCode="applicationInvalid" />
+  <bpmn:escalation id="Escalation_ContractNotSigned" name="Contract_Not_Signed" escalationCode="contractNotSigned" />
   <bpmn:process id="bikeLeasingProcess" name="MiraVelo Bike Leasing" isExecutable="true" camunda:historyTimeToLive="P180D">
     <bpmn:startEvent id="startEvent_leasingRequestReceived" name="Leasing request received" camunda:asyncAfter="true">
       <bpmn:extensionElements>

@@ -182,13 +182,13 @@ object BikeLeasingProcessProcessApi {
   }
 
   object Errors {
-    val `APPLICATION INVALID`: BpmnError =
-        BpmnError("Application Invalid", "applicationInvalid")
+    val APPLICATION_INVALID: BpmnError =
+        BpmnError("Application_Invalid", "applicationInvalid")
   }
 
   object Escalations {
-    val `CONTRACT NOT SIGNED`: BpmnEscalation =
-        BpmnEscalation("Contract Not Signed", "contractNotSigned")
+    val CONTRACT_NOT_SIGNED: BpmnEscalation =
+        BpmnEscalation("Contract_Not_Signed", "contractNotSigned")
   }
 
   object Compensations {

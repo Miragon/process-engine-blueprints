@@ -52,6 +52,54 @@ Open <http://localhost:5173> and:
 Confirm <http://localhost:8080/camunda> (admin/admin), <http://localhost:8080/swagger-ui.html> and
 <http://localhost:8080/actuator/health> (status `UP`) all load.
 
+## Run it in containers
+
+The dev loop above runs the backend and frontend from source. To run the whole thing as containers —
+**frontend + app + Postgres** in one command — build the backend image, then start the full-stack
+compose. The rationale is in [ADR-0014](docs/adr/0014-build-and-deployment-approach.md).
+
+```bash
+# 1. build the backend OCI image (Spring buildpacks — no Dockerfile). Produces miravelo/app:1.0-SNAPSHOT
+./gradlew :service:app:bootBuildImage
+
+# 2. bring up frontend + app + Postgres (the frontend image is built by compose)
+docker compose -f stack/docker-compose.full.yml up --build
+```
+
+Then open <http://localhost:8090> and run the smoke test above. An nginx layer serves the built SPA
+and reverse-proxies `/api`, `/engine-rest`, `/camunda`, `/v3/api-docs` to the app, so it is the same
+single-origin, no-CORS topology as the Vite dev proxy.
+
+| What | URL |
+|---|---|
+| Frontend (SPA + reverse proxy) | <http://localhost:8090> |
+| CIB seven Cockpit | <http://localhost:8090/camunda> (admin/admin) |
+| Backend / engine REST · Swagger UI | <http://localhost:8080> · <http://localhost:8080/swagger-ui.html> |
+| Actuator probes | 8080/actuator/health/{readiness,liveness} |
+
+**Podman:** `bootBuildImage` needs a Docker-API socket. Expose podman's and point the build at it:
+
+```bash
+podman system service --time=0 unix:///tmp/podman.sock &
+export DOCKER_HOST=unix:///tmp/podman.sock
+./gradlew :service:app:bootBuildImage
+```
+
+**Configuration.** `application.yaml` ships dev defaults; the deploy-relevant values are read from the
+environment (they win over the baked defaults). The compose file sets these for you:
+
+| Env var | Purpose | Compose default |
+|---|---|---|
+| `SPRING_DATASOURCE_URL` | JDBC URL | `jdbc:postgresql://postgres:5432/bikeleasing` |
+| `SPRING_DATASOURCE_USERNAME` / `_PASSWORD` | DB credentials | `admin` / `admin` |
+| `APP_IMAGE` | backend image tag compose runs | `miravelo/app:1.0-SNAPSHOT` |
+
+> **Not production-hardened.** The image carries the example `jwtSecret` and admin/admin credentials
+> from `application.yaml`. Override them (and the DB credentials) before running anywhere real. Schema
+> is owned by Flyway and Hibernate only validates ([ADR-0013](docs/adr/0013-flyway-for-database-migrations.md)),
+> so the Postgres volume persists across `down`/`up` — reset it with `docker compose -f
+> stack/docker-compose.full.yml down -v`.
+
 ## Scripts
 
 ```bash

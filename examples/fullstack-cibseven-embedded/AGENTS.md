@@ -50,6 +50,7 @@ npm --prefix frontend run dev                       # UI on :5173 (proxies /api 
 | API scenarios (running stack) | `cd bruno && npx --yes @usebruno/cli run . --env local -r` |
 | Browser e2e (running stack) | `npm --prefix frontend run e2e` |
 | BPMN lint | `npm --prefix tools run lint:bpmn` |
+| Backend OCI image · full-stack run | `./gradlew :service:app:bootBuildImage` · `docker compose -f stack/docker-compose.full.yml up` — [ADR-0014](docs/adr/0014-build-and-deployment-approach.md), CONTRIBUTING "Run it in containers" |
 
 ## Architecture — the rules are machine-enforced
 

@@ -81,6 +81,8 @@ Every non-obvious decision is recorded as an ADR — read the *why* before chang
   technological stand (and AI-driven development against it), gated so bumps stay safe — [ADR-0011](docs/adr/0011-track-the-latest-major-versions.md)
 - **Production-shaped from the start** — actuator health/liveness/readiness probes and a Prometheus
   scrape endpoint ship out of the box — [ADR-0012](docs/adr/0012-actuator-probes-and-prometheus-metrics.md)
+- **One-command deployment** — a `bootBuildImage` OCI image plus an nginx frontend and a full-stack
+  compose bring up the whole system, not just the DB — [ADR-0014](docs/adr/0014-build-and-deployment-approach.md)
 - **Versioned schema migrations** — Flyway owns the schema and Hibernate only `validate`s it, so a
   fork evolves its database with reviewable, repeatable SQL instead of `ddl-auto: create` — [ADR-0013](docs/adr/0013-flyway-for-database-migrations.md)
 
@@ -103,6 +105,10 @@ contract, open `/aufgaben`, resolve the clarification with an available bike, an
 page's status advance on its own. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full dev loop (Bruno,
 Playwright, contract regeneration).
 
+Prefer containers? `./gradlew :service:app:bootBuildImage` then
+`docker compose -f stack/docker-compose.full.yml up --build` brings up frontend + app + Postgres on
+<http://localhost:8090> — see [Run it in containers](CONTRIBUTING.md#run-it-in-containers).
+
 Verify the whole thing:
 
 ```bash
@@ -124,7 +130,7 @@ fullstack-example/
 ├── frontend/                        # React + FSD (npm-only; e2e/ Playwright specs)
 ├── bruno/                           # 6 API scenario collections
 ├── tools/                           # bpmnlint + git-hook installer
-├── stack/docker-compose.yml         # Postgres 18.4
+├── stack/                           # docker-compose.yml (dev Postgres) · docker-compose.full.yml (full stack)
 ├── docs/{README.md, adr/, assets/}  # ADRs (decisions) + diagrams
 ├── .claude/{skills/, agents/}       # 8 skills, 2 subagents
 └── .github/workflows/               # pre-merge (5 parallel jobs) + nightly

@@ -64,7 +64,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               </Link>
             ))}
             <a
-              href="/camunda"
+              href="/camunda/app/cockpit/"
               target="_blank"
               rel="noreferrer"
               className={cn(

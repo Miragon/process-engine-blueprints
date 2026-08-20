@@ -1,0 +1,65 @@
+# Full-stack run: frontend + backend + Postgres, one command. Not production-hardened — it ships the
+# dev jwtSecret and admin/admin credentials from application.yaml; override them for anything real.
+# See CONTRIBUTING.md "Run it in containers" and docs/adr/0014.
+#
+# Build the backend image first:  ./gradlew :service:app:bootBuildImage
+# Then:                           docker compose -f stack/docker-compose.full.yml up
+# UI on http://localhost:8090 · backend/engine on http://localhost:8080 · Cockpit on :8090/camunda.
+
+# Distinct project name: both compose files live in stack/, so without this they would share the
+# default project name ("stack") and running one would tear down the other's containers.
+name: bikeleasing-full
+
+services:
+  postgres:
+    image: postgres:18.4
+    container_name: bikeleasing-postgres-full
+    restart: always
+    environment:
+      POSTGRES_DB: bikeleasing
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    volumes:
+      # Postgres 18+ wants the mount at /var/lib/postgresql (data lands in a version subdirectory);
+      # mounting at .../data is the pre-18 layout and the image refuses to start on it.
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d bikeleasing"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    # Built by `./gradlew :service:app:bootBuildImage` (bootBuildImage.imageName in build.gradle.kts).
+    image: ${APP_IMAGE:-miravelo/app:1.0-SNAPSHOT}
+    container_name: bikeleasing-app
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Point the app at the compose Postgres. Schema is owned by Flyway (ADR-0013); Hibernate only
+      # validates, so the persisted volume survives restarts with no ddl-auto override.
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/bikeleasing
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: admin
+    ports:
+      - "8080:8080"
+    # No container healthcheck: the buildpack run image is shell-less (no curl/wget/bash), so there is
+    # nothing to probe with. Orchestrators that need one should hit the actuator probes directly —
+    # /actuator/health/readiness and /actuator/health/liveness (enabled in application.yaml).
+
+  frontend:
+    build: ../frontend
+    container_name: bikeleasing-frontend
+    restart: always
+    depends_on:
+      # The app has no healthcheck (shell-less image), so gate on start only; nginx returns 502 for the
+      # few seconds until the backend is listening.
+      app:
+        condition: service_started
+    ports:
+      - "8090:80"
+
+volumes:
+  pgdata:

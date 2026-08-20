@@ -1,6 +1,7 @@
 import io.miragon.bpmn.adapter.GenerateBpmnModelsTask
 import io.miragon.bpmn.domain.shared.OutputLanguage
 import io.miragon.bpmn.domain.shared.ProcessEngine
+import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 import java.math.BigDecimal
 
@@ -89,6 +90,15 @@ pitest {
 
 tasks.withType<BootJar> {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+// OCI image for the backend, built by Spring's Cloud Native Buildpacks integration — no Dockerfile to
+// maintain (layered, non-root by default). See docs/adr/0014 and the "Run it in containers" section of
+// CONTRIBUTING.md. Build with `./gradlew :service:app:bootBuildImage`.
+tasks.named<BootBuildImage>("bootBuildImage") {
+    imageName.set("miravelo/app:${project.version}")
+    // Pin the JVM the buildpack installs to the version the code targets.
+    environment.set(mapOf("BP_JVM_VERSION" to "21"))
 }
 
 java.sourceCompatibility = JavaVersion.VERSION_21

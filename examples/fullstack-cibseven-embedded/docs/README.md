@@ -32,6 +32,7 @@ copied from [`adr/0000-adr-template.md`](adr/0000-adr-template.md). Write a new 
 | [0011](adr/0011-track-the-latest-major-versions.md) | Deliberately track the latest major versions across the stack. |
 | [0012](adr/0012-actuator-probes-and-prometheus-metrics.md) | Actuator health/liveness/readiness probes and Prometheus metrics, exposed out of the box. |
 | [0013](adr/0013-flyway-for-database-migrations.md) | Flyway for versioned schema migrations; Hibernate switches to `validate`. |
+| [0014](adr/0014-build-and-deployment-approach.md) | Build & deployment: `bootBuildImage` OCI image + nginx frontend + a one-command full-stack compose. |
 
 ## Diagrams
 

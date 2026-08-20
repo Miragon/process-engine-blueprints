@@ -36,12 +36,12 @@ finding — call it out.
 2. **Run the deterministic linter first (geometry net):**
 
    ```bash
-   npm --prefix tools run lint:bpmn
+   npm run lint:bpmn
    ```
 
    It globs every production model. Clean = silent, exit 0; non-zero = real geometry problems —
    **capture each finding** (every line names the element/flow + rule) but don't stop; still do the
-   visual pass. Missing binary → `npm --prefix tools ci` once, then re-run. bpmnlint also runs in the
+   visual pass. Missing binary → `npm ci` once, then re-run. bpmnlint also runs in the
    pre-commit hook and the `build` job of `.github/workflows/pre-merge.yml`; **skip this step only when
    geometry was already gated upstream this run** (CI's lint step or the pre-commit hook) and note that.
 

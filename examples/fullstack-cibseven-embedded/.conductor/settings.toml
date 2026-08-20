@@ -12,8 +12,8 @@ run_mode = "nonconcurrent"
 
 # One-time setup per workspace: install BPMN tooling + git hooks, and the frontend deps.
 setup = """
-npm --prefix tools ci
-npm --prefix tools run hooks:install
+npm ci
+npm run hooks:install
 npm --prefix frontend ci
 """
 

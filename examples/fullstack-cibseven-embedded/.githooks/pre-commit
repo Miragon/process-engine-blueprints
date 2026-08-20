@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Repo-wide pre-commit hook. Install once with: npm --prefix tools run hooks:install
+# Repo-wide pre-commit hook. Install once with: npm run hooks:install
 #
 # It is the single git hooks path for the repo (frontend does NOT use husky, so the two hook
 # systems can't fight over core.hooksPath). It runs two cheap, high-value checks on what you staged:
@@ -13,7 +13,7 @@ staged="$(git diff --cached --name-only --diff-filter=ACMR)"
 # 1) BPMN models
 if echo "$staged" | grep -q '\.bpmn$'; then
   echo "pre-commit: linting BPMN models"
-  npm --prefix "$root/tools" run --silent lint:bpmn
+  npm --prefix "$root" run --silent lint:bpmn
 fi
 
 # 2) Frontend staged files

@@ -8,7 +8,7 @@ welcome — bug reports, feature ideas, docs, and code.
 ```bash
 git clone git@github.com:miragon-blueprints/fullstack-example.git
 cd fullstack-example
-npm --prefix tools ci && npm --prefix tools run hooks:install   # BPMN lint + git hooks
+npm ci && npm run hooks:install                                # BPMN lint + git hooks
 npm --prefix frontend ci                                        # frontend dependencies
 ```
 
@@ -114,7 +114,7 @@ npm --prefix frontend run api:generate  # regenerate the typed client from opena
 npm --prefix frontend run e2e           # Playwright specs (chromium)
 
 # BPMN
-npm --prefix tools run lint:bpmn        # bpmnlint the .bpmn models
+npm run lint:bpmn                       # bpmnlint the .bpmn models
 ```
 
 ## Ground rules

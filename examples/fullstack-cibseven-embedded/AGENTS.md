@@ -49,7 +49,7 @@ npm --prefix frontend run dev                       # UI on :5173 (proxies /api 
 | Regenerate the API client | `npm --prefix frontend run api:generate` (check: `api:check`) |
 | API scenarios (running stack) | `cd bruno && npx --yes @usebruno/cli run . --env local -r` |
 | Browser e2e (running stack) | `npm --prefix frontend run e2e` |
-| BPMN lint | `npm --prefix tools run lint:bpmn` |
+| BPMN lint | `npm run lint:bpmn` |
 | Backend OCI image · full-stack run | `./gradlew :service:app:bootBuildImage` · `docker compose -f stack/docker-compose.full.yml up` — [ADR-0014](docs/adr/0014-build-and-deployment-approach.md), CONTRIBUTING "Run it in containers" |
 
 ## Architecture — the rules are machine-enforced
@@ -79,7 +79,7 @@ codebase "process" means the BPMN model, so the step rail is `widgets/leasing-pr
 
 - `bpmn-to-code` generates typed process constants from the models at build time; a custom model
   test requires every service task to use a delegate expression (`#{beanName}`).
-- `bpmnlint` runs on staged `.bpmn` via `.githooks/pre-commit` (install: `npm --prefix tools run hooks:install`).
+- `bpmnlint` runs on staged `.bpmn` via `.githooks/pre-commit` (install: `npm run hooks:install`).
 
 ## Testing
 

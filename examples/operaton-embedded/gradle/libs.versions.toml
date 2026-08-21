@@ -9,12 +9,15 @@ bpmn_to_code_version = "5.1.0"
 bpmn_to_code_testing_version = "5.1.0"
 archunit_version = "1.4.2"
 konsist_version = "0.17.3"
+springdoc_version = "3.1.0"   # 3.x = the Spring Boot 4 line
 
 [libraries]
 web = { module = "org.springframework.boot:spring-boot-starter-web", version.ref = "spring_version" }
 devtools = { module = "org.springframework.boot:spring-boot-devtools", version.ref = "spring_version" }
 jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa", version.ref = "spring_version" }
 postgres = { module = "org.postgresql:postgresql", version = "42.7.13" }
+flyway = { module = "org.springframework.boot:spring-boot-starter-flyway", version.ref = "spring_version" }
+flyway-postgres = { module = "org.flywaydb:flyway-database-postgresql" }
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin_version" }
 kotlin_logging = { module = "io.github.microutils:kotlin-logging", version.ref = "kotlin_logging_version" }
 jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin" }
@@ -22,6 +25,13 @@ jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin"
 # Operaton (community-driven Camunda 7 fork) — Spring Boot 4 starters
 operaton-webapp = { module = "org.operaton.bpm.springboot:operaton-bpm-spring-boot-starter-webapp", version.ref = "operaton_version" }
 operaton-rest = { module = "org.operaton.bpm.springboot:operaton-bpm-spring-boot-starter-rest", version.ref = "operaton_version" }
+
+# OpenAPI — springdoc generates the contract served at /v3/api-docs and the Swagger UI
+springdoc = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc_version" }
+
+# Observability — actuator probes (health/liveness/readiness, info, metrics) and a Prometheus registry
+actuator = { module = "org.springframework.boot:spring-boot-starter-actuator", version.ref = "spring_version" }
+prometheus = { module = "io.micrometer:micrometer-registry-prometheus" }   # version pinned by the Spring Boot BOM
 
 # BPMN-to-code (generates the typed process API from the *.bpmn models; testing = model validation)
 bpmn-to-code-runtime = { module = "io.miragon:bpmn-to-code-runtime", version.ref = "bpmn_to_code_version" }
@@ -46,8 +56,8 @@ operaton-bpm-assert = { module = "org.operaton.bpm:operaton-bpm-assert", version
 operaton-bpm-junit5 = { module = "org.operaton.bpm:operaton-bpm-junit5", version.ref = "operaton_version" }
 
 [bundles]
-defaultService = ["kotlin-reflect", "kotlin_logging", "jackson-kotlin", "devtools", "web"]
-database = ["jpa", "postgres"]
+defaultService = ["kotlin-reflect", "kotlin_logging", "jackson-kotlin", "devtools", "web", "actuator", "prometheus"]
+database = ["jpa", "postgres", "flyway", "flyway-postgres"]
 operaton = ["operaton-webapp", "operaton-rest"]
 test = ["spring_test", "spring_web_test", "spring_data_jpa_test", "mockito", "mockk", "spring_mockk", "kotlin_mockito"]
 archunit = ["archunit"]
@@ -62,3 +72,4 @@ kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin_version"
 springframework = { id = "org.springframework.boot", version.ref = "spring_version" }
 spring-dependency = { id = "io.spring.dependency-management", version.ref = "spring_dependency_version" }
 bpmnToCode = { id = "io.miragon.bpmn-to-code-gradle", version.ref = "bpmn_to_code_version" }
+pitest = { id = "info.solidsoft.pitest", version = "1.19.0" }

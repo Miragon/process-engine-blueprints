@@ -1,10 +1,18 @@
+# Conductor workspace settings for the headless Operaton bike-leasing blueprint.
+#
+# This stack binds fixed ports (backend 8080, Postgres 5432), so only one workspace can run the
+# app at a time — hence run_mode = "nonconcurrent".
+
 "$schema" = "https://conductor.build/schemas/settings.repo.schema.json"
 
 [scripts]
 run_mode = "nonconcurrent"
 
-# One-time setup per workspace: install BPMN linting tooling.
-setup = "npm --prefix tools ci"
+# One-time setup per workspace: install BPMN linting tooling + git hooks.
+setup = """
+npm ci
+npm run hooks:install
+"""
 
 # Tear down the local Postgres container when a workspace is archived.
 archive = "docker compose -f stack/docker-compose.yml down -v || true"

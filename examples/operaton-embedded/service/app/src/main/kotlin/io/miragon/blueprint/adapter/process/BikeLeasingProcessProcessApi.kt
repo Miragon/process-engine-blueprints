@@ -10,6 +10,7 @@ import io.miragon.bpmn.runtime.BpmnFlow
 import io.miragon.bpmn.runtime.BpmnRelations
 import io.miragon.bpmn.runtime.BpmnTimer
 import io.miragon.bpmn.runtime.ElementId
+import io.miragon.bpmn.runtime.InputOutputMapping
 import io.miragon.bpmn.runtime.MessageName
 import io.miragon.bpmn.runtime.ProcessId
 import io.miragon.bpmn.runtime.VariableName
@@ -27,18 +28,6 @@ object BikeLeasingProcessProcessApi {
    * Worker runtime code rarely needs these.
    */
   object Elements {
-    val BOUNDARY_APPLICATION_INVALID: ElementId = ElementId("boundary_applicationInvalid")
-
-    val BOUNDARY_COMPENSATE_CONTRACT: ElementId = ElementId("boundary_compensateContract")
-
-    val BOUNDARY_COMPENSATE_INSURANCE: ElementId = ElementId("boundary_compensateInsurance")
-
-    val BOUNDARY_COMPENSATE_ORDER: ElementId = ElementId("boundary_compensateOrder")
-
-    val BOUNDARY_CONTRACT_NOT_SIGNED: ElementId = ElementId("boundary_contractNotSigned")
-
-    val BOUNDARY_SIGNATURE_REMINDER: ElementId = ElementId("boundary_signatureReminder")
-
     val BUSINESS_RULE_TASK_CHECK_CREDIT_RATING: ElementId =
         ElementId("businessRuleTask_checkCreditRating")
 
@@ -60,6 +49,16 @@ object BikeLeasingProcessProcessApi {
 
     val END_EVENT_PROSPECT_REMINDED: ElementId = ElementId("endEvent_prospectReminded")
 
+    val EVENT_APPLICATION_INVALID: ElementId = ElementId("event_applicationInvalid")
+
+    val EVENT_COMPENSATE_CONTRACT: ElementId = ElementId("event_compensateContract")
+
+    val EVENT_COMPENSATE_INSURANCE: ElementId = ElementId("event_compensateInsurance")
+
+    val EVENT_COMPENSATE_ORDER: ElementId = ElementId("event_compensateOrder")
+
+    val EVENT_CONTRACT_NOT_SIGNED: ElementId = ElementId("event_contractNotSigned")
+
     val EVENT_CONTRACT_SIGNED: ElementId = ElementId("event_contractSigned")
 
     val EVENT_HANDOVER_REPORTED: ElementId = ElementId("event_handoverReported")
@@ -67,6 +66,8 @@ object BikeLeasingProcessProcessApi {
     val EVENT_REVERSE_APPLICATION: ElementId = ElementId("event_reverseApplication")
 
     val EVENT_SIGNATURE_DEADLINE: ElementId = ElementId("event_signatureDeadline")
+
+    val EVENT_SIGNATURE_REMINDER: ElementId = ElementId("event_signatureReminder")
 
     val EVENT_TRIGGER_REVERSAL: ElementId = ElementId("event_triggerReversal")
 
@@ -86,6 +87,8 @@ object BikeLeasingProcessProcessApi {
     val GATEWAY_IS_SOLVENT: ElementId = ElementId("gateway_isSolvent")
 
     val GATEWAY_JOIN: ElementId = ElementId("gateway_join")
+
+    val GATEWAY_REJECTION_JOIN: ElementId = ElementId("gateway_rejectionJoin")
 
     val SERVICE_TASK_CANCEL_CONTRACT: ElementId = ElementId("serviceTask_cancelContract")
 
@@ -125,8 +128,21 @@ object BikeLeasingProcessProcessApi {
     val USER_TASK_CLARIFY_ALTERNATIVE: ElementId = ElementId("userTask_clarifyAlternative")
   }
 
+  /**
+   * Call activities grouped by element. Each nested object exposes the called `PROCESS_ID` plus the variable mappings passed into (`Inputs`) and returned from (`Outputs`) the called process.
+   */
   object CallActivities {
-    val CALL_ACTIVITY_CANCEL_BIKE_ORDER: ProcessId = ProcessId("cancelBikeOrder")
+    object CallActivityCancelBikeOrder {
+      val PROCESS_ID: ProcessId = ProcessId("cancelBikeOrder")
+
+      object Inputs {
+        val BIKE_ID: InputOutputMapping =
+            InputOutputMapping(target = "bikeId", source = "bikeId")
+
+        val ORDER_ID: InputOutputMapping =
+            InputOutputMapping(target = "orderId", source = "orderId")
+      }
+    }
   }
 
   /**
@@ -140,6 +156,8 @@ object BikeLeasingProcessProcessApi {
 
     val MIRAVELO_HANDOVER_REPORTED: MessageName = MessageName("miravelo.handoverReported")
 
+    val MIRAVELO_LEASING_ACTIVATED: MessageName = MessageName("miravelo.leasingActivated")
+
     val MIRAVELO_LEASING_REQUEST_RECEIVED: MessageName =
         MessageName("miravelo.leasingRequestReceived")
   }
@@ -149,6 +167,8 @@ object BikeLeasingProcessProcessApi {
    * Kept as `const val String` because annotation arguments must be compile-time constants.
    */
   object ServiceTasks {
+    const val ACTIVATE_LEASING_DELEGATE: String = "#{activateLeasingDelegate}"
+
     const val CANCEL_CONTRACT_DELEGATE: String = "#{cancelContractDelegate}"
 
     const val CANCEL_POLICY_DELEGATE: String = "#{cancelPolicyDelegate}"
@@ -170,29 +190,29 @@ object BikeLeasingProcessProcessApi {
   }
 
   object Timers {
-    val BOUNDARY_SIGNATURE_REMINDER: BpmnTimer = BpmnTimer("Duration", "P7D")
-
     val EVENT_SIGNATURE_DEADLINE: BpmnTimer = BpmnTimer("Duration", "P14D")
+
+    val EVENT_SIGNATURE_REMINDER: BpmnTimer = BpmnTimer("Duration", "P7D")
 
     val EVENT_WITHDRAWAL_PERIOD_ELAPSED: BpmnTimer = BpmnTimer("Duration", "P14D")
   }
 
   object Errors {
-    val `APPLICATION INVALID`: BpmnError =
-        BpmnError("Application Invalid", "applicationInvalid")
+    val APPLICATION_INVALID: BpmnError =
+        BpmnError("Application_Invalid", "applicationInvalid")
   }
 
   object Escalations {
-    val `CONTRACT NOT SIGNED`: BpmnEscalation =
-        BpmnEscalation("Contract Not Signed", "contractNotSigned")
+    val CONTRACT_NOT_SIGNED: BpmnEscalation =
+        BpmnEscalation("Contract_Not_Signed", "contractNotSigned")
   }
 
   object Compensations {
-    val BOUNDARY_COMPENSATE_CONTRACT: ElementId = ElementId("boundary_compensateContract")
+    val EVENT_COMPENSATE_CONTRACT: ElementId = ElementId("event_compensateContract")
 
-    val BOUNDARY_COMPENSATE_INSURANCE: ElementId = ElementId("boundary_compensateInsurance")
+    val EVENT_COMPENSATE_INSURANCE: ElementId = ElementId("event_compensateInsurance")
 
-    val BOUNDARY_COMPENSATE_ORDER: ElementId = ElementId("boundary_compensateOrder")
+    val EVENT_COMPENSATE_ORDER: ElementId = ElementId("event_compensateOrder")
 
     val EVENT_REVERSE_APPLICATION: ElementId = ElementId("event_reverseApplication")
 
@@ -238,281 +258,233 @@ object BikeLeasingProcessProcessApi {
    * Worker code typically does not need these.
    */
   object Flows {
-    val E_01: BpmnFlow = BpmnFlow(
-          id = "E01",
-          sourceRef = "startEvent_applicationWithdrawn",
-          targetRef = "event_reverseApplication",
-        )
-
-    val E_02: BpmnFlow = BpmnFlow(
-          id = "E02",
-          sourceRef = "event_reverseApplication",
-          targetRef = "serviceTask_sendCancellationConfirmation",
-        )
-
-    val FLOW_00_BCTYK: BpmnFlow = BpmnFlow(
-          id = "Flow_00bctyk",
-          name = "No",
-          sourceRef = "gateway_isSolvent",
-          targetRef = "serviceTask_sendRejection",
-          condition = $$"""${!solvent}""",
-        )
-
-    val FLOW_054_Y_6_AF: BpmnFlow = BpmnFlow(
-          id = "Flow_054y6af",
-          sourceRef = "serviceTask_sendRejection",
-          targetRef = "endEvent_applicationRejected",
-        )
-
-    val FLOW_08_AD_25_M: BpmnFlow = BpmnFlow(
-          id = "Flow_08ad25m",
-          sourceRef = "serviceTask_validateApplication",
-          targetRef = "businessRuleTask_checkCreditRating",
-        )
-
-    val FLOW_0_BGYQYX: BpmnFlow = BpmnFlow(
-          id = "Flow_0bgyqyx",
-          sourceRef = "serviceTask_orderBike",
-          targetRef = "gateway_bikeAvailable",
-        )
-
-    val FLOW_0_BMZE_33: BpmnFlow = BpmnFlow(
-          id = "Flow_0bmze33",
-          name = "No",
+    val FLOW_ALTERNATIVE_FOUND: BpmnFlow = BpmnFlow(
+          id = "flow_alternativeFound",
+          name = "Yes",
           sourceRef = "gateway_alternativeFound",
-          targetRef = "event_triggerReversal",
-          condition = $$"""${!alternativeFound}""",
+          targetRef = "gateway_bikeSourceJoin",
+          isDefault = true,
         )
 
-    val FLOW_0_CQ_39_PQ: BpmnFlow = BpmnFlow(
-          id = "Flow_0cq39pq",
-          sourceRef = "startEvent_leasingRequestReceived",
-          targetRef = "serviceTask_validateApplication",
+    val FLOW_AWAIT_TO_DEADLINE: BpmnFlow = BpmnFlow(
+          id = "flow_awaitToDeadline",
+          sourceRef = "gateway_awaitSignature",
+          targetRef = "event_signatureDeadline",
         )
 
-    val FLOW_0_DBZ_33_I: BpmnFlow = BpmnFlow(
-          id = "Flow_0dbz33i",
+    val FLOW_AWAIT_TO_SIGNED: BpmnFlow = BpmnFlow(
+          id = "flow_awaitToSigned",
+          sourceRef = "gateway_awaitSignature",
+          targetRef = "event_contractSigned",
+        )
+
+    val FLOW_BIKE_AVAILABLE: BpmnFlow = BpmnFlow(
+          id = "flow_bikeAvailable",
+          name = "Yes",
+          sourceRef = "gateway_bikeAvailable",
+          targetRef = "gateway_join",
+          isDefault = true,
+        )
+
+    val FLOW_BIKE_SOURCE_TO_ORDER: BpmnFlow = BpmnFlow(
+          id = "flow_bikeSourceToOrder",
+          sourceRef = "gateway_bikeSourceJoin",
+          targetRef = "serviceTask_orderBike",
+        )
+
+    val FLOW_BIKE_UNAVAILABLE: BpmnFlow = BpmnFlow(
+          id = "flow_bikeUnavailable",
           name = "No",
           sourceRef = "gateway_bikeAvailable",
           targetRef = "userTask_clarifyAlternative",
           condition = $$"""${!bikeAvailable}""",
         )
 
-    val FLOW_0_DJ_8_BXX: BpmnFlow = BpmnFlow(
-          id = "Flow_0dj8bxx",
+    val FLOW_CLARIFY_TO_ALTERNATIVE_GATEWAY: BpmnFlow = BpmnFlow(
+          id = "flow_clarifyToAlternativeGateway",
+          sourceRef = "userTask_clarifyAlternative",
+          targetRef = "gateway_alternativeFound",
+        )
+
+    val FLOW_CONFIRMATION_TO_CANCELLED: BpmnFlow = BpmnFlow(
+          id = "flow_confirmationToCancelled",
+          sourceRef = "serviceTask_sendCancellationConfirmation",
+          targetRef = "endEvent_applicationCancelled",
+        )
+
+    val FLOW_CONTRACT_CONCLUDED_TO_FORK: BpmnFlow = BpmnFlow(
+          id = "flow_contractConcludedToFork",
+          sourceRef = "subProcess_concludeContract",
+          targetRef = "gateway_fork",
+        )
+
+    val FLOW_CONTRACT_SENT_TO_AWAIT: BpmnFlow = BpmnFlow(
+          id = "flow_contractSentToAwait",
+          sourceRef = "serviceTask_sendContract",
+          targetRef = "gateway_awaitSignature",
+        )
+
+    val FLOW_CREDIT_CHECK_TO_SOLVENCY: BpmnFlow = BpmnFlow(
+          id = "flow_creditCheckToSolvency",
+          sourceRef = "businessRuleTask_checkCreditRating",
+          targetRef = "gateway_isSolvent",
+        )
+
+    val FLOW_DEADLINE_TO_NOT_SIGNED: BpmnFlow = BpmnFlow(
+          id = "flow_deadlineToNotSigned",
+          sourceRef = "event_signatureDeadline",
+          targetRef = "endEvent_notSigned",
+        )
+
+    val FLOW_ELIGIBLE_TO_SEND_CONTRACT: BpmnFlow = BpmnFlow(
+          id = "flow_eligibleToSendContract",
+          sourceRef = "startEvent_customerEligible",
+          targetRef = "serviceTask_sendContract",
+        )
+
+    val FLOW_FORK_TO_BIKE_SOURCE: BpmnFlow = BpmnFlow(
+          id = "flow_forkToBikeSource",
+          sourceRef = "gateway_fork",
+          targetRef = "gateway_bikeSourceJoin",
+        )
+
+    val FLOW_FORK_TO_INSURANCE: BpmnFlow = BpmnFlow(
+          id = "flow_forkToInsurance",
+          sourceRef = "gateway_fork",
+          targetRef = "serviceTask_issueInsurancePolicy",
+        )
+
+    val FLOW_HANDOVER_TO_WITHDRAWAL_PERIOD: BpmnFlow = BpmnFlow(
+          id = "flow_handoverToWithdrawalPeriod",
+          sourceRef = "event_handoverReported",
+          targetRef = "event_withdrawalPeriodElapsed",
+        )
+
+    val FLOW_INSURANCE_TO_JOIN: BpmnFlow = BpmnFlow(
+          id = "flow_insuranceToJoin",
+          sourceRef = "serviceTask_issueInsurancePolicy",
+          targetRef = "gateway_join",
+        )
+
+    val FLOW_INVALID_TO_REJECTION: BpmnFlow = BpmnFlow(
+          id = "flow_invalidToRejection",
+          sourceRef = "event_applicationInvalid",
+          targetRef = "gateway_rejectionJoin",
+        )
+
+    val FLOW_JOIN_TO_HANDOVER: BpmnFlow = BpmnFlow(
+          id = "flow_joinToHandover",
+          sourceRef = "gateway_join",
+          targetRef = "event_handoverReported",
+        )
+
+    val FLOW_MAIL_TO_PROSPECT_REMINDED: BpmnFlow = BpmnFlow(
+          id = "flow_mailToProspectReminded",
+          sourceRef = "serviceTask_sendReminderMail",
+          targetRef = "endEvent_prospectReminded",
+        )
+
+    val FLOW_NO_ALTERNATIVE_FOUND: BpmnFlow = BpmnFlow(
+          id = "flow_noAlternativeFound",
+          name = "No",
+          sourceRef = "gateway_alternativeFound",
+          targetRef = "event_triggerReversal",
+          condition = $$"""${!alternativeFound}""",
+        )
+
+    val FLOW_NOT_SIGNED_TO_REJECTION: BpmnFlow = BpmnFlow(
+          id = "flow_notSignedToRejection",
+          sourceRef = "event_contractNotSigned",
+          targetRef = "gateway_rejectionJoin",
+        )
+
+    val FLOW_NOT_SOLVENT: BpmnFlow = BpmnFlow(
+          id = "flow_notSolvent",
+          name = "No",
+          sourceRef = "gateway_isSolvent",
+          targetRef = "gateway_rejectionJoin",
+          condition = $$"""${!solvent}""",
+        )
+
+    val FLOW_ORDERED_TO_BIKE_AVAILABLE: BpmnFlow = BpmnFlow(
+          id = "flow_orderedToBikeAvailable",
+          sourceRef = "serviceTask_orderBike",
+          targetRef = "gateway_bikeAvailable",
+        )
+
+    val FLOW_REJECTION_JOINED: BpmnFlow = BpmnFlow(
+          id = "flow_rejectionJoined",
+          sourceRef = "gateway_rejectionJoin",
+          targetRef = "serviceTask_sendRejection",
+        )
+
+    val FLOW_REJECTION_SENT: BpmnFlow = BpmnFlow(
+          id = "flow_rejectionSent",
+          sourceRef = "serviceTask_sendRejection",
+          targetRef = "endEvent_applicationRejected",
+        )
+
+    val FLOW_REMINDER_TO_MAIL: BpmnFlow = BpmnFlow(
+          id = "flow_reminderToMail",
+          sourceRef = "event_signatureReminder",
+          targetRef = "serviceTask_sendReminderMail",
+        )
+
+    val FLOW_REQUEST_TO_VALIDATION: BpmnFlow = BpmnFlow(
+          id = "flow_requestToValidation",
+          sourceRef = "startEvent_leasingRequestReceived",
+          targetRef = "serviceTask_validateApplication",
+        )
+
+    val FLOW_REVERSAL_TO_CONFIRMATION: BpmnFlow = BpmnFlow(
+          id = "flow_reversalToConfirmation",
+          sourceRef = "event_reverseApplication",
+          targetRef = "serviceTask_sendCancellationConfirmation",
+        )
+
+    val FLOW_REVERSAL_TO_CONTRACT_CANCELLED: BpmnFlow = BpmnFlow(
+          id = "flow_reversalToContractCancelled",
+          sourceRef = "event_triggerReversal",
+          targetRef = "endEvent_contractCancelled",
+        )
+
+    val FLOW_SIGNED_TO_CONTRACT_VALID: BpmnFlow = BpmnFlow(
+          id = "flow_signedToContractValid",
+          sourceRef = "event_contractSigned",
+          targetRef = "endEvent_contractValid",
+        )
+
+    val FLOW_SOLVENT: BpmnFlow = BpmnFlow(
+          id = "flow_solvent",
           sourceRef = "gateway_isSolvent",
           targetRef = "subProcess_concludeContract",
           isDefault = true,
         )
 
-    val FLOW_0_ETE_2_IJ: BpmnFlow = BpmnFlow(
-          id = "Flow_0ete2ij",
-          sourceRef = "gateway_awaitSignature",
-          targetRef = "event_contractSigned",
+    val FLOW_VALIDATED_TO_CREDIT_CHECK: BpmnFlow = BpmnFlow(
+          id = "flow_validatedToCreditCheck",
+          sourceRef = "serviceTask_validateApplication",
+          targetRef = "businessRuleTask_checkCreditRating",
         )
 
-    val FLOW_0_FF_6219: BpmnFlow = BpmnFlow(
-          id = "Flow_0ff6219",
-          sourceRef = "serviceTask_sendContract",
-          targetRef = "gateway_awaitSignature",
-        )
-
-    val FLOW_0_M_29_PJ_0: BpmnFlow = BpmnFlow(
-          id = "Flow_0m29pj0",
-          sourceRef = "event_contractSigned",
-          targetRef = "endEvent_contractValid",
-        )
-
-    val FLOW_0_MSL_1_D_4: BpmnFlow = BpmnFlow(
-          id = "Flow_0msl1d4",
-          sourceRef = "event_handoverReported",
-          targetRef = "event_withdrawalPeriodElapsed",
-        )
-
-    val FLOW_0_NCGJTI: BpmnFlow = BpmnFlow(
-          id = "Flow_0ncgjti",
-          sourceRef = "gateway_fork",
-          targetRef = "gateway_bikeSourceJoin",
-        )
-
-    val FLOW_0_P_7_DDAM: BpmnFlow = BpmnFlow(
-          id = "Flow_0p7ddam",
-          sourceRef = "boundary_contractNotSigned",
-          targetRef = "serviceTask_sendRejection",
-        )
-
-    val FLOW_0_SM_2_H_51: BpmnFlow = BpmnFlow(
-          id = "Flow_0sm2h51",
-          sourceRef = "gateway_fork",
-          targetRef = "serviceTask_issueInsurancePolicy",
-        )
-
-    val FLOW_0_TJIT_66: BpmnFlow = BpmnFlow(
-          id = "Flow_0tjit66",
-          sourceRef = "gateway_join",
-          targetRef = "event_handoverReported",
-        )
-
-    val FLOW_0_Z_1_VQEV: BpmnFlow = BpmnFlow(
-          id = "Flow_0z1vqev",
-          sourceRef = "serviceTask_sendCancellationConfirmation",
-          targetRef = "endEvent_applicationCancelled",
-        )
-
-    val FLOW_0_ZI_701_M: BpmnFlow = BpmnFlow(
-          id = "Flow_0zi701m",
-          sourceRef = "event_triggerReversal",
-          targetRef = "endEvent_contractCancelled",
-        )
-
-    val FLOW_10_DSFGR: BpmnFlow = BpmnFlow(
-          id = "Flow_10dsfgr",
-          sourceRef = "businessRuleTask_checkCreditRating",
-          targetRef = "gateway_isSolvent",
-        )
-
-    val FLOW_13_LI_8_F_0: BpmnFlow = BpmnFlow(
-          id = "Flow_13li8f0",
-          sourceRef = "serviceTask_issueInsurancePolicy",
-          targetRef = "gateway_join",
-        )
-
-    val FLOW_162_BKDK: BpmnFlow = BpmnFlow(
-          id = "Flow_162bkdk",
-          name = "Yes",
-          sourceRef = "gateway_alternativeFound",
-          targetRef = "gateway_bikeSourceJoin",
-          isDefault = true,
-        )
-
-    val FLOW_17_ZD_4_N_8: BpmnFlow = BpmnFlow(
-          id = "Flow_17zd4n8",
-          sourceRef = "subProcess_concludeContract",
-          targetRef = "gateway_fork",
-        )
-
-    val FLOW_1_CZYHQN: BpmnFlow = BpmnFlow(
-          id = "Flow_1czyhqn",
+    val FLOW_WITHDRAWAL_ELAPSED_TO_ACTIVE: BpmnFlow = BpmnFlow(
+          id = "flow_withdrawalElapsedToActive",
           sourceRef = "event_withdrawalPeriodElapsed",
           targetRef = "endEvent_leasingActive",
         )
 
-    val FLOW_1_G_1_DICT: BpmnFlow = BpmnFlow(
-          id = "Flow_1g1dict",
-          sourceRef = "boundary_applicationInvalid",
-          targetRef = "serviceTask_sendRejection",
-        )
-
-    val FLOW_1_IT_2_FBS: BpmnFlow = BpmnFlow(
-          id = "Flow_1it2fbs",
-          sourceRef = "event_signatureDeadline",
-          targetRef = "endEvent_notSigned",
-        )
-
-    val FLOW_1_JRA_6_G_7: BpmnFlow = BpmnFlow(
-          id = "Flow_1jra6g7",
-          sourceRef = "startEvent_customerEligible",
-          targetRef = "serviceTask_sendContract",
-        )
-
-    val FLOW_1_OUDVDG: BpmnFlow = BpmnFlow(
-          id = "Flow_1oudvdg",
-          sourceRef = "gateway_bikeSourceJoin",
-          targetRef = "serviceTask_orderBike",
-        )
-
-    val FLOW_1_Q_8_AWSJ: BpmnFlow = BpmnFlow(
-          id = "Flow_1q8awsj",
-          sourceRef = "userTask_clarifyAlternative",
-          targetRef = "gateway_alternativeFound",
-        )
-
-    val FLOW_1_QM_0_PCR: BpmnFlow = BpmnFlow(
-          id = "Flow_1qm0pcr",
-          name = "Yes",
-          sourceRef = "gateway_bikeAvailable",
-          targetRef = "gateway_join",
-          isDefault = true,
-        )
-
-    val FLOW_1_UEKRWV: BpmnFlow = BpmnFlow(
-          id = "Flow_1uekrwv",
-          sourceRef = "gateway_awaitSignature",
-          targetRef = "event_signatureDeadline",
-        )
-
-    val FLOW_REMINDER_1: BpmnFlow = BpmnFlow(
-          id = "Flow_reminder1",
-          sourceRef = "boundary_signatureReminder",
-          targetRef = "serviceTask_sendReminderMail",
-        )
-
-    val FLOW_REMINDER_2: BpmnFlow = BpmnFlow(
-          id = "Flow_reminder2",
-          sourceRef = "serviceTask_sendReminderMail",
-          targetRef = "endEvent_prospectReminded",
+    val FLOW_WITHDRAWAL_TO_REVERSAL: BpmnFlow = BpmnFlow(
+          id = "flow_withdrawalToReversal",
+          sourceRef = "startEvent_applicationWithdrawn",
+          targetRef = "event_reverseApplication",
         )
   }
 
   /**
-   * Per-element graph metadata (previousElements / followingElements / parentId / boundary attachments).
+   * Per-element graph metadata (elementType / previousElements / followingElements / parentId / boundary attachments).
    * Intended for tooling and tests, not worker runtime code.
    */
   object Relations {
-    val BOUNDARY_APPLICATION_INVALID: BpmnRelations = BpmnRelations(
-          name = "Application invalid",
-          previousElements = emptyList(),
-          followingElements = listOf("serviceTask_sendRejection"),
-          parentId = null,
-          attachedToRef = "serviceTask_validateApplication",
-          attachedElements = emptyList(),
-        )
-
-    val BOUNDARY_COMPENSATE_CONTRACT: BpmnRelations = BpmnRelations(
-          name = "Compensate contract",
-          previousElements = emptyList(),
-          followingElements = emptyList(),
-          parentId = null,
-          attachedToRef = "subProcess_concludeContract",
-          attachedElements = emptyList(),
-        )
-
-    val BOUNDARY_COMPENSATE_INSURANCE: BpmnRelations = BpmnRelations(
-          name = "Compensate policy",
-          previousElements = emptyList(),
-          followingElements = emptyList(),
-          parentId = null,
-          attachedToRef = "serviceTask_issueInsurancePolicy",
-          attachedElements = emptyList(),
-        )
-
-    val BOUNDARY_COMPENSATE_ORDER: BpmnRelations = BpmnRelations(
-          name = "Compensate order",
-          previousElements = emptyList(),
-          followingElements = emptyList(),
-          parentId = null,
-          attachedToRef = "serviceTask_orderBike",
-          attachedElements = emptyList(),
-        )
-
-    val BOUNDARY_CONTRACT_NOT_SIGNED: BpmnRelations = BpmnRelations(
-          name = "Contract not signed",
-          previousElements = emptyList(),
-          followingElements = listOf("serviceTask_sendRejection"),
-          parentId = null,
-          attachedToRef = "subProcess_concludeContract",
-          attachedElements = emptyList(),
-        )
-
-    val BOUNDARY_SIGNATURE_REMINDER: BpmnRelations = BpmnRelations(
-          name = "7 days",
-          previousElements = emptyList(),
-          followingElements = listOf("serviceTask_sendReminderMail"),
-          parentId = null,
-          attachedToRef = "subProcess_concludeContract",
-          attachedElements = emptyList(),
-        )
-
     val BUSINESS_RULE_TASK_CHECK_CREDIT_RATING: BpmnRelations = BpmnRelations(
           name = "Check credit rating",
           previousElements = listOf("serviceTask_validateApplication"),
@@ -520,6 +492,7 @@ object BikeLeasingProcessProcessApi {
           parentId = null,
           attachedToRef = null,
           attachedElements = emptyList(),
+          elementType = "BUSINESS_RULE_TASK",
         )
 
     val CALL_ACTIVITY_CANCEL_BIKE_ORDER: BpmnRelations = BpmnRelations(
@@ -529,6 +502,7 @@ object BikeLeasingProcessProcessApi {
           parentId = null,
           attachedToRef = null,
           attachedElements = emptyList(),
+          elementType = "CALL_ACTIVITY",
         )
 
     val END_EVENT_APPLICATION_CANCELLED: BpmnRelations = BpmnRelations(
@@ -538,6 +512,7 @@ object BikeLeasingProcessProcessApi {
           parentId = "subProcess_applicationWithdrawn",
           attachedToRef = null,
           attachedElements = emptyList(),
+          elementType = "END_EVENT",
         )
 
     val END_EVENT_APPLICATION_REJECTED: BpmnRelations = BpmnRelations(
@@ -547,6 +522,7 @@ object BikeLeasingProcessProcessApi {
           parentId = null,
           attachedToRef = null,
           attachedElements = emptyList(),
+          elementType = "END_EVENT",
         )
 
     val END_EVENT_CONTRACT_CANCELLED: BpmnRelations = BpmnRelations(
@@ -556,6 +532,7 @@ object BikeLeasingProcessProcessApi {
           parentId = null,
           attachedToRef = null,
           attachedElements = emptyList(),
+          elementType = "END_EVENT",
         )
 
     val END_EVENT_CONTRACT_VALID: BpmnRelations = BpmnRelations(
@@ -565,6 +542,7 @@ object BikeLeasingProcessProcessApi {
           parentId = "subProcess_concludeContract",
           attachedToRef = null,
           attachedElements = emptyList(),
+          elementType = "END_EVENT",
         )
 
     val END_EVENT_LEASING_ACTIVE: BpmnRelations = BpmnRelations(
@@ -574,6 +552,7 @@ object BikeLeasingProcessProcessApi {
           parentId = null,
           attachedToRef = null,
           attachedElements = emptyList(),
+          elementType = "MESSAGE_END_EVENT",
         )
 
     val END_EVENT_NOT_SIGNED: BpmnRelations = BpmnRelations(
@@ -583,6 +562,7 @@ object BikeLeasingProcessProcessApi {
           parentId = "subProcess_concludeContract",
           attachedToRef = null,
           attachedElements = emptyList(),
+          elementType = "ESCALATION_END_EVENT",
         )
 
     val END_EVENT_PROSPECT_REMINDED: BpmnRelations = BpmnRelations(
@@ -592,6 +572,57 @@ object BikeLeasingProcessProcessApi {
           parentId = null,
           attachedToRef = null,
           attachedElements = emptyList(),
+          elementType = "END_EVENT",
+        )
+
+    val EVENT_APPLICATION_INVALID: BpmnRelations = BpmnRelations(
+          name = "Application invalid",
+          previousElements = emptyList(),
+          followingElements = listOf("gateway_rejectionJoin"),
+          parentId = null,
+          attachedToRef = "serviceTask_validateApplication",
+          attachedElements = emptyList(),
+          elementType = "ERROR_BOUNDARY_EVENT",
+        )
+
+    val EVENT_COMPENSATE_CONTRACT: BpmnRelations = BpmnRelations(
+          name = "Compensate contract",
+          previousElements = emptyList(),
+          followingElements = emptyList(),
+          parentId = null,
+          attachedToRef = "subProcess_concludeContract",
+          attachedElements = emptyList(),
+          elementType = "COMPENSATION_BOUNDARY_EVENT",
+        )
+
+    val EVENT_COMPENSATE_INSURANCE: BpmnRelations = BpmnRelations(
+          name = "Compensate policy",
+          previousElements = emptyList(),
+          followingElements = emptyList(),
+          parentId = null,
+          attachedToRef = "serviceTask_issueInsurancePolicy",
+          attachedElements = emptyList(),
+          elementType = "COMPENSATION_BOUNDARY_EVENT",
+        )
+
+    val EVENT_COMPENSATE_ORDER: BpmnRelations = BpmnRelations(
+          name = "Compensate order",
+          previousElements = emptyList(),
+          followingElements = emptyList(),
+          parentId = null,
+          attachedToRef = "serviceTask_orderBike",
+          attachedElements = emptyList(),
+          elementType = "COMPENSATION_BOUNDARY_EVENT",
+        )
+
+    val EVENT_CONTRACT_NOT_SIGNED: BpmnRelations = BpmnRelations(
+          name = "Contract not signed",
+          previousElements = emptyList(),
+          followingElements = listOf("gateway_rejectionJoin"),
+          parentId = null,
+          attachedToRef = "subProcess_concludeContract",
+          attachedElements = emptyList(),
+          elementType = "ESCALATION_BOUNDARY_EVENT",
         )
 
     val EVENT_CONTRACT_SIGNED: BpmnRelations = BpmnRelations(
@@ -601,6 +632,7 @@ object BikeLeasingProcessProcessApi {
           parentId = "subProcess_concludeContract",
           attachedToRef = null,
           attachedElements = emptyList(),
+          elementType = "MESSAGE_INTERMEDIATE_CATCH_EVENT",
         )
 
     val EVENT_HANDOVER_REPORTED: BpmnRelations = BpmnRelations(
@@ -610,6 +642,7 @@ object BikeLeasingProcessProcessApi {
           parentId = null,
           attachedToRef = null,
           attachedElements = emptyList(),
+          elementType = "MESSAGE_INTERMEDIATE_CATCH_EVENT",
         )
 
     val EVENT_REVERSE_APPLICATION: BpmnRelations = BpmnRelations(
@@ -619,6 +652,7 @@ object BikeLeasingProcessProcessApi {
           parentId = "subProcess_applicationWithdrawn",
           attachedToRef = null,
           attachedElements = emptyList(),
+          elementType = "COMPENSATION_INTERMEDIATE_THROW_EVENT",
         )
 
     val EVENT_SIGNATURE_DEADLINE: BpmnRelations = BpmnRelations(
@@ -628,6 +662,17 @@ object BikeLeasingProcessProcessApi {
           parentId = "subProcess_concludeContract",
           attachedToRef = null,
           attachedElements = emptyList(),
+          elementType = "TIMER_INTERMEDIATE_CATCH_EVENT",
+        )
+
+    val EVENT_SIGNATURE_REMINDER: BpmnRelations = BpmnRelations(
+          name = "7 days",
+          previousElements = emptyList(),
+          followingElements = listOf("serviceTask_sendReminderMail"),
+          parentId = null,
+          attachedToRef = "subProcess_concludeContract",
+          attachedElements = emptyList(),
+          elementType = "TIMER_BOUNDARY_EVENT",
         )
 
     val EVENT_TRIGGER_REVERSAL: BpmnRelations = BpmnRelations(
@@ -637,6 +682,7 @@ object BikeLeasingProcessProcessApi {
           parentId = null,
           attachedToRef = null,
           attachedElements = emptyList(),
+          elementType = "COMPENSATION_INTERMEDIATE_THROW_EVENT",
         )
 
     val EVENT_WITHDRAWAL_PERIOD_ELAPSED: BpmnRelations = BpmnRelations(
@@ -646,6 +692,7 @@ object BikeLeasingProcessProcessApi {
           parentId = null,
           attachedToRef = null,
           attachedElements = emptyList(),
+          elementType = "TIMER_INTERMEDIATE_CATCH_EVENT",
         )
 
     val GATEWAY_ALTERNATIVE_FOUND: BpmnRelations = BpmnRelations(
@@ -655,6 +702,7 @@ object BikeLeasingProcessProcessApi {
           parentId = null,
           attachedToRef = null,
           attachedElements = emptyList(),
+          elementType = "EXCLUSIVE_GATEWAY",
         )
 
     val GATEWAY_AWAIT_SIGNATURE: BpmnRelations = BpmnRelations(
@@ -663,6 +711,7 @@ object BikeLeasingProcessProcessApi {
           parentId = "subProcess_concludeContract",
           attachedToRef = null,
           attachedElements = emptyList(),
+          elementType = "EVENT_BASED_GATEWAY",
         )
 
     val GATEWAY_BIKE_AVAILABLE: BpmnRelations = BpmnRelations(
@@ -672,6 +721,7 @@ object BikeLeasingProcessProcessApi {
           parentId = null,
           attachedToRef = null,
           attachedElements = emptyList(),
+          elementType = "EXCLUSIVE_GATEWAY",
         )
 
     val GATEWAY_BIKE_SOURCE_JOIN: BpmnRelations = BpmnRelations(
@@ -680,6 +730,7 @@ object BikeLeasingProcessProcessApi {
           parentId = null,
           attachedToRef = null,
           attachedElements = emptyList(),
+          elementType = "EXCLUSIVE_GATEWAY",
         )
 
     val GATEWAY_FORK: BpmnRelations = BpmnRelations(
@@ -688,15 +739,17 @@ object BikeLeasingProcessProcessApi {
           parentId = null,
           attachedToRef = null,
           attachedElements = emptyList(),
+          elementType = "PARALLEL_GATEWAY",
         )
 
     val GATEWAY_IS_SOLVENT: BpmnRelations = BpmnRelations(
           name = "Solvent?",
           previousElements = listOf("businessRuleTask_checkCreditRating"),
-          followingElements = listOf("subProcess_concludeContract", "serviceTask_sendRejection"),
+          followingElements = listOf("subProcess_concludeContract", "gateway_rejectionJoin"),
           parentId = null,
           attachedToRef = null,
           attachedElements = emptyList(),
+          elementType = "EXCLUSIVE_GATEWAY",
         )
 
     val GATEWAY_JOIN: BpmnRelations = BpmnRelations(
@@ -705,6 +758,17 @@ object BikeLeasingProcessProcessApi {
           parentId = null,
           attachedToRef = null,
           attachedElements = emptyList(),
+          elementType = "PARALLEL_GATEWAY",
+        )
+
+    val GATEWAY_REJECTION_JOIN: BpmnRelations = BpmnRelations(
+          name = "Rejection reason",
+          previousElements = listOf("event_applicationInvalid", "gateway_isSolvent", "event_contractNotSigned"),
+          followingElements = listOf("serviceTask_sendRejection"),
+          parentId = null,
+          attachedToRef = null,
+          attachedElements = emptyList(),
+          elementType = "EXCLUSIVE_GATEWAY",
         )
 
     val SERVICE_TASK_CANCEL_CONTRACT: BpmnRelations = BpmnRelations(
@@ -714,6 +778,7 @@ object BikeLeasingProcessProcessApi {
           parentId = null,
           attachedToRef = null,
           attachedElements = emptyList(),
+          elementType = "SERVICE_TASK",
         )
 
     val SERVICE_TASK_CANCEL_POLICY: BpmnRelations = BpmnRelations(
@@ -723,6 +788,7 @@ object BikeLeasingProcessProcessApi {
           parentId = null,
           attachedToRef = null,
           attachedElements = emptyList(),
+          elementType = "SERVICE_TASK",
         )
 
     val SERVICE_TASK_ISSUE_INSURANCE_POLICY: BpmnRelations = BpmnRelations(
@@ -731,7 +797,8 @@ object BikeLeasingProcessProcessApi {
           followingElements = listOf("gateway_join"),
           parentId = null,
           attachedToRef = null,
-          attachedElements = listOf("boundary_compensateInsurance"),
+          attachedElements = listOf("event_compensateInsurance"),
+          elementType = "SERVICE_TASK",
         )
 
     val SERVICE_TASK_ORDER_BIKE: BpmnRelations = BpmnRelations(
@@ -740,7 +807,8 @@ object BikeLeasingProcessProcessApi {
           followingElements = listOf("gateway_bikeAvailable"),
           parentId = null,
           attachedToRef = null,
-          attachedElements = listOf("boundary_compensateOrder"),
+          attachedElements = listOf("event_compensateOrder"),
+          elementType = "SERVICE_TASK",
         )
 
     val SERVICE_TASK_SEND_CANCELLATION_CONFIRMATION: BpmnRelations = BpmnRelations(
@@ -750,6 +818,7 @@ object BikeLeasingProcessProcessApi {
           parentId = "subProcess_applicationWithdrawn",
           attachedToRef = null,
           attachedElements = emptyList(),
+          elementType = "SERVICE_TASK",
         )
 
     val SERVICE_TASK_SEND_CONTRACT: BpmnRelations = BpmnRelations(
@@ -759,24 +828,27 @@ object BikeLeasingProcessProcessApi {
           parentId = "subProcess_concludeContract",
           attachedToRef = null,
           attachedElements = emptyList(),
+          elementType = "SERVICE_TASK",
         )
 
     val SERVICE_TASK_SEND_REJECTION: BpmnRelations = BpmnRelations(
           name = "Send rejection",
-          previousElements = listOf("boundary_applicationInvalid", "gateway_isSolvent", "boundary_contractNotSigned"),
+          previousElements = listOf("gateway_rejectionJoin"),
           followingElements = listOf("endEvent_applicationRejected"),
           parentId = null,
           attachedToRef = null,
           attachedElements = emptyList(),
+          elementType = "SERVICE_TASK",
         )
 
     val SERVICE_TASK_SEND_REMINDER_MAIL: BpmnRelations = BpmnRelations(
           name = "Send reminder mail",
-          previousElements = listOf("boundary_signatureReminder"),
+          previousElements = listOf("event_signatureReminder"),
           followingElements = listOf("endEvent_prospectReminded"),
           parentId = null,
           attachedToRef = null,
           attachedElements = emptyList(),
+          elementType = "SERVICE_TASK",
         )
 
     val SERVICE_TASK_VALIDATE_APPLICATION: BpmnRelations = BpmnRelations(
@@ -785,7 +857,8 @@ object BikeLeasingProcessProcessApi {
           followingElements = listOf("businessRuleTask_checkCreditRating"),
           parentId = null,
           attachedToRef = null,
-          attachedElements = listOf("boundary_applicationInvalid"),
+          attachedElements = listOf("event_applicationInvalid"),
+          elementType = "SERVICE_TASK",
         )
 
     val START_EVENT_APPLICATION_WITHDRAWN: BpmnRelations = BpmnRelations(
@@ -795,6 +868,7 @@ object BikeLeasingProcessProcessApi {
           parentId = "subProcess_applicationWithdrawn",
           attachedToRef = null,
           attachedElements = emptyList(),
+          elementType = "MESSAGE_START_EVENT",
         )
 
     val START_EVENT_CUSTOMER_ELIGIBLE: BpmnRelations = BpmnRelations(
@@ -804,6 +878,7 @@ object BikeLeasingProcessProcessApi {
           parentId = "subProcess_concludeContract",
           attachedToRef = null,
           attachedElements = emptyList(),
+          elementType = "START_EVENT",
         )
 
     val START_EVENT_LEASING_REQUEST_RECEIVED: BpmnRelations = BpmnRelations(
@@ -813,6 +888,7 @@ object BikeLeasingProcessProcessApi {
           parentId = null,
           attachedToRef = null,
           attachedElements = emptyList(),
+          elementType = "MESSAGE_START_EVENT",
         )
 
     val SUB_PROCESS_APPLICATION_WITHDRAWN: BpmnRelations = BpmnRelations(
@@ -822,6 +898,7 @@ object BikeLeasingProcessProcessApi {
           parentId = null,
           attachedToRef = null,
           attachedElements = emptyList(),
+          elementType = "EVENT_SUB_PROCESS",
         )
 
     val SUB_PROCESS_CONCLUDE_CONTRACT: BpmnRelations = BpmnRelations(
@@ -830,7 +907,8 @@ object BikeLeasingProcessProcessApi {
           followingElements = listOf("gateway_fork"),
           parentId = null,
           attachedToRef = null,
-          attachedElements = listOf("boundary_compensateContract", "boundary_contractNotSigned", "boundary_signatureReminder"),
+          attachedElements = listOf("event_compensateContract", "event_contractNotSigned", "event_signatureReminder"),
+          elementType = "SUB_PROCESS",
         )
 
     val USER_TASK_CLARIFY_ALTERNATIVE: BpmnRelations = BpmnRelations(
@@ -840,6 +918,7 @@ object BikeLeasingProcessProcessApi {
           parentId = null,
           attachedToRef = null,
           attachedElements = emptyList(),
+          elementType = "USER_TASK",
         )
   }
 }

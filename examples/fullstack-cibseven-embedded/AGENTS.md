@@ -79,6 +79,9 @@ codebase "process" means the BPMN model, so the step rail is `widgets/leasing-pr
 
 - `bpmn-to-code` generates typed process constants from the models at build time; a custom model
   test requires every service task to use a delegate expression (`#{beanName}`).
+- The generated `*ProcessApi.kt` is committed and **drift-gated**: `./gradlew build` regenerates it
+  in place, and CI runs `git diff --exit-code` on it, so a `.bpmn` edit without a regenerate fails
+  the build — same contract as the OpenAPI spec (ADR-0004).
 - `bpmnlint` runs on staged `.bpmn` via `.githooks/pre-commit` (install: `npm run hooks:install`).
 
 ## Testing

@@ -41,7 +41,13 @@ data class LeasingApplication(
     fun selectAlternative(bikeId: BikeId): LeasingApplication =
         copy(bikeId = bikeId)
 
+    /** Records that the bike was handed to the customer; the withdrawal period now runs. */
+    fun reportHandover(): LeasingApplication = copy(status = LeasingStatus.HANDED_OVER)
+
     fun activate(): LeasingApplication = copy(status = LeasingStatus.ACTIVE)
+
+    /** In-progress cancellation: the customer withdrew; compensation runs before the terminal CANCELLED. */
+    fun withdraw(): LeasingApplication = copy(status = LeasingStatus.WITHDRAWN)
 
     fun reject(): LeasingApplication = copy(status = LeasingStatus.REJECTED)
 

@@ -3,8 +3,8 @@
 [scripts]
 run_mode = "nonconcurrent"
 
-# One-time setup per workspace: install BPMN linting tooling.
-setup = "npm --prefix tools ci"
+# One-time setup per workspace: install BPMN linting tooling (root package.json) and the pre-commit hook.
+setup = "npm ci && npm run hooks:install"
 
 # Tear down the local Postgres container when a workspace is archived.
 archive = "docker compose -f stack/docker-compose.yml down -v || true"

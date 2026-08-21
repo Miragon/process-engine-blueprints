@@ -139,7 +139,7 @@ npm ci && npm run lint:bpmn
 
 # 5. drive the scenarios (build + arch + model-validation tests first, then the REST flows)
 ./gradlew build
-cd bruno && npx @usebruno/cli run . --env local -r
+cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r
 ```
 
 Start a case with `POST http://localhost:8082/api/bike-leasing`

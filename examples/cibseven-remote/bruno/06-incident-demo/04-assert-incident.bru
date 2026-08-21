@@ -11,12 +11,10 @@ get {
 }
 
 script:pre-request {
-  // The order external task retries 3 times, 10s apart, before its retries hit 0 and the engine raises
-  // the incident. Wait out the retry window so the incident exists by the time we query. Failed remote
-  // external tasks raise a `failedExternalTask` incident (not the embedded engine's `failedJob`); the
-  // failing activity is carried in `activityId` (the external task is its own activity, so there is no
-  // separate `failedActivityId`).
-  await new Promise((resolve) => setTimeout(resolve, 40000));
+  const pid = bru.getVar('processInstanceId');
+  await pollEngine(`/incident?processInstanceId=${pid}&incidentType=failedExternalTask`,
+    (b) => Array.isArray(b) && b.length >= 1 && b[0].incidentType === "failedExternalTask",
+    { timeoutMs: 45000 });
 }
 
 assert {

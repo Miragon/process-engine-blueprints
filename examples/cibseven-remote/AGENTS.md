@@ -55,6 +55,7 @@ docker compose -f stack/docker-compose.yml up -d   # Postgres (creates bikeleasi
 | Worker mutation testing (gate 80) | `./gradlew :service:example-service:pitest` |
 | Regenerate + verify the worker's OpenAPI contract | `./gradlew :service:example-service:test --tests "io.miragon.blueprint.openapi.OpenApiSpecExportTest"` then `git diff --exit-code openapi/openapi.json` |
 | BPMN lint | `npm run lint:bpmn` (from the repo root) |
+| End-to-end scenarios against a running stack (Bruno) | `cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r` — **pin the CLI version** (sandbox capabilities shift between majors; see [ADR-0012](docs/adr/0012-polling-for-eventual-consistency-in-e2e-tests.md)) |
 | Worker OCI image | `./gradlew :service:example-service:bootBuildImage` — produces `miravelo/example-service:<version>`; see [ADR-0011](docs/adr/0011-build-and-deployment-approach.md) and CONTRIBUTING "Run it in containers" |
 
 ## Architecture — the rules are machine-enforced

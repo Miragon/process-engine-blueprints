@@ -47,7 +47,7 @@ npm --prefix frontend run dev                       # UI on :5173 (proxies /api 
 | Regenerate + verify the OpenAPI contract | `./gradlew :service:app:test --tests "io.miragon.blueprint.openapi.OpenApiSpecExportTest"` then `git diff --exit-code openapi/openapi.json` |
 | Frontend everything | `npm --prefix frontend run verify` |
 | Regenerate the API client | `npm --prefix frontend run api:generate` (check: `api:check`) |
-| API scenarios (running stack) | `cd bruno && npx --yes @usebruno/cli run . --env local -r` |
+| API scenarios (running stack) | `cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r` |
 | Browser e2e (running stack) | `npm --prefix frontend run e2e` |
 | BPMN lint | `npm run lint:bpmn` |
 | Backend OCI image · full-stack run | `./gradlew :service:app:bootBuildImage` · `docker compose -f stack/docker-compose.full.yml up` — [ADR-0014](docs/adr/0014-build-and-deployment-approach.md), CONTRIBUTING "Run it in containers" |

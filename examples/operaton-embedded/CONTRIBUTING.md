@@ -40,7 +40,7 @@ Under Conductor the ports are fixed and the workspace runs `nonconcurrent` (see
 With the stack running, drive the REST scenarios against the live app:
 
 ```bash
-cd bruno && npx --yes @usebruno/cli run . --env local -r
+cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r
 ```
 
 The collections exercise the domain REST endpoints (submit, sign, report-handover, withdraw,

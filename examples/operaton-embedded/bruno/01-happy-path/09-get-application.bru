@@ -10,6 +10,11 @@ get {
   auth: none
 }
 
+script:pre-request {
+  const id = bru.getVar("applicationId");
+  await pollApp(`/api/bike-leasing/${id}`, (b, s) => s === 200 && b && b.status === "ACTIVE");
+}
+
 assert {
   res.status: eq 200
   res.body.applicationId: eq {{applicationId}}

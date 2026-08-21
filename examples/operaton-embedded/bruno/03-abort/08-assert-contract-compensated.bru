@@ -10,6 +10,12 @@ get {
   auth: none
 }
 
+script:pre-request {
+  const pid = bru.getVar("processInstanceId");
+  await pollEngine(`/history/activity-instance?processInstanceId=${pid}&activityId=serviceTask_cancelContract`,
+    (b, s) => s === 200 && Array.isArray(b) && b.length >= 1);
+}
+
 assert {
   res.status: eq 200
   res.body[0].id: isDefined

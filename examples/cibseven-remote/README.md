@@ -29,7 +29,7 @@ Most engine examples stop at a happy-path service task. This one deliberately wa
 palette of BPMN elements you actually meet in real processes** — and the engineering scaffolding around
 them — so a new project starts from something complete instead of a blank page:
 
-![The bike-leasing process](docs/bike-leasing.png)
+![The bike-leasing process](docs/assets/bike-leasing.png)
 
 - a **message start event**, **service tasks** (run as external tasks by the worker) and a **DMN
   business-rule task**;
@@ -63,10 +63,14 @@ service/
     adapter/outbound/dealer     simulated bike dealer (stock check + order)
     application/{port,service}  use-case ports and their services
     domain/{leasing,bike}       pure domain model
-bruno/                         REST scenarios (happy-path / escalation / abort / not-solvent / …)
-tools/                         BPMN linting (bpmnlint)
+    resources/db/migration      Flyway schema migrations (Hibernate ddl-auto: validate)
+bruno/                         REST scenarios (happy-path / escalation / abort / not-solvent / list-and-inbox / incident)
+openapi/openapi.json           the committed, drift-gated OpenAPI contract for the worker's /api surface
+docs/                          architecture decision records (docs/adr) + the process diagram (docs/assets)
+package.json / .bpmnlintrc     BPMN linting (bpmnlint) — at the repo root; `npm run lint:bpmn`
+.githooks/                     pre-commit hook (bpmnlint) — install with `npm run hooks:install`
 stack/                         Postgres dev stack (docker compose)
-.github/                       pre-merge pipeline + Dependabot
+.github/                       pre-merge + nightly pipelines + Dependabot
 ```
 
 - **Stack:** Kotlin 2.4 · Spring Boot 4 · CIB seven 2.2 (remote) · PostgreSQL · Gradle with a
@@ -130,8 +134,8 @@ docker compose -f stack/docker-compose.yml up -d
 #    so the engine must already be running
 ./gradlew :service:example-service:bootRun
 
-# 4. lint the BPMN models
-npm --prefix tools ci && npm --prefix tools run lint:bpmn
+# 4. lint the BPMN models (tooling lives at the repo root)
+npm ci && npm run lint:bpmn
 
 # 5. drive the scenarios (build + arch + model-validation tests first, then the REST flows)
 ./gradlew build
@@ -149,6 +153,14 @@ The `age` and `monthlyNetIncome` feed the `checkCreditRating` DMN (evaluated by 
 Watch the external-task workers auto-complete `validateApplication`, `orderBike`, … in the
 `example-service` log, and inspect the running instance in the CIB seven Cockpit at
 http://localhost:8081/camunda.
+
+Beyond starting and advancing a case, the worker exposes a small **read surface** for a customer
+portal / back-office: `GET /api/bikes` (the seeded catalogue behind a picker), `GET /api/bike-leasing`
+(a paged, status-filterable list) and `GET /api/tasks/clarify-alternative` (the inbox of applications
+parked on the alternative-clarification task — deliberately correlated by business key, never by a raw
+engine task id). The application's read model tracks its lifecycle — `RECEIVED → ORDERED → HANDED_OVER
+→ ACTIVE`, or `WITHDRAWN → CANCELLED` / `REJECTED` — flipped immediately on the REST actions and by an
+`activateLeasing` external task once the withdrawal period elapses.
 
 ## Design decisions
 
@@ -174,6 +186,17 @@ http://localhost:8081/camunda.
 - **Bruno + CI** proves the same scenarios against the *running* pair of apps: domain REST endpoints
   (`:8082`) drive the business actions, and the CIB seven `/engine-rest` API (`:8081`) completes user
   tasks and fires timer jobs so the whole flow runs in the pipeline without real 14-day waits.
+- **OpenAPI as the checked-in contract:** the worker's `/api` surface is committed at
+  `openapi/openapi.json` and regenerated during `./gradlew build` (an export test serves the live
+  springdoc spec) — CI runs `git diff --exit-code` so the committed contract can never drift from the
+  code.
+- **Operable by default:** actuator health/liveness/readiness probes and a Prometheus scrape endpoint
+  (`/actuator/*`), a **Flyway**-owned schema with Hibernate `ddl-auto: validate`, and an OCI image built
+  with `./gradlew :service:example-service:bootBuildImage` (Cloud Native Buildpacks — no Dockerfile).
+- **Mutation testing as a blocking gate:** `pitest` (threshold 80) runs diff-scoped on PRs and as a full
+  nightly sweep, so tests are measured on whether they'd actually catch a regression.
+- **Architecture decisions** are recorded as ADRs under [`docs/adr`](docs/adr) (see
+  [`docs/README.md`](docs/README.md)).
 - **Dependabot** keeps Gradle, the Postgres image and GitHub Actions current.
 
 ## Incident demo

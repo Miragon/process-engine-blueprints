@@ -10,6 +10,12 @@ get {
   auth: none
 }
 
+script:pre-request {
+  // The withdrawal-period timer releases into the activateLeasing external task; give the worker time
+  // to complete it and the async continuation to reach the leasing-active end event.
+  await new Promise((resolve) => setTimeout(resolve, 2500));
+}
+
 assert {
   res.status: eq 200
   res.body: length 1

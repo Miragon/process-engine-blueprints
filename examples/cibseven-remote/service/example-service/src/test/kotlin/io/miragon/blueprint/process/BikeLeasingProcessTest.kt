@@ -86,6 +86,7 @@ class BikeLeasingProcessTest {
 
         engine.correlateMessage(Messages.MIRAVELO_HANDOVER_REPORTED, businessKey) // -> withdrawal-period timer
         engine.fireTimer(Elements.EVENT_WITHDRAWAL_PERIOD_ELAPSED)
+        engine.completeExternalTask(ServiceTasks.BIKE_LEASING_ACTIVATE_LEASING) // flips read model to ACTIVE -> end
 
         assertThat(instance)
             .isEnded
@@ -95,6 +96,7 @@ class BikeLeasingProcessTest {
                 Elements.SERVICE_TASK_SEND_CONTRACT.value,
                 Elements.SERVICE_TASK_ISSUE_INSURANCE_POLICY.value,
                 Elements.EVENT_HANDOVER_REPORTED.value,
+                Elements.SERVICE_TASK_ACTIVATE_LEASING.value,
                 Elements.END_EVENT_LEASING_ACTIVE.value,
             )
             .hasNotPassed(
@@ -119,7 +121,7 @@ class BikeLeasingProcessTest {
             .isEnded
             .hasPassed(
                 Elements.EVENT_SIGNATURE_DEADLINE.value,
-                Elements.BOUNDARY_CONTRACT_NOT_SIGNED.value,
+                Elements.EVENT_CONTRACT_NOT_SIGNED.value,
                 Elements.SERVICE_TASK_SEND_REJECTION.value,
                 Elements.END_EVENT_APPLICATION_REJECTED.value,
             )
@@ -217,12 +219,14 @@ class BikeLeasingProcessTest {
 
         engine.correlateMessage(Messages.MIRAVELO_HANDOVER_REPORTED, businessKey)
         engine.fireTimer(Elements.EVENT_WITHDRAWAL_PERIOD_ELAPSED)
+        engine.completeExternalTask(ServiceTasks.BIKE_LEASING_ACTIVATE_LEASING)
 
         assertThat(instance)
             .isEnded
             .hasPassed(
                 Elements.USER_TASK_CLARIFY_ALTERNATIVE.value,
                 Elements.SERVICE_TASK_ORDER_BIKE.value,
+                Elements.SERVICE_TASK_ACTIVATE_LEASING.value,
                 Elements.END_EVENT_LEASING_ACTIVE.value,
             )
             .hasNotPassed(

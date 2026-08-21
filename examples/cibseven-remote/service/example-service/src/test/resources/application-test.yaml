@@ -1,6 +1,15 @@
 spring:
   # This service no longer embeds the engine — only its own domain persistence is exercised in tests
   # (slice tests: @WebMvcTest / @DataJpaTest). The engine is remote and mocked in adapter tests.
+  autoconfigure:
+    # No remote engine is running in tests: keep the external-task client from starting (it would poll
+    # a non-existent engine). The full-context tests (OpenAPI export, actuator) only need the web layer.
+    exclude:
+      - org.cibseven.bpm.client.spring.boot.starter.impl.ClientAutoConfiguration
+  flyway:
+    # Tests build the schema from the JPA entities (H2, create-drop); Flyway migrations are validated
+    # against the real Postgres in the Bruno / container runs, not here.
+    enabled: false
   datasource:
     url: jdbc:h2:mem:bikeleasing-test;DB_CLOSE_DELAY=-1
     username: sa

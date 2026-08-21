@@ -2,6 +2,7 @@ package io.miragon.blueprint.adapter.outbound.engine
 
 import mu.KotlinLogging
 import org.springframework.boot.context.event.ApplicationReadyEvent
+import org.springframework.context.annotation.Profile
 import org.springframework.context.event.EventListener
 import org.springframework.core.io.Resource
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
@@ -31,6 +32,7 @@ import org.springframework.web.client.RestClient
  * documented exception to "drive the engine through the generated client".
  */
 @Component
+@Profile("!test")
 class ProcessModelDeploymentAdapter(
     private val engineRestClient: RestClient,
 ) {

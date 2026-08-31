@@ -6,10 +6,10 @@
 ## Context
 
 Every command endpoint in the worker's API is **asynchronous**. A command controller hands a message
-or a task-completion to the remote CIB seven engine through the generated `/engine-rest` client and
+or a task-completion to the remote Operaton engine through the generated `/engine-rest` client and
 returns **`202 Accepted`** immediately — it waits for the engine to accept the correlation, not for the
 process to advance. The observable effect lands some unbounded time later: the process reaches its next
-wait state, an **external-task worker** (`adapter/inbound/cibseven`) picks up the topic, runs, and
+wait state, an **external-task worker** (`adapter/inbound/operaton`) picks up the topic, runs, and
 writes the read model (`leasing_application`). The gap between "the command returned" and "its effect is
 visible" is real, and it is **environment-dependent** — a loaded CI runner is slower than a laptop.
 
@@ -28,7 +28,7 @@ never by sleeping a guessed duration.
 - **Shared helpers** live in `bruno/collection.bru` (a collection-level `script:pre-request`, so they
   are in scope for every request): `pollUntil(config, predicate, opts)` and the convenience wrappers
   `pollApp(path, predicate)` (GET the worker read model) and `pollEngine(path, predicate)` (GET a
-  CIB seven `/engine-rest` query — process instances, jobs, tasks, incidents, history). They return
+  Operaton `/engine-rest` query — process instances, jobs, tasks, incidents, history). They return
   the instant the predicate is met and only wait the full budget when something is genuinely wrong — at
   which point the request's own assertions report the real, still-wrong state instead of a bare timeout.
 - **Budgets are env-driven** (`pollTimeoutMs` / `pollIntervalMs` in the environment file), so a sibling

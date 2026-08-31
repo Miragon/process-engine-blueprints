@@ -1,4 +1,4 @@
-package io.miragon.blueprint.adapter.inbound.cibseven
+package io.miragon.blueprint.adapter.inbound.operaton
 
 import io.miragon.blueprint.application.port.inbound.ValidateApplicationUseCase
 import io.miragon.blueprint.domain.leasing.ApplicationId
@@ -6,8 +6,8 @@ import io.miragon.blueprint.domain.leasing.ApplicationInvalidException
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import org.cibseven.bpm.client.task.ExternalTask
-import org.cibseven.bpm.client.task.ExternalTaskService
+import org.operaton.bpm.client.task.ExternalTask
+import org.operaton.bpm.client.task.ExternalTaskService
 import org.junit.jupiter.api.Test
 import java.util.UUID
 

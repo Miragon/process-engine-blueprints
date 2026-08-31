@@ -1,7 +1,7 @@
-# engine-service — the remote CIB seven engine host
+# engine-service — the remote Operaton engine host
 
-A near **model-agnostic** CIB seven engine. It boots the engine, exposes the REST API at `/engine-rest`
-and the Cockpit/Tasklist at `/camunda` (admin/admin, port **8081**), and provides the shared
+A near **model-agnostic** Operaton engine. It boots the engine, exposes the REST API at `/engine-rest`
+and the Cockpit/Tasklist at `/operaton` (admin/admin, port **8081**), and provides the shared
 Postgres-backed engine database. It deploys **no** process model of its own — the `example-service` owns
 and deploys the process. The one thing it *does* carry is the process's **execution/task-listener
 beans** (see below).
@@ -29,7 +29,7 @@ engine's job.
 
 The `example-service` **owns the process** and deploys it into this engine over REST at start-up (see
 `ProcessModelDeploymentAdapter`, idempotent via `enable-duplicate-filtering`). This engine ships no model
-of its own; `camunda.bpm.deployment-resource-pattern: []` disables the starter's classpath
+of its own; `operaton.bpm.deployment-resource-pattern: []` disables the starter's classpath
 auto-deployment.
 
 - **Use when** the process is fulfilled by a **single service** — the model, the workers and the

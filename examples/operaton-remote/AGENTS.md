@@ -5,21 +5,21 @@ imports it.
 
 ## Project Overview
 
-A **MiraVelo bike-leasing** example implemented against a **remote** CIB seven engine: the same BPMN
+A **MiraVelo bike-leasing** example implemented against a **remote** Operaton engine: the same BPMN
 process the sibling engine blueprints implement, split across two Spring Boot apps and with an
 enforced hexagonal architecture in the worker. There is **no frontend** — this is a headless
 remote/external-task blueprint.
 
-- **Engine host** (`service/engine-service`) — a generic, model-agnostic CIB seven 2.2.0 engine host
+- **Engine host** (`service/engine-service`) — a generic, model-agnostic Operaton 2.1.3 engine host
   on **:8081** (`/engine-rest` + Cockpit/Tasklist). It deploys no model; it only hosts the in-engine
   execution/task listener beans. Package root `io.miragon.blueprint`.
 - **Worker** (`service/example-service`) — Kotlin / Spring Boot 4, hexagonal, on **:8082**. It owns
   the domain, use cases and adapters, **owns and deploys** the BPMN/DMN/form models, and drives the
   remote engine through the generated REST client. Service tasks are `camunda:type="external"`; the
   worker subscribes to their topics (`bikeLeasing.<task>`) via external-task workers under
-  `adapter/inbound/cibseven`. Package root `io.miragon.blueprint`.
-- **Generated engine client** (`service/common-cibseven-client`) — a typed `/engine-rest` client
-  generated from CIB seven's official OpenAPI spec, pinned to the engine version so the two never
+  `adapter/inbound/operaton`. Package root `io.miragon.blueprint`.
+- **Generated engine client** (`service/common-operaton-client`) — a typed `/engine-rest` client
+  generated from Operaton's official OpenAPI spec, pinned to the engine version so the two never
   drift. The worker uses it instead of hand-written HTTP calls.
 - **Shared architecture tests** (`service/common-architecture-tests`) — the ArchUnit + Konsist rules
   the worker wires in.
@@ -43,7 +43,7 @@ docker compose -f stack/docker-compose.yml up -d   # Postgres (creates bikeleasi
 |---|---|
 | Postgres (`bikeleasing_engine`, `bikeleasing_app`) | 5432 |
 | Engine host (`/engine-rest`) | 8081 |
-| CIB seven Cockpit / webapps | 8081/camunda (admin/admin) |
+| Operaton Cockpit / webapps | 8081/operaton (admin/admin) |
 | Worker REST · OpenAPI spec · Swagger UI | 8082/api · 8082/v3/api-docs · 8082/swagger-ui.html |
 | Worker actuator (health/liveness/readiness · prometheus) | 8082/actuator |
 
@@ -75,7 +75,7 @@ ServiceArchitectureTest(...)`). Read `HexagonalArchitectureTest.kt` and
   `Service|Configuration`; `adapter.inbound.rest` `Controller|Dto|Input|Mapper|Configuration`;
   `adapter.outbound` `PersistenceAdapter|Adapter|Mapper|Entity|Repository`.
 - **Spring Data types stop at the adapter.** Ports own their own `Filter`/`Page`/`Criteria` types.
-- **External-task workers** live under `adapter/inbound/cibseven`, subscribe by topic, and extend
+- **External-task workers** live under `adapter/inbound/operaton`, subscribe by topic, and extend
   `BaseExternalTaskWorker`. They are inbound adapters — the same one-use-case rule applies.
 
 ## BPMN Quality Gates
@@ -95,10 +95,10 @@ TDD. Match the test style to the layer:
 | domain | plain unit tests |
 | application service | mockk unit tests (mock the ports) |
 | `adapter.inbound.rest` | `@WebMvcTest` + MockkBean |
-| `adapter.inbound.cibseven` (external-task workers) | direct mockk unit tests |
+| `adapter.inbound.operaton` (external-task workers) | direct mockk unit tests |
 | `adapter.outbound.db` | `@DataJpaTest` |
 | `adapter.outbound.engine` (remote client) | `MockRestServiceServer` |
-| process end-to-end | CIB seven process tests (`cibseven-bpm-assert`, in-memory engine) |
+| process end-to-end | Operaton process tests (`operaton-bpm-assert`, in-memory engine) |
 
 **Mutation testing gates PRs at 80** (`:service:example-service:pitest`): a test that executes
 without asserting will fail CI. Coverage says a line ran; mutation says a test would have noticed.

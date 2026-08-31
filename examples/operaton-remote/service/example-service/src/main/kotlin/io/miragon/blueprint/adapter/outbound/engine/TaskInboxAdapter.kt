@@ -3,8 +3,8 @@ package io.miragon.blueprint.adapter.outbound.engine
 import io.miragon.blueprint.application.port.outbound.TaskInboxPort
 import io.miragon.blueprint.domain.leasing.ApplicationId
 import io.miragon.blueprint.process.BikeLeasingProcessProcessApi.Elements
-import org.cibseven.rest.client.api.ProcessInstanceApi
-import org.cibseven.rest.client.api.TaskApi
+import org.operaton.rest.client.api.ProcessInstanceApi
+import org.operaton.rest.client.api.TaskApi
 import org.springframework.stereotype.Component
 import java.time.ZoneId
 

@@ -6,8 +6,8 @@ welcome — bug reports, feature ideas, docs, and code.
 ## Getting started
 
 ```bash
-git clone git@github.com:miragon-blueprints/cibseven-remote-example.git
-cd cibseven-remote-example
+git clone git@github.com:miragon-blueprints/operaton-remote-example.git
+cd operaton-remote-example
 npm ci && npm run hooks:install                                # BPMN lint + git hooks
 ```
 
@@ -28,7 +28,7 @@ docker compose -f stack/docker-compose.yml up -d   # Postgres (bikeleasing_engin
 |---|---|
 | Postgres (`bikeleasing_engine`, `bikeleasing_app`) | 5432 |
 | Engine host (`/engine-rest`) | 8081 |
-| CIB seven Cockpit / webapps | 8081/camunda (admin/admin) |
+| Operaton Cockpit / webapps | 8081/operaton (admin/admin) |
 | Worker REST · OpenAPI spec · Swagger UI | 8082/api · 8082/v3/api-docs · 8082/swagger-ui.html |
 | Worker actuator (health · liveness/readiness · prometheus) | 8082/actuator |
 
@@ -46,8 +46,8 @@ curl -X POST http://localhost:8082/api/bike-leasing \
 ```
 
 Watch the external-task workers auto-complete `validateApplication`, `orderBike`, … in the
-`example-service` log, and inspect the running instance in the CIB seven Cockpit at
-<http://localhost:8081/camunda> (admin/admin). Confirm <http://localhost:8082/swagger-ui.html> and
+`example-service` log, and inspect the running instance in the Operaton Cockpit at
+<http://localhost:8081/operaton> (admin/admin). Confirm <http://localhost:8082/swagger-ui.html> and
 <http://localhost:8082/actuator/health> (status `UP`) load. To exercise incidents/retries, submit the
 poison bike `BIKE-FAIL` and watch the *Order bike from dealer* task fail and raise an incident in
 Cockpit.

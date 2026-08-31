@@ -1,12 +1,12 @@
-package io.miragon.blueprint.adapter.inbound.cibseven
+package io.miragon.blueprint.adapter.inbound.operaton
 
 import io.miragon.blueprint.application.port.inbound.BookCancellationCostsUseCase
 import io.miragon.blueprint.domain.bike.OrderId
 import io.miragon.blueprint.process.CancelBikeOrderProcessApi.ServiceTasks
 import io.miragon.blueprint.process.CancelBikeOrderProcessApi.Variables
-import org.cibseven.bpm.client.spring.annotation.ExternalTaskSubscription
-import org.cibseven.bpm.client.task.ExternalTask
-import org.cibseven.bpm.client.task.ExternalTaskService
+import org.operaton.bpm.client.spring.annotation.ExternalTaskSubscription
+import org.operaton.bpm.client.task.ExternalTask
+import org.operaton.bpm.client.task.ExternalTaskService
 import org.springframework.stereotype.Component
 
 @Component

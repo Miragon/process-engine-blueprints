@@ -14,7 +14,7 @@ destroys the data. Production needs schema changes that are **versioned, reviewa
 repeatable, and non-destructive**.
 
 Because the engine is **remote**, the two schemas live in **separate databases**: the worker's
-application tables (`leasing_application`, `bike_portfolio`) in `bikeleasing_app`, and the CIB seven
+application tables (`leasing_application`, `bike_portfolio`) in `bikeleasing_app`, and the Operaton
 engine's `ACT_*` tables in `bikeleasing_engine`, owned by the `engine-service` host (which manages its
 own schema via the engine's `schema-update`). A migration tool in the worker therefore owns **only** the
 worker's application tables — it never touches the engine's schema, which lives in another database and

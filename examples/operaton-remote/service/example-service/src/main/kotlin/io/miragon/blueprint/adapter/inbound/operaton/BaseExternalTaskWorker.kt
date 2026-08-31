@@ -1,9 +1,9 @@
-package io.miragon.blueprint.adapter.inbound.cibseven
+package io.miragon.blueprint.adapter.inbound.operaton
 
 import mu.KotlinLogging
-import org.cibseven.bpm.client.task.ExternalTask
-import org.cibseven.bpm.client.task.ExternalTaskHandler
-import org.cibseven.bpm.client.task.ExternalTaskService
+import org.operaton.bpm.client.task.ExternalTask
+import org.operaton.bpm.client.task.ExternalTaskHandler
+import org.operaton.bpm.client.task.ExternalTaskService
 
 /**
  * Base for all remote external-task workers — the remote counterpart to the embedded blueprint's

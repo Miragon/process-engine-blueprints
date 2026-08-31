@@ -3,8 +3,8 @@ package io.miragon.blueprint.process
 import io.miragon.bpmn.runtime.ElementId
 import io.miragon.bpmn.runtime.MessageName
 import org.assertj.core.api.Assertions.assertThat
-import org.cibseven.bpm.engine.ProcessEngine
-import org.cibseven.bpm.engine.runtime.ProcessInstance
+import org.operaton.bpm.engine.ProcessEngine
+import org.operaton.bpm.engine.runtime.ProcessInstance
 
 /** Worker id the tests lock external tasks with — stands in for the remote worker. */
 private const val TEST_WORKER = "test-worker"

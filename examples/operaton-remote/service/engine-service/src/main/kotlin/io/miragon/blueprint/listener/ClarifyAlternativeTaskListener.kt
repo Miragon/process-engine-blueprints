@@ -1,8 +1,8 @@
 package io.miragon.blueprint.listener
 
 import mu.KotlinLogging
-import org.cibseven.bpm.engine.delegate.DelegateTask
-import org.cibseven.bpm.engine.delegate.TaskListener
+import org.operaton.bpm.engine.delegate.DelegateTask
+import org.operaton.bpm.engine.delegate.TaskListener
 import org.springframework.stereotype.Component
 
 /**

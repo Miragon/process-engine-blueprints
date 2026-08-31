@@ -21,7 +21,7 @@ We structure `service/example-service` as a **hexagon (ports & adapters)** under
   operation. `application/port/outbound` — **`*Repository` / `*Port` / `*Process`** interfaces.
 - `application/service` — one `*Service` implementing exactly one inbound port; it may not call another
   service or any inbound port.
-- `adapter/inbound/{rest,cibseven}` — driving adapters (REST controllers, and the external-task workers
+- `adapter/inbound/{rest,operaton}` — driving adapters (REST controllers, and the external-task workers
   that subscribe to the engine's BPMN topics).
 - `adapter/outbound/{db,engine,dealer,notification,contract,insurance}` — driven adapters, including the
   `engine` adapter that deploys the model and drives the remote engine over `/engine-rest`.

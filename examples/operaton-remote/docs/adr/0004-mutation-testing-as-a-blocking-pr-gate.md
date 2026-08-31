@@ -25,7 +25,7 @@ We run **PIT (pitest)** as a **blocking gate** with `mutationThreshold = 80`, co
   `io.miragon.blueprint.*` module with no property override — the authoritative gate-80 run — and
   uploads the HTML report as an artifact.
 - Both runs **exclude noise**: the generated `*ProcessApi`, the Spring bootstrap and demo seeding, and
-  the `adapter.inbound.cibseven.*` external-task workers (thin glue exercised only by the slow engine
+  the `adapter.inbound.operaton.*` external-task workers (thin glue exercised only by the slow engine
   tests).
 - The **kill-set** is the fast mockk / `@WebMvcTest` / `@DataJpaTest` unit tests; the engine
   integration tests and the ArchUnit/Konsist tests (`architecture.*`) are excluded from the kill-set —

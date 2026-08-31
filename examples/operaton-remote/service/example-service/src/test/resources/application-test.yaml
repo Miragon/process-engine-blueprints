@@ -5,7 +5,7 @@ spring:
     # No remote engine is running in tests: keep the external-task client from starting (it would poll
     # a non-existent engine). The full-context tests (OpenAPI export, actuator) only need the web layer.
     exclude:
-      - org.cibseven.bpm.client.spring.boot.starter.impl.ClientAutoConfiguration
+      - org.operaton.bpm.client.spring.boot.starter.impl.ClientAutoConfiguration
   flyway:
     # Tests build the schema from the JPA entities (H2, create-drop); Flyway migrations are validated
     # against the real Postgres in the Bruno / container runs, not here.

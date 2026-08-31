@@ -24,7 +24,7 @@ clash. The port set is published in `AGENTS.md` (see
 | engine-service (engine host) | 8081 | ❌ no |
 | example-service (worker)     | 8082 | ❌ no |
 | Postgres                     | 5432 | ❌ no |
-| CIB seven engine schema      | (shared DB schema in Postgres) | ❌ no |
+| Operaton engine schema      | (shared DB schema in Postgres) | ❌ no |
 
 **Portless buys nothing here.** It only slugs a JS dev server, and this headless stack has none — all
 four collision sources (both Spring Boot apps, Postgres, and the engine's DB schema) are **outside what

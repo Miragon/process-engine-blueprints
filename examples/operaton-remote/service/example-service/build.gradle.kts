@@ -24,11 +24,11 @@ springBoot {
  * the **owner of the process contract** too. It carries the `.bpmn`/`.dmn`/`.form` models and generates
  * the typed `*ProcessApi` objects (topics, messages, element ids, variables) from them with
  * `bpmn-to-code`, keeps its own JPA/Postgres store, subscribes to the engine's external service-tasks
- * via the CIB seven external-task client, deploys the model into the engine over REST at start-up, and
+ * via the Operaton external-task client, deploys the model into the engine over REST at start-up, and
  * drives the running process with a `RestClient`. The engine runs in the model-agnostic `engine-service`.
  */
 dependencies {
-    implementation(project(":service:common-cibseven-client"))
+    implementation(project(":service:common-operaton-client"))
     implementation(libs.bpmn.to.code.runtime)
     implementation(libs.bundles.defaultService)
     implementation(libs.bundles.database)
@@ -38,7 +38,7 @@ dependencies {
     testImplementation(libs.bundles.test)
     testImplementation(libs.h2)
     // Standalone in-memory engine for the process-model behaviour test (this service owns the model).
-    testImplementation(libs.bundles.cib7ProcessTest)
+    testImplementation(libs.bundles.operatonProcessTest)
     // Structural model validation (bpmn-to-code-testing) — this service now owns the models.
     testImplementation(libs.bpmn.to.code.testing)
     testImplementation(project(":service:common-architecture-tests"))
@@ -85,7 +85,7 @@ pitest {
             "io.miragon.blueprint.adapter.inbound.rest.DevCorsConfiguration*",
             // Remote engine plumbing — external-task workers and the start-up deployment adapter are
             // integration glue, exercised by the process / Bruno layers rather than by mutation.
-            "io.miragon.blueprint.adapter.inbound.cibseven.*",
+            "io.miragon.blueprint.adapter.inbound.operaton.*",
             "io.miragon.blueprint.adapter.outbound.engine.ProcessModelDeploymentAdapter*",
         ),
     )

@@ -4,10 +4,10 @@ import io.miragon.blueprint.process.BikeLeasingProcessProcessApi.Elements
 import io.mockk.every
 import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
-import org.cibseven.rest.client.api.ProcessInstanceApi
-import org.cibseven.rest.client.api.TaskApi
-import org.cibseven.rest.client.model.ProcessInstanceDto
-import org.cibseven.rest.client.model.TaskWithAttachmentAndCommentDto
+import org.operaton.rest.client.api.ProcessInstanceApi
+import org.operaton.rest.client.api.TaskApi
+import org.operaton.rest.client.model.ProcessInstanceDto
+import org.operaton.rest.client.model.TaskWithAttachmentAndCommentDto
 import org.junit.jupiter.api.Test
 import java.time.OffsetDateTime
 import java.time.ZoneOffset

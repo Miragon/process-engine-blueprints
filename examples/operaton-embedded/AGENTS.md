@@ -19,9 +19,13 @@ there is no UI; the engine's Cockpit/Tasklist webapps and the REST API are the o
 Two commands to a running stack:
 
 ```bash
-docker compose -f stack/docker-compose.yml up -d   # Postgres
+docker compose -f stack/docker-compose.yml up -d   # Postgres + EnterpriseGlue The Bridge
 ./gradlew :service:app:bootRun                      # backend + engine on :8080
 ```
+
+The stack also starts **EnterpriseGlue The Bridge** (an additional Operaton UI on `:8081`); register
+the engine in it under Platform Settings → Engines with base URL
+`http://host.docker.internal:8080/engine-rest`.
 
 ### Ports (one source of truth — keep README, this file and `.conductor/settings.toml` in sync)
 
@@ -32,6 +36,7 @@ docker compose -f stack/docker-compose.yml up -d   # Postgres
 | Operaton Cockpit / webapps | 8080/operaton (admin/admin) |
 | OpenAPI spec · Swagger UI | 8080/v3/api-docs · 8080/swagger-ui.html |
 | Actuator (health/liveness/readiness · prometheus) | 8080/actuator |
+| EnterpriseGlue The Bridge (additional UI) | 8081 (admin@enterpriseglue.com/adminadmin) |
 
 ## Build Commands
 

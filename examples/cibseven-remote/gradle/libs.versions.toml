@@ -1,5 +1,5 @@
 [versions]
-spring_version = "4.1.0"
+spring_version = "4.1.1"
 spring_dependency_version = "1.1.7"
 kotlin_version = "2.4.10"
 kotlin_logging_version = "3.0.5"
@@ -10,7 +10,7 @@ archunit_version = "1.5.0"
 konsist_version = "0.17.3"
 cib7_jgiven_version = "2.2.0"
 jgiven_kotlin_version = "2.0.2.1"
-openapi_generator_version = "7.24.0"
+openapi_generator_version = "7.25.0"
 springdoc_version = "3.1.0"   # 3.x = the Spring Boot 4 line; 3.1.0 is built against SB 4.1.0
 pitest_version = "1.19.0"
 

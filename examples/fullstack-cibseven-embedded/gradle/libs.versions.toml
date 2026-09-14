@@ -4,8 +4,7 @@ spring_dependency_version = "1.1.7"
 kotlin_version = "2.4.0"
 kotlin_logging_version = "3.0.5"
 cib7_version = "2.2.0"
-bpmn_to_code_version = "3.1.0"
-bpmn_to_code_testing_version = "5.1.0"
+bpmn_to_code_version = "5.2.0"
 archunit_version = "1.4.2"
 konsist_version = "0.17.3"
 springdoc_version = "3.1.0"   # 3.x = the Spring Boot 4 line; 3.1.0 is built against SB 4.1.0
@@ -36,7 +35,7 @@ cib7-rest = { module = "org.cibseven.bpm.springboot:cibseven-bpm-spring-boot-sta
 
 # BPMN-to-code (generates the typed process API from the *.bpmn models; testing = model validation)
 bpmn-to-code-runtime = { module = "io.miragon:bpmn-to-code-runtime", version.ref = "bpmn_to_code_version" }
-bpmn-to-code-testing = { module = "io.miragon:bpmn-to-code-testing", version.ref = "bpmn_to_code_testing_version" }
+bpmn-to-code-testing = { module = "io.miragon:bpmn-to-code-testing", version.ref = "bpmn_to_code_version" }
 
 # Architecture tests
 archunit = { module = "com.tngtech.archunit:archunit", version.ref = "archunit_version" }

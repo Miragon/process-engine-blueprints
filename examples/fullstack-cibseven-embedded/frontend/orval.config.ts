@@ -20,7 +20,7 @@ export default defineConfig({
       schemas: "src/shared/api/generated/model",
       client: "react-query",
       mode: "single",
-      mock: true,
+      mock: { generators: [{ type: "msw" }] },
       clean: true,
       prettier: false,
       override: {

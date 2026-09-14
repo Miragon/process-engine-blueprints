@@ -35,18 +35,6 @@ import type {
   PendingClarificationDto
 } from './model';
 
-import {
-  faker
-} from '@faker-js/faker';
-
-import {
-  HttpResponse,
-  http
-} from 'msw';
-import type {
-  RequestHandlerOptions
-} from 'msw';
-
 import { httpClient } from '../http-client.ts';
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
@@ -179,11 +167,25 @@ export const getSubmitLeasingRequestUrl = () => {
 
 export const submitLeasingRequest = async (leasingRequestInput: LeasingRequestInput, options?: Parameters<typeof httpClient>[1]): Promise<LeasingApplicationCreatedDto> => {
 
-  return httpClient<LeasingApplicationCreatedDto>(getSubmitLeasingRequestUrl(),
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return httpClient<LeasingApplicationCreatedDto>(getSubmitLeasingRequestUrl(),
   {
     ...options,
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
     body: JSON.stringify(leasingRequestInput)
   }
 );}
@@ -192,11 +194,13 @@ export const submitLeasingRequest = async (leasingRequestInput: LeasingRequestIn
 
 
 
-export const getSubmitLeasingRequestMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitLeasingRequest>>, TError,{data: LeasingRequestInput}, TContext>, request?: SecondParameter<typeof httpClient>}
-): UseMutationOptions<Awaited<ReturnType<typeof submitLeasingRequest>>, TError,{data: LeasingRequestInput}, TContext> => {
+export const getSubmitLeasingRequestMutationKey = () => ['submitLeasingRequest'] as const;
 
-const mutationKey = ['submitLeasingRequest'];
+export const getSubmitLeasingRequestMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitLeasingRequest>>, TError,SubmitLeasingRequestMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
+): UseMutationOptions<Awaited<ReturnType<typeof submitLeasingRequest>>, TError,SubmitLeasingRequestMutationVariables, TContext> => {
+
+const mutationKey = getSubmitLeasingRequestMutationKey();
 const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -206,7 +210,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof submitLeasingRequest>>, {data: LeasingRequestInput}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof submitLeasingRequest>>, SubmitLeasingRequestMutationVariables> = (props) => {
           const {data} = props ?? {};
 
           return  submitLeasingRequest(data,requestOptions)
@@ -222,13 +226,14 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type SubmitLeasingRequestMutationResult = NonNullable<Awaited<ReturnType<typeof submitLeasingRequest>>>
     export type SubmitLeasingRequestMutationBody = LeasingRequestInput
     export type SubmitLeasingRequestMutationError = unknown
+    export type SubmitLeasingRequestMutationVariables = {data: LeasingRequestInput}
 
     export const useSubmitLeasingRequest = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitLeasingRequest>>, TError,{data: LeasingRequestInput}, TContext>, request?: SecondParameter<typeof httpClient>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitLeasingRequest>>, TError,SubmitLeasingRequestMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof submitLeasingRequest>>,
         TError,
-        {data: LeasingRequestInput},
+        SubmitLeasingRequestMutationVariables,
         TContext
       > => {
       return useMutation(getSubmitLeasingRequestMutationOptions(options), queryClient);
@@ -257,11 +262,13 @@ export const withdrawApplication = async (applicationId: string, options?: Param
 
 
 
-export const getWithdrawApplicationMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof withdrawApplication>>, TError,{applicationId: string}, TContext>, request?: SecondParameter<typeof httpClient>}
-): UseMutationOptions<Awaited<ReturnType<typeof withdrawApplication>>, TError,{applicationId: string}, TContext> => {
+export const getWithdrawApplicationMutationKey = () => ['withdrawApplication'] as const;
 
-const mutationKey = ['withdrawApplication'];
+export const getWithdrawApplicationMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof withdrawApplication>>, TError,WithdrawApplicationMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
+): UseMutationOptions<Awaited<ReturnType<typeof withdrawApplication>>, TError,WithdrawApplicationMutationVariables, TContext> => {
+
+const mutationKey = getWithdrawApplicationMutationKey();
 const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -271,7 +278,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof withdrawApplication>>, {applicationId: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof withdrawApplication>>, WithdrawApplicationMutationVariables> = (props) => {
           const {applicationId} = props ?? {};
 
           return  withdrawApplication(applicationId,requestOptions)
@@ -287,13 +294,14 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type WithdrawApplicationMutationResult = NonNullable<Awaited<ReturnType<typeof withdrawApplication>>>
 
     export type WithdrawApplicationMutationError = unknown
+    export type WithdrawApplicationMutationVariables = {applicationId: string}
 
     export const useWithdrawApplication = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof withdrawApplication>>, TError,{applicationId: string}, TContext>, request?: SecondParameter<typeof httpClient>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof withdrawApplication>>, TError,WithdrawApplicationMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof withdrawApplication>>,
         TError,
-        {applicationId: string},
+        WithdrawApplicationMutationVariables,
         TContext
       > => {
       return useMutation(getWithdrawApplicationMutationOptions(options), queryClient);
@@ -322,11 +330,13 @@ export const signContract = async (applicationId: string, options?: Parameters<t
 
 
 
-export const getSignContractMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof signContract>>, TError,{applicationId: string}, TContext>, request?: SecondParameter<typeof httpClient>}
-): UseMutationOptions<Awaited<ReturnType<typeof signContract>>, TError,{applicationId: string}, TContext> => {
+export const getSignContractMutationKey = () => ['signContract'] as const;
 
-const mutationKey = ['signContract'];
+export const getSignContractMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof signContract>>, TError,SignContractMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
+): UseMutationOptions<Awaited<ReturnType<typeof signContract>>, TError,SignContractMutationVariables, TContext> => {
+
+const mutationKey = getSignContractMutationKey();
 const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -336,7 +346,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof signContract>>, {applicationId: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof signContract>>, SignContractMutationVariables> = (props) => {
           const {applicationId} = props ?? {};
 
           return  signContract(applicationId,requestOptions)
@@ -352,13 +362,14 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type SignContractMutationResult = NonNullable<Awaited<ReturnType<typeof signContract>>>
 
     export type SignContractMutationError = unknown
+    export type SignContractMutationVariables = {applicationId: string}
 
     export const useSignContract = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof signContract>>, TError,{applicationId: string}, TContext>, request?: SecondParameter<typeof httpClient>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof signContract>>, TError,SignContractMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof signContract>>,
         TError,
-        {applicationId: string},
+        SignContractMutationVariables,
         TContext
       > => {
       return useMutation(getSignContractMutationOptions(options), queryClient);
@@ -387,11 +398,13 @@ export const reportHandover = async (applicationId: string, options?: Parameters
 
 
 
-export const getReportHandoverMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof reportHandover>>, TError,{applicationId: string}, TContext>, request?: SecondParameter<typeof httpClient>}
-): UseMutationOptions<Awaited<ReturnType<typeof reportHandover>>, TError,{applicationId: string}, TContext> => {
+export const getReportHandoverMutationKey = () => ['reportHandover'] as const;
 
-const mutationKey = ['reportHandover'];
+export const getReportHandoverMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof reportHandover>>, TError,ReportHandoverMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
+): UseMutationOptions<Awaited<ReturnType<typeof reportHandover>>, TError,ReportHandoverMutationVariables, TContext> => {
+
+const mutationKey = getReportHandoverMutationKey();
 const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -401,7 +414,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof reportHandover>>, {applicationId: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof reportHandover>>, ReportHandoverMutationVariables> = (props) => {
           const {applicationId} = props ?? {};
 
           return  reportHandover(applicationId,requestOptions)
@@ -417,13 +430,14 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type ReportHandoverMutationResult = NonNullable<Awaited<ReturnType<typeof reportHandover>>>
 
     export type ReportHandoverMutationError = unknown
+    export type ReportHandoverMutationVariables = {applicationId: string}
 
     export const useReportHandover = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof reportHandover>>, TError,{applicationId: string}, TContext>, request?: SecondParameter<typeof httpClient>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof reportHandover>>, TError,ReportHandoverMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof reportHandover>>,
         TError,
-        {applicationId: string},
+        ReportHandoverMutationVariables,
         TContext
       > => {
       return useMutation(getReportHandoverMutationOptions(options), queryClient);
@@ -440,11 +454,25 @@ export const getSelectAlternativeUrl = (applicationId: string,) => {
 export const selectAlternative = async (applicationId: string,
     alternativeDecisionInput: AlternativeDecisionInput, options?: Parameters<typeof httpClient>[1]): Promise<unknown> => {
 
-  return httpClient<unknown>(getSelectAlternativeUrl(applicationId),
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return httpClient<unknown>(getSelectAlternativeUrl(applicationId),
   {
     ...options,
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
     body: JSON.stringify(alternativeDecisionInput)
   }
 );}
@@ -453,11 +481,13 @@ export const selectAlternative = async (applicationId: string,
 
 
 
-export const getSelectAlternativeMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof selectAlternative>>, TError,{applicationId: string;data: AlternativeDecisionInput}, TContext>, request?: SecondParameter<typeof httpClient>}
-): UseMutationOptions<Awaited<ReturnType<typeof selectAlternative>>, TError,{applicationId: string;data: AlternativeDecisionInput}, TContext> => {
+export const getSelectAlternativeMutationKey = () => ['selectAlternative'] as const;
 
-const mutationKey = ['selectAlternative'];
+export const getSelectAlternativeMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof selectAlternative>>, TError,SelectAlternativeMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
+): UseMutationOptions<Awaited<ReturnType<typeof selectAlternative>>, TError,SelectAlternativeMutationVariables, TContext> => {
+
+const mutationKey = getSelectAlternativeMutationKey();
 const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -467,7 +497,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof selectAlternative>>, {applicationId: string;data: AlternativeDecisionInput}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof selectAlternative>>, SelectAlternativeMutationVariables> = (props) => {
           const {applicationId,data} = props ?? {};
 
           return  selectAlternative(applicationId,data,requestOptions)
@@ -483,13 +513,14 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type SelectAlternativeMutationResult = NonNullable<Awaited<ReturnType<typeof selectAlternative>>>
     export type SelectAlternativeMutationBody = AlternativeDecisionInput
     export type SelectAlternativeMutationError = unknown
+    export type SelectAlternativeMutationVariables = {applicationId: string;data: AlternativeDecisionInput}
 
     export const useSelectAlternative = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof selectAlternative>>, TError,{applicationId: string;data: AlternativeDecisionInput}, TContext>, request?: SecondParameter<typeof httpClient>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof selectAlternative>>, TError,SelectAlternativeMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof selectAlternative>>,
         TError,
-        {applicationId: string;data: AlternativeDecisionInput},
+        SelectAlternativeMutationVariables,
         TContext
       > => {
       return useMutation(getSelectAlternativeMutationOptions(options), queryClient);
@@ -773,126 +804,3 @@ export function useGetLeasingApplication<TData = Awaited<ReturnType<typeof getLe
 
   return withQueryKey(query, queryOptions.queryKey);
 }
-
-
-export const getListLeasingApplicationsResponseMock = (overrideResponse: Partial<Extract<LeasingApplicationPageDto, object>> = {}): LeasingApplicationPageDto => ({items: Array.from({ length: faker.number.int({min: 1, max: 10}) }, (_, i) => i + 1).map(() => ({applicationId: faker.string.alpha({length: {min: 10, max: 20}}), customerName: faker.string.alpha({length: {min: 10, max: 20}}), bikeId: faker.string.alpha({length: {min: 10, max: 20}}), bikeModel: faker.helpers.arrayElement([faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]), undefined]), status: faker.string.alpha({length: {min: 10, max: 20}}), createdAt: faker.date.past().toISOString().slice(0, 19) + 'Z'})), page: faker.number.int(), size: faker.number.int(), totalElements: faker.number.int(), totalPages: faker.number.int(), ...overrideResponse})
-
-export const getSubmitLeasingRequestResponseMock = (overrideResponse: Partial<Extract<LeasingApplicationCreatedDto, object>> = {}): LeasingApplicationCreatedDto => ({applicationId: faker.string.alpha({length: {min: 10, max: 20}}), ...overrideResponse})
-
-export const getListPendingClarificationsResponseMock = (): PendingClarificationDto[] => (Array.from({ length: faker.number.int({min: 1, max: 10}) }, (_, i) => i + 1).map(() => ({applicationId: faker.string.alpha({length: {min: 10, max: 20}}), customerName: faker.string.alpha({length: {min: 10, max: 20}}), requestedBikeId: faker.string.alpha({length: {min: 10, max: 20}}), requestedBikeModel: faker.helpers.arrayElement([faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]), undefined]), waitingSince: faker.date.past().toISOString().slice(0, 19) + 'Z'})))
-
-export const getListBikesResponseMock = (): BikeDto[] => (Array.from({ length: faker.number.int({min: 1, max: 10}) }, (_, i) => i + 1).map(() => ({bikeId: faker.string.alpha({length: {min: 10, max: 20}}), model: faker.string.alpha({length: {min: 10, max: 20}}), available: faker.datatype.boolean()})))
-
-export const getGetLeasingApplicationResponseMock = (overrideResponse: Partial<Extract<LeasingApplicationDto, object>> = {}): LeasingApplicationDto => ({applicationId: faker.string.alpha({length: {min: 10, max: 20}}), customerName: faker.string.alpha({length: {min: 10, max: 20}}), email: faker.string.alpha({length: {min: 10, max: 20}}), age: faker.number.int(), monthlyNetIncome: faker.number.float({fractionDigits: 2}), bikeId: faker.string.alpha({length: {min: 10, max: 20}}), bikeModel: faker.helpers.arrayElement([faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]), undefined]), status: faker.string.alpha({length: {min: 10, max: 20}}), orderId: faker.helpers.arrayElement([faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]), undefined]), contractId: faker.helpers.arrayElement([faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]), undefined]), createdAt: faker.date.past().toISOString().slice(0, 19) + 'Z', ...overrideResponse})
-
-
-export const getListLeasingApplicationsMockHandler = (overrideResponse?: LeasingApplicationPageDto | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<LeasingApplicationPageDto> | LeasingApplicationPageDto), options?: RequestHandlerOptions) => {
-  return http.get('*/api/bike-leasing', async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
-
-
-    return HttpResponse.json(overrideResponse !== undefined
-    ? (typeof overrideResponse === "function" ? await overrideResponse(info) : overrideResponse)
-    : getListLeasingApplicationsResponseMock(),
-      { status: 200
-      })
-  }, options)
-}
-
-export const getSubmitLeasingRequestMockHandler = (overrideResponse?: LeasingApplicationCreatedDto | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<LeasingApplicationCreatedDto> | LeasingApplicationCreatedDto), options?: RequestHandlerOptions) => {
-  return http.post('*/api/bike-leasing', async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
-
-
-    return HttpResponse.json(overrideResponse !== undefined
-    ? (typeof overrideResponse === "function" ? await overrideResponse(info) : overrideResponse)
-    : getSubmitLeasingRequestResponseMock(),
-      { status: 200
-      })
-  }, options)
-}
-
-export const getWithdrawApplicationMockHandler = (overrideResponse?: unknown | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<unknown> | unknown), options?: RequestHandlerOptions) => {
-  return http.post('*/api/bike-leasing/:applicationId/withdraw', async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
-  if (typeof overrideResponse === 'function') {await overrideResponse(info); }
-
-    return new HttpResponse(null,
-      { status: 200
-      })
-  }, options)
-}
-
-export const getSignContractMockHandler = (overrideResponse?: unknown | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<unknown> | unknown), options?: RequestHandlerOptions) => {
-  return http.post('*/api/bike-leasing/:applicationId/sign-contract', async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
-  if (typeof overrideResponse === 'function') {await overrideResponse(info); }
-
-    return new HttpResponse(null,
-      { status: 200
-      })
-  }, options)
-}
-
-export const getReportHandoverMockHandler = (overrideResponse?: unknown | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<unknown> | unknown), options?: RequestHandlerOptions) => {
-  return http.post('*/api/bike-leasing/:applicationId/report-handover', async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
-  if (typeof overrideResponse === 'function') {await overrideResponse(info); }
-
-    return new HttpResponse(null,
-      { status: 200
-      })
-  }, options)
-}
-
-export const getSelectAlternativeMockHandler = (overrideResponse?: unknown | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<unknown> | unknown), options?: RequestHandlerOptions) => {
-  return http.post('*/api/bike-leasing/:applicationId/clarify-alternative', async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
-  if (typeof overrideResponse === 'function') {await overrideResponse(info); }
-
-    return new HttpResponse(null,
-      { status: 200
-      })
-  }, options)
-}
-
-export const getListPendingClarificationsMockHandler = (overrideResponse?: PendingClarificationDto[] | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<PendingClarificationDto[]> | PendingClarificationDto[]), options?: RequestHandlerOptions) => {
-  return http.get('*/api/tasks/clarify-alternative', async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
-
-
-    return HttpResponse.json(overrideResponse !== undefined
-    ? (typeof overrideResponse === "function" ? await overrideResponse(info) : overrideResponse)
-    : getListPendingClarificationsResponseMock(),
-      { status: 200
-      })
-  }, options)
-}
-
-export const getListBikesMockHandler = (overrideResponse?: BikeDto[] | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<BikeDto[]> | BikeDto[]), options?: RequestHandlerOptions) => {
-  return http.get('*/api/bikes', async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
-
-
-    return HttpResponse.json(overrideResponse !== undefined
-    ? (typeof overrideResponse === "function" ? await overrideResponse(info) : overrideResponse)
-    : getListBikesResponseMock(),
-      { status: 200
-      })
-  }, options)
-}
-
-export const getGetLeasingApplicationMockHandler = (overrideResponse?: LeasingApplicationDto | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<LeasingApplicationDto> | LeasingApplicationDto), options?: RequestHandlerOptions) => {
-  return http.get('*/api/bike-leasing/:applicationId', async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
-
-
-    return HttpResponse.json(overrideResponse !== undefined
-    ? (typeof overrideResponse === "function" ? await overrideResponse(info) : overrideResponse)
-    : getGetLeasingApplicationResponseMock(),
-      { status: 200
-      })
-  }, options)
-}
-export const getMiraVeloBikeLeasingAPIMock = () => [
-  getListLeasingApplicationsMockHandler(),
-  getSubmitLeasingRequestMockHandler(),
-  getWithdrawApplicationMockHandler(),
-  getSignContractMockHandler(),
-  getReportHandoverMockHandler(),
-  getSelectAlternativeMockHandler(),
-  getListPendingClarificationsMockHandler(),
-  getListBikesMockHandler(),
-  getGetLeasingApplicationMockHandler()
-]

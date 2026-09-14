@@ -1,32 +1,60 @@
 version: 2
 
-multi-ecosystem-groups:
-  backend:
+updates:
+
+  # Backend (Gradle) — minor+patch grouped, every major its own PR
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "build"
+      include: "scope"
+    groups:
+      backend-dependencies:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      backend-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  # Dev-stack container images
+  - package-ecosystem: "docker-compose"
+    directory: "/stack"
     schedule:
       interval: "monthly"
     labels:
       - "dependencies"
+    commit-message:
+      prefix: "build"
+      include: "scope"
+    groups:
+      stack-images:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      stack-images-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
 
-updates:
-
-  # Backend dependencies (Gradle + the Postgres image in the dev stack) grouped into one PR
-  - package-ecosystem: "gradle"
-    directory: "/"
-    patterns:
-      - "*"
-    multi-ecosystem-group: "backend"
-
-  - package-ecosystem: "docker-compose"
-    directory: "/stack"
-    patterns:
-      - "*"
-    multi-ecosystem-group: "backend"
-
-  # Frontend dependencies (React app + Playwright e2e under /frontend) grouped into one monthly PR
+  # Frontend (React app + Playwright e2e)
   - package-ecosystem: "npm"
     directory: "/frontend"
     schedule:
       interval: "monthly"
+    open-pull-requests-limit: 10
     labels:
       - "dependencies"
     commit-message:
@@ -38,17 +66,39 @@ updates:
         patterns:
           - "*"
         update-types:
-          - "patch"
           - "minor"
-          - "major"
+          - "patch"
       frontend-security:
         applies-to: security-updates
         patterns:
           - "*"
 
-  # Dev tooling (bpmnlint and its local plugin)
+  # Frontend container image (node build + nginx serve stages)
+  - package-ecosystem: "docker"
+    directory: "/frontend"
+    schedule:
+      interval: "monthly"
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "build"
+      include: "scope"
+    groups:
+      frontend-docker:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      frontend-docker-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  # Dev tooling (bpmnlint and its local plugin) — root package.json
   - package-ecosystem: "npm"
-    directory: "/tools"
+    directory: "/"
     schedule:
       interval: "monthly"
     labels:
@@ -62,15 +112,14 @@ updates:
         patterns:
           - "*"
         update-types:
-          - "patch"
           - "minor"
-          - "major"
+          - "patch"
       tooling-security:
         applies-to: security-updates
         patterns:
           - "*"
 
-  # GitHub Actions
+  # GitHub Actions — fully grouped (SHA-pinned, mechanical majors, CI-gated)
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -85,10 +134,6 @@ updates:
         applies-to: version-updates
         patterns:
           - "*"
-        update-types:
-          - "patch"
-          - "minor"
-          - "major"
       github-actions-security:
         applies-to: security-updates
         patterns:

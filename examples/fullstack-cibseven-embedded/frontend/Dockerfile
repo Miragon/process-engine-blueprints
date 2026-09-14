@@ -4,7 +4,7 @@
 # The frontend deliberately stays out of the Gradle build (ADR-0005); this image is built by Docker.
 
 # --- build stage -------------------------------------------------------------
-FROM node:24-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /app
 
 # Install against the committed lockfile first for a cacheable dependency layer.

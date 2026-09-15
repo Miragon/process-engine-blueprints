@@ -3,6 +3,16 @@
 - **Status:** Accepted
 - **Date:** 2026-08-20
 
+> **Update (2026-09-15) — Java/Maven port.** When the worker moved from Kotlin/Gradle to Java 21 + Maven,
+> **Konsist** was dropped: it inspects the Kotlin PSI tree and has no Java source model, so it cannot run
+> against a Java codebase. Its two source-shape rules did not go away — they moved to
+> **`maven-checkstyle-plugin`** (`config/checkstyle/checkstyle.xml`), which reads Java source and fails
+> `mvn verify` exactly as Konsist failed `./gradlew build`: `OneTopLevelClass` (one top-level type per
+> file) and `AvoidStarImport` (no wildcard imports, `java.util` excepted). The reasoning below still
+> holds — ArchUnit reads bytecode and cannot see source shape; a source-level tool must — only the
+> source-level tool is now Checkstyle rather than Konsist. `KotlinSourceGuidelinesTest` is gone; the
+> ArchUnit half of the suite (below) was ported to Java verbatim.
+
 ## Context
 
 The hexagonal rules are machine-enforced ([ADR-0002](0002-hexagonal-architecture-for-the-backend.md)),

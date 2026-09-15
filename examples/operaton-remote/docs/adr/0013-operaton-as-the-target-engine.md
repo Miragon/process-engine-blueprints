@@ -28,7 +28,7 @@ Two facts shape the decision:
 
 ## Decision
 
-We target **Operaton** (pinned to `operaton_version` in `gradle/libs.versions.toml`) as the remote
+We target **Operaton** (pinned via the `operaton.version` property in `pom.xml`) as the remote
 engine, driven through the external-task pattern, mirroring the embedded sibling's conventions:
 `org.operaton.bpm.springboot:*` starters, `org.operaton.bpm:*` engine/test libraries, the
 `org.operaton.bpm.client.*` external-task client, `operaton.bpm.*` config properties, and the

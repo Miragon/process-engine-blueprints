@@ -18,7 +18,7 @@ copied from [`adr/0000-adr-template.md`](adr/0000-adr-template.md).
 | ADR | Decision |
 |---|---|
 | [0001](adr/0001-record-architecture-decisions.md) | Record architecture decisions (one Markdown file per decision). |
-| [0002](adr/0002-hexagonal-architecture-for-the-backend.md) | Hexagonal architecture for the worker, machine-enforced by ArchUnit + Konsist. |
+| [0002](adr/0002-hexagonal-architecture-for-the-backend.md) | Hexagonal architecture for the worker, machine-enforced by ArchUnit + Checkstyle. |
 | [0003](adr/0003-openapi-as-the-checked-in-contract.md) | OpenAPI as the checked-in, drift-gated contract for any API consumer and the generated engine client. |
 | [0004](adr/0004-mutation-testing-as-a-blocking-pr-gate.md) | Mutation testing as a blocking PR gate. |
 | [0005](adr/0005-agents-md-as-the-single-source.md) | `AGENTS.md` as the single source of agent instructions. |
@@ -27,7 +27,7 @@ copied from [`adr/0000-adr-template.md`](adr/0000-adr-template.md).
 | [0008](adr/0008-track-the-latest-major-versions.md) | Deliberately track the latest major versions across the stack. |
 | [0009](adr/0009-actuator-probes-and-prometheus-metrics.md) | Actuator health/liveness/readiness probes and Prometheus metrics, exposed out of the box. |
 | [0010](adr/0010-flyway-for-database-migrations.md) | Flyway for versioned schema migrations; Hibernate switches to `validate`. |
-| [0011](adr/0011-build-and-deployment-approach.md) | Build & deployment: `bootBuildImage` OCI images + a one-command Postgres + engine + worker compose. |
+| [0011](adr/0011-build-and-deployment-approach.md) | Build & deployment: `spring-boot:build-image` OCI images + a one-command Postgres + engine + worker compose. |
 | [0012](adr/0012-polling-for-eventual-consistency-in-e2e-tests.md) | Poll for eventual consistency in the end-to-end (Bruno) tests instead of fixed sleeps. |
 | [0013](adr/0013-operaton-as-the-target-engine.md) | Operaton as the target engine, on the Camunda-7 model namespace. |
 

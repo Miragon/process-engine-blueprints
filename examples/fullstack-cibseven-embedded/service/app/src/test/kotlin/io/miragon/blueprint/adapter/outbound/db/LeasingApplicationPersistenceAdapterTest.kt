@@ -1,7 +1,9 @@
 package io.miragon.blueprint.adapter.outbound.db
 
 import io.miragon.blueprint.application.port.outbound.LeasingApplicationRepository
+import io.miragon.blueprint.domain.bike.OrderId
 import io.miragon.blueprint.domain.leasing.ApplicationId
+import io.miragon.blueprint.domain.leasing.ContractId
 import io.miragon.blueprint.domain.leasing.LeasingStatus
 import io.miragon.blueprint.domain.leasing.testLeasingApplication
 import org.assertj.core.api.Assertions.assertThat
@@ -39,6 +41,26 @@ class LeasingApplicationPersistenceAdapterTest {
         entityManager.clear()
 
         // then: the reloaded application equals the original
+        assertThat(underTest.findById(id)).usingRecursiveComparison().isEqualTo(application)
+    }
+
+    @Test
+    fun `saves and reloads an application carrying an order and a contract`() {
+
+        // given: a leasing application that already has an order and a contract
+        val application = testLeasingApplication(
+            id = id,
+            status = LeasingStatus.ACTIVE,
+            orderId = OrderId("ORDER-1"),
+            contractId = ContractId("CONTRACT-1"),
+        )
+
+        // when: it is saved and re-read from a cleared persistence context
+        underTest.save(application)
+        entityManager.flush()
+        entityManager.clear()
+
+        // then: the reloaded application keeps its order and contract ids
         assertThat(underTest.findById(id)).usingRecursiveComparison().isEqualTo(application)
     }
 

@@ -6,6 +6,7 @@ import io.miragon.blueprint.application.port.outbound.TaskInboxPort
 import io.miragon.blueprint.domain.bike.Bike
 import io.miragon.blueprint.domain.bike.BikeId
 import io.miragon.blueprint.domain.leasing.ApplicationId
+import io.miragon.blueprint.domain.leasing.PendingClarification
 import io.miragon.blueprint.domain.leasing.testLeasingApplication
 import io.mockk.every
 import io.mockk.mockk
@@ -39,14 +40,14 @@ class GetPendingClarificationsServiceTest {
         val result = underTest.pending()
 
         // then: the pending clarification carries who, which bike (+ model) and since when — but no task id
-        assertThat(result).hasSize(1)
-        with(result.single()) {
-            assertThat(applicationId).isEqualTo(id)
-            assertThat(customerName).isEqualTo(application.customerName)
-            assertThat(requestedBikeId).isEqualTo(BikeId("BIKE-OOS"))
-            assertThat(requestedBikeModel).isEqualTo("Mountain Trail 600")
-            assertThat(this.waitingSince).isEqualTo(waitingSince)
-        }
+        val expected = PendingClarification(
+            applicationId = id,
+            customerName = application.customerName,
+            requestedBikeId = BikeId("BIKE-OOS"),
+            requestedBikeModel = "Mountain Trail 600",
+            waitingSince = waitingSince,
+        )
+        assertThat(result).singleElement().usingRecursiveComparison().isEqualTo(expected)
     }
 
     @Test

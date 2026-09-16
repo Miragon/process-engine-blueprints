@@ -1,5 +1,6 @@
 package io.miragon.blueprint.application.service
 
+import io.miragon.blueprint.application.port.inbound.GetLeasingApplicationQuery
 import io.miragon.blueprint.application.port.outbound.BikePortfolioRepository
 import io.miragon.blueprint.application.port.outbound.LeasingApplicationRepository
 import io.miragon.blueprint.domain.leasing.ApplicationId
@@ -31,8 +32,8 @@ class GetLeasingApplicationServiceTest {
         val result = underTest.byId(application.id)
 
         // then: the application and the resolved bike model are returned
-        assertThat(result?.application).isEqualTo(application)
-        assertThat(result?.bikeModel).isEqualTo("Gravel Explorer 900")
+        assertThat(result).usingRecursiveComparison()
+            .isEqualTo(GetLeasingApplicationQuery.Result(application, "Gravel Explorer 900"))
         verify { repository.findById(application.id) }
         verify { bikePortfolio.findByBikeId(application.bikeId) }
         confirmVerified(repository, bikePortfolio)

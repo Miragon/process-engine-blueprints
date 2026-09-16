@@ -34,11 +34,17 @@ class ListLeasingApplicationsServiceTest {
         val result = underTest.list(ListLeasingApplicationsQuery.Filter(status = null, page = 0, size = 20))
 
         // then: paging metadata is preserved and each item carries its resolved model
-        assertThat(result.totalElements).isEqualTo(2)
-        assertThat(result.totalPages).isEqualTo(1)
-        assertThat(result.items).hasSize(2)
-        assertThat(result.items[0].bikeModel).isEqualTo("Gravel Explorer 900")
-        assertThat(result.items[1].bikeModel).isEqualTo("Carbon Road 800")
+        val expected = ListLeasingApplicationsQuery.Page(
+            items = listOf(
+                ListLeasingApplicationsQuery.Item(a.id, a.customerName, a.bikeId, "Gravel Explorer 900", a.status, a.createdAt),
+                ListLeasingApplicationsQuery.Item(b.id, b.customerName, b.bikeId, "Carbon Road 800", b.status, b.createdAt),
+            ),
+            page = 0,
+            size = 20,
+            totalElements = 2,
+            totalPages = 1,
+        )
+        assertThat(result).usingRecursiveComparison().isEqualTo(expected)
         // and: exactly one batch lookup was issued for the bikes, not one per row
         verify(exactly = 1) { bikePortfolio.findAllByIds(listOf(BikeId("BIKE-900"), BikeId("BIKE-800"))) }
     }

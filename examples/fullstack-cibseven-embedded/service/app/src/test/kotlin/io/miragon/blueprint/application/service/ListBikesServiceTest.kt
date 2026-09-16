@@ -1,5 +1,6 @@
 package io.miragon.blueprint.application.service
 
+import io.miragon.blueprint.application.port.inbound.ListBikesQuery
 import io.miragon.blueprint.application.port.outbound.BikeDealerPort
 import io.miragon.blueprint.application.port.outbound.BikePortfolioRepository
 import io.miragon.blueprint.domain.bike.Bike
@@ -30,9 +31,12 @@ class ListBikesServiceTest {
         val result = underTest.all()
 
         // then: the portfolio's order is preserved and each item's availability comes from the dealer
-        assertThat(result.map { it.bikeId.value }).containsExactly("BIKE-900", "BIKE-OOS")
-        assertThat(result.single { it.bikeId.value == "BIKE-900" }.available).isTrue()
-        assertThat(result.single { it.bikeId.value == "BIKE-OOS" }.available).isFalse()
+        assertThat(result).usingRecursiveComparison().isEqualTo(
+            listOf(
+                ListBikesQuery.Item(BikeId("BIKE-900"), "Gravel Explorer 900", available = true),
+                ListBikesQuery.Item(BikeId("BIKE-OOS"), "Mountain Trail 600", available = false),
+            ),
+        )
     }
 
     @Test

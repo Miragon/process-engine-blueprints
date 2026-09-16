@@ -77,9 +77,9 @@ class ListLeasingApplicationsControllerTest {
 
         // then: the parsed filter reaches the query
         verify { query.list(capture(filter)) }
-        assertThat(filter.captured.status).isEqualTo(LeasingStatus.ACTIVE)
-        assertThat(filter.captured.page).isEqualTo(2)
-        assertThat(filter.captured.size).isEqualTo(5)
+        assertThat(filter.captured)
+            .usingRecursiveComparison()
+            .isEqualTo(ListLeasingApplicationsQuery.Filter(LeasingStatus.ACTIVE, page = 2, size = 5))
     }
 
     @Test

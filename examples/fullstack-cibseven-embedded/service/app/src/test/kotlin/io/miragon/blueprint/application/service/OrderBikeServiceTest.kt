@@ -1,5 +1,6 @@
 package io.miragon.blueprint.application.service
 
+import io.miragon.blueprint.application.port.inbound.OrderBikeUseCase
 import io.miragon.blueprint.application.port.outbound.BikeDealerPort
 import io.miragon.blueprint.application.port.outbound.LeasingApplicationRepository
 import io.miragon.blueprint.domain.bike.BikeId
@@ -33,8 +34,8 @@ class OrderBikeServiceTest {
         val result = underTest.orderBike(application.id)
 
         // then: the order id is returned and the application moves to ORDERED
-        assertThat(result.bikeAvailable).isTrue()
-        assertThat(result.orderId).isEqualTo(OrderId("ORDER-900"))
+        assertThat(result).usingRecursiveComparison()
+            .isEqualTo(OrderBikeUseCase.Result(orderId = OrderId("ORDER-900"), bikeAvailable = true))
         verify { bikeDealer.checkAvailability(application.bikeId) }
         verify { bikeDealer.order(application.bikeId) }
         verify { repository.save(match { it.status == LeasingStatus.ORDERED && it.orderId == OrderId("ORDER-900") }) }
@@ -53,8 +54,8 @@ class OrderBikeServiceTest {
         val result = underTest.orderBike(application.id)
 
         // then: no order is placed and the bike is reported unavailable
-        assertThat(result.bikeAvailable).isFalse()
-        assertThat(result.orderId).isNull()
+        assertThat(result).usingRecursiveComparison()
+            .isEqualTo(OrderBikeUseCase.Result(orderId = null, bikeAvailable = false))
         verify { bikeDealer.checkAvailability(application.bikeId) }
         verify(exactly = 0) { bikeDealer.order(any()) }
         verify(exactly = 0) { repository.save(any()) }

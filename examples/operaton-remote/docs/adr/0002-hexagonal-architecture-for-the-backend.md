@@ -16,7 +16,7 @@ a forker (or an AI agent) cannot quietly erode it.
 
 We structure `service/example-service` as a **hexagon (ports & adapters)** under `io.miragon.blueprint`:
 
-- `domain/` — pure Kotlin value objects and aggregates; no framework imports.
+- `domain/` — pure Java records and aggregates; no framework imports.
 - `application/port/inbound` — one **`*UseCase`** (state-changing) or **`*Query`** (read) interface per
   operation. `application/port/outbound` — **`*Repository` / `*Port` / `*Process`** interfaces.
 - `application/service` — one `*Service` implementing exactly one inbound port; it may not call another
@@ -28,9 +28,9 @@ We structure `service/example-service` as a **hexagon (ports & adapters)** under
 - `process/` — the **generated** `*ProcessApi` (bpmn-to-code: topics, messages, element ids, variables);
   a technical seam that fits neither side of the split.
 
-These rules are **enforced by the reusable ArchUnit + Konsist suite** in
-`service/common-architecture-tests`, wired into every module's tests so `./gradlew build` fails on a
-violation:
+These rules are **enforced by the reusable ArchUnit + Checkstyle suite** (ArchUnit rules in
+`service/common-architecture-tests`, Checkstyle via `config/checkstyle/checkstyle.xml`), wired into
+every module's build so `mvn verify` fails on a violation:
 
 - `HexagonalArchitectureTest` — the layered-dependency graph (domain depends on nothing; ports are
   interfaces; an in-adapter offers exactly one use-case; out-adapters never touch inbound ports).

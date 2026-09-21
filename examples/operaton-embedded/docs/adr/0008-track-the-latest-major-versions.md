@@ -5,8 +5,8 @@
 
 ## Context
 
-The stack sits on the newest major of nearly everything at once — Spring Boot 4, Kotlin 2.x on the
-Operaton Spring-Boot-4 line, Gradle, and the current Operaton release. That is a real choice with a
+The stack sits on the newest major of nearly everything at once — Spring Boot 4, Java 21 on the
+Operaton Spring-Boot-4 line, Maven, and the current Operaton release. That is a real choice with a
 real cost: newest majors have smaller ecosystems, more breaking-change churn, and occasionally force an
 integration workaround so the app starts on Spring 7. A fork left untouched for months may need an
 upgrade pass before it builds again.

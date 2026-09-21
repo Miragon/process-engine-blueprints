@@ -19,7 +19,7 @@ Run the stack locally:
 
 ```bash
 docker compose -f stack/docker-compose.yml up -d   # Postgres
-./gradlew :service:app:bootRun                      # backend + engine on :8080
+mvn -pl service/app spring-boot:run                 # backend + engine on :8080
 ```
 
 ### Ports
@@ -60,7 +60,7 @@ from the dev stack. The rationale is in
 
 ```bash
 # 1. build the backend OCI image (Spring buildpacks — no Dockerfile). Produces miravelo/app:1.0-SNAPSHOT
-./gradlew :service:app:bootBuildImage
+mvn -pl service/app spring-boot:build-image
 
 # 2. start Postgres
 docker compose -f stack/docker-compose.yml up -d
@@ -74,12 +74,12 @@ docker run --rm -p 8080:8080 \
 
 Then open <http://localhost:8080/operaton> (admin/admin) and run the Bruno smoke test above.
 
-**Podman:** `bootBuildImage` needs a Docker-API socket. Expose podman's and point the build at it:
+**Podman:** `spring-boot:build-image` needs a Docker-API socket. Expose podman's and point the build at it:
 
 ```bash
 podman system service --time=0 unix:///tmp/podman.sock &
 export DOCKER_HOST=unix:///tmp/podman.sock
-./gradlew :service:app:bootBuildImage
+mvn -pl service/app spring-boot:build-image
 ```
 
 **Configuration.** `application.yaml` ships dev defaults; the deploy-relevant values are read from the
@@ -100,9 +100,9 @@ environment (they win over the baked defaults):
 
 ```bash
 # backend
-./gradlew build                         # arch + unit + process + model validation + spec export
-./gradlew :service:app:pitest           # mutation score >= 80
-./gradlew generateBpmnModels            # regenerate the typed process API after editing a .bpmn
+mvn verify                              # arch + unit + process + model validation + spec export
+mvn -pl service/app -am test-compile org.pitest:pitest-maven:mutationCoverage   # mutation score >= 80
+mvn -pl service/app generate-sources    # regenerate the typed process API after editing a .bpmn
 
 # BPMN (root-level tooling)
 npm run lint:bpmn                       # bpmnlint the .bpmn models
@@ -118,7 +118,7 @@ npm run lint:bpmn                       # bpmnlint the .bpmn models
 - **Conventional Commits.** Commit messages and PR titles follow
   [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`,
   `refactor:`, `test:`, `chore:`). Write everything in **English**.
-- **Keep the gates green.** The architecture (ArchUnit + Konsist), contract-drift and mutation (≥ 80)
+- **Keep the gates green.** The architecture (ArchUnit + Checkstyle), contract-drift and mutation (≥ 80)
   gates run in CI on every PR. They are fitness functions, not style guides — a violation fails the
   build. The mutation gate is **diff-scoped** on PRs (only the classes you changed); the full-module
   gate-80 sweep runs nightly.
@@ -134,9 +134,9 @@ npm run lint:bpmn                       # bpmnlint the .bpmn models
 ## Before opening a PR
 
 ```bash
-./gradlew build
+mvn verify
 git diff --exit-code openapi/openapi.json    # the API contract must not drift
-./gradlew :service:app:pitest                # mutation score >= 80
+mvn -pl service/app -am test-compile org.pitest:pitest-maven:mutationCoverage   # mutation score >= 80
 ```
 
 All of these run in CI on every pull request (JDK 21 / Node ≥ 22.12).

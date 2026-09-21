@@ -5,7 +5,7 @@
 
 ## Context
 
-The Kotlin backend exposes a REST boundary that other systems — a UI, another service, a test suite, an
+The Java backend exposes a REST boundary that other systems — a UI, another service, a test suite, an
 AI agent — consume. That boundary can be described two ways: (a) hand-write a spec and hope the code
 matches it, or (b) derive the spec from the code. Option (a) drifts silently — the first symptom is a
 runtime 400 in a consumer. We want the contract to be *impossible* to desync from the implementation,
@@ -20,7 +20,7 @@ The **backend is the single source of truth**, and the contract is **generated b
 2. `OpenApiSpecExportTest` — a code generator wearing a JUnit costume — fetches `/v3/api-docs`,
    re-serialises it **deterministically** (keys sorted, fixed two-space LF indenter, trailing newline,
    `servers` block dropped so the random test port can't cause churn) and writes
-   **`openapi/openapi.json`** at the repo root. It runs inside `./gradlew build`.
+   **`openapi/openapi.json`** at the repo root. It runs inside `mvn verify`.
 3. CI regenerates the spec and runs **`git diff --exit-code`** on `openapi/openapi.json` — a **drift
    gate**. If a controller changed and the committed spec wasn't updated, the build fails.
 

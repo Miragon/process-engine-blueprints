@@ -1,17 +1,13 @@
 .claude/logs/
-
-# Maven
-target/
-
-# IDE / OS
+.gradle
+**/build/
+**/bin/
+!gradle/wrapper/gradle-wrapper.jar
+**/jgiven-reports/
 .idea
 *.iml
-**/bin/
+.kotlin/
 .DS_Store
 .vscode
-
-# Conductor scratch space
 .context
-
-# Node (bpmnlint tooling)
 node_modules/

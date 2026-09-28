@@ -8,8 +8,14 @@
 
 A ready-to-fork **starting point** for automating a business process on
 [Operaton](https://operaton.org) (the community-driven fork of Camunda 7) with an **embedded engine**,
-Spring Boot and Java — one complete, runnable, production-shaped BPMN service you can clone and make
+Spring Boot and Kotlin — one complete, runnable, production-shaped BPMN service you can clone and make
 your own.
+
+> [!TIP]
+> **Prefer Java + Maven?** A Java 21 + Maven version of this blueprint — the stack most enterprise
+> teams and trainings use — is published at the [`java-maven`](../../tree/java-maven) tag. It is
+> regenerated from this Kotlin `main`, not a separate fork; see
+> [`docs/variants/java-maven.md`](docs/variants/java-maven.md).
 
 ## The scenario
 
@@ -44,7 +50,7 @@ them — so a new project starts from something complete instead of a blank page
 
 ```
 service/
-  common-architecture-tests/   reusable ArchUnit + Checkstyle rule suite (src/main/java)
+  common-architecture-tests/   reusable ArchUnit + Konsist rule suite (src/main)
   app/                         the Operaton bike-leasing service (hexagonal)
     adapter/inbound/rest        domain REST controllers
     adapter/inbound/operaton    JavaDelegates for the BPMN service tasks
@@ -64,14 +70,15 @@ stack/                         Postgres + EnterpriseGlue The Bridge dev stack (d
 .github/                       pre-merge pipeline + Dependabot
 ```
 
-- **Stack:** Java 21 · Spring Boot 4 · Operaton 2.1 (embedded) · PostgreSQL · Maven (multi-module).
-- **Generated process API:** the [`bpmn-to-code`](https://github.com/emaarco/bpmn-to-code) Maven
-  plugin turns each `.bpmn` into a typed `*ProcessApi` class, so element ids, messages, timers and
+- **Stack:** Kotlin 2.4 · Spring Boot 4 · Operaton 2.1 (embedded) · PostgreSQL · Gradle with a
+  `libs.versions.toml` version catalog.
+- **Generated process API:** the [`bpmn-to-code`](https://github.com/emaarco/bpmn-to-code) Gradle
+  plugin turns each `.bpmn` into a typed `*ProcessApi` object, so element ids, messages, timers and
   variables are compile-checked constants used by both delegates and tests.
 - **Forms:** Camunda Forms (`.form`) are deployed with the process and render in the Operaton
   Tasklist/Cockpit for the user tasks.
 - **BPMN linting:** [`bpmnlint`](https://github.com/bpmn-io/bpmnlint) (`bpmnlint:recommended`) gates
-  the `.bpmn` models via the root-level `npm run lint:bpmn`, run in CI before the Maven build and on
+  the `.bpmn` models via the root-level `npm run lint:bpmn`, run in CI before the Gradle build and on
   staged models by the pre-commit hook (`npm run hooks:install`).
 - **REST API:** domain endpoints (`POST /api/bike-leasing` and its `/sign-contract`,
   `/report-handover`, `/withdraw`, `/clarify-alternative` actions; the paged
@@ -81,18 +88,17 @@ stack/                         Postgres + EnterpriseGlue The Bridge dev stack (d
   **Swagger UI** at `/swagger-ui.html`.
 - **Operations:** Spring Boot **Actuator** probes and Prometheus metrics at `/actuator/*`; schema is
   owned by **Flyway** with Hibernate `ddl-auto=validate`; **mutation testing** (pitest) gates at 80.
-- **Container image:** `mvn -pl service/app spring-boot:build-image` produces the `miravelo/app` OCI image
+- **Container image:** `./gradlew :service:app:bootBuildImage` produces the `miravelo/app` OCI image
   (Spring buildpacks, no Dockerfile).
 
 ## Design decisions
 
 - **Hexagonal architecture** keeps the engine and framework at the edges: the domain and use cases
   never depend on Operaton, so business logic is testable and the engine is replaceable. The
-  `service/common-architecture-tests` module enforces this with **ArchUnit** (bytecode: layering,
-  dependency direction, naming), with **Checkstyle** covering the two source rules (one top-level type
-  per file, no wildcard imports) — one line wires it into a service:
-  `class ArchitectureTest extends ServiceArchitectureTest`.
-- **Unit tests** (JUnit 5 + Mockito) cover every domain type, application service and adapter with
+  `:service:common-architecture-tests` module enforces this with **ArchUnit** (bytecode: layering,
+  dependency direction, naming) and **Konsist** (source: one declaration per file, no wildcard
+  imports) — one line wires it into a service: `class ArchitectureTest : ServiceArchitectureTest(...)`.
+- **Unit tests** (JUnit 5 + MockK) cover every domain type, application service and adapter with
   given/when/then comments and shared `testLeasingApplication(...)` builders — controllers via
   `@WebMvcTest`, persistence via `@DataJpaTest`. JavaDelegates are covered by the process tests.
 - **Process tests** (`operaton-bpm-assert`) drive the deployed model deterministically — timers and
@@ -103,7 +109,7 @@ stack/                         Postgres + EnterpriseGlue The Bridge dev stack (d
 - **Bruno + CI** proves the same scenarios against the *running* app: domain REST endpoints drive the
   business actions, and the Operaton `/engine-rest` API completes user tasks and fires timer jobs so
   the whole flow runs in the pipeline without real 14-day waits.
-- **Dependabot** keeps Maven, the Postgres image and GitHub Actions current.
+- **Dependabot** keeps Gradle, the Postgres image and GitHub Actions current.
 
 Every non-obvious decision is recorded as an **Architecture Decision Record** under
 [`docs/adr/`](docs/adr/) (0001–0011) — read the *why* before changing the *what*.
@@ -115,13 +121,13 @@ Every non-obvious decision is recorded as an **Architecture Decision Record** un
 docker compose -f stack/docker-compose.yml up -d
 
 # 2. run the app (Operaton Cockpit/Tasklist at http://localhost:8080/operaton, admin/admin)
-mvn -pl service/app spring-boot:run
+./gradlew :service:app:bootRun
 
 # 3. lint the BPMN models (root-level tooling)
 npm ci && npm run lint:bpmn
 
 # 4. drive the scenarios (build + arch + process tests first, then the REST flows)
-mvn verify
+./gradlew build
 cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r
 ```
 
@@ -162,7 +168,7 @@ Bruno collection lives in `bruno/06-incident-demo/`.
 ## Contributing
 
 Contributions are welcome. Please open an issue to discuss substantial changes first, keep the
-architecture tests green (`mvn verify`), and use
+architecture tests green (`./gradlew build`), and use
 [Conventional Commits](https://www.conventionalcommits.org) for commit messages and PR titles.
 
 ## License

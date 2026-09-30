@@ -41,7 +41,7 @@ services:
       - enterpriseglue-network
 
   enterpriseglue-backend:
-    image: ghcr.io/enterpriseglue/enterpriseglue-the-bridge-oss-backend:v0.19.2
+    image: ghcr.io/enterpriseglue/enterpriseglue-the-bridge-oss-backend:v0.29.1
     container_name: enterpriseglue-backend
     restart: always
     init: true
@@ -102,7 +102,7 @@ services:
       - enterpriseglue-network
 
   enterpriseglue-frontend:
-    image: ghcr.io/enterpriseglue/enterpriseglue-the-bridge-oss-frontend:v0.19.2
+    image: ghcr.io/enterpriseglue/enterpriseglue-the-bridge-oss-frontend:v0.29.1
     container_name: enterpriseglue-frontend
     restart: always
     depends_on:

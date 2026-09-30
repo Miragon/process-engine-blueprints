@@ -30,6 +30,7 @@ dependencies {
     testImplementation(libs.bundles.operatonProcessTest)
     testImplementation(libs.bpmn.to.code.testing)
     testImplementation(project(":service:common-architecture-tests"))
+    testRuntimeOnly(libs.konsist.kotlin.compiler)
 }
 
 // Generates the typed `*ProcessApi` objects (element ids, messages, timers, variables, …) from the

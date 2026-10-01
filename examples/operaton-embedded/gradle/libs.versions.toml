@@ -51,7 +51,7 @@ mockito = { module = "org.mockito:mockito-inline", version = "5.2.0" }
 kotlin_mockito = { module = "org.mockito.kotlin:mockito-kotlin", version = "6.4.0" }
 mockk = { module = "io.mockk:mockk", version = "1.14.11" }
 spring_mockk = { module = "com.ninja-squad:springmockk", version = "5.0.1" }
-h2 = { module = "com.h2database:h2", version = "2.5.250" }
+h2 = { module = "com.h2database:h2", version = "2.5.252" }
 
 # Process test — Operaton
 operaton-bpm-assert = { module = "org.operaton.bpm:operaton-bpm-assert", version.ref = "operaton_version" }

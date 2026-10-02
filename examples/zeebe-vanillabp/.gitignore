@@ -1,0 +1,13 @@
+.claude/logs/
+.gradle
+**/build/
+service/app/target/
+**/bin/
+!gradle/wrapper/gradle-wrapper.jar
+.idea
+*.iml
+.kotlin/
+.DS_Store
+.vscode
+.context
+node_modules/

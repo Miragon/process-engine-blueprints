@@ -1,6 +1,6 @@
 package io.miragon.blueprint.adapter.inbound.workflow
 
-import io.miragon.blueprint.adapter.process.BikeLeasingProcessProcessApi.ServiceTasks
+import io.miragon.blueprint.adapter.process.ServiceTasks
 import io.miragon.blueprint.adapter.process.LeasingApplicationAggregate
 import io.miragon.blueprint.application.port.inbound.ActivateLeasingUseCase
 import io.vanillabp.spi.service.WorkflowTask

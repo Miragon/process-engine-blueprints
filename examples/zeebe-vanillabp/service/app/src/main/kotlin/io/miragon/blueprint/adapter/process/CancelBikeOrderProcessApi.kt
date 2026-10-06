@@ -3,14 +3,23 @@
 
 package io.miragon.blueprint.adapter.process
 
+import io.miragon.bpmn.runtime.AbstractFlowNode
+import io.miragon.bpmn.runtime.BpmnElementType
 import io.miragon.bpmn.runtime.BpmnEngine
-import io.miragon.bpmn.runtime.BpmnFlow
-import io.miragon.bpmn.runtime.BpmnRelations
+import io.miragon.bpmn.runtime.BpmnEventType
 import io.miragon.bpmn.runtime.ElementId
+import io.miragon.bpmn.runtime.Event
+import io.miragon.bpmn.runtime.FlowNode
+import io.miragon.bpmn.runtime.HasJobType
+import io.miragon.bpmn.runtime.HasSuccessors
+import io.miragon.bpmn.runtime.HasVariables
 import io.miragon.bpmn.runtime.ProcessId
+import io.miragon.bpmn.runtime.RegisteredVariableDefinitions
+import io.miragon.bpmn.runtime.SequenceFlows
 import io.miragon.bpmn.runtime.VariableName
 import kotlin.String
 import kotlin.Suppress
+import kotlin.collections.List
 
 object CancelBikeOrderProcessApi {
   val PROCESS_ID: ProcessId = ProcessId("cancelBikeOrder")
@@ -18,175 +27,157 @@ object CancelBikeOrderProcessApi {
   val PROCESS_ENGINE: BpmnEngine = BpmnEngine.ZEEBE
 
   /**
-   * BPMN element ids as declared in the source model.
-   * Typically used in process-level tests or when searching for tasks.
-   * Worker runtime code rarely needs these.
+   * Typed navigation over the process flow: one nested object per BPMN element.
    */
-  object Elements {
-    val END_EVENT_ORDER_REVERSED: ElementId = ElementId("endEvent_orderReversed")
+  object FlowNodes {
+    val all: List<FlowNode> = listOf(
+      EndEventOrderReversed,
+      GatewayCancellationPossible,
+      GatewayJoin,
+      ServiceTaskBookCosts,
+      ServiceTaskRequestCancellation,
+      StartEventCancellationRequired,
+      UserTaskClarifyReturn,
+    )
 
-    val GATEWAY_CANCELLATION_POSSIBLE: ElementId = ElementId("gateway_cancellationPossible")
+    object EndEventOrderReversed : AbstractFlowNode(
+      id = ElementId(EndEventOrderReversed.ELEMENT_ID),
+      elementType = BpmnElementType.END_EVENT,
+      name = "Order reversed",
+    ), Event {
+      override val eventType: BpmnEventType = BpmnEventType.NONE
 
-    val GATEWAY_JOIN: ElementId = ElementId("gateway_join")
-
-    val SERVICE_TASK_BOOK_COSTS: ElementId = ElementId("serviceTask_bookCosts")
-
-    val SERVICE_TASK_REQUEST_CANCELLATION: ElementId =
-        ElementId("serviceTask_requestCancellation")
-
-    val START_EVENT_CANCELLATION_REQUIRED: ElementId =
-        ElementId("startEvent_cancellationRequired")
-
-    val USER_TASK_CLARIFY_RETURN: ElementId = ElementId("userTask_clarifyReturn")
-  }
-
-  /**
-   * Job worker task types used in `@JobWorker(type = ServiceTasks.X)` annotations.
-   * Kept as `const val String` because annotation arguments must be compile-time constants.
-   */
-  object ServiceTasks {
-    const val MIRAVELO_BOOK_COSTS: String = "miravelo.bookCosts"
-
-    const val MIRAVELO_REQUEST_CANCELLATION: String = "miravelo.requestCancellation"
-  }
-
-  /**
-   * Process variables grouped by the BPMN element that declares them.
-   * Direction is encoded in each variable's wrapper type: `VariableName.Input`, `VariableName.Output`, or `VariableName.InOut` when the variable is both read and written by the same element.
-   * Consumer APIs that take a specific subtype (e.g. `fun setOutput(v: VariableName.Output)`) get compile-time direction enforcement.
-   */
-  object Variables {
-    object ServiceTaskRequestCancellation {
-      val CANCELLATION_POSSIBLE: VariableName.Output =
-          VariableName.Output("cancellationPossible")
+      const val ELEMENT_ID: String = "endEvent_orderReversed"
     }
-  }
 
-  /**
-   * Sequence flows between BPMN elements.
-   * Mainly useful for process-model tooling, tests, and AI-agent consumers reasoning about the process shape.
-   * Worker code typically does not need these.
-   */
-  object Flows {
-    val FLOW_BOOK_COSTS_TO_JOIN: BpmnFlow = BpmnFlow(
-          id = "flow_bookCostsToJoin",
-          sourceRef = "serviceTask_bookCosts",
-          targetRef = "gateway_join",
-        )
+    object GatewayCancellationPossible : AbstractFlowNode(
+      id = ElementId(GatewayCancellationPossible.ELEMENT_ID),
+      elementType = BpmnElementType.EXCLUSIVE_GATEWAY,
+      name = "Cancellation possible?",
+    ), HasSuccessors<GatewayCancellationPossible.Next> {
+      const val ELEMENT_ID: String = "gateway_cancellationPossible"
 
-    val FLOW_CLARIFY_RETURN_TO_BOOK_COSTS: BpmnFlow = BpmnFlow(
-          id = "flow_clarifyReturnToBookCosts",
-          sourceRef = "userTask_clarifyReturn",
-          targetRef = "serviceTask_bookCosts",
-        )
+      override val next: Next = Next
 
-    val FLOW_JOIN_TO_REVERSED: BpmnFlow = BpmnFlow(
-          id = "flow_joinToReversed",
-          sourceRef = "gateway_join",
-          targetRef = "endEvent_orderReversed",
-        )
+      object Next {
+        val gatewayJoin: SequenceFlows<GatewayJoin>
+          get() = SequenceFlows.single(
+            flowId = ElementId("flow_possibleToJoin"),
+            name = "Yes",
+            isDefault = true,
+            target = GatewayJoin,
+          )
 
-    val FLOW_NOT_POSSIBLE_TO_CLARIFY_RETURN: BpmnFlow = BpmnFlow(
-          id = "flow_notPossibleToClarifyReturn",
-          name = "No",
-          sourceRef = "gateway_cancellationPossible",
-          targetRef = "userTask_clarifyReturn",
-          condition = "=cancellationPossible",
-        )
+        val userTaskClarifyReturn: SequenceFlows<UserTaskClarifyReturn>
+          get() = SequenceFlows.single(
+            flowId = ElementId("flow_notPossibleToClarifyReturn"),
+            name = "No",
+            conditionExpression = "=cancellationPossible",
+            target = UserTaskClarifyReturn,
+          )
+      }
+    }
 
-    val FLOW_POSSIBLE_TO_JOIN: BpmnFlow = BpmnFlow(
-          id = "flow_possibleToJoin",
-          name = "Yes",
-          sourceRef = "gateway_cancellationPossible",
-          targetRef = "gateway_join",
-          isDefault = true,
-        )
+    object GatewayJoin : AbstractFlowNode(
+      id = ElementId(GatewayJoin.ELEMENT_ID),
+      elementType = BpmnElementType.EXCLUSIVE_GATEWAY,
+    ), HasSuccessors<GatewayJoin.Next> {
+      const val ELEMENT_ID: String = "gateway_join"
 
-    val FLOW_REQUEST_TO_CANCELLATION_POSSIBLE: BpmnFlow = BpmnFlow(
-          id = "flow_requestToCancellationPossible",
-          sourceRef = "serviceTask_requestCancellation",
-          targetRef = "gateway_cancellationPossible",
-        )
+      override val next: Next = Next
 
-    val FLOW_START_TO_REQUEST_CANCELLATION: BpmnFlow = BpmnFlow(
-          id = "flow_startToRequestCancellation",
-          sourceRef = "startEvent_cancellationRequired",
-          targetRef = "serviceTask_requestCancellation",
-        )
-  }
+      object Next {
+        val endEventOrderReversed: SequenceFlows<EndEventOrderReversed>
+          get() = SequenceFlows.single(
+            flowId = ElementId("flow_joinToReversed"),
+            target = EndEventOrderReversed,
+          )
+      }
+    }
 
-  /**
-   * Per-element graph metadata (elementType / previousElements / followingElements / parentId / boundary attachments).
-   * Intended for tooling and tests, not worker runtime code.
-   */
-  object Relations {
-    val END_EVENT_ORDER_REVERSED: BpmnRelations = BpmnRelations(
-          name = "Order reversed",
-          previousElements = listOf("gateway_join"),
-          followingElements = emptyList(),
-          parentId = null,
-          attachedToRef = null,
-          attachedElements = emptyList(),
-          elementType = "END_EVENT",
-        )
+    object ServiceTaskBookCosts : AbstractFlowNode(
+      id = ElementId(ServiceTaskBookCosts.ELEMENT_ID),
+      elementType = BpmnElementType.SERVICE_TASK,
+      name = "Book costs",
+    ), HasSuccessors<ServiceTaskBookCosts.Next>, HasJobType {
+      const val ELEMENT_ID: String = "serviceTask_bookCosts"
 
-    val GATEWAY_CANCELLATION_POSSIBLE: BpmnRelations = BpmnRelations(
-          name = "Cancellation possible?",
-          previousElements = listOf("serviceTask_requestCancellation"),
-          followingElements = listOf("userTask_clarifyReturn", "gateway_join"),
-          parentId = null,
-          attachedToRef = null,
-          attachedElements = emptyList(),
-          elementType = "EXCLUSIVE_GATEWAY",
-        )
+      override val jobType: String = ServiceTasks.MIRAVELO_BOOK_COSTS
 
-    val GATEWAY_JOIN: BpmnRelations = BpmnRelations(
-          previousElements = listOf("gateway_cancellationPossible", "serviceTask_bookCosts"),
-          followingElements = listOf("endEvent_orderReversed"),
-          parentId = null,
-          attachedToRef = null,
-          attachedElements = emptyList(),
-          elementType = "EXCLUSIVE_GATEWAY",
-        )
+      override val next: Next = Next
 
-    val SERVICE_TASK_BOOK_COSTS: BpmnRelations = BpmnRelations(
-          name = "Book costs",
-          previousElements = listOf("userTask_clarifyReturn"),
-          followingElements = listOf("gateway_join"),
-          parentId = null,
-          attachedToRef = null,
-          attachedElements = emptyList(),
-          elementType = "SERVICE_TASK",
-        )
+      object Next {
+        val gatewayJoin: SequenceFlows<GatewayJoin>
+          get() = SequenceFlows.single(
+            flowId = ElementId("flow_bookCostsToJoin"),
+            target = GatewayJoin,
+          )
+      }
+    }
 
-    val SERVICE_TASK_REQUEST_CANCELLATION: BpmnRelations = BpmnRelations(
-          name = "Request cancellation",
-          previousElements = listOf("startEvent_cancellationRequired"),
-          followingElements = listOf("gateway_cancellationPossible"),
-          parentId = null,
-          attachedToRef = null,
-          attachedElements = emptyList(),
-          elementType = "SERVICE_TASK",
-        )
+    object ServiceTaskRequestCancellation : AbstractFlowNode(
+      id = ElementId(ServiceTaskRequestCancellation.ELEMENT_ID),
+      elementType = BpmnElementType.SERVICE_TASK,
+      name = "Request cancellation",
+    ), HasSuccessors<ServiceTaskRequestCancellation.Next>, HasJobType, HasVariables {
+      const val ELEMENT_ID: String = "serviceTask_requestCancellation"
 
-    val START_EVENT_CANCELLATION_REQUIRED: BpmnRelations = BpmnRelations(
-          name = "Cancellation required",
-          previousElements = emptyList(),
-          followingElements = listOf("serviceTask_requestCancellation"),
-          parentId = null,
-          attachedToRef = null,
-          attachedElements = emptyList(),
-          elementType = "START_EVENT",
-        )
+      override val jobType: String = ServiceTasks.MIRAVELO_REQUEST_CANCELLATION
 
-    val USER_TASK_CLARIFY_RETURN: BpmnRelations = BpmnRelations(
-          name = "Clarify return with supplier",
-          previousElements = listOf("gateway_cancellationPossible"),
-          followingElements = listOf("serviceTask_bookCosts"),
-          parentId = null,
-          attachedToRef = null,
-          attachedElements = emptyList(),
-          elementType = "USER_TASK",
-        )
+      override val variables: Variables = Variables
+
+      override val next: Next = Next
+
+      object Variables : RegisteredVariableDefinitions() {
+        val CANCELLATION_POSSIBLE: VariableName.Output =
+            output(ProcessVariables.CANCELLATION_POSSIBLE)
+      }
+
+      object Next {
+        val gatewayCancellationPossible: SequenceFlows<GatewayCancellationPossible>
+          get() = SequenceFlows.single(
+            flowId = ElementId("flow_requestToCancellationPossible"),
+            target = GatewayCancellationPossible,
+          )
+      }
+    }
+
+    object StartEventCancellationRequired : AbstractFlowNode(
+      id = ElementId(StartEventCancellationRequired.ELEMENT_ID),
+      elementType = BpmnElementType.START_EVENT,
+      name = "Cancellation required",
+    ), HasSuccessors<StartEventCancellationRequired.Next>, Event {
+      override val eventType: BpmnEventType = BpmnEventType.NONE
+
+      const val ELEMENT_ID: String = "startEvent_cancellationRequired"
+
+      override val next: Next = Next
+
+      object Next {
+        val serviceTaskRequestCancellation: SequenceFlows<ServiceTaskRequestCancellation>
+          get() = SequenceFlows.single(
+            flowId = ElementId("flow_startToRequestCancellation"),
+            target = ServiceTaskRequestCancellation,
+          )
+      }
+    }
+
+    object UserTaskClarifyReturn : AbstractFlowNode(
+      id = ElementId(UserTaskClarifyReturn.ELEMENT_ID),
+      elementType = BpmnElementType.USER_TASK,
+      name = "Clarify return with supplier",
+    ), HasSuccessors<UserTaskClarifyReturn.Next> {
+      const val ELEMENT_ID: String = "userTask_clarifyReturn"
+
+      override val next: Next = Next
+
+      object Next {
+        val serviceTaskBookCosts: SequenceFlows<ServiceTaskBookCosts>
+          get() = SequenceFlows.single(
+            flowId = ElementId("flow_clarifyReturnToBookCosts"),
+            target = ServiceTaskBookCosts,
+          )
+      }
+    }
   }
 }

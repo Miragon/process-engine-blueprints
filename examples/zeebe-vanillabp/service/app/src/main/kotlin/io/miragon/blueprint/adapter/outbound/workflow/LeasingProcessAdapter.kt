@@ -1,7 +1,7 @@
 package io.miragon.blueprint.adapter.outbound.workflow
 
 import io.miragon.blueprint.adapter.outbound.db.LeasingApplicationJpaRepository
-import io.miragon.blueprint.adapter.process.BikeLeasingProcessProcessApi.Messages
+import io.miragon.blueprint.adapter.process.Messages
 import io.miragon.blueprint.adapter.process.LeasingApplicationAggregate
 import io.miragon.blueprint.application.port.outbound.LeasingProcess
 import io.miragon.blueprint.domain.leasing.ApplicationId

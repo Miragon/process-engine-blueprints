@@ -1,6 +1,6 @@
 package io.miragon.blueprint.adapter.inbound.workflow
 
-import io.miragon.blueprint.adapter.process.CancelBikeOrderProcessApi.ServiceTasks
+import io.miragon.blueprint.adapter.process.ServiceTasks
 import io.miragon.blueprint.adapter.process.LeasingApplicationAggregate
 import io.miragon.blueprint.application.port.inbound.BookCancellationCostsUseCase
 import io.vanillabp.spi.service.WorkflowTask

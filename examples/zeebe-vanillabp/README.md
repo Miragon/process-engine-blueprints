@@ -59,7 +59,7 @@ service/
     adapter/outbound/workflow   drives the engine through VanillaBP's ProcessService
     adapter/outbound/db         JPA persistence (workflow aggregate, task inbox, bike portfolio)
     adapter/outbound/dealer     simulated bike dealer (stock check + order)
-    adapter/process             generated *ProcessApi (bpmn-to-code) constants + the workflow aggregate
+    adapter/process             generated *ProcessApi and shared constants (bpmn-to-code) + the workflow aggregate
     application/{port,service}  use-case ports and their services
     domain/{leasing,bike}       pure domain model
     resources/bpmn              the process and decision models VanillaBP deploys
@@ -81,8 +81,9 @@ stack/                         Camunda 8 self-managed dev stack (docker compose)
   classpath; the adapter deploys every `.bpmn` and `.dmn` of the workflow module on startup and opens
   the job workers behind the `@WorkflowTask` methods.
 - **Generated process API:** the [`bpmn-to-code`](https://github.com/emaarco/bpmn-to-code) Gradle
-  plugin turns each `.bpmn` into a typed `*ProcessApi` object, so element ids, messages, job types,
-  timers and variables are compile-checked constants used by both workflow tasks and tests.
+  plugin turns each `.bpmn` into a typed `*ProcessApi` object (a `FlowNodes` tree with ids, variables
+  and successors) plus shared `ServiceTasks`/`Messages`/`ProcessVariables`/`Errors`/`Escalations`
+  files, so job types, messages and the paths the process tests walk are compile-checked.
 - **BPMN linting:** [`bpmnlint`](https://github.com/bpmn-io/bpmnlint) at the **repo root**
   (`bpmnlint:recommended` + `camunda-compat/camunda-cloud-8-9` + `@miragon/rules/all`) gates the
   `.bpmn` models — enforcing Zeebe deployability and readable `flow_`/`event_`/`serviceTask_` element

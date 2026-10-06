@@ -60,7 +60,8 @@ before writing code. The hard rules:
   OpenAPI, error handling) goes in `adapter.inbound.rest` — the `Configuration` suffix is whitelisted
   there.
 - **`adapter/process` holds the generated process API and the workflow aggregate.** Never hand-edit
-  `*ProcessApi.kt`; edit the `.bpmn` and re-run `generateBpmnModels`. `LeasingApplicationAggregate` is
+  `*ProcessApi.kt` or the shared `ServiceTasks`/`Messages`/`ProcessVariables`/`Errors`/`Escalations`
+  files; edit the `.bpmn` and re-run `generateBpmnModels`. `LeasingApplicationAggregate` is
   hand-written: it is the VanillaBP workflow aggregate the workflow tasks and the persistence share.
 - **No engine API in the service.** Production code must not depend on `io.camunda` (or any other
   engine API); the VanillaBP SPI is only allowed in `adapter.inbound.workflow` and
@@ -74,6 +75,10 @@ before writing code. The hard rules:
 
 - `bpmn-to-code` generates typed process constants from the models at build time; the
   `BikeLeasingModelValidationTest` (`BpmnRules.all()` for Zeebe) validates the models' structure.
+- Since bpmn-to-code 6 the API is node-centric: `<Process>ProcessApi.FlowNodes.<Node>` carries the
+  element (`.id`, `ELEMENT_ID`), its `Variables` and its successors (`Next`). Process tests assert
+  the walked path as a compile-checked `ProcessPath` (`hasCompletedElementsInOrder(path)` from
+  `common-zeebe-test`) instead of hand-maintained element-id lists.
 - `bpmnlint` (`bpmnlint:recommended` + `camunda-compat/camunda-cloud-8-9` + `@miragon/rules/all`)
   runs on staged `.bpmn` via `.githooks/pre-commit` (install: `npm run hooks:install`). Element ids
   follow the `flow_`/`event_`/`gateway_`/`serviceTask_` conventions the rules enforce.
@@ -89,7 +94,7 @@ TDD. Match the test style to the layer:
 | `adapter.inbound.rest` | `@WebMvcTest` + MockkBean |
 | `adapter.inbound.workflow` | plain unit tests on a `LeasingApplicationAggregate` (mock the use case) |
 | `adapter.outbound.db` | Spring Data JPA slice tests |
-| process end-to-end | Camunda 8 process tests (`@CamundaSpringProcessTest` + `WorkflowDeploymentTestConfiguration`, in-container Zeebe) |
+| process end-to-end | Camunda 8 process tests (`@CamundaSpringProcessTest` + `WorkflowDeploymentTestConfiguration`, in-container Zeebe), paths asserted via `ProcessPath` |
 
 **Mutation testing gates PRs at 80** (`:service:app:pitest`): a test that executes without asserting
 will fail CI. Coverage says a line ran; mutation says a test would have noticed. The PR gate runs

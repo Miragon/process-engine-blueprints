@@ -20,6 +20,16 @@ springBoot {
     buildInfo()
 }
 
+// Konsist parses the sources with the embedded Kotlin compiler; Spring's dependency management would
+// otherwise align it to the Kotlin plugin version, which Konsist does not support yet.
+configurations.testRuntimeClasspath {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "org.jetbrains.kotlin" && requested.name == "kotlin-compiler-embeddable") {
+            useVersion(libs.versions.konsist.kotlin.compiler.version.get())
+        }
+    }
+}
+
 dependencies {
     implementation(libs.bundles.defaultService)
     implementation(libs.bundles.database)
@@ -36,7 +46,7 @@ dependencies {
     testRuntimeOnly(libs.junitPlatformLauncher)
 }
 
-// Generates the typed `*ProcessApi` objects (element ids, messages, timers, variables, …) from the
+// Generates the typed `*ProcessApi` objects and the shared constant files (job types, messages, …) from the
 // BPMN models, so workers and tests reference process elements as compile-checked constants.
 tasks.register<GenerateBpmnModelsTask>("generateBpmnModels") {
     baseDir = projectDir.toString()
@@ -74,6 +84,11 @@ pitest {
         listOf(
             // Generated typed process API — not hand-written logic.
             "io.miragon.blueprint.adapter.process.*ProcessApi*",
+            "io.miragon.blueprint.adapter.process.ServiceTasks*",
+            "io.miragon.blueprint.adapter.process.Messages*",
+            "io.miragon.blueprint.adapter.process.ProcessVariables*",
+            "io.miragon.blueprint.adapter.process.Errors*",
+            "io.miragon.blueprint.adapter.process.Escalations*",
             // Application bootstrap, outside the hexagonal layers.
             "io.miragon.blueprint.BikeLeasingApplication*",
             "io.miragon.blueprint.BikeCatalogueSeeder*",

@@ -36,7 +36,7 @@ class ValidateApplicationDelegate(
 - The **application id is the process business key** (`execution.processBusinessKey`), wrapped into the
   domain id (`ApplicationId.of(...)`). Other variables come via `execution.getVariable(name)`, and the
   variable **name must come from the typed ProcessApi**
-  (`BikeLeasingProcessProcessApi.Variables.…`) — never a raw string literal.
+  (`BikeLeasingProcessProcessApi.FlowNodes.<Node>.Variables.…`) — never a raw string literal.
 - A **listener** (execution or task) is a plain `@Component` implementing `ExecutionListener` or
   `TaskListener` (see `ClarifyAlternativeTaskListener`, `BikeOrderAuditListener`) — no `BaseDelegate`.
 
@@ -59,7 +59,8 @@ class ValidateApplicationDelegate(
 From `$ARGUMENTS`: a `.bpmn` under `service/app/src/main/resources/bpmn/`, or a `*ProcessApi.kt` under
 `adapter/process/`. Read both — the BPMN is the source of truth for the element, its
 `delegateExpression`, input/output variables, and any attached error/timer boundary events; the
-ProcessApi supplies the typed constants (`Variables.*`, `Elements.*`, `Messages.*`). If neither is
+ProcessApi supplies the typed constants (`FlowNodes.<Node>.id`, `FlowNodes.<Node>.Variables.*`, plus the
+shared top-level `Messages.*` / `ServiceTasks.*` / `ProcessVariables.*`). If neither is
 given, `Glob **/bpmn/*.bpmn` and `**/adapter/process/*ProcessApi.kt`, list, and ask.
 
 ### Step 2 — Identify the element

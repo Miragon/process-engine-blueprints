@@ -24,9 +24,12 @@ engine is driven through `RuntimeService`/`TaskService`. See
 
 ## IMPORTANT — string constants come from the ProcessApi, never raw literals
 
-- Delegate variable reads → `BikeLeasingProcessProcessApi.Variables.…`
-- Adapter `startProcessInstanceByMessage(...)` → `Messages.…`; user-task completion →
-  `Elements.…` + `Variables.…` (see `LeasingProcessAdapter`).
+- Delegate variable reads → `BikeLeasingProcessProcessApi.FlowNodes.<Node>.Variables.…`
+- Adapter `startProcessInstanceByMessage(...)` → the shared top-level `Messages.…`; user-task
+  completion → `FlowNodes.<UserTask>.id` + `FlowNodes.<Node>.Variables.…` (see
+  `LeasingProcessAdapter`).
+- Process tests assert the walked path as a `ProcessPath` over `FlowNodes` (see
+  `BikeLeasingProcessTest`), never as a hand-written element-id list.
 - The generated `adapter/process` `*ProcessApi` is the source of truth; regenerate it with
   `./gradlew generateBpmnModels` if the model changed but the API is stale.
 - Delegate handler bodies take primitives / the business key and wrap them into domain value objects
@@ -46,7 +49,7 @@ to run it and **stop this skill**; they restart `automate-process` afterwards. I
 **/adapter/process/*ProcessApi.kt` in the same module). No argument → `Glob` all `*ProcessApi.kt`, list,
 ask. If no ProcessApi exists, tell the user to run `./gradlew generateBpmnModels` first.
 
-Extract: package, object name, `PROCESS_ID`, `Elements.*`, `Messages.*`, `Variables.*`.
+Extract: package, object name, `PROCESS_ID`, `FlowNodes.*` (ids, `Variables`, `Next`), and the shared `Messages.*` / `ServiceTasks.*`.
 
 ### Step 2 — Packages
 

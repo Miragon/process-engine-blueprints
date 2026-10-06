@@ -57,7 +57,7 @@ service/
     adapter/outbound/operaton   drives the engine (RuntimeService / TaskService)
     adapter/outbound/db         JPA persistence (leasing applications + bike portfolio)
     adapter/outbound/dealer     simulated bike dealer (stock check + order)
-    adapter/process             generated *ProcessApi (bpmn-to-code) + engine config
+    adapter/process             generated process API (bpmn-to-code) + engine config
     application/{port,service}  use-case ports and their services
     domain/{leasing,bike}       pure domain model
     resources/{bpmn,dmn,forms}  the process models and Camunda Forms
@@ -73,8 +73,9 @@ stack/                         Postgres + EnterpriseGlue The Bridge dev stack (d
 - **Stack:** Kotlin 2.4 · Spring Boot 4 · Operaton 2.1 (embedded) · PostgreSQL · Gradle with a
   `libs.versions.toml` version catalog.
 - **Generated process API:** the [`bpmn-to-code`](https://github.com/emaarco/bpmn-to-code) Gradle
-  plugin turns each `.bpmn` into a typed `*ProcessApi` object, so element ids, messages, timers and
-  variables are compile-checked constants used by both delegates and tests.
+  plugin turns each `.bpmn` into a typed `*ProcessApi` object (a node-centric `FlowNodes` tree) plus shared
+  `Messages`/`ServiceTasks`/`ProcessVariables` constants, so element ids, messages, timers,
+  variables and the walked paths are compile-checked in both delegates and tests.
 - **Forms:** Camunda Forms (`.form`) are deployed with the process and render in the Operaton
   Tasklist/Cockpit for the user tasks.
 - **BPMN linting:** [`bpmnlint`](https://github.com/bpmn-io/bpmnlint) (`bpmnlint:recommended`) gates

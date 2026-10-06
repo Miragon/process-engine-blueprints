@@ -25,7 +25,8 @@ We structure `service/example-service` as a **hexagon (ports & adapters)** under
   that subscribe to the engine's BPMN topics).
 - `adapter/outbound/{db,engine,dealer,notification,contract,insurance}` — driven adapters, including the
   `engine` adapter that deploys the model and drives the remote engine over `/engine-rest`.
-- `process/` — the **generated** `*ProcessApi` (bpmn-to-code: topics, messages, element ids, variables);
+- `process/` — the **generated** `*ProcessApi` and shared constants (bpmn-to-code: flow nodes, topics,
+  messages, variables);
   a technical seam that fits neither side of the split.
 
 These rules are **enforced by the reusable ArchUnit + Konsist suite** in

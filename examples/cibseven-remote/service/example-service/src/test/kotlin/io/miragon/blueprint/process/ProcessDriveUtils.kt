@@ -1,6 +1,7 @@
 package io.miragon.blueprint.process
 
-import io.miragon.bpmn.runtime.ElementId
+import io.miragon.blueprint.process.BikeLeasingProcessProcessApi.FlowNodes
+import io.miragon.bpmn.runtime.FlowNode
 import io.miragon.bpmn.runtime.MessageName
 import org.assertj.core.api.Assertions.assertThat
 import org.cibseven.bpm.engine.ProcessEngine
@@ -49,9 +50,9 @@ fun ProcessEngine.correlateMessage(message: MessageName, businessKey: String) {
  * Fires the timer job of the given boundary/catch event directly, regardless of its due date — the
  * tests verify the timer path is wired correctly, not the real-world waiting duration.
  */
-fun ProcessEngine.fireTimer(timerActivityId: ElementId) {
-    val timer = managementService.createJobQuery().timers().activityId(timerActivityId.value).singleResult()
-    requireNotNull(timer) { "no timer job found for activity '${timerActivityId.value}'" }
+fun ProcessEngine.fireTimer(timerEvent: FlowNode) {
+    val timer = managementService.createJobQuery().timers().activityId(timerEvent.id.value).singleResult()
+    requireNotNull(timer) { "no timer job found for activity '${timerEvent.id.value}'" }
     managementService.executeJob(timer.id)
     executeAsyncContinuations()
 }
@@ -82,9 +83,9 @@ fun ProcessEngine.drainToWaitState(
 
 /** Starts the process through its message start event, keyed by [businessKey], then settles the plumbing. */
 fun ProcessEngine.startLeasing(businessKey: String, age: Int, income: Double, bikeId: String) {
-    val start = BikeLeasingProcessProcessApi.Variables.StartEventLeasingRequestReceived
+    val start = FlowNodes.StartEventLeasingRequestReceived.Variables
     runtimeService.startProcessInstanceByMessage(
-        BikeLeasingProcessProcessApi.Messages.MIRAVELO_LEASING_REQUEST_RECEIVED.value,
+        Messages.MIRAVELO_LEASING_REQUEST_RECEIVED.value,
         businessKey,
         mapOf(
             start.APPLICATION_ID.value to businessKey,

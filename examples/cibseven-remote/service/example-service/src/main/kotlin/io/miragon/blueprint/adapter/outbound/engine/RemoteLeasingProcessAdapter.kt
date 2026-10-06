@@ -4,9 +4,8 @@ import io.miragon.blueprint.application.port.outbound.LeasingProcess
 import io.miragon.blueprint.domain.bike.BikeId
 import io.miragon.blueprint.domain.leasing.ApplicationId
 import io.miragon.blueprint.domain.leasing.LeasingApplication
-import io.miragon.blueprint.process.BikeLeasingProcessProcessApi.Elements
-import io.miragon.blueprint.process.BikeLeasingProcessProcessApi.Messages
-import io.miragon.blueprint.process.BikeLeasingProcessProcessApi.Variables
+import io.miragon.blueprint.process.BikeLeasingProcessProcessApi.FlowNodes
+import io.miragon.blueprint.process.Messages
 import mu.KotlinLogging
 import org.cibseven.rest.client.api.MessageApi
 import org.cibseven.rest.client.api.TaskApi
@@ -37,7 +36,7 @@ class RemoteLeasingProcessAdapter(
     private val log = KotlinLogging.logger {}
 
     override fun submitRequest(application: LeasingApplication) {
-        val start = Variables.StartEventLeasingRequestReceived
+        val start = FlowNodes.StartEventLeasingRequestReceived.Variables
         messageApi.deliverMessageWithHttpInfo(
             CorrelationMessageDto(
                 messageName = Messages.MIRAVELO_LEASING_REQUEST_RECEIVED.value,
@@ -71,11 +70,11 @@ class RemoteLeasingProcessAdapter(
         alternativeFound: Boolean,
         bikeId: BikeId?,
     ) {
-        val taskId = findTaskId(id, Elements.USER_TASK_CLARIFY_ALTERNATIVE.value)
+        val taskId = findTaskId(id, FlowNodes.UserTaskClarifyAlternative.id.value)
         val variables = buildMap {
-            put(Variables.UserTaskClarifyAlternative.ALTERNATIVE_FOUND.value, typedVar(alternativeFound))
+            put(FlowNodes.UserTaskClarifyAlternative.Variables.ALTERNATIVE_FOUND.value, typedVar(alternativeFound))
             // The re-order reads the same start-injected bike variable, so reuse its name.
-            bikeId?.let { put(Variables.StartEventLeasingRequestReceived.BIKE_ID.value, typedVar(it.value)) }
+            bikeId?.let { put(FlowNodes.StartEventLeasingRequestReceived.Variables.BIKE_ID.value, typedVar(it.value)) }
         }
         taskApi.completeWithHttpInfo(taskId, CompleteTaskDto(variables = variables))
         log.info { "Completed clarify-alternative task ($taskId) for application ${id.value}" }

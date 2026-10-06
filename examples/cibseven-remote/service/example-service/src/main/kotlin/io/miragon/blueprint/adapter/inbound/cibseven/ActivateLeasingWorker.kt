@@ -2,7 +2,7 @@ package io.miragon.blueprint.adapter.inbound.cibseven
 
 import io.miragon.blueprint.application.port.inbound.ActivateLeasingUseCase
 import io.miragon.blueprint.domain.leasing.ApplicationId
-import io.miragon.blueprint.process.BikeLeasingProcessProcessApi.ServiceTasks
+import io.miragon.blueprint.process.ServiceTasks
 import org.cibseven.bpm.client.spring.annotation.ExternalTaskSubscription
 import org.cibseven.bpm.client.task.ExternalTask
 import org.cibseven.bpm.client.task.ExternalTaskService

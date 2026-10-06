@@ -22,8 +22,8 @@ springBoot {
 /**
  * The remote worker + business logic (hexagonal), and — since there is no separate contract module —
  * the **owner of the process contract** too. It carries the `.bpmn`/`.dmn`/`.form` models and generates
- * the typed `*ProcessApi` objects (topics, messages, element ids, variables) from them with
- * `bpmn-to-code`, keeps its own JPA/Postgres store, subscribes to the engine's external service-tasks
+ * the typed `*ProcessApi` objects and shared constants (flow nodes, topics, messages, variables) from
+ * them with `bpmn-to-code`, keeps its own JPA/Postgres store, subscribes to the engine's external service-tasks
  * via the CIB seven external-task client, deploys the model into the engine over REST at start-up, and
  * drives the running process with a `RestClient`. The engine runs in the model-agnostic `engine-service`.
  */
@@ -44,8 +44,8 @@ dependencies {
     testImplementation(project(":service:common-architecture-tests"))
 }
 
-// Generates the typed `*ProcessApi` objects (element ids, messages, timers, variables, external-task
-// topics, …) from the BPMN models, so workers and tests reference process elements as compile-checked
+// Generates the typed `*ProcessApi` objects (flow nodes with their ids, variables and successors) and
+// the shared `ServiceTasks`/`Messages`/`ProcessVariables`/`Errors`/`Escalations` from the BPMN models, so workers and tests reference process elements as compile-checked
 // constants.
 tasks.register<GenerateBpmnModelsTask>("generateBpmnModels") {
     baseDir = projectDir.toString()
@@ -78,7 +78,7 @@ pitest {
     excludedClasses.set(
         listOf(
             // Generated typed process API — no behaviour of ours to mutate.
-            "io.miragon.blueprint.process.*ProcessApi*",
+            "io.miragon.blueprint.process.*",
             // Application bootstrap / wiring, outside the hexagonal layers.
             "io.miragon.blueprint.ExampleServiceApplication*",
             "io.miragon.blueprint.BikeCatalogueSeeder*",

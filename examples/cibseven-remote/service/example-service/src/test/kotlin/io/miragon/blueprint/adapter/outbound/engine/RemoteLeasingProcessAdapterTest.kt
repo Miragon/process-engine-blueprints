@@ -77,6 +77,42 @@ class RemoteLeasingProcessAdapterTest {
     }
 
     @Test
+    fun `correlateHandoverReported sends the message correlated by business key`() {
+
+        // given: an engine that accepts the correlation
+        val application = testLeasingApplication()
+        server.expect(requestTo("http://engine/engine-rest/message"))
+            .andExpect(method(HttpMethod.POST))
+            .andExpect(jsonPath("$.messageName").value("miravelo.handoverReported"))
+            .andExpect(jsonPath("$.businessKey").value(application.id.value.toString()))
+            .andRespond(withSuccess())
+
+        // when: the handover-reported message is correlated
+        underTest.correlateHandoverReported(application.id)
+
+        // then: the message was sent
+        server.verify()
+    }
+
+    @Test
+    fun `correlateApplicationWithdrawn sends the message correlated by business key`() {
+
+        // given: an engine that accepts the correlation
+        val application = testLeasingApplication()
+        server.expect(requestTo("http://engine/engine-rest/message"))
+            .andExpect(method(HttpMethod.POST))
+            .andExpect(jsonPath("$.messageName").value("miravelo.applicationWithdrawn"))
+            .andExpect(jsonPath("$.businessKey").value(application.id.value.toString()))
+            .andRespond(withSuccess())
+
+        // when: the application-withdrawn message is correlated
+        underTest.correlateApplicationWithdrawn(application.id)
+
+        // then: the message was sent
+        server.verify()
+    }
+
+    @Test
     fun `completeAlternativeClarification looks up the task by business key and completes it`() {
 
         // given: one active clarify-alternative task for the application
@@ -107,6 +143,21 @@ class RemoteLeasingProcessAdapterTest {
             .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON))
 
         // when / then: completing the clarification surfaces the missing task
+        val error = runCatching { underTest.completeAlternativeClarification(application.id, alternativeFound = false) }
+        assertThat(error.exceptionOrNull()).isInstanceOf(IllegalStateException::class.java)
+        server.verify()
+    }
+
+    @Test
+    fun `findTaskId fails when the engine returns a task without an id`() {
+
+        // given: the engine reports a task that carries no id
+        val application = testLeasingApplication()
+        server.expect(requestTo(containsString("/task?")))
+            .andExpect(method(HttpMethod.GET))
+            .andRespond(withSuccess("""[{"name":"Clarify alternative with customer"}]""", MediaType.APPLICATION_JSON))
+
+        // when / then: completing the clarification surfaces the unusable task
         val error = runCatching { underTest.completeAlternativeClarification(application.id, alternativeFound = false) }
         assertThat(error.exceptionOrNull()).isInstanceOf(IllegalStateException::class.java)
         server.verify()

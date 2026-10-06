@@ -2,8 +2,8 @@ package io.miragon.blueprint.adapter.inbound.cibseven
 
 import io.miragon.blueprint.application.port.inbound.OrderBikeUseCase
 import io.miragon.blueprint.domain.leasing.ApplicationId
-import io.miragon.blueprint.process.BikeLeasingProcessProcessApi.ServiceTasks
-import io.miragon.blueprint.process.BikeLeasingProcessProcessApi.Variables
+import io.miragon.blueprint.process.BikeLeasingProcessProcessApi.FlowNodes
+import io.miragon.blueprint.process.ServiceTasks
 import org.cibseven.bpm.client.spring.annotation.ExternalTaskSubscription
 import org.cibseven.bpm.client.task.ExternalTask
 import org.cibseven.bpm.client.task.ExternalTaskService
@@ -30,8 +30,8 @@ class OrderBikeWorker(
         externalTaskService.complete(
             externalTask,
             mapOf(
-                Variables.ServiceTaskOrderBike.ORDER_ID.value to result.orderId?.value,
-                Variables.ServiceTaskOrderBike.BIKE_AVAILABLE.value to result.bikeAvailable,
+                FlowNodes.ServiceTaskOrderBike.Variables.ORDER_ID.value to result.orderId?.value,
+                FlowNodes.ServiceTaskOrderBike.Variables.BIKE_AVAILABLE.value to result.bikeAvailable,
             ),
         )
     }

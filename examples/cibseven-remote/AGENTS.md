@@ -82,6 +82,13 @@ ServiceArchitectureTest(...)`). Read `HexagonalArchitectureTest.kt` and
 
 - The worker **owns** the `.bpmn`/`.dmn`/`.form` models under
   `service/example-service/src/main/resources` and deploys them into the remote engine at start-up.
+- `bpmn-to-code` generates the typed process API into the worker's `process/` package — never
+  hand-edit `*ProcessApi.kt` or the shared `ServiceTasks`/`Messages`/`ProcessVariables`/`Errors`/
+  `Escalations` files; edit the `.bpmn` and re-run `./gradlew generateBpmnModels`. Since bpmn-to-code 6
+  the API is node-centric: `<Process>ProcessApi.FlowNodes.<Node>` carries the element (`.id`,
+  `ELEMENT_ID`), its `Variables` and its successors (`Next`). Process tests assert the walked path as
+  a compile-checked `ProcessPath` (`process/ProcessPathAssertions.kt`) instead of hand-maintained
+  element-id lists.
 - `bpmn-to-code-testing` validates the models structurally at build time — including a custom rule
   that every service task must be an **external task with a topic**.
 - `bpmnlint` runs on staged `.bpmn` via `.githooks/pre-commit` (install: `npm run hooks:install`).
@@ -98,7 +105,7 @@ TDD. Match the test style to the layer:
 | `adapter.inbound.cibseven` (external-task workers) | direct mockk unit tests |
 | `adapter.outbound.db` | `@DataJpaTest` |
 | `adapter.outbound.engine` (remote client) | `MockRestServiceServer` |
-| process end-to-end | CIB seven process tests (`cibseven-bpm-assert`, in-memory engine) |
+| process end-to-end | CIB seven process tests (`cibseven-bpm-assert`, in-memory engine), paths asserted via `ProcessPath` |
 
 **Mutation testing gates PRs at 80** (`:service:example-service:pitest`): a test that executes
 without asserting will fail CI. Coverage says a line ran; mutation says a test would have noticed.

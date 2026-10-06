@@ -1,6 +1,6 @@
 package io.miragon.blueprint.adapter.outbound.engine
 
-import io.miragon.blueprint.process.BikeLeasingProcessProcessApi.Elements
+import io.miragon.blueprint.process.BikeLeasingProcessProcessApi.FlowNodes
 import io.mockk.every
 import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
@@ -25,7 +25,7 @@ class TaskInboxAdapterTest {
         // given: one open clarify-alternative task whose instance carries the application id as its key
         val applicationId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000")
         val created = OffsetDateTime.of(2024, 1, 15, 10, 30, 0, 0, ZoneOffset.UTC)
-        every { taskApi.getTasks(taskDefinitionKey = Elements.USER_TASK_CLARIFY_ALTERNATIVE.value) } returns
+        every { taskApi.getTasks(taskDefinitionKey = FlowNodes.UserTaskClarifyAlternative.id.value) } returns
             listOf(TaskWithAttachmentAndCommentDto(id = "task-1", processInstanceId = "pi-1", created = created))
         every { processInstanceApi.getProcessInstance("pi-1") } returns
             ProcessInstanceDto(id = "pi-1", businessKey = applicationId.toString())
@@ -42,7 +42,7 @@ class TaskInboxAdapterTest {
     fun `skips tasks whose process instance has no business key`() {
 
         // given: an open task whose instance lost its business key (defensive)
-        every { taskApi.getTasks(taskDefinitionKey = Elements.USER_TASK_CLARIFY_ALTERNATIVE.value) } returns
+        every { taskApi.getTasks(taskDefinitionKey = FlowNodes.UserTaskClarifyAlternative.id.value) } returns
             listOf(
                 TaskWithAttachmentAndCommentDto(
                     id = "task-1",
@@ -53,6 +53,31 @@ class TaskInboxAdapterTest {
         every { processInstanceApi.getProcessInstance("pi-1") } returns ProcessInstanceDto(id = "pi-1", businessKey = null)
 
         // when / then: it is silently dropped rather than surfacing an unusable case
+        assertThat(underTest.findOpenClarifications()).isEmpty()
+    }
+
+    @Test
+    fun `skips tasks without a process instance`() {
+
+        // given: an open task that is not bound to a process instance (defensive)
+        every { taskApi.getTasks(taskDefinitionKey = FlowNodes.UserTaskClarifyAlternative.id.value) } returns
+            listOf(TaskWithAttachmentAndCommentDto(id = "task-1", created = OffsetDateTime.now(ZoneOffset.UTC)))
+
+        // when / then: it is dropped without asking the engine for an instance
+        assertThat(underTest.findOpenClarifications()).isEmpty()
+    }
+
+    @Test
+    fun `skips tasks without a creation time`() {
+
+        // given: an open task whose creation time is missing (defensive)
+        val applicationId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000")
+        every { taskApi.getTasks(taskDefinitionKey = FlowNodes.UserTaskClarifyAlternative.id.value) } returns
+            listOf(TaskWithAttachmentAndCommentDto(id = "task-1", processInstanceId = "pi-1"))
+        every { processInstanceApi.getProcessInstance("pi-1") } returns
+            ProcessInstanceDto(id = "pi-1", businessKey = applicationId.toString())
+
+        // when / then: it is dropped because the inbox cannot tell how long it has been waiting
         assertThat(underTest.findOpenClarifications()).isEmpty()
     }
 }

@@ -2,7 +2,7 @@ package io.miragon.blueprint.adapter.outbound.engine
 
 import io.miragon.blueprint.application.port.outbound.TaskInboxPort
 import io.miragon.blueprint.domain.leasing.ApplicationId
-import io.miragon.blueprint.process.BikeLeasingProcessProcessApi.Elements
+import io.miragon.blueprint.process.BikeLeasingProcessProcessApi.FlowNodes
 import org.cibseven.rest.client.api.ProcessInstanceApi
 import org.cibseven.rest.client.api.TaskApi
 import org.springframework.stereotype.Component
@@ -25,7 +25,7 @@ class TaskInboxAdapter(
 ) : TaskInboxPort {
 
     override fun findOpenClarifications(): List<TaskInboxPort.OpenClarification> {
-        val tasks = taskApi.getTasks(taskDefinitionKey = Elements.USER_TASK_CLARIFY_ALTERNATIVE.value)
+        val tasks = taskApi.getTasks(taskDefinitionKey = FlowNodes.UserTaskClarifyAlternative.id.value)
         return tasks.mapNotNull { task ->
             val processInstanceId = task.processInstanceId ?: return@mapNotNull null
             val businessKey = processInstanceApi.getProcessInstance(processInstanceId).businessKey

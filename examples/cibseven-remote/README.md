@@ -55,7 +55,7 @@ service/
   engine-service/              CIB seven engine host — /engine-rest + Cockpit, deploys no model; hosts the in-engine execution/task listeners (:8081)
   example-service/             the worker; OWNS the contract + deploys the process; business logic (hexagonal), :8082
     src/main/resources         THE CONTRACT: the BPMN/DMN/form models this service owns
-    process/                    generated *ProcessApi (bpmn-to-code): topics, messages, element ids, variables
+    process/                    generated *ProcessApi + shared constants (bpmn-to-code): flow nodes, topics, messages, variables
     adapter/inbound/rest        domain REST controllers
     adapter/inbound/cibseven    external-task workers (subscribe to the BPMN topics)
     adapter/outbound/engine     deploys the model + drives the remote engine via the generated client
@@ -77,8 +77,9 @@ stack/                         Postgres dev stack (docker compose)
   `libs.versions.toml` version catalog.
 - **The contract lives in the worker:** the `example-service` owns the `.bpmn`/`.dmn`/`.form` models
   (`src/main/resources`) and generates the
-  [`bpmn-to-code`](https://github.com/emaarco/bpmn-to-code) `*ProcessApi` (process id, element ids,
-  messages, timers, variables and **external-task topics**) straight into its own `process/` package —
+  [`bpmn-to-code`](https://github.com/emaarco/bpmn-to-code) `*ProcessApi` (process id and a node-centric `FlowNodes` tree
+  with element ids, variables and successors) plus the shared `ServiceTasks` (**external-task topics**),
+  `Messages`, `ProcessVariables`, `Errors` and `Escalations` straight into its own `process/` package —
   one source of truth, model and worker code versioned together with no drift and no separate module.
 - **Who owns and deploys the model:** the `example-service` **owns the process** and deploys it into the
   remote engine at start-up (`ProcessModelDeploymentAdapter`, idempotent via `enable-duplicate-filtering`), so the

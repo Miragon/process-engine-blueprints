@@ -1,16 +1,17 @@
 package io.miragon.blueprint.adapter.inbound.cibseven;
 
 import io.miragon.blueprint.application.port.inbound.OrderBikeUseCase;
+import io.miragon.blueprint.domain.bike.BikeUnavailableException;
 import io.miragon.blueprint.domain.bike.OrderId;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
 import io.miragon.blueprint.process.BikeLeasingProcessProcessApi.FlowNodes;
+import io.miragon.blueprint.process.Errors;
 import io.miragon.blueprint.process.ServiceTasks;
 import org.cibseven.bpm.client.spring.annotation.ExternalTaskSubscription;
 import org.cibseven.bpm.client.task.ExternalTask;
 import org.cibseven.bpm.client.task.ExternalTaskService;
 import org.springframework.stereotype.Component;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Component
@@ -41,12 +42,18 @@ public class OrderBikeWorker extends BaseExternalTaskWorker {
 
     @Override
     public void executeTask(ExternalTask externalTask, ExternalTaskService externalTaskService) {
-        OrderBikeUseCase.Result result = useCase.orderBike(ApplicationId.of(externalTask.getBusinessKey()));
-        // Output variables the process routes on (`bikeAvailable`) and later reuses (`orderId`).
-        OrderId orderId = result.orderId();
-        Map<String, Object> variables = new LinkedHashMap<>();
-        variables.put(FlowNodes.ServiceTaskOrderBike.Variables.ORDER_ID.getValue(), orderId != null ? orderId.value() : null);
-        variables.put(FlowNodes.ServiceTaskOrderBike.Variables.BIKE_AVAILABLE.getValue(), result.bikeAvailable());
-        externalTaskService.complete(externalTask, variables);
+        OrderId orderId;
+        try {
+            orderId = useCase.orderBike(ApplicationId.of(externalTask.getBusinessKey()));
+        } catch (BikeUnavailableException e) {
+            // Raise the `bikeUnavailable` BPMN error so the error boundary event diverts to the
+            // alternative clarification. Leaving the task this way registers no order compensation.
+            externalTaskService.handleBpmnError(externalTask, Errors.BIKE_UNAVAILABLE.getCode(), e.getMessage());
+            return;
+        }
+        // Output variable the order compensation later reuses.
+        externalTaskService.complete(
+                externalTask,
+                Map.of(FlowNodes.ServiceTaskOrderBike.Variables.ORDER_ID.getValue(), orderId.value()));
     }
 }

@@ -255,7 +255,7 @@
                     </targetTests>
                     <excludedClasses>
                         <!-- Generated typed process API — no behaviour of ours to mutate. -->
-                        <param>io.miragon.blueprint.process.*ProcessApi*</param>
+                        <param>io.miragon.blueprint.process.*</param>
                         <!-- Application bootstrap / wiring, outside the hexagonal layers. -->
                         <param>io.miragon.blueprint.ExampleServiceApplication*</param>
                         <param>io.miragon.blueprint.BikeCatalogueSeeder*</param>

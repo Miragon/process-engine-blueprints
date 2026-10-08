@@ -19,6 +19,8 @@ npx --yes @usebruno/cli@4.0.0 run . --env local -r
 | `05-bike-unavailable` | the bike is out of stock and the customer picks an alternative |
 | `06-incident-demo` | a failing external task runs out of retries and raises an incident |
 | `07-list-and-inbox` | the list and task-inbox endpoints |
+| `08-alternative-declined` | the bike is out of stock and no alternative is found; contract and policy are compensated, no order is cancelled |
+| `09-invalid-request` | a request without income is refused with a 400 before any process starts |
 
 The worker and the engine are eventually consistent, so the requests **poll for a state instead of
 sleeping** ([ADR-0012](../docs/adr/0012-polling-for-eventual-consistency-in-e2e-tests.md)). The helpers
@@ -40,7 +42,7 @@ the *only* bike attribute the engine ever carries: the descriptive `bikeModel` l
 `GET /api/bike-leasing/{id}` resolves it back from there. Availability is decided by the
 `BikeDealerPort` outbound adapter, whose small out-of-stock deny-list drives the branch.
 
-Watch the external-task workers complete `validateApplication`, `orderBike`, … in the worker's log and
+Watch the external-task workers complete `sendContract`, `orderBike`, … in the worker's log and
 inspect the running instance in the Cockpit at <http://localhost:8081/camunda> (admin/admin).
 
 The worker also exposes a small read surface: `GET /api/bikes` (the seeded catalogue),

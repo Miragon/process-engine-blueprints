@@ -56,7 +56,7 @@ The resources are kept identical to the other variant's; CI fails when they diff
 - **Service tasks are external tasks.** Every `<serviceTask>` in the model is `camunda:type="external"`
   with a topic (`bikeLeasing.<task>`). The worker subscribes with `@ExternalTaskSubscription` handlers
   that fetch, lock and complete them over `/engine-rest`. A handler that produces variables passes them
-  on `complete(...)`; `validateApplication` raises the `applicationInvalid` BPMN error.
+  on `complete(...)`; `orderBike` raises the `bikeUnavailable` BPMN error when the dealer has no bike.
 - **The worker owns and deploys the model.** `ProcessModelDeploymentAdapter` deploys the `.bpmn`, `.dmn`
   and `.form` files at start-up (idempotent through duplicate filtering), so the engine stays a generic
   host.

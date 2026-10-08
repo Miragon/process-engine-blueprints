@@ -30,8 +30,6 @@ public final class ServiceTasks {
 
   public static final String BIKE_LEASING_SEND_REMINDER_MAIL = "bikeLeasing.sendReminderMail";
 
-  public static final String BIKE_LEASING_VALIDATE_APPLICATION = "bikeLeasing.validateApplication";
-
   private ServiceTasks() {
   }
 
@@ -47,7 +45,6 @@ public final class ServiceTasks {
         BIKE_LEASING_SEND_CANCELLATION_CONFIRMATION,
         BIKE_LEASING_SEND_CONTRACT,
         BIKE_LEASING_SEND_REJECTION,
-        BIKE_LEASING_SEND_REMINDER_MAIL,
-        BIKE_LEASING_VALIDATE_APPLICATION);
+        BIKE_LEASING_SEND_REMINDER_MAIL);
   }
 }

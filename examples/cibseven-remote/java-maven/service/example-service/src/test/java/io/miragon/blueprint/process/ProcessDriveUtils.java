@@ -3,6 +3,7 @@ package io.miragon.blueprint.process;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.miragon.blueprint.process.BikeLeasingProcessProcessApi.FlowNodes.StartEventLeasingRequestReceived;
+import io.miragon.bpmn.runtime.BpmnErrorDefinition;
 import io.miragon.bpmn.runtime.FlowNode;
 import io.miragon.bpmn.runtime.MessageName;
 import org.cibseven.bpm.engine.ProcessEngine;
@@ -34,10 +35,28 @@ final class ProcessDriveUtils {
      * embedded blueprint's {@code executeJobFor(activityId)}. It is explicit about <i>which</i> task it drives and
      * fails loudly if that task is not (uniquely) waiting, so a test reads as an ordered trace. The
      * {@code variables} are passed as the task's output — exactly what a real worker would return (e.g.
-     * {@code orderBike} → {@code bikeAvailable} / {@code orderId}). Afterwards it settles the deterministic async
+     * {@code orderBike} → {@code orderId}). Afterwards it settles the deterministic async
      * plumbing (asyncAfter jobs, the DMN, gateways) up to the next wait state or external task.
      */
     static void completeExternalTask(ProcessEngine engine, String topicName, Map<String, Object> variables) {
+        ExternalTask task = lockSingleExternalTask(engine, topicName);
+        engine.getExternalTaskService().complete(task.getId(), TEST_WORKER, variables);
+        executeAsyncContinuations(engine);
+    }
+
+    /**
+     * Ends the <b>single</b> waiting external task of {@code topicName} with the BPMN {@code error} — what a
+     * real worker does through {@code handleBpmnError} — so the task is left through its error boundary event
+     * instead of being completed. Afterwards it settles the plumbing like
+     * {@link #completeExternalTask(ProcessEngine, String, Map)}.
+     */
+    static void raiseBpmnErrorOnExternalTask(ProcessEngine engine, String topicName, BpmnErrorDefinition error) {
+        ExternalTask task = lockSingleExternalTask(engine, topicName);
+        engine.getExternalTaskService().handleBpmnError(task.getId(), TEST_WORKER, error.getCode());
+        executeAsyncContinuations(engine);
+    }
+
+    private static ExternalTask lockSingleExternalTask(ProcessEngine engine, String topicName) {
         List<ExternalTask> tasks =
                 engine.getExternalTaskService().createExternalTaskQuery().topicName(topicName).notLocked().list();
         if (tasks.size() != 1) {
@@ -46,8 +65,7 @@ final class ProcessDriveUtils {
         }
         ExternalTask task = tasks.get(0);
         engine.getExternalTaskService().lock(task.getId(), TEST_WORKER, TEST_LOCK_DURATION_MS);
-        engine.getExternalTaskService().complete(task.getId(), TEST_WORKER, variables);
-        executeAsyncContinuations(engine);
+        return task;
     }
 
     static void completeUserTask(ProcessEngine engine, String taskDefinitionKey) {

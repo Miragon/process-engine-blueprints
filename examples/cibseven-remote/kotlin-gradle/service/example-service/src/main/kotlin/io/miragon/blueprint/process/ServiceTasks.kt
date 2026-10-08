@@ -35,8 +35,6 @@ object ServiceTasks {
 
   const val BIKE_LEASING_SEND_REMINDER_MAIL: String = "bikeLeasing.sendReminderMail"
 
-  const val BIKE_LEASING_VALIDATE_APPLICATION: String = "bikeLeasing.validateApplication"
-
   val all: List<String> = listOf(
     BIKE_LEASING_ACTIVATE_LEASING,
     BIKE_LEASING_BOOK_COSTS,
@@ -49,6 +47,5 @@ object ServiceTasks {
     BIKE_LEASING_SEND_CONTRACT,
     BIKE_LEASING_SEND_REJECTION,
     BIKE_LEASING_SEND_REMINDER_MAIL,
-    BIKE_LEASING_VALIDATE_APPLICATION,
   )
 }

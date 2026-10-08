@@ -62,7 +62,7 @@ curl -X POST http://localhost:8082/api/bike-leasing \
   -d '{ "customerName": "Ada", "email": "ada@example.com", "age": 35, "monthlyNetIncome": 3500, "bikeId": "BIKE-900", "bikeModel": "Gravel Explorer 900" }'
 ```
 
-Watch the external-task workers auto-complete `validateApplication`, `orderBike`, … in the
+Watch the external-task workers auto-complete `sendContract`, `orderBike`, … in the
 worker's log, and inspect the running instance in the CIB seven Cockpit at
 <http://localhost:8081/camunda> (admin/admin). Confirm <http://localhost:8082/swagger-ui.html> and
 <http://localhost:8082/actuator/health> (status `UP`) load. To exercise incidents/retries, submit the

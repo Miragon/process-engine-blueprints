@@ -40,4 +40,3 @@ documented at the point of use.
   We accept these as the price of the stance.
 - **Neutral:** "latest **stable** major" — we track releases, not RCs/pre-releases, and the CI gates, not a
   calendar, decide whether a given bump lands.
-</content>

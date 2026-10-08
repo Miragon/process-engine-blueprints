@@ -57,4 +57,3 @@ The how-to (adding a migration, the one-time reset of an old dev DB) is in
   migration (`R__…sql`) rather than the seeder. Verifying migrations against real Postgres in the unit
   suite (a Testcontainers `@DataJpaTest`) is the documented upgrade path — deferred because no
   Testcontainers infrastructure exists yet.
-</content>

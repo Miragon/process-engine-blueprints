@@ -40,4 +40,3 @@ unaffected.
   real production exposure; component-level health detail is hidden by default as a result.
 - **Neutral:** engine-specific health and OpenTelemetry tracing remain available as later additions,
   tracked separately.
-</content>

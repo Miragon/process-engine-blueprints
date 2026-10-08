@@ -59,4 +59,3 @@ Two things bite when this runs on the embedded Operaton engine:
   fields as `string/date-time`, so DTO date fields are pinned with `@JsonFormat(shape = STRING)` to keep
   payload and contract in sync. Operation ids are set explicitly (`@Operation(operationId = …)`) so
   generated consumer names stay clean and stable (e.g. `listLeasingApplications`).
-</content>

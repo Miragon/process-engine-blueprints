@@ -64,4 +64,3 @@ mutant is then *equivalent* to the original. Both are fixed by asserting **every
   so a PR whose changed classes are all excluded/non-mutable doesn't fail the build.
 - Do **not** rename the `Mutation testing (PIT, gate 80)` job in `pre-merge.yml` — it is the
   branch-protection required check.
-</content>

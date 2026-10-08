@@ -1,177 +1,99 @@
 # Operaton Bike-Leasing Blueprint
 
 > [!NOTE]
-> **🚧 Work in progress.** This is a **solution template** — a reference to fork and build on, for
-> our consultants and anyone else — not a product that ships. It's still being fleshed out, so parts
-> may be incomplete and it may not yet fully demonstrate what it's meant to. Treat it as a
-> living example, and expect it to keep evolving.
+> **🚧 Work in progress.** A **solution template** to fork and build on — not a product that ships.
+> Expect it to keep evolving.
 
 A ready-to-fork **starting point** for automating a business process on
-[Operaton](https://operaton.org) (the community-driven fork of Camunda 7) with an **embedded engine**,
-Spring Boot and Kotlin — one complete, runnable, production-shaped BPMN service you can clone and make
-your own.
+[Operaton](https://operaton.org) (the community-driven fork of Camunda 7) with an **embedded engine**
+and Spring Boot — one complete, runnable, production-shaped BPMN service.
 
-> [!TIP]
-> **Prefer Java + Maven?** A Java 21 + Maven version of this blueprint — the stack most enterprise
-> teams and trainings use — is published at the [`java-maven`](../../tree/java-maven) tag. It is
-> regenerated from this Kotlin `main`, not a separate fork; see
-> [`docs/variants/java-maven.md`](docs/variants/java-maven.md).
+<!-- variant:blueprint -->
+## 🧭 Pick your stack
 
-## The scenario
+| | [`kotlin-gradle/`](kotlin-gradle/README.md) | [`java-maven/`](java-maven/README.md) |
+|---|---|---|
+| **Stack** | Kotlin 2.4 · Gradle | Java 21 · Maven |
+| **Choose it when** | you are free to choose — **our recommendation for a modern stack** | Java + Maven is your team's or company's standard, or you are in a training |
 
-Meet **MiraVelo** — a (fictional) lifestyle bike brand for the quarter-life-crisis crowd: gravel bikes
-for the weekends that count, road bikes for everyone who just wants to feel the asphalt. MiraVelo sells
-its bikes on a **leasing model** for private and corporate customers, and this project automates that
-leasing application from the first request to an active lease.
+Both run the same process, expose the same REST contract and pass the same end-to-end scenarios. Each
+directory is self-contained — build, code, process models and schema — and CI keeps the models and
+configuration of the two identical, so only the language and the build tool differ. Building on one?
+[Turn the repo into a single-stack starter](docs/starter.md) with one command.
+<!-- /variant:blueprint -->
 
-It's a made-up company, so nobody gets hurt when the DMN politely declines a 15-year-old's application
-for a carbon road bike.
+## 🚲 The scenario
 
-## What's inside
-
-Most engine examples stop at a happy-path service task. This one deliberately walks through the **broad
-palette of BPMN elements you actually meet in real processes** — and the engineering scaffolding around
-them — so a new project starts from something complete instead of a blank page:
+**MiraVelo** is a (fictional) bike brand that sells on a **leasing model**. This service automates a
+leasing application from the first request to an active lease — and deliberately walks through the
+**broad palette of BPMN elements you meet in real processes**, not just a happy-path service task:
 
 ![The bike-leasing process](docs/assets/bike-leasing.png)
 
-- a **message start event**, **service tasks** (JavaDelegates) and a **DMN business-rule task**;
-- an **embedded sub-process** with an **event-based gateway** (sign vs. a 14-day deadline) and a
-  non-interrupting **7-day reminder timer**;
-- a **parallel fork/join**, and a **user task with a Camunda Form** — completable in the Tasklist *or*
-  via a REST endpoint;
-- an **execution listener** on a service task and a **task listener** on the user task — the two
-  common listener hooks, wired as Spring beans just like the delegates;
-- **compensation / SAGA** handlers guarded by **error** and **escalation** boundary events;
-- a **call activity** into a second process, a **message event sub-process** (application withdrawal),
-  and a **terminate end event**.
+- **message start event**, **service tasks** (JavaDelegates) and a **DMN business-rule task**
+- **embedded sub-process** with an **event-based gateway** and a non-interrupting **reminder timer**
+- **parallel fork/join**, and a **user task with a Camunda Form** — completable in the Tasklist or via REST
+- **execution** and **task listeners**, wired as Spring beans like the delegates
+- **compensation / SAGA** handlers guarded by **error** and **escalation** boundary events
+- **call activity**, **message event sub-process** (withdrawal) and a **terminate end event**
 
-## How it's built
+## 🚀 Run it
 
-```
-service/
-  common-architecture-tests/   reusable ArchUnit + Konsist rule suite (src/main)
-  app/                         the Operaton bike-leasing service (hexagonal)
-    adapter/inbound/rest        domain REST controllers
-    adapter/inbound/operaton    JavaDelegates for the BPMN service tasks
-    adapter/outbound/operaton   drives the engine (RuntimeService / TaskService)
-    adapter/outbound/db         JPA persistence (leasing applications + bike portfolio)
-    adapter/outbound/dealer     simulated bike dealer (stock check + order)
-    adapter/process             generated process API (bpmn-to-code) + engine config
-    application/{port,service}  use-case ports and their services
-    domain/{leasing,bike}       pure domain model
-    resources/{bpmn,dmn,forms}  the process models and Camunda Forms
-    resources/db/migration      Flyway migrations (Hibernate ddl-auto=validate)
-openapi/openapi.json           GENERATED by a test, COMMITTED, drift-gated in CI
-bruno/                         REST scenarios (happy-path / escalation / abort / not-solvent / …)
-docs/{adr,assets}              Architecture Decision Records + the process diagram
-package.json + .bpmnlintrc     root-level BPMN linting (bpmnlint) + git-hook installer
-stack/                         Postgres + EnterpriseGlue The Bridge dev stack (docker compose)
-.github/                       pre-merge pipeline + Dependabot
-```
+You need **JDK 21** and **Docker** (or Podman).
 
-- **Stack:** Kotlin 2.4 · Spring Boot 4 · Operaton 2.1 (embedded) · PostgreSQL · Gradle with a
-  `libs.versions.toml` version catalog.
-- **Generated process API:** the [`bpmn-to-code`](https://github.com/emaarco/bpmn-to-code) Gradle
-  plugin turns each `.bpmn` into a typed `*ProcessApi` object (a node-centric `FlowNodes` tree) plus shared
-  `Messages`/`ServiceTasks`/`ProcessVariables` constants, so element ids, messages, timers,
-  variables and the walked paths are compile-checked in both delegates and tests.
-- **Forms:** Camunda Forms (`.form`) are deployed with the process and render in the Operaton
-  Tasklist/Cockpit for the user tasks.
-- **BPMN linting:** [`bpmnlint`](https://github.com/bpmn-io/bpmnlint) (`bpmnlint:recommended`) gates
-  the `.bpmn` models via the root-level `npm run lint:bpmn`, run in CI before the Gradle build and on
-  staged models by the pre-commit hook (`npm run hooks:install`).
-- **REST API:** domain endpoints (`POST /api/bike-leasing` and its `/sign-contract`,
-  `/report-handover`, `/withdraw`, `/clarify-alternative` actions; the paged
-  `GET /api/bike-leasing` list and `GET /api/bike-leasing/{id}`; `GET /api/bikes`; and the
-  `GET /api/tasks/clarify-alternative` inbox) with **RFC-7807 problem details**. The contract is
-  generated into `openapi/openapi.json` (committed, drift-gated) and served at `/v3/api-docs` with
-  **Swagger UI** at `/swagger-ui.html`.
-- **Operations:** Spring Boot **Actuator** probes and Prometheus metrics at `/actuator/*`; schema is
-  owned by **Flyway** with Hibernate `ddl-auto=validate`; **mutation testing** (pitest) gates at 80.
-- **Container image:** `./gradlew :service:app:bootBuildImage` produces the `miravelo/app` OCI image
-  (Spring buildpacks, no Dockerfile).
-
-## Design decisions
-
-- **Hexagonal architecture** keeps the engine and framework at the edges: the domain and use cases
-  never depend on Operaton, so business logic is testable and the engine is replaceable. The
-  `:service:common-architecture-tests` module enforces this with **ArchUnit** (bytecode: layering,
-  dependency direction, naming) and **Konsist** (source: one declaration per file, no wildcard
-  imports) — one line wires it into a service: `class ArchitectureTest : ServiceArchitectureTest(...)`.
-- **Unit tests** (JUnit 5 + MockK) cover every domain type, application service and adapter with
-  given/when/then comments and shared `testLeasingApplication(...)` builders — controllers via
-  `@WebMvcTest`, persistence via `@DataJpaTest`. JavaDelegates are covered by the process tests.
-- **Process tests** (`operaton-bpm-assert`) drive the deployed model deterministically — timers and
-  async continuations are fired and messages correlated by hand — covering happy-path, escalation,
-  abort, DMN rejection, and the bike-unavailable → alternative-selection loop.
-- **Model validation** (`bpmn-to-code-testing`) checks the `.bpmn` models structurally at build time
-  (`BpmnRules.all()` plus a custom rule requiring every service task to use a delegate expression).
-- **Bruno + CI** proves the same scenarios against the *running* app: domain REST endpoints drive the
-  business actions, and the Operaton `/engine-rest` API completes user tasks and fires timer jobs so
-  the whole flow runs in the pipeline without real 14-day waits.
-- **Dependabot** keeps Gradle, the Postgres image and GitHub Actions current.
-
-Every non-obvious decision is recorded as an **Architecture Decision Record** under
-[`docs/adr/`](docs/adr/) (0001–0011) — read the *why* before changing the *what*.
-
-## Run it
+**1. Start Postgres + EnterpriseGlue The Bridge**
 
 ```bash
-# 1. start Postgres + EnterpriseGlue The Bridge
 docker compose -f stack/docker-compose.yml up -d
+```
 
-# 2. run the app (Operaton Cockpit/Tasklist at http://localhost:8080/operaton, admin/admin)
-./gradlew :service:app:bootRun
+**2. Start the service** on :8080
 
-# 3. lint the BPMN models (root-level tooling)
-npm ci && npm run lint:bpmn
+<!-- variant:kotlin-gradle -->
+```bash
+cd kotlin-gradle && ./gradlew :service:app:bootRun
+```
+<!-- /variant:kotlin-gradle -->
+<!-- variant:blueprint -->
+or
+<!-- /variant:blueprint -->
+<!-- variant:java-maven -->
+```bash
+cd java-maven && ./mvnw -DskipTests install && ./mvnw -pl service/app spring-boot:run
+```
+<!-- /variant:java-maven -->
 
-# 4. drive the scenarios (build + arch + process tests first, then the REST flows)
-./gradlew build
+**3. Use it** — open the Cockpit / Tasklist at <http://localhost:8080/operaton> (admin/admin) or the
+Swagger UI at <http://localhost:8080/swagger-ui.html>, or drive the whole process over REST:
+
+```bash
 cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r
 ```
 
-The stack also brings up [EnterpriseGlue The Bridge](https://github.com/EnterpriseGlue/enterpriseglue-the-bridge-oss)
-— an open-source portal to design, deploy and manage BPMN/DMN processes — as an **additional UI**
-alongside the Operaton Cockpit. Open it at `http://localhost:8081`
-(`admin@enterpriseglue.com` / `adminadmin`) and register the engine under **Platform Settings →
-Engines** with base URL `http://host.docker.internal:8080/engine-rest` — the same REST API the
-Cockpit uses (`host.docker.internal` because the Bridge runs in Docker and the engine on the host).
+[EnterpriseGlue The Bridge](https://github.com/EnterpriseGlue/enterpriseglue-the-bridge-oss) runs as an
+**additional UI** at <http://localhost:8081> (`admin@enterpriseglue.com` / `adminadmin`). Register the
+engine under **Platform Settings → Engines** with base URL `http://host.docker.internal:8080/engine-rest`.
 
-Start a case with `POST http://localhost:8080/api/bike-leasing`
-(`{ "customerName": …, "email": …, "age": 35, "monthlyNetIncome": 3500, "bikeId": "BIKE-900", "bikeModel": "Gravel Explorer 900" }`).
+## 📂 What's where
 
-The `age` and `monthlyNetIncome` feed the `checkCreditRating` DMN; the `bikeId` identifies the bike and
-is the *only* bike attribute the engine ever carries. The descriptive `bikeModel` lives in a separate
-**bike portfolio** aggregate (its own `bike_portfolio` table, keyed by `bikeId`) — never as a process
-variable — and `GET /api/bike-leasing/{id}` resolves it back from there.
+<!-- variant:kotlin-gradle variant:nested -->
+- [`kotlin-gradle/`](kotlin-gradle/README.md) — the service in Kotlin + Gradle, its build and quality gates
+  <!-- /variant:kotlin-gradle -->
+  <!-- variant:java-maven variant:nested -->
+- [`java-maven/`](java-maven/README.md) — the service in Java 21 + Maven, its build and quality gates
+  <!-- /variant:java-maven -->
+- [`openapi/`](openapi/openapi.json) — the checked-in, drift-gated OpenAPI contract
+- [`bruno/`](bruno/README.md) — the REST scenarios, the two ways to complete a user task, the incident demo
+- [`stack/`](stack/docker-compose.yml) — the dev stack: Postgres + EnterpriseGlue The Bridge
+- [`docs/`](docs/README.md) — the Architecture Decision Records: why the repo is shaped this way
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) — setup, ports, containers and the PR workflow
 
-If the requested bike is out of stock, the `Clarify alternative with customer` user task can be resolved
-**two ways**, a deliberate contrast:
+## 🤝 Contributing
 
-- the **recommended** path — a client calls `POST …/api/bike-leasing/{id}/clarify-alternative`, which
-  routes through the domain (persisting the chosen alternative) *before* completing the task; versus
-- the **form-only** path on `clarify-return` in `cancel-bike-order.bpmn`, kept as a counter-example:
-  completing it via the Camunda Form or `/engine-rest` never touches the domain, so its data lands only
-  in process variables (see the `bpmn:documentation` on each task).
+Contributions are welcome. Open an issue before a substantial change, keep the CI gates green and use
+[Conventional Commits](https://www.conventionalcommits.org). The details are in
+[`CONTRIBUTING.md`](CONTRIBUTING.md).
 
-Bike availability itself is decided by a `BikeDealerPort` outbound adapter (`checkAvailability` /
-`order`) whose small out-of-stock deny-list drives the branch.
-
-## Incident demo
-
-Want to teach **transaction boundaries, retries and incidents**? Submit a request for the poison bike
-`BIKE-FAIL`: the simulated dealer "outage" fails the *Order bike from dealer* job, its retries count
-down (`R3/PT10S`), and an **incident** appears in the Cockpit to analyze and retry. A ready-to-run
-Bruno collection lives in `bruno/06-incident-demo/`.
-
-## Contributing
-
-Contributions are welcome. Please open an issue to discuss substantial changes first, keep the
-architecture tests green (`./gradlew build`), and use
-[Conventional Commits](https://www.conventionalcommits.org) for commit messages and PR titles.
-
-## License
+## 📄 License
 
 Licensed under the [MIT License](./LICENSE).

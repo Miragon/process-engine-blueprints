@@ -41,4 +41,3 @@ the backend/DB isolation story is solved.
   end-to-end runs across worktrees are not possible in v1.
 - **Neutral:** per-worktree Postgres/schema isolation is the recorded upgrade path — a future ADR would
   supersede this one once the collision sources are covered.
-</content>

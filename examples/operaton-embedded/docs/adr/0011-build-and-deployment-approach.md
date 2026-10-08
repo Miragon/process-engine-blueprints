@@ -48,4 +48,3 @@ The how-to (build the image, the podman socket note, run Postgres) is in
   admin/admin credentials from `application.yaml`, which a real deployment must override.
 - **Neutral:** a CI job that builds the image or validates the compose is a natural follow-up, deferred
   for now.
-</content>

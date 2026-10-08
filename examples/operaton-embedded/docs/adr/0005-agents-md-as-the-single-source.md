@@ -31,4 +31,3 @@ line, `@AGENTS.md`.
   to read `AGENTS.md`.
 - **Neutral:** `AGENTS.md` stays the one place a contributor looks for how to work in the repo, so its
   conventions are discoverable without crawling the tree.
-</content>

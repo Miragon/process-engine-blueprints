@@ -40,4 +40,3 @@ fail `./gradlew build`):
   to know which tool owns which kind of rule.
 - **Neutral:** this is the deliberate **ceiling**, not a starting point. New structural rules go into
   whichever of these two fits — we do **not** add a third architecture/guardrail framework on top.
-</content>

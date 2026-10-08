@@ -29,4 +29,3 @@ implementation are traceable together in `git` history.
 - **Negative / trade-offs:** a small discipline cost — a real decision now means writing a paragraph.
 - **Neutral:** `docs/adr/` becomes the canonical index of cross-cutting decisions; each ADR carries
   its own detail in its Decision section rather than delegating to a separate long-form guide.
-</content>

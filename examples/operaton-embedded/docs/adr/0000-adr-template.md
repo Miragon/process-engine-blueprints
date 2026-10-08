@@ -38,4 +38,3 @@ How to use this template:
   rewrite the record in place (bump the Date) or supersede it with a new ADR and flip this one's Status
   to "Superseded by …". The reader should never have to reconstruct the current state from a diff.
 -->
-</content>

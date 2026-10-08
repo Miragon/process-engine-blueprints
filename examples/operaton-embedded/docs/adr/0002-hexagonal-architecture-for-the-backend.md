@@ -47,4 +47,3 @@ violation:
   layered CRUD app; the "one use-case per adapter" rule means many small classes.
 - **Neutral:** the generated-code seam (`adapter/process`) is a permanent, documented exception,
   analogous to the generated OpenAPI contract in [ADR-0003](0003-openapi-as-the-checked-in-contract.md).
-</content>

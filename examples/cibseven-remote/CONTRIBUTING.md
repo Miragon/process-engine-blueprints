@@ -13,14 +13,31 @@ npm ci && npm run hooks:install                                # BPMN lint + git
 
 You need **JDK 21** and **Docker (or Podman)** for Postgres.
 
-Run the whole stack locally — Postgres, then the engine host, then the worker. The worker deploys its
-process into the engine at start-up, so the engine must be running first:
+<!-- variant:blueprint -->
+The blueprint exists in two equivalent variants: [`kotlin-gradle/`](kotlin-gradle/README.md) (recommended)
+and [`java-maven/`](java-maven/README.md). Run either one.
+<!-- /variant:blueprint -->
+
+The build wrapper is included, so nothing else needs installing. Run the whole stack locally —
+Postgres, then the engine host, then the worker. The worker deploys its process into the engine at
+start-up, so the engine must be running first:
 
 ```bash
 docker compose -f stack/docker-compose.yml up -d   # Postgres (bikeleasing_engine + bikeleasing_app)
-./gradlew :service:engine-service:bootRun           # engine host + Cockpit on :8081
-./gradlew :service:example-service:bootRun          # worker (REST + external-task workers) on :8082
 ```
+
+<!-- variant:kotlin-gradle -->
+```bash
+cd kotlin-gradle && ./gradlew :service:engine-service:bootRun    # engine host + Cockpit on :8081
+cd kotlin-gradle && ./gradlew :service:example-service:bootRun   # worker (REST + external-task workers) on :8082
+```
+<!-- /variant:kotlin-gradle -->
+<!-- variant:java-maven -->
+```bash
+cd java-maven && ./mvnw -pl service/engine-service spring-boot:run        # engine host + Cockpit on :8081
+cd java-maven && ./mvnw -pl service/example-service -am spring-boot:run   # worker (REST + external-task workers) on :8082
+```
+<!-- /variant:java-maven -->
 
 ### Ports
 
@@ -46,7 +63,7 @@ curl -X POST http://localhost:8082/api/bike-leasing \
 ```
 
 Watch the external-task workers auto-complete `validateApplication`, `orderBike`, … in the
-`example-service` log, and inspect the running instance in the CIB seven Cockpit at
+worker's log, and inspect the running instance in the CIB seven Cockpit at
 <http://localhost:8081/camunda> (admin/admin). Confirm <http://localhost:8082/swagger-ui.html> and
 <http://localhost:8082/actuator/health> (status `UP`) load. To exercise incidents/retries, submit the
 poison bike `BIKE-FAIL` and watch the *Order bike from dealer* task fail and raise an incident in
@@ -60,29 +77,30 @@ Against a running stack, drive every scenario from `bruno/`:
 cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r
 ```
 
-The suite polls for eventual consistency instead of sleeping (see
-[ADR-0012](docs/adr/0012-polling-for-eventual-consistency-in-e2e-tests.md)); the shared `pollApp` /
-`pollEngine` helpers live in `bruno/collection.bru` and budgets are env-driven (`pollTimeoutMs` /
-`pollIntervalMs`). **Pin the CLI to `@usebruno/cli@4.0.0`** — the script sandbox's capabilities can
-shift between majors, so an unpinned `latest` is a correctness risk.
+The scenarios and the polling helpers are described in [`bruno/README.md`](bruno/README.md).
 
 ## Run it in containers
 
-The dev loop above runs both apps from source. You can also build OCI images with Spring buildpacks
-(no Dockerfile). The rationale is in
+The dev loop above runs both apps from source. You can also build the worker's OCI image with Spring
+buildpacks (no Dockerfile); it produces `miravelo/example-service:1.0-SNAPSHOT`. The rationale is in
 [ADR-0011](docs/adr/0011-build-and-deployment-approach.md).
 
+<!-- variant:kotlin-gradle -->
 ```bash
-# build the worker OCI image — produces miravelo/example-service:1.0-SNAPSHOT
-./gradlew :service:example-service:bootBuildImage
+(cd kotlin-gradle && ./gradlew :service:example-service:bootBuildImage)
 ```
+<!-- /variant:kotlin-gradle -->
+<!-- variant:java-maven -->
+```bash
+(cd java-maven && ./mvnw -pl service/example-service -am -DskipTests package spring-boot:build-image-no-fork)
+```
+<!-- /variant:java-maven -->
 
-**Podman:** `bootBuildImage` needs a Docker-API socket. Expose podman's and point the build at it:
+**Podman:** the image build needs a Docker-API socket. Expose podman's, then build the image as above:
 
 ```bash
 podman system service --time=0 unix:///tmp/podman.sock &
 export DOCKER_HOST=unix:///tmp/podman.sock
-./gradlew :service:example-service:bootBuildImage
 ```
 
 **Configuration.** `application.yaml` ships dev defaults; the deploy-relevant values are read from the
@@ -101,13 +119,19 @@ environment (they win over the baked defaults):
 
 ## Scripts
 
-```bash
-# build & test (all modules)
-./gradlew build                                    # arch + unit + process + model validation + spec export
-./gradlew :service:example-service:pitest          # worker mutation score >= 80
+The build, mutation-testing and code-generation commands are listed in the README next to the code:
 
-# BPMN
-npm run lint:bpmn                                  # bpmnlint the .bpmn models (from the repo root)
+<!-- variant:kotlin-gradle -->
+- [`kotlin-gradle/README.md`](kotlin-gradle/README.md#-commands)
+  <!-- /variant:kotlin-gradle -->
+  <!-- variant:java-maven -->
+- [`java-maven/README.md`](java-maven/README.md#-commands)
+  <!-- /variant:java-maven -->
+
+From the repo root:
+
+```bash
+npm run lint:bpmn        # bpmnlint the .bpmn models
 ```
 
 ## Ground rules
@@ -120,13 +144,24 @@ npm run lint:bpmn                                  # bpmnlint the .bpmn models (
 - **Conventional Commits.** Commit messages and PR titles follow
   [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`,
   `refactor:`, `test:`, `chore:`). Write everything in **English**.
-- **Keep the gates green.** The architecture (ArchUnit + Konsist), contract-drift and mutation
-  (≥ 80) gates run in CI on every PR. They are fitness functions, not style guides — a violation
-  fails the build.
+  <!-- variant:blueprint -->
+- **Change both variants together.** A change in behaviour goes into `kotlin-gradle/` *and*
+  `java-maven/` in the same PR, with equivalent tests. Changes that only concern one language's idioms
+  stay on that side. Models, forms, migrations and `application.yaml` exist in both variants and must
+  be byte-identical — copy your change over; the `Blueprint Checks` workflow fails otherwise. See
+  [ADR-0013](docs/adr/0013-two-stack-variants-side-by-side-on-main.md).
+  <!-- /variant:blueprint -->
+- **Keep the gates green.** The architecture, contract-drift and mutation (≥ 80) gates run in CI on
+  every PR. They are fitness functions, not style guides — a violation fails the build. The mutation
+  gate is **diff-scoped** on PRs (only the classes you changed); the full-module gate-80 sweep runs
+  nightly.
 - **Add tests.** This is a TDD codebase; match the test style to the layer (see `AGENTS.md`).
   Mutation testing means a test that runs without asserting will fail CI.
 - **Changing the worker's API?** The committed `openapi/openapi.json` contract is regenerated by a
-  test during `./gradlew build` and drift-gated — commit the regenerated spec in the same change.
+  test during the full build and drift-gated — commit the regenerated spec in the same change.
+- **Changing the process?** Edit the `.bpmn` model under
+  `service/example-service/src/main/resources/bpmn`, regenerate the typed `*ProcessApi`, and lint it
+  with `npm run lint:bpmn`.
 - **Changing the database schema?** Flyway owns it. Add a new forward-only migration
   `V{n}__description.sql` under `service/example-service/src/main/resources/db/migration/` in the
   same change as the entity edit — never edit an already-applied migration. Hibernate runs
@@ -135,10 +170,20 @@ npm run lint:bpmn                                  # bpmnlint the .bpmn models (
 
 ## Before opening a PR
 
+<!-- variant:kotlin-gradle -->
 ```bash
-./gradlew build
-git diff --exit-code openapi/openapi.json          # the API contract must not drift
-./gradlew :service:example-service:pitest          # mutation score >= 80
+(cd kotlin-gradle && ./gradlew build && ./gradlew :service:example-service:pitest)   # mutation score >= 80
+```
+<!-- /variant:kotlin-gradle -->
+<!-- variant:java-maven -->
+```bash
+(cd java-maven && ./mvnw verify \
+  && ./mvnw -pl service/example-service -am test-compile org.pitest:pitest-maven:mutationCoverage)   # mutation score >= 80
+```
+<!-- /variant:java-maven -->
+
+```bash
+git diff --exit-code openapi/openapi.json    # the API contract must not drift
 ```
 
 All of these run in CI on every pull request (JDK 21).

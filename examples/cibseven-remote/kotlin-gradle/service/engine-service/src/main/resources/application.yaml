@@ -1,0 +1,38 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: cibseven-engine
+  datasource:
+    url: jdbc:postgresql://localhost:5432/bikeleasing_engine
+    username: admin
+    password: admin
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+
+camunda:
+  bpm:
+    admin-user:
+      id: admin
+      password: admin
+    deployment-resource-pattern: []
+    webapp:
+      application-path: /camunda
+    database:
+      type: postgres
+      schema-update: true
+    # Poll async-continuation jobs quickly so the process advances promptly between wait states.
+    job-execution:
+      wait-time-in-millis: 250
+      max-wait: 1000
+
+cibseven:
+  webclient:
+    authentication:
+      # WARNING: This is a development/example secret key.
+      # DO NOT use this in production! Generate your own secure secret key.
+      jwtSecret: RtURHZ7SQYfLoX902wcjlvduW2qe9g0bjMUczmffjiTjzU9phbv3mK54zHMqeGK6cqgoEBTIUE6RqwvemSqbpD40qUPXVRElvDHGhn4OAEfjeEP2ANah8GJejSA08E820mForcQHBmediqg2DzIrxnDXyf2

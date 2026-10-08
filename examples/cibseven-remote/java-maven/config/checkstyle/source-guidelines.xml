@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+        "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+        "https://checkstyle.org/dtds/configuration_1_3.dtd">
+<!--
+    Source-structure rules — the half of the architecture suite that reads *source*, because the facts
+    it checks are gone once javac has run (see docs/adr/0007). The dependency, layering and naming rules
+    read bytecode and live in ArchUnit (service/common-architecture-tests).
+
+    Deliberately minimal: this is not a style guide, only the conventions the architecture relies on.
+-->
+<module name="Checker">
+    <property name="charset" value="UTF-8"/>
+    <property name="severity" value="error"/>
+    <property name="fileExtensions" value="java"/>
+
+    <module name="TreeWalker">
+        <!-- No wildcard imports: every dependency is visible at the top of the file (java.util is exempt). -->
+        <module name="AvoidStarImport">
+            <property name="excludes" value="java.util"/>
+        </module>
+
+        <!-- One top-level class, interface, record or enum per file (single responsibility per file). -->
+        <module name="OuterTypeNumber">
+            <property name="max" value="1"/>
+        </module>
+    </module>
+</module>

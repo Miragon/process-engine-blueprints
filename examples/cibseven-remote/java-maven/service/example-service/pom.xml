@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.miragon.blueprint</groupId>
+        <artifactId>cibseven-remote-example</artifactId>
+        <version>1.0-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>example-service</artifactId>
+    <name>example-service</name>
+
+    <!--
+        The remote worker + business logic (hexagonal), and — since there is no separate contract module —
+        the **owner of the process contract** too. It carries the `.bpmn`/`.dmn`/`.form` models and
+        generates the typed `*ProcessApi` classes (topics, messages, element ids, variables) from them with
+        `bpmn-to-code`, keeps its own JPA/Postgres store, subscribes to the engine's external service-tasks
+        via the CIB seven external-task client, deploys the model into the engine over REST at start-up,
+        and drives the running process with a `RestClient`. The engine runs in the model-agnostic
+        `engine-service`.
+    -->
+
+    <properties>
+        <spring-boot.run.skip>false</spring-boot.run.skip>
+        <spring-boot.build-image.skip>false</spring-boot.build-image.skip>
+        <!--
+            Mutation-testing scope (pitest-maven's own `targetClasses` property). CI narrows it to the
+            classes a PR changed with `-DtargetClasses=a.B*,c.D*`; locally it covers the whole service.
+        -->
+        <targetClasses>io.miragon.blueprint.*</targetClasses>
+        <skipPitest>false</skipPitest>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.miragon.blueprint</groupId>
+            <artifactId>common-cibseven-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.miragon</groupId>
+            <artifactId>bpmn-to-code-runtime</artifactId>
+        </dependency>
+        <!-- Nullability annotations (`@Nullable`), the same JSpecify flavour Spring itself uses -->
+        <dependency>
+            <groupId>org.jspecify</groupId>
+            <artifactId>jspecify</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Database -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-flyway</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+        </dependency>
+
+        <!-- External-task client (+ JAXB, which it needs for typed variables in a standalone worker) -->
+        <dependency>
+            <groupId>org.cibseven.bpm.springboot</groupId>
+            <artifactId>cibseven-bpm-spring-boot-starter-external-task-client-4</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- Tests -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-webmvc-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Standalone in-memory engine for the process-model behaviour test (this service owns the model) -->
+        <dependency>
+            <groupId>org.cibseven.bpm</groupId>
+            <artifactId>cibseven-bpm-assert</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.cibseven.bpm</groupId>
+            <artifactId>cibseven-bpm-junit5</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.cibseven.bpm</groupId>
+            <artifactId>cibseven-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Structural model validation (bpmn-to-code-testing) -->
+        <dependency>
+            <groupId>io.miragon</groupId>
+            <artifactId>bpmn-to-code-testing</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.miragon.blueprint</groupId>
+            <artifactId>common-architecture-tests</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!--
+                Generates the typed `*ProcessApi` classes (element ids, messages, timers, variables,
+                external-task topics, …) from the BPMN models, so workers and tests reference process
+                elements as compile-checked constants. The output is committed under src/main/java and
+                regenerated on every build.
+            -->
+            <plugin>
+                <groupId>io.miragon</groupId>
+                <artifactId>bpmn-to-code-maven</artifactId>
+                <executions>
+                    <execution>
+                        <id>generate-process-api</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate-bpmn-api</goal>
+                        </goals>
+                        <configuration>
+                            <baseDir>${project.basedir}</baseDir>
+                            <filePattern>src/main/resources/bpmn/*.bpmn</filePattern>
+                            <outputFolderPath>${project.basedir}/src/main/java</outputFolderPath>
+                            <packagePath>io.miragon.blueprint.process</packagePath>
+                            <outputLanguage>JAVA</outputLanguage>
+                            <processEngine>CAMUNDA_7</processEngine>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!-- Isolate each test class in its own JVM so the standalone in-memory engine used by
+                         the process tests never carries state between classes. -->
+                    <forkCount>1</forkCount>
+                    <reuseForks>false</reuseForks>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>build-info</goal>
+                        </goals>
+                        <configuration>
+                            <!-- Record the real build time (the parent's reproducible-build timestamp would
+                                 otherwise pin build.time to a fixed date in /actuator/info). -->
+                            <time>${maven.build.timestamp}</time>
+                        </configuration>
+                    </execution>
+                </executions>
+                <configuration>
+                    <!-- OCI image for the remote worker, built by Spring's Cloud Native Buildpacks
+                         integration — no Dockerfile to maintain (layered, non-root by default). See
+                         docs/adr/0011 and the "Run it in containers" section of CONTRIBUTING.md. Build with
+                         `./mvnw -pl service/example-service -am -DskipTests package spring-boot:build-image-no-fork`
+                         (packaging in the main lifecycle lets the reactor resolve the shared modules; the forking
+                         `build-image` goal would look them up in ~/.m2 instead). -->
+                    <image>
+                        <name>miravelo/example-service:${project.version}</name>
+                        <env>
+                            <!-- Pin the JVM the buildpack installs to the version the code targets. -->
+                            <BP_JVM_VERSION>${java.version}</BP_JVM_VERSION>
+                        </env>
+                    </image>
+                </configuration>
+            </plugin>
+
+            <!-- PIT runs with one thread per CPU (`cpu.count`, set in `initialize`); override with
+                 -Dcpu.count=N. -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>cpu-count</id>
+                        <goals>
+                            <goal>cpu-count</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Mutation testing — gate 80 (docs/adr/0004). Run:
+                 ./mvnw -pl service/example-service -am test-compile pitest:mutationCoverage -->
+            <plugin>
+                <groupId>org.pitest</groupId>
+                <artifactId>pitest-maven</artifactId>
+                <configuration>
+                    <targetTests>
+                        <param>io.miragon.blueprint.*</param>
+                    </targetTests>
+                    <excludedClasses>
+                        <!-- Generated typed process API — no behaviour of ours to mutate. -->
+                        <param>io.miragon.blueprint.process.*ProcessApi*</param>
+                        <!-- Application bootstrap / wiring, outside the hexagonal layers. -->
+                        <param>io.miragon.blueprint.ExampleServiceApplication*</param>
+                        <param>io.miragon.blueprint.BikeCatalogueSeeder*</param>
+                        <param>io.miragon.blueprint.adapter.inbound.rest.DevCorsConfiguration*</param>
+                        <!-- Remote engine plumbing — external-task workers and the start-up deployment
+                             adapter are integration glue, exercised by the process / Bruno layers rather
+                             than by mutation. -->
+                        <param>io.miragon.blueprint.adapter.inbound.cibseven.*</param>
+                        <param>io.miragon.blueprint.adapter.outbound.engine.ProcessModelDeploymentAdapter*</param>
+                    </excludedClasses>
+                    <excludedTestClasses>
+                        <param>io.miragon.blueprint.process.*</param>
+                        <param>io.miragon.blueprint.architecture.*</param>
+                    </excludedTestClasses>
+                    <failWhenNoMutations>false</failWhenNoMutations>
+                    <threads>${cpu.count}</threads>
+                    <timeoutFactor>2.0</timeoutFactor>
+                    <avoidCallsTo>
+                        <avoidCallsTo>org.slf4j</avoidCallsTo>
+                    </avoidCallsTo>
+                    <mutators>
+                        <mutator>DEFAULTS</mutator>
+                    </mutators>
+                    <outputFormats>
+                        <param>HTML</param>
+                        <param>XML</param>
+                    </outputFormats>
+                    <timestampedReports>false</timestampedReports>
+                    <mutationThreshold>80</mutationThreshold>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

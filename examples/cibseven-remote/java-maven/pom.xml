@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+        Spring Boot's parent manages the versions of everything in the Boot BOM (Spring, Jackson, JUnit,
+        Mockito, AssertJ, Flyway, Postgres, …) and pre-configures the compiler (`-parameters`), Surefire
+        and the spring-boot-maven-plugin. Everything the BOM does not cover is pinned in <properties> below
+        — one place to bump a version (see docs/adr/0008).
+    -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>4.1.1</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>io.miragon.blueprint</groupId>
+    <artifactId>cibseven-remote-example</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>cibseven-remote-example</name>
+    <description>MiraVelo bike-leasing blueprint against a remote CIB seven engine</description>
+
+    <modules>
+        <module>service/common-architecture-tests</module>
+        <module>service/common-cibseven-client</module>
+        <module>service/engine-service</module>
+        <module>service/example-service</module>
+    </modules>
+
+    <properties>
+        <java.version>21</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- CIB seven (Camunda 7 fork) — engine, starters, external-task client and the REST OpenAPI spec -->
+        <cibseven.version>2.2.0</cibseven.version>
+        <!-- BPMN-to-code: generates the typed process API from the *.bpmn models; testing = model validation -->
+        <bpmn-to-code.version>6.2.0</bpmn-to-code.version>
+        <!-- OpenAPI: springdoc generates the worker's contract; the generator builds the engine client -->
+        <springdoc.version>3.1.1</springdoc.version>
+        <openapi-generator.version>7.25.0</openapi-generator.version>
+        <!-- Architecture (bytecode) and source-structure rules -->
+        <archunit.version>1.5.1</archunit.version>
+        <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
+        <checkstyle.version>14.3.0</checkstyle.version>
+        <!-- Mutation testing (see docs/adr/0004) -->
+        <pitest.version>1.22.1</pitest.version>
+        <pitest-junit5-plugin.version>1.2.2</pitest-junit5-plugin.version>
+        <!-- JAXB for the external-task client's typed-variable (de)serialisation -->
+        <jakarta-xml-bind.version>4.0.5</jakarta-xml-bind.version>
+        <jaxb-runtime.version>4.0.9</jaxb-runtime.version>
+        <!-- Overrides of Boot-managed versions -->
+        <h2.version>2.5.252</h2.version>
+
+        <!-- Only the two Spring Boot apps run / become images; the shared modules opt out, so reactor
+             invocations such as `./mvnw -pl service/example-service -am spring-boot:run` work. -->
+        <spring-boot.run.skip>true</spring-boot.run.skip>
+        <spring-boot.build-image.skip>true</spring-boot.build-image.skip>
+        <!-- Mutation testing runs only where it is configured (example-service). -->
+        <skipPitest>true</skipPitest>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Internal modules -->
+            <dependency>
+                <groupId>io.miragon.blueprint</groupId>
+                <artifactId>common-architecture-tests</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.miragon.blueprint</groupId>
+                <artifactId>common-cibseven-client</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- CIB seven — Spring Boot 4 starters -->
+            <dependency>
+                <groupId>org.cibseven.bpm.springboot</groupId>
+                <artifactId>cibseven-bpm-spring-boot-starter-webapp-4</artifactId>
+                <version>${cibseven.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.cibseven.bpm.springboot</groupId>
+                <artifactId>cibseven-bpm-spring-boot-starter-rest-4</artifactId>
+                <version>${cibseven.version}</version>
+            </dependency>
+            <!-- External-task client — used by the remote worker to fetch/lock/complete the engine's
+                 external service-tasks over /engine-rest. -->
+            <dependency>
+                <groupId>org.cibseven.bpm.springboot</groupId>
+                <artifactId>cibseven-bpm-spring-boot-starter-external-task-client-4</artifactId>
+                <version>${cibseven.version}</version>
+            </dependency>
+            <!-- Process tests — standalone in-memory engine + assertions -->
+            <dependency>
+                <groupId>org.cibseven.bpm</groupId>
+                <artifactId>cibseven-bpm-assert</artifactId>
+                <version>${cibseven.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.cibseven.bpm</groupId>
+                <artifactId>cibseven-bpm-junit5</artifactId>
+                <version>${cibseven.version}</version>
+            </dependency>
+            <!-- cibseven-bpm-assert declares the engine as `provided`, so a service without an engine
+                 starter (the remote worker) must bring it explicitly for its in-memory process tests. -->
+            <dependency>
+                <groupId>org.cibseven.bpm</groupId>
+                <artifactId>cibseven-engine</artifactId>
+                <version>${cibseven.version}</version>
+            </dependency>
+
+            <!-- BPMN-to-code -->
+            <dependency>
+                <groupId>io.miragon</groupId>
+                <artifactId>bpmn-to-code-runtime</artifactId>
+                <version>${bpmn-to-code.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.miragon</groupId>
+                <artifactId>bpmn-to-code-testing</artifactId>
+                <version>${bpmn-to-code.version}</version>
+            </dependency>
+
+            <!-- OpenAPI contract (springdoc) -->
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                <version>${springdoc.version}</version>
+            </dependency>
+
+            <!-- JAXB — not on a standalone worker's classpath, but needed by the external-task client -->
+            <dependency>
+                <groupId>jakarta.xml.bind</groupId>
+                <artifactId>jakarta.xml.bind-api</artifactId>
+                <version>${jakarta-xml-bind.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jaxb</groupId>
+                <artifactId>jaxb-runtime</artifactId>
+                <version>${jaxb-runtime.version}</version>
+            </dependency>
+
+            <!-- Architecture tests -->
+            <dependency>
+                <groupId>com.tngtech.archunit</groupId>
+                <artifactId>archunit</artifactId>
+                <version>${archunit.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.openapitools</groupId>
+                    <artifactId>openapi-generator-maven-plugin</artifactId>
+                    <version>${openapi-generator.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>io.miragon</groupId>
+                    <artifactId>bpmn-to-code-maven</artifactId>
+                    <version>${bpmn-to-code.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.pitest</groupId>
+                    <artifactId>pitest-maven</artifactId>
+                    <version>${pitest.version}</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.pitest</groupId>
+                            <artifactId>pitest-junit5-plugin</artifactId>
+                            <version>${pitest-junit5-plugin.version}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <configuration>
+                        <!-- Report tests by their @DisplayName ("rejects an unknown status with a 400 …")
+                             rather than the camelCase method name. -->
+                        <statelessTestsetReporter implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5Xml30StatelessReporter">
+                            <usePhrasedTestCaseMethodName>true</usePhrasedTestCaseMethodName>
+                        </statelessTestsetReporter>
+                        <consoleOutputReporter implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5ConsoleOutputReporter"/>
+                        <statelessTestsetInfoReporter implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5StatelessTestsetInfoReporter"/>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-checkstyle-plugin</artifactId>
+                    <version>${maven-checkstyle-plugin.version}</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.puppycrawl.tools</groupId>
+                            <artifactId>checkstyle</artifactId>
+                            <version>${checkstyle.version}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
+        <plugins>
+            <!--
+                Source-structure rules — the part of the architecture suite that the bytecode cannot carry
+                (see docs/adr/0007). Checkstyle reads the Java source of every module, main and test, and
+                fails the build in the `validate` phase. The dependency & naming rules live in ArchUnit
+                (service/common-architecture-tests).
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>source-guidelines</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <configLocation>${maven.multiModuleProjectDirectory}/config/checkstyle/source-guidelines.xml</configLocation>
+                    <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                    <consoleOutput>true</consoleOutput>
+                    <failOnViolation>true</failOnViolation>
+                    <violationSeverity>warning</violationSeverity>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

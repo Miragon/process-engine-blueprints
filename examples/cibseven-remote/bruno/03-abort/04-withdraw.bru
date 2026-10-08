@@ -13,6 +13,9 @@ post {
 script:pre-request {
   const id = bru.getVar('applicationId');
   await pollApp(`/api/bike-leasing/${id}`, (b, s) => s === 200 && b && b.status === "ORDERED" && b.orderId != null);
+  // Parked at the handover wait state = the order step has completed in the engine, so the
+  // withdrawal's compensation covers it.
+  await awaitMessageSubscription(id, 'miravelo.handoverReported');
 }
 
 assert {

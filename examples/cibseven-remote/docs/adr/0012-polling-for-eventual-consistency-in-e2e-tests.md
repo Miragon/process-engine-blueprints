@@ -1,7 +1,7 @@
 # 0012 — Poll for eventual consistency in end-to-end tests
 
 - **Status:** Accepted
-- **Date:** 2026-08-21
+- **Date:** 2026-10-05
 
 ## Context
 
@@ -27,8 +27,10 @@ never by sleeping a guessed duration.
 
 - **Shared helpers** live in `bruno/collection.bru` (a collection-level `script:pre-request`, so they
   are in scope for every request): `pollUntil(config, predicate, opts)` and the convenience wrappers
-  `pollApp(path, predicate)` (GET the worker read model) and `pollEngine(path, predicate)` (GET a
-  CIB seven `/engine-rest` query — process instances, jobs, tasks, incidents, history). They return
+  `pollApp(path, predicate)` (GET the worker read model), `pollEngine(path, predicate)` (GET a
+  CIB seven `/engine-rest` query — process instances, jobs, tasks, incidents, history) and
+  `awaitMessageSubscription(businessKey, messageName)` (wait until the instance's token is parked at
+  the message wait state a command correlates to). They return
   the instant the predicate is met and only wait the full budget when something is genuinely wrong — at
   which point the request's own assertions report the real, still-wrong state instead of a bare timeout.
 - **Budgets are env-driven** (`pollTimeoutMs` / `pollIntervalMs` in the environment file), so a sibling
@@ -42,7 +44,13 @@ never by sleeping a guessed duration.
   `sendContract` worker issues the contract before the process parks on the signature wait state);
   `status == "ORDERED" && orderId != null` before `report-handover` and `withdraw` (the bike order has
   been placed and can be compensated); the inbox (`/api/tasks/clarify-alternative`) listing the item
-  before completing the `clarify-alternative` user task.
+  before completing the `clarify-alternative` user task. **A command that correlates a message also
+  waits for the engine-side message subscription** — `miravelo.contractSigned` before `sign-contract`,
+  `miravelo.handoverReported` before `report-handover` and `withdraw` (parked at the handover wait
+  state means the order step has completed in the engine, so the compensation covers it). The read
+  model alone is not enough: the worker writes it *before* it completes the external task, and the
+  service tasks are `asyncAfter`, so the token reaches the wait state only once the engine's job
+  executor has run the continuation.
 - **Division of labour holds:** Bruno asserts the **synchronous request/response contract** (status
   codes, DTO shape); genuinely engine-level, deterministic checks (timer fast-forward via
   `/engine-rest/job/{id}/execute`, full token flow) stay in the JVM `@CamundaSpringProcessTest` layer.
@@ -70,10 +78,12 @@ never by sleeping a guessed duration.
 - The Bruno script sandbox exposes **no global `fetch`**; `require('axios')` works and is what the
   helpers use. Helpers are attached to `globalThis` in the collection script so request-level scripts
   can call them.
-- Message commands correlate by business key (the `applicationId`); an early publish is buffered by the
-  engine's message subscription, so gating on the read-model precondition (rather than exact timing) is
-  sufficient. `clarify-alternative` completes a user task and would fail if the task is not yet
-  searchable, hence gating on the inbox.
+- Message commands correlate by business key (the `applicationId`). The engine does **not** buffer
+  messages: a correlation that arrives before the matching subscription exists fails with
+  `MismatchingMessageCorrelationException`, which the worker surfaces as `409`. That is why message
+  commands gate on `/engine-rest/event-subscription` and not on the read model alone.
+  `clarify-alternative` completes a user task and would fail if the task is not yet searchable, hence
+  gating on the inbox.
 - **Deferred, not adopted:** a test-only endpoint exposing engine progress deterministically would be
   the strongest guarantee, but it leaks engine internals into the API surface for test convenience.
   Revisit only if predicate-based polling proves insufficient.

@@ -44,4 +44,20 @@ script:pre-request {
       { method: 'get', url: bru.getEnvVar('engineRest') + path },
       predicate, opts);
   };
+
+  // Wait until the bike-leasing instance of `businessKey` holds a message subscription for
+  // `messageName`, i.e. its token is parked at the wait state the next command correlates to. The
+  // engine does not buffer messages: a correlation that arrives before the subscription exists fails
+  // (409), however far the worker's read model has already moved.
+  globalThis.awaitMessageSubscription = async function (businessKey, messageName, opts) {
+    const instances = await globalThis.pollEngine(
+      '/process-instance?processDefinitionKey=bikeLeasingProcess&businessKey=' + encodeURIComponent(businessKey),
+      (b, s) => s === 200 && Array.isArray(b) && b.length > 0, opts);
+    const instance = instances && Array.isArray(instances.data) ? instances.data[0] : null;
+    if (!instance) return instances;
+    return globalThis.pollEngine(
+      '/event-subscription?eventType=message&processInstanceId=' + instance.id
+        + '&eventName=' + encodeURIComponent(messageName),
+      (b, s) => s === 200 && Array.isArray(b) && b.length > 0, opts);
+  };
 }

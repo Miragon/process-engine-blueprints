@@ -1,7 +1,7 @@
 # AGENTS.md
 
 Guidance for AI agents (and humans) working in this repo. This is the real file; `CLAUDE.md` just
-imports it.
+imports it (see [ADR-0005](docs/adr/0005-agents-md-as-the-single-source.md)).
 
 ## Project Overview
 
@@ -13,7 +13,7 @@ remote/external-task blueprint.
 - **Engine host** (`service/engine-service`) — a generic, model-agnostic CIB seven 2.2.0 engine host
   on **:8081** (`/engine-rest` + Cockpit/Tasklist). It deploys no model; it only hosts the in-engine
   execution/task listener beans. Package root `io.miragon.blueprint`.
-- **Worker** (`service/example-service`) — Kotlin / Spring Boot 4, hexagonal, on **:8082**. It owns
+- **Worker** (`service/example-service`) — Spring Boot 4, hexagonal, on **:8082**. It owns
   the domain, use cases and adapters, **owns and deploys** the BPMN/DMN/form models, and drives the
   remote engine through the generated REST client. Service tasks are `camunda:type="external"`; the
   worker subscribes to their topics (`bikeLeasing.<task>`) via external-task workers under
@@ -21,10 +21,65 @@ remote/external-task blueprint.
 - **Generated engine client** (`service/common-cibseven-client`) — a typed `/engine-rest` client
   generated from CIB seven's official OpenAPI spec, pinned to the engine version so the two never
   drift. The worker uses it instead of hand-written HTTP calls.
-- **Shared architecture tests** (`service/common-architecture-tests`) — the ArchUnit + Konsist rules
-  the worker wires in.
-- **The worker's own API** is `openapi/openapi.json`: springdoc generates it from the controllers, it
-  is **committed and drift-gated** (a test regenerates it during `./gradlew build`). See ADR-0003.
+- **Shared architecture tests** (`service/common-architecture-tests`) — the architecture rules the
+  worker wires in.
+  <!-- variant:blueprint -->
+- **Two equivalent variants on `main`** — `kotlin-gradle/` (Kotlin, **the recommended stack**) and
+  `java-maven/` (Java 21, for teams bound to it and for trainings). Each is self-contained: it holds
+  all four modules and its own copy of the process models, forms, migrations and `application.yaml`;
+  the `Blueprint Checks` workflow fails when the `src/main/resources` trees differ, so **edit a model in
+  one variant and copy it to the other**. The variants must stay functionally identical: **make every
+  change in behaviour in both variants in the same PR.** Changes that only concern one language's
+  idioms stay on that side. See [ADR-0013](docs/adr/0013-two-stack-variants-side-by-side-on-main.md).
+  The OpenAPI contract below is drift-gated against **both** variants.
+  Stack-specific content in shared files (docs, Dependabot, Conductor settings) is wrapped in
+  `variant:<name>` markers so `scripts/create-starter.sh` can strip it — see
+  [docs/starter.md](docs/starter.md).
+  <!-- /variant:blueprint -->
+- **The worker's own API** is `openapi/openapi.json`: springdoc generates it from the controllers, it is
+  **committed and drift-gated** (a test regenerates it during the build). See
+  [ADR-0003](docs/adr/0003-openapi-as-the-checked-in-contract.md).
+
+## Repository Map
+
+<!-- variant:kotlin-gradle variant:nested -->
+- `kotlin-gradle/` — the four modules in Kotlin, built with Gradle
+  <!-- /variant:kotlin-gradle -->
+  <!-- variant:java-maven variant:nested -->
+- `java-maven/` — the four modules in Java 21, built with Maven
+  <!-- /variant:java-maven -->
+
+The modules:
+
+```
+service/
+  common-architecture-tests/   reusable architecture rule suite
+  common-cibseven-client/      generated CIB seven /engine-rest client
+  engine-service/              the engine host (:8081), hosts the in-engine listeners
+  example-service/             the worker (:8082), hexagonal
+    adapter/inbound/rest        domain REST controllers + OpenAPI / problem-details config
+    adapter/inbound/cibseven    external-task workers, one per BPMN topic
+    adapter/outbound/engine     deploys the model + drives the remote engine via the generated client
+    adapter/outbound/db         JPA persistence (leasing applications + bike portfolio)
+    adapter/outbound/…          simulated dealer / contract / insurance / notification adapters
+    process                     generated *ProcessApi and shared constants (bpmn-to-code)
+    application/{port,service}  use-case ports and their services
+    domain/{leasing,bike}       pure domain model
+    resources/{bpmn,dmn,forms}  the process models and Camunda Forms
+    resources/db/migration      Flyway versioned schema migrations
+```
+
+Around them:
+
+```
+bruno/                         REST scenarios (happy-path / escalation / abort / not-solvent / …)
+openapi/                       the checked-in, drift-gated OpenAPI contract (openapi.json)
+docs/                          Architecture Decision Records + diagrams
+stack/                         Postgres dev stack (docker compose)
+.github/                       pre-merge + nightly pipelines + Dependabot
+.githooks/                     pre-commit hook (bpmnlint on staged .bpmn)
+package.json / .bpmnlintrc     root-level bpmnlint config + git-hook installer (npm run lint:bpmn)
+```
 
 ## Development Setup
 
@@ -33,9 +88,20 @@ deploys its process into the engine at start-up, so the engine must be up first)
 
 ```bash
 docker compose -f stack/docker-compose.yml up -d   # Postgres (creates bikeleasing_engine + bikeleasing_app)
-./gradlew :service:engine-service:bootRun           # engine host + Cockpit on :8081
-./gradlew :service:example-service:bootRun          # worker (REST + external-task workers) on :8082
 ```
+
+<!-- variant:kotlin-gradle -->
+```bash
+cd kotlin-gradle && ./gradlew :service:engine-service:bootRun    # engine host + Cockpit on :8081
+cd kotlin-gradle && ./gradlew :service:example-service:bootRun   # worker (REST + external-task workers) on :8082
+```
+<!-- /variant:kotlin-gradle -->
+<!-- variant:java-maven -->
+```bash
+cd java-maven && ./mvnw -pl service/engine-service spring-boot:run        # engine host + Cockpit on :8081
+cd java-maven && ./mvnw -pl service/example-service -am spring-boot:run   # worker (REST + external-task workers) on :8082
+```
+<!-- /variant:java-maven -->
 
 ### Ports (one source of truth — keep README, this file and `.conductor/settings.toml` in sync)
 
@@ -49,21 +115,42 @@ docker compose -f stack/docker-compose.yml up -d   # Postgres (creates bikeleasi
 
 ## Build Commands
 
-| Area | Command |
+<!-- variant:kotlin-gradle -->
+| Area (run in `kotlin-gradle/`) | Command |
 |---|---|
 | Everything (arch + unit + process + model validation + spec export, all modules) | `./gradlew build` |
 | Worker mutation testing (gate 80) | `./gradlew :service:example-service:pitest` |
-| Regenerate + verify the worker's OpenAPI contract | `./gradlew :service:example-service:test --tests "io.miragon.blueprint.openapi.OpenApiSpecExportTest"` then `git diff --exit-code openapi/openapi.json` |
-| BPMN lint | `npm run lint:bpmn` (from the repo root) |
+| Regenerate the typed BPMN process API (after editing a `.bpmn`) | `./gradlew generateBpmnModels` |
+| Regenerate the worker's OpenAPI contract | `./gradlew :service:example-service:test --tests "io.miragon.blueprint.openapi.OpenApiSpecExportTest"` |
+| Worker OCI image (`miravelo/example-service:<version>`) | `./gradlew :service:example-service:bootBuildImage` |
+<!-- /variant:kotlin-gradle -->
+
+<!-- variant:java-maven -->
+| Area (run in `java-maven/`) | Command |
+|---|---|
+| Everything (arch + Checkstyle + unit + process + model validation + spec export, all modules) | `./mvnw verify` |
+| Worker mutation testing (gate 80) | `./mvnw -pl service/example-service -am test-compile org.pitest:pitest-maven:mutationCoverage` |
+| Regenerate the typed BPMN process API (after editing a `.bpmn`) | `./mvnw -pl service/example-service -am generate-sources` |
+| Regenerate the worker's OpenAPI contract | `./mvnw -pl service/example-service -am test -Dtest=OpenApiSpecExportTest -Dsurefire.failIfNoSpecifiedTests=false` |
+| Worker OCI image (`miravelo/example-service:<version>`) | `./mvnw -pl service/example-service -am -DskipTests package spring-boot:build-image-no-fork` |
+<!-- /variant:java-maven -->
+
+| Area (repo root) | Command |
+|---|---|
+| Verify the OpenAPI contract after regenerating it | `git diff --exit-code openapi/openapi.json` |
+| BPMN lint | `npm run lint:bpmn` |
 | End-to-end scenarios against a running stack (Bruno) | `cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r` — **pin the CLI version** (sandbox capabilities shift between majors; see [ADR-0012](docs/adr/0012-polling-for-eventual-consistency-in-e2e-tests.md)) |
-| Worker OCI image | `./gradlew :service:example-service:bootBuildImage` — produces `miravelo/example-service:<version>`; see [ADR-0011](docs/adr/0011-build-and-deployment-approach.md) and CONTRIBUTING "Run it in containers" |
+
+The OCI image decision is [ADR-0011](docs/adr/0011-build-and-deployment-approach.md); the how-to is
+CONTRIBUTING "Run it in containers".
 
 ## Architecture — the rules are machine-enforced
 
-The worker's hexagonal rules live in `service/common-architecture-tests` (ArchUnit + Konsist) and
-**fail the build** — one line wires them into the worker (`class ArchitectureTest :
-ServiceArchitectureTest(...)`). Read `HexagonalArchitectureTest.kt` and
-`NamingConventionArchitectureTest.kt` before writing code. The hard rules:
+The worker's hexagonal rules live in `service/common-architecture-tests` (ArchUnit, plus a
+source-level tool for the rules bytecode cannot express) and **fail the build** — one line wires them
+into the worker (`ArchitectureTest` extends `ServiceArchitectureTest`). See
+[ADR-0007](docs/adr/0007-two-architecture-test-tools-archunit-and-konsist.md). Read
+`HexagonalArchitectureTest` and `NamingConventionArchitectureTest` before writing code. The hard rules:
 
 - **One inbound port per controller/worker.** `onlyFulfilOneUseCase` counts constructor params in
   `application.port.inbound` and fails at >1.
@@ -82,13 +169,12 @@ ServiceArchitectureTest(...)`). Read `HexagonalArchitectureTest.kt` and
 
 - The worker **owns** the `.bpmn`/`.dmn`/`.form` models under
   `service/example-service/src/main/resources` and deploys them into the remote engine at start-up.
-- `bpmn-to-code` generates the typed process API into the worker's `process/` package — never
-  hand-edit `*ProcessApi.kt` or the shared `ServiceTasks`/`Messages`/`ProcessVariables`/`Errors`/
-  `Escalations` files; edit the `.bpmn` and re-run `./gradlew generateBpmnModels`. Since bpmn-to-code 6
-  the API is node-centric: `<Process>ProcessApi.FlowNodes.<Node>` carries the element (`.id`,
-  `ELEMENT_ID`), its `Variables` and its successors (`Next`). Process tests assert the walked path as
-  a compile-checked `ProcessPath` (`process/ProcessPathAssertions.kt`) instead of hand-maintained
-  element-id lists.
+- `bpmn-to-code` generates the typed process API into the worker's `process` package — never
+  hand-edit `*ProcessApi` or the shared `ServiceTasks`/`Messages`/`ProcessVariables`/`Errors`/
+  `Escalations` files; edit the `.bpmn` and regenerate. Since bpmn-to-code 6 the API is node-centric:
+  `<Process>ProcessApi.FlowNodes.<Node>` carries the element (its id and `ELEMENT_ID`), its
+  `Variables` and its successors (`Next`). Process tests assert the walked path as a compile-checked
+  path over these nodes instead of hand-maintained element-id lists.
 - `bpmn-to-code-testing` validates the models structurally at build time — including a custom rule
   that every service task must be an **external task with a topic**.
 - `bpmnlint` runs on staged `.bpmn` via `.githooks/pre-commit` (install: `npm run hooks:install`).
@@ -100,22 +186,42 @@ TDD. Match the test style to the layer:
 | Layer | Test style |
 |---|---|
 | domain | plain unit tests |
-| application service | mockk unit tests (mock the ports) |
-| `adapter.inbound.rest` | `@WebMvcTest` + MockkBean |
-| `adapter.inbound.cibseven` (external-task workers) | direct mockk unit tests |
+| application service | unit tests with mocked ports |
+| `adapter.inbound.rest` | `@WebMvcTest` with the use case mocked |
+| `adapter.inbound.cibseven` (external-task workers) | direct unit tests with mocks |
 | `adapter.outbound.db` | `@DataJpaTest` |
 | `adapter.outbound.engine` (remote client) | `MockRestServiceServer` |
-| process end-to-end | CIB seven process tests (`cibseven-bpm-assert`, in-memory engine), paths asserted via `ProcessPath` |
+| process end-to-end | CIB seven process tests (`cibseven-bpm-assert`, in-memory engine), paths asserted against the generated API |
 
-**Mutation testing gates PRs at 80** (`:service:example-service:pitest`): a test that executes
-without asserting will fail CI. Coverage says a line ran; mutation says a test would have noticed.
-See ADR-0004.
+**Mutation testing gates PRs at 80**: a test that executes without asserting will fail CI. Coverage
+says a line ran; mutation says a test would have noticed. The PR gate runs **diff-scoped** (only the
+classes the PR changed, still blocking); the **full-module** gate-80 sweep runs nightly. See
+[ADR-0004](docs/adr/0004-mutation-testing-as-a-blocking-pr-gate.md).
 
 ## Verify After Each Task (targeted, not a full build)
 
+<!-- variant:blueprint -->
+Verify the variant you touched — which, for a change in behaviour, is both.
+<!-- /variant:blueprint -->
+
+<!-- variant:kotlin-gradle -->
+In `kotlin-gradle/`:
+
 - Worker service/controller: `./gradlew :service:example-service:test --tests "*<Name>Test"`
 - Architecture only: `./gradlew :service:example-service:test --tests "io.miragon.blueprint.architecture.*"`
+  <!-- /variant:kotlin-gradle -->
+
+<!-- variant:java-maven -->
+In `java-maven/`:
+
+- Worker service/controller: `./mvnw -pl service/example-service -am test -Dtest="<Name>Test" -Dsurefire.failIfNoSpecifiedTests=false`
+- Architecture only: `./mvnw -pl service/example-service -am test -Dtest="ArchitectureTest" -Dsurefire.failIfNoSpecifiedTests=false`
+  <!-- /variant:java-maven -->
+
+From the repo root:
+
 - Contract changed: regenerate the spec, then `git diff --exit-code openapi/openapi.json`
+- Process changed: regenerate the process API, then the `process.*` tests
 
 ## Working with GitHub
 
@@ -124,8 +230,8 @@ Use the `gh` CLI. Write everything (issues, PRs, commit messages) in **English**
 
 ## ADRs
 
-Architecture decisions are recorded in `docs/adr/` (0001–0011). Read them to understand *why* the
-repo is shaped this way before proposing structural changes.
+Architecture decisions are recorded in `docs/adr/`. Read them to understand *why* the repo is shaped
+this way before proposing structural changes.
 
 ## Personality
 

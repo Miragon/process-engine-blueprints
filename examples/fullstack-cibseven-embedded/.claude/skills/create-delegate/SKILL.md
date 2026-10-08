@@ -17,16 +17,17 @@ is CIB seven (the community fork of Camunda 7) with an **embedded engine** — s
 
 ```kotlin
 @Component
-class ValidateApplicationDelegate(
-    private val useCase: ValidateApplicationUseCase,
+class OrderBikeDelegate(
+    private val useCase: OrderBikeUseCase,
 ) : BaseDelegate() {
 
     override fun executeTask(execution: DelegateExecution) {
-        try {
-            useCase.validate(ApplicationId.of(execution.processBusinessKey))
-        } catch (e: ApplicationInvalidException) {
-            throw BpmnError("applicationInvalid", e.reason)   // maps to a BPMN error boundary event
+        val orderId = try {
+            useCase.orderBike(ApplicationId.of(execution.processBusinessKey))
+        } catch (e: BikeUnavailableException) {
+            throw BpmnError(Errors.BIKE_UNAVAILABLE.code, e.message)   // maps to a BPMN error boundary event
         }
+        execution.setVariable(FlowNodes.ServiceTaskOrderBike.Variables.ORDER_ID.value, orderId.value)
     }
 }
 ```
@@ -48,7 +49,7 @@ class ValidateApplicationDelegate(
   nothing else. A service-task delegate is `*Delegate`; a hook is `*Listener`.
 - The bean is referenced from the BPMN by expression, `camunda:delegateExpression="#{beanName}"` (or
   `camunda:taskListener`/`camunda:executionListener`). The bean name is the class name with a lowercase
-  first letter (`ValidateApplicationDelegate` → `#{validateApplicationDelegate}`).
+  first letter (`OrderBikeDelegate` → `#{orderBikeDelegate}`).
 - Domain exceptions are translated to `BpmnError(errorCode, message)` where the model has an error
   boundary event; the `errorCode` **must match** the BPMN error definition.
 

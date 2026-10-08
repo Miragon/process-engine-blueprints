@@ -16,7 +16,7 @@ Work through these hops for the requested process and report a finding at each g
 
 ### 1. Locate and parse the model
 `Glob service/app/src/main/resources/bpmn/*.bpmn`. Read the target model and extract, per element:
-- **service tasks** — id, name, and their `camunda:delegateExpression` (e.g. `#{validateApplicationDelegate}`)
+- **service tasks** — id, name, and their `camunda:delegateExpression` (e.g. `#{orderBikeDelegate}`)
 - **listeners** — `camunda:executionListener` / `camunda:taskListener` expressions and their `event`
 - **messages** — `<bpmn:message name="…">` and message/receive/start events
 - **timers** — boundary/intermediate timer definitions

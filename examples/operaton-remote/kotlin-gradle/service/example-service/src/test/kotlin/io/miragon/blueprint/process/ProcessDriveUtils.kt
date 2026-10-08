@@ -1,9 +1,11 @@
 package io.miragon.blueprint.process
 
+import io.miragon.bpmn.runtime.BpmnErrorDefinition
 import io.miragon.bpmn.runtime.FlowNode
 import io.miragon.bpmn.runtime.MessageName
 import org.assertj.core.api.Assertions.assertThat
 import org.operaton.bpm.engine.ProcessEngine
+import org.operaton.bpm.engine.externaltask.ExternalTask
 import org.operaton.bpm.engine.runtime.ProcessInstance
 
 /** Worker id the tests lock external tasks with — stands in for the remote worker. */
@@ -17,18 +19,34 @@ private const val TEST_LOCK_DURATION_MS = 60_000L
  * embedded blueprint's `executeJobFor(activityId)`. It is explicit about *which* task it drives and
  * fails loudly if that task is not (uniquely) waiting, so a test reads as an ordered trace. The
  * [variables] are passed as the task's output — exactly what a real worker would return (e.g.
- * `orderBike` → `bikeAvailable` / `orderId`). Afterwards it settles the deterministic async plumbing
+ * `orderBike` → `orderId`). Afterwards it settles the deterministic async plumbing
  * (asyncAfter jobs, the DMN, gateways) up to the next wait state or external task.
  */
 fun ProcessEngine.completeExternalTask(topicName: String, variables: Map<String, Any?> = emptyMap()) {
+    val task = lockSingleExternalTask(topicName)
+    externalTaskService.complete(task.id, TEST_WORKER, variables)
+    executeAsyncContinuations()
+}
+
+/**
+ * Ends the **single** waiting external task of [topicName] with the BPMN [error] — what a real worker
+ * does through `handleBpmnError` — so the task is left through its error boundary event instead of
+ * being completed. Afterwards it settles the plumbing like [completeExternalTask].
+ */
+fun ProcessEngine.raiseBpmnErrorOnExternalTask(topicName: String, error: BpmnErrorDefinition) {
+    val task = lockSingleExternalTask(topicName)
+    externalTaskService.handleBpmnError(task.id, TEST_WORKER, error.code)
+    executeAsyncContinuations()
+}
+
+private fun ProcessEngine.lockSingleExternalTask(topicName: String): ExternalTask {
     val tasks = externalTaskService.createExternalTaskQuery().topicName(topicName).notLocked().list()
     require(tasks.size == 1) {
         "expected exactly one waiting external task for topic '$topicName', found ${tasks.size}"
     }
     val task = tasks.single()
     externalTaskService.lock(task.id, TEST_WORKER, TEST_LOCK_DURATION_MS)
-    externalTaskService.complete(task.id, TEST_WORKER, variables)
-    executeAsyncContinuations()
+    return task
 }
 
 /** Completes the single waiting user task with [taskDefinitionKey], then settles the plumbing. */

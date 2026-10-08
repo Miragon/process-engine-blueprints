@@ -6,6 +6,7 @@ import static io.miragon.blueprint.process.ProcessDriveUtils.correlateMessage;
 import static io.miragon.blueprint.process.ProcessDriveUtils.drainToWaitState;
 import static io.miragon.blueprint.process.ProcessDriveUtils.findInstance;
 import static io.miragon.blueprint.process.ProcessDriveUtils.fireTimer;
+import static io.miragon.blueprint.process.ProcessDriveUtils.raiseBpmnErrorOnExternalTask;
 import static io.miragon.blueprint.process.ProcessDriveUtils.startLeasing;
 import static org.operaton.bpm.engine.test.assertions.bpmn.BpmnAwareTests.assertThat;
 import static org.operaton.bpm.engine.test.assertions.bpmn.BpmnAwareTests.init;
@@ -14,6 +15,7 @@ import io.miragon.blueprint.process.BikeLeasingProcessProcessApi.FlowNodes;
 import io.miragon.bpmn.runtime.path.PathWalk;
 import java.util.Map;
 import java.util.UUID;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,10 +43,17 @@ class BikeLeasingProcessTest {
 
     private ProcessEngine engine;
 
-    /** Output of the {@code orderBike} external task when the requested bike is available. */
-    private final Map<String, Object> bikeAvailable = Map.of(
-            FlowNodes.ServiceTaskOrderBike.Variables.ORDER_ID.getValue(), "ORDER-1",
-            FlowNodes.ServiceTaskOrderBike.Variables.BIKE_AVAILABLE.getValue(), true);
+    /** Output of the {@code orderBike} external task once the dealer accepted the order. */
+    private final Map<String, Object> orderPlaced =
+            Map.of(FlowNodes.ServiceTaskOrderBike.Variables.ORDER_ID.getValue(), "ORDER-1");
+
+    /**
+     * Compensation handlers run in an engine-defined order, so the tests drive that chain generically.
+     * Only the {@code requestCancellation} external task produces a variable the flow routes on.
+     */
+    private final Map<String, Map<String, Object>> compensationOutputs = Map.of(
+            ServiceTasks.BIKE_LEASING_REQUEST_CANCELLATION,
+            Map.of(CancelBikeOrderProcessApi.FlowNodes.ServiceTaskRequestCancellation.Variables.CANCELLATION_POSSIBLE.getValue(), true));
 
     @BeforeEach
     void setUp() {
@@ -88,12 +97,12 @@ class BikeLeasingProcessTest {
         String businessKey = submit(35, 3500.0);
         ProcessInstance instance = findInstance(engine, businessKey);
 
-        completeExternalTask(engine, ServiceTasks.BIKE_LEASING_VALIDATE_APPLICATION); // -> DMN (solvent) -> sendContract
+        // the message start runs the DMN (solvent) and parks on sendContract
         completeExternalTask(engine, ServiceTasks.BIKE_LEASING_SEND_CONTRACT); // -> signature wait state
 
         correlateMessage(engine, Messages.MIRAVELO_CONTRACT_SIGNED, businessKey); // forks into insurance + bike order
         completeExternalTask(engine, ServiceTasks.BIKE_LEASING_ISSUE_INSURANCE_POLICY);
-        completeExternalTask(engine, ServiceTasks.BIKE_LEASING_ORDER_BIKE, bikeAvailable); // joins -> handover wait state
+        completeExternalTask(engine, ServiceTasks.BIKE_LEASING_ORDER_BIKE, orderPlaced); // joins -> handover wait state
 
         correlateMessage(engine, Messages.MIRAVELO_HANDOVER_REPORTED, businessKey); // -> withdrawal-period timer
         fireTimer(engine, FlowNodes.EventWithdrawalPeriodElapsed.INSTANCE);
@@ -115,10 +124,10 @@ class BikeLeasingProcessTest {
                         PathWalk.from(FlowNodes.GatewayFork.INSTANCE)
                                 .then(next -> next.gatewayBikeSourceJoin())
                                 .then(next -> next.serviceTaskOrderBike())
-                                .then(next -> next.gatewayBikeAvailable())
                                 .then(next -> next.gatewayJoin())
                                 .getIds())
                 .hasNotPassed(
+                        FlowNodes.EventBikeUnavailable.ELEMENT_ID,
                         FlowNodes.EndEventApplicationRejected.ELEMENT_ID,
                         FlowNodes.EndEventApplicationCancelled.ELEMENT_ID,
                         FlowNodes.EndEventContractCancelled.ELEMENT_ID);
@@ -129,7 +138,6 @@ class BikeLeasingProcessTest {
         String businessKey = submit(35, 3500.0);
         ProcessInstance instance = findInstance(engine, businessKey);
 
-        completeExternalTask(engine, ServiceTasks.BIKE_LEASING_VALIDATE_APPLICATION);
         completeExternalTask(engine, ServiceTasks.BIKE_LEASING_SEND_CONTRACT); // -> signature wait state
 
         fireTimer(engine, FlowNodes.EventSignatureDeadline.INSTANCE); // deadline -> escalation -> boundary -> rejection
@@ -160,7 +168,7 @@ class BikeLeasingProcessTest {
         String businessKey = submit(15, 3500.0);
         ProcessInstance instance = findInstance(engine, businessKey);
 
-        completeExternalTask(engine, ServiceTasks.BIKE_LEASING_VALIDATE_APPLICATION); // -> DMN -> not solvent -> rejection
+        // the message start runs the DMN (not solvent) and parks on the rejection
         completeExternalTask(engine, ServiceTasks.BIKE_LEASING_SEND_REJECTION); // -> end
 
         assertThat(instance)
@@ -178,23 +186,14 @@ class BikeLeasingProcessTest {
 
     @Test
     void abortWithdrawingTheApplicationCompensatesTheCompletedSteps() {
-        // Compensation handlers run in an engine-defined order, so drive the chain generically. Only the
-        // `requestCancellation` external task produces a variable the flow routes on.
-        Map<String, Map<String, Object>> compensationOutputs = Map.of(
-                ServiceTasks.BIKE_LEASING_REQUEST_CANCELLATION,
-                Map.<String, Object>of(
-                        CancelBikeOrderProcessApi.FlowNodes.ServiceTaskRequestCancellation.Variables.CANCELLATION_POSSIBLE.getValue(),
-                        true));
-
         String businessKey = submit(35, 3500.0);
         ProcessInstance instance = findInstance(engine, businessKey);
 
         // drive to the handover wait state (contract signed, bike ordered, insured)
-        completeExternalTask(engine, ServiceTasks.BIKE_LEASING_VALIDATE_APPLICATION);
         completeExternalTask(engine, ServiceTasks.BIKE_LEASING_SEND_CONTRACT);
         correlateMessage(engine, Messages.MIRAVELO_CONTRACT_SIGNED, businessKey);
         completeExternalTask(engine, ServiceTasks.BIKE_LEASING_ISSUE_INSURANCE_POLICY);
-        completeExternalTask(engine, ServiceTasks.BIKE_LEASING_ORDER_BIKE, bikeAvailable);
+        completeExternalTask(engine, ServiceTasks.BIKE_LEASING_ORDER_BIKE, orderPlaced);
 
         // withdrawing triggers compensation; it parks on the cancelBikeOrder sub-process' user task
         correlateMessage(engine, Messages.MIRAVELO_APPLICATION_WITHDRAWN, businessKey);
@@ -230,27 +229,16 @@ class BikeLeasingProcessTest {
         String businessKey = submit(35, 3500.0);
         ProcessInstance instance = findInstance(engine, businessKey);
 
-        completeExternalTask(engine, ServiceTasks.BIKE_LEASING_VALIDATE_APPLICATION);
         completeExternalTask(engine, ServiceTasks.BIKE_LEASING_SEND_CONTRACT);
         correlateMessage(engine, Messages.MIRAVELO_CONTRACT_SIGNED, businessKey);
         completeExternalTask(engine, ServiceTasks.BIKE_LEASING_ISSUE_INSURANCE_POLICY);
 
         // the first order finds the requested bike unavailable -> parks on the clarify-alternative task
-        Map<String, Object> bikeUnavailable = Map.of(FlowNodes.ServiceTaskOrderBike.Variables.BIKE_AVAILABLE.getValue(), false);
-        completeExternalTask(engine, ServiceTasks.BIKE_LEASING_ORDER_BIKE, bikeUnavailable);
-
-        completeUserTask(
-                engine,
-                FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID,
-                Map.of(
-                        FlowNodes.UserTaskClarifyAlternative.Variables.ALTERNATIVE_FOUND.getValue(), true,
-                        FlowNodes.StartEventLeasingRequestReceived.Variables.BIKE_ID.getValue(), "BIKE-ALT"));
+        raiseBpmnErrorOnExternalTask(engine, ServiceTasks.BIKE_LEASING_ORDER_BIKE, Errors.BIKE_UNAVAILABLE);
+        acceptAlternative();
 
         // the re-order succeeds -> parallel join -> handover wait state
-        Map<String, Object> reorderAvailable = Map.of(
-                FlowNodes.ServiceTaskOrderBike.Variables.ORDER_ID.getValue(), "ORDER-2",
-                FlowNodes.ServiceTaskOrderBike.Variables.BIKE_AVAILABLE.getValue(), true);
-        completeExternalTask(engine, ServiceTasks.BIKE_LEASING_ORDER_BIKE, reorderAvailable);
+        completeExternalTask(engine, ServiceTasks.BIKE_LEASING_ORDER_BIKE, orderPlaced);
 
         correlateMessage(engine, Messages.MIRAVELO_HANDOVER_REPORTED, businessKey);
         fireTimer(engine, FlowNodes.EventWithdrawalPeriodElapsed.INSTANCE);
@@ -262,12 +250,13 @@ class BikeLeasingProcessTest {
                         PathWalk.from(FlowNodes.GatewayFork.INSTANCE)
                                 .then(next -> next.gatewayBikeSourceJoin())
                                 .then(next -> next.serviceTaskOrderBike())
-                                .then(next -> next.gatewayBikeAvailable())
+                                .interruptedBy(
+                                        FlowNodes.ServiceTaskOrderBike.INSTANCE,
+                                        next -> next.eventBikeUnavailable())
                                 .then(next -> next.userTaskClarifyAlternative())
                                 .then(next -> next.gatewayAlternativeFound())
                                 .then(next -> next.gatewayBikeSourceJoin())
                                 .then(next -> next.serviceTaskOrderBike())
-                                .then(next -> next.gatewayBikeAvailable())
                                 .then(next -> next.gatewayJoin())
                                 .then(next -> next.eventHandoverReported())
                                 .then(next -> next.eventWithdrawalPeriodElapsed())
@@ -279,9 +268,101 @@ class BikeLeasingProcessTest {
                         FlowNodes.EndEventApplicationRejected.ELEMENT_ID);
     }
 
+    @Test
+    void bikeUnavailableDecliningTheAlternativeReversesContractAndPolicyWithoutCancellingAnOrder() {
+        String businessKey = submitUntilBikeUnavailable();
+        ProcessInstance instance = findInstance(engine, businessKey);
+
+        completeUserTask(
+                engine,
+                FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID,
+                Map.of(FlowNodes.UserTaskClarifyAlternative.Variables.ALTERNATIVE_FOUND.getValue(), false));
+        drainToWaitState(engine, Map.of()); // -> compensation -> sendCancellationConfirmation -> end cancelled
+
+        assertThat(instance)
+                .isEnded()
+                .hasPassed(PathWalk.from(FlowNodes.GatewayAlternativeFound.INSTANCE)
+                        .then(next -> next.eventTriggerReversal())
+                        .throwingCompensation(
+                                FlowNodes.EventCompensateContract.INSTANCE,
+                                next -> next.serviceTaskCancelContract())
+                        .throwingCompensation(
+                                FlowNodes.EventCompensateInsurance.INSTANCE,
+                                next -> next.serviceTaskCancelPolicy())
+                        .then(next -> next.serviceTaskConfirmContractCancellation())
+                        .end(next -> next.endEventContractCancelled())
+                        .getDistinctIds())
+                .hasNotPassed(
+                        FlowNodes.CallActivityCancelBikeOrder.ELEMENT_ID,
+                        FlowNodes.EndEventLeasingActive.ELEMENT_ID);
+    }
+
+    @Test
+    void abortWhileClarifyingAnAlternativeCompensatesContractAndPolicyWithoutCancellingAnOrder() {
+        String businessKey = submitUntilBikeUnavailable();
+        ProcessInstance instance = findInstance(engine, businessKey);
+
+        correlateMessage(engine, Messages.MIRAVELO_APPLICATION_WITHDRAWN, businessKey);
+        drainToWaitState(engine, Map.of()); // -> compensation -> sendCancellationConfirmation -> end cancelled
+
+        assertThat(instance)
+                .isEnded()
+                .hasPassed(PathWalk.from(FlowNodes.StartEventApplicationWithdrawn.INSTANCE)
+                        .then(next -> next.eventReverseApplication())
+                        .throwingCompensation(
+                                FlowNodes.EventCompensateContract.INSTANCE,
+                                next -> next.serviceTaskCancelContract())
+                        .throwingCompensation(
+                                FlowNodes.EventCompensateInsurance.INSTANCE,
+                                next -> next.serviceTaskCancelPolicy())
+                        .then(next -> next.serviceTaskSendCancellationConfirmation())
+                        .end(next -> next.endEventApplicationCancelled())
+                        .getDistinctIds())
+                .hasNotPassed(FlowNodes.CallActivityCancelBikeOrder.ELEMENT_ID);
+    }
+
+    @Test
+    void abortAfterAnAcceptedAlternativeCancelsTheOnePlacedOrderExactlyOnce() {
+        String businessKey = submitUntilBikeUnavailable();
+        ProcessInstance instance = findInstance(engine, businessKey);
+
+        acceptAlternative();
+        completeExternalTask(engine, ServiceTasks.BIKE_LEASING_ORDER_BIKE, orderPlaced); // -> handover wait state
+
+        correlateMessage(engine, Messages.MIRAVELO_APPLICATION_WITHDRAWN, businessKey);
+        drainToWaitState(engine, compensationOutputs);
+        completeUserTask(engine, CancelBikeOrderProcessApi.FlowNodes.UserTaskClarifyReturn.ELEMENT_ID, Map.of("returnClarified", true));
+        drainToWaitState(engine, compensationOutputs);
+
+        assertThat(instance).isEnded().hasPassed(FlowNodes.EndEventApplicationCancelled.ELEMENT_ID);
+        long orderCancellations = engine.getHistoryService()
+                .createHistoricProcessInstanceQuery()
+                .processDefinitionKey(CancelBikeOrderProcessApi.PROCESS_ID.getValue())
+                .count();
+        Assertions.assertThat(orderCancellations).isEqualTo(1);
+    }
+
+    /** Drives a signed, insured application to the clarify-alternative task: the dealer has no bike. */
+    private String submitUntilBikeUnavailable() {
+        String businessKey = submit(35, 3500.0);
+        completeExternalTask(engine, ServiceTasks.BIKE_LEASING_SEND_CONTRACT);
+        correlateMessage(engine, Messages.MIRAVELO_CONTRACT_SIGNED, businessKey);
+        completeExternalTask(engine, ServiceTasks.BIKE_LEASING_ISSUE_INSURANCE_POLICY);
+        raiseBpmnErrorOnExternalTask(engine, ServiceTasks.BIKE_LEASING_ORDER_BIKE, Errors.BIKE_UNAVAILABLE);
+        return businessKey;
+    }
+
+    private void acceptAlternative() {
+        completeUserTask(
+                engine,
+                FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID,
+                Map.of(
+                        FlowNodes.UserTaskClarifyAlternative.Variables.ALTERNATIVE_FOUND.getValue(), true,
+                        FlowNodes.StartEventLeasingRequestReceived.Variables.BIKE_ID.getValue(), "BIKE-ALT"));
+    }
+
     private PathWalk<FlowNodes.GatewayIsSolvent, FlowNodes.GatewayIsSolvent.Next> pathUntilCreditRatingChecked() {
         return PathWalk.from(FlowNodes.StartEventLeasingRequestReceived.INSTANCE)
-                .then(next -> next.serviceTaskValidateApplication())
                 .then(next -> next.businessRuleTaskCheckCreditRating())
                 .then(next -> next.gatewayIsSolvent());
     }

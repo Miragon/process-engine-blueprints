@@ -64,7 +64,7 @@ curl -X POST http://localhost:8082/api/bike-leasing \
   -d '{ "customerName": "Ada", "email": "ada@example.com", "age": 35, "monthlyNetIncome": 3500, "bikeId": "BIKE-900", "bikeModel": "Gravel Explorer 900" }'
 ```
 
-Watch the external-task workers auto-complete `validateApplication`, `orderBike`, … in the
+Watch the external-task workers auto-complete `sendContract`, `orderBike`, … in the
 `example-service` log, and inspect the running instance in the Operaton Cockpit at
 <http://localhost:8081/operaton> (admin/admin). Confirm <http://localhost:8082/swagger-ui.html> and
 <http://localhost:8082/actuator/health> (status `UP`) load. To exercise incidents/retries, submit the

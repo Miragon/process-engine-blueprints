@@ -9,6 +9,13 @@ the next engine update, or the next port, starts from facts instead of archaeolo
 REST contract, the same process tests and the same end-to-end scenarios as the CIB seven baseline. One
 upstream defect needed a workaround ([section 8](#8-blockers-workarounds-and-open-fluxnova-issues)).
 
+<!-- variant:blueprint -->
+The migration was done on the Kotlin + Gradle build, so the build files and Gradle commands named here
+are those of `kotlin-gradle/`, and paths such as `service/app/…` are relative to a variant directory.
+The Java + Maven variant carries the same decisions in its `pom.xml` files: the Jackson exclusion on
+the two Fluxnova starters and a `maven-enforcer-plugin` rule in place of `verifyFluxnovaIsTheOnlyEngine`.
+<!-- /variant:blueprint -->
+
 ## 1. Source and target versions
 
 | | CIB seven baseline | Fluxnova blueprint |
@@ -172,7 +179,7 @@ Deliberately kept:
 |---|---|---|
 | `xmlns:camunda="http://camunda.org/schema/1.0/bpmn"` and all `camunda:*` attributes | `*.bpmn` | the namespace the engine parses |
 | `xmlns:camunda="http://camunda.org/schema/1.0/dmn"`, `camunda:historyTimeToLive` | `check-credit-rating.dmn` | same, for DMN |
-| `ProcessEngine.CAMUNDA_7` | `service/app/build.gradle.kts`, `BikeLeasingModelValidationTest` | `bpmn-to-code` 5.2.0 knows `ZEEBE`, `CAMUNDA_7` and `OPERATON`; `CAMUNDA_7` is its dialect for `camunda:` models |
+| `ProcessEngine.CAMUNDA_7` | `service/app/build.gradle.kts`, `BikeLeasingModelValidationTest` | `bpmn-to-code` 6.2.0 knows `ZEEBE`, `CAMUNDA_7` and `OPERATON`; `CAMUNDA_7` is its dialect for `camunda:` models |
 | `BpmnEngine.CAMUNDA_7` | generated `*ProcessApi.kt` | written by `bpmn-to-code` |
 | `plugin:camunda-compat/camunda-platform-7-24`, `camunda-bpmn-moddle` | `.bpmnlintrc` | lint rules and moddle descriptor for the same namespace |
 | `org.camunda.bpm.model:camunda-bpmn-model`, `camunda-xml-model` 7.24.0 | test classpath only | transitive dependency of `bpmn-to-code-testing`; allow-listed in `verifyFluxnovaIsTheOnlyEngine` |
@@ -237,7 +244,7 @@ Taken from the three blueprints as they are today (`cibseven-embedded-example@9a
 | Model metadata | Camunda Platform 7.24 | Camunda Platform 7.24 | Fluxnova Platform 3.0 |
 | Build workaround | exclude `cibseven-webclient-web`, JWT secret required | none | exclude `jackson-datatype-jsr310` |
 | Extra dev stack | — | EnterpriseGlue "The Bridge" | — |
-| Java + Maven variant (`java-maven` tag) | yes | yes | not yet |
+| Java + Maven variant | yes (`java-maven` tag) | yes (`java-maven` tag) | yes (`java-maven/` on `main`) |
 
 The domain, the application services, the REST controllers, the process models' flow, the Flyway
 schema and the Bruno scenarios are the same in all three. What the comparison does **not** cover:
@@ -264,6 +271,5 @@ those.
 6. **Port improvements from the sibling blueprints.** The three embedded examples differ only in the
    places listed in section 9; a fix to the domain, the tests or the tooling in one of them usually
    applies here unchanged.
-7. **Open points:** the `java-maven` variant is not generated
-   ([`docs/variants/java-maven.md`](variants/java-maven.md)), and the model files should be opened and
-   saved once in the Fluxnova Modeler to confirm the hand-written metadata.
+7. **Open point:** the model files should be opened and saved once in the Fluxnova Modeler to confirm
+   the hand-written metadata.

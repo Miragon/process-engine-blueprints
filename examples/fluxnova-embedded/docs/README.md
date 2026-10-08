@@ -11,7 +11,7 @@ workflow in [AGENTS.md](../AGENTS.md). Where a procedure has a decision behind i
 in the relevant ADR's own Decision section (e.g. the contract flow in ADR-0003, the mutation gate in
 ADR-0004).
 
-## Architecture Decision Records
+## 📐 Architecture Decision Records
 
 Each non-obvious decision is recorded as an ADR in [`adr/`](adr/), in a MADR/Nygard-lite format
 (Status · Context · Decision · Consequences). They are numbered from 0001, never renumbered, and
@@ -30,13 +30,14 @@ copied from [`adr/0000-adr-template.md`](adr/0000-adr-template.md).
 | [0009](adr/0009-actuator-probes-and-prometheus-metrics.md) | Actuator health/liveness/readiness probes and Prometheus metrics, exposed out of the box. |
 | [0010](adr/0010-flyway-for-database-migrations.md) | Flyway for versioned schema migrations; Hibernate switches to `validate`. |
 | [0011](adr/0011-build-and-deployment-approach.md) | Build & deployment: `bootBuildImage` OCI image for the headless app. |
+| [0013](adr/0013-two-stack-variants-side-by-side-on-main.md) | Kotlin + Gradle (recommended) and Java + Maven side by side on `main`, each self-contained. |
 
-## Migration notes
+## 🧳 Migration notes
 
 - [`fluxnova-migration.md`](fluxnova-migration.md) — how this blueprint was ported from the CIB seven
   embedded example to Fluxnova: version choice, dependency and package mapping, configuration, model
   changes, workarounds and open points.
 
-## Diagrams
+## 📊 Diagrams
 
 - [`assets/bike-leasing.png`](assets/bike-leasing.png) — the BPMN process at a glance.

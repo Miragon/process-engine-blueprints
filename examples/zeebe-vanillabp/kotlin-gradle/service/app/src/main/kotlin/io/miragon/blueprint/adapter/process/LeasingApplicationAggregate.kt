@@ -77,10 +77,6 @@ class LeasingApplicationAggregate(
     var cancellationPossible: Boolean? = null,
 ) {
 
-    @get:JsonProperty
-    val bikeAvailable: Boolean
-        get() = orderId != null
-
     fun toDomain(): LeasingApplication =
         LeasingApplication(
             id = ApplicationId.of(applicationId),

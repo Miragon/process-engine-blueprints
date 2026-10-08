@@ -14,8 +14,6 @@ public final class ProcessVariables {
 
   public static final String APPLICATION_ID = "applicationId";
 
-  public static final String BIKE_AVAILABLE = "bikeAvailable";
-
   public static final String CANCELLATION_POSSIBLE = "cancellationPossible";
 
   public static final String MONTHLY_NET_INCOME = "monthlyNetIncome";
@@ -28,7 +26,6 @@ public final class ProcessVariables {
         AGE,
         ALTERNATIVE_FOUND,
         APPLICATION_ID,
-        BIKE_AVAILABLE,
         CANCELLATION_POSSIBLE,
         MONTHLY_NET_INCOME);
   }

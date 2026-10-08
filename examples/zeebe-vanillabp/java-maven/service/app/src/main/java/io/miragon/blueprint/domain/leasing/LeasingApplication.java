@@ -22,14 +22,6 @@ public record LeasingApplication(
         OrderId orderId,
         ContractId contractId) {
 
-    /** Ensures the application is fundamentally processable; throws otherwise. */
-    public LeasingApplication validate() {
-        if (monthlyNetIncome <= 0.0) {
-            throw new ApplicationInvalidException(id, "monthly net income must be greater than zero");
-        }
-        return this;
-    }
-
     /** Records the contract the contract system issued for this application. */
     public LeasingApplication withContract(ContractId contractId) {
         return new LeasingApplication(
@@ -85,6 +77,9 @@ public record LeasingApplication(
             double monthlyNetIncome,
             BikeId bikeId,
             LocalDateTime createdAt) {
+        if (monthlyNetIncome <= 0.0) {
+            throw new IllegalArgumentException("Monthly net income must be greater than zero");
+        }
         return new LeasingApplication(
                 id, customerName, email, age, monthlyNetIncome, bikeId, LeasingStatus.RECEIVED, createdAt, null, null);
     }

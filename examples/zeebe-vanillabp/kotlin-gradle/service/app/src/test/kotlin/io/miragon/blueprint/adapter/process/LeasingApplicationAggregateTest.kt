@@ -125,12 +125,6 @@ class LeasingApplicationAggregateTest {
     inner class BikeOrder {
 
         @Test
-        fun `the bike counts as available once an order is placed`() {
-            assertThat(LeasingApplicationAggregate.of(testLeasingApplication(orderId = null)).bikeAvailable).isFalse()
-            assertThat(LeasingApplicationAggregate.of(testLeasingApplication(orderId = OrderId("ORDER-1"))).bikeAvailable).isTrue()
-        }
-
-        @Test
         fun `placedOrderId returns the recorded order`() {
             val aggregate = LeasingApplicationAggregate.of(testLeasingApplication(orderId = OrderId("ORDER-1")))
 
@@ -230,7 +224,7 @@ class LeasingApplicationAggregateTest {
         private val engineJson = JsonMapper.builder().build()
 
         @Test
-        fun `a fresh aggregate releases only its id, the decision inputs and the order state to the engine`() {
+        fun `a fresh aggregate releases only its id and the decision inputs to the engine`() {
             // given: a freshly received application
             val aggregate = LeasingApplicationAggregate.of(testLeasingApplication(age = 35, monthlyNetIncome = 3500.0))
 
@@ -239,11 +233,10 @@ class LeasingApplicationAggregateTest {
 
             // then: neither personal data nor business state beyond the routing values leaves the service
             assertThat(released.propertyNames())
-                .containsExactlyInAnyOrder("applicationId", "age", "monthlyNetIncome", "bikeAvailable")
+                .containsExactlyInAnyOrder("applicationId", "age", "monthlyNetIncome")
             assertThat(released["applicationId"].asString()).isEqualTo(aggregate.applicationId)
             assertThat(released["age"].asInt()).isEqualTo(35)
             assertThat(released["monthlyNetIncome"].asDouble()).isEqualTo(3500.0)
-            assertThat(released["bikeAvailable"].asBoolean()).isFalse()
         }
 
         @Test
@@ -264,11 +257,9 @@ class LeasingApplicationAggregateTest {
                 "applicationId",
                 "age",
                 "monthlyNetIncome",
-                "bikeAvailable",
                 "alternativeFound",
                 "cancellationPossible",
             )
-            assertThat(released["bikeAvailable"].asBoolean()).isTrue()
             assertThat(released["alternativeFound"].asBoolean()).isTrue()
             assertThat(released["cancellationPossible"].asBoolean()).isFalse()
         }

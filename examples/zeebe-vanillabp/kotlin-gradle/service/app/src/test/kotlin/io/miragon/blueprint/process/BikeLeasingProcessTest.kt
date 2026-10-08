@@ -24,11 +24,10 @@ import io.miragon.blueprint.application.port.inbound.RequestOrderCancellationUse
 import io.miragon.blueprint.application.port.inbound.SendCancellationConfirmationUseCase
 import io.miragon.blueprint.application.port.inbound.SendContractUseCase
 import io.miragon.blueprint.application.port.inbound.SendSignatureReminderUseCase
-import io.miragon.blueprint.application.port.inbound.ValidateApplicationUseCase
 import io.miragon.blueprint.domain.bike.BikeId
+import io.miragon.blueprint.domain.bike.BikeUnavailableException
 import io.miragon.blueprint.domain.bike.OrderId
 import io.miragon.blueprint.domain.leasing.ApplicationId
-import io.miragon.blueprint.domain.leasing.ApplicationInvalidException
 import io.miragon.blueprint.domain.leasing.ContractId
 import io.miragon.blueprint.domain.leasing.CustomerName
 import io.miragon.blueprint.domain.leasing.Email
@@ -87,9 +86,6 @@ class BikeLeasingProcessTest {
 
     @Autowired
     private lateinit var transaction: TransactionTemplate
-
-    @MockkBean(relaxed = true)
-    private lateinit var validateApplicationUseCase: ValidateApplicationUseCase
 
     @MockkBean
     private lateinit var rejectApplicationUseCase: RejectApplicationUseCase
@@ -172,9 +168,9 @@ class BikeLeasingProcessTest {
                 ProcessPath.from(FlowNodes.GatewayFork)
                     .then { it.gatewayBikeSourceJoin }
                     .then { it.serviceTaskOrderBike }
-                    .then { it.gatewayBikeAvailable }
                     .then { it.gatewayJoin },
             )
+            .hasNotActivatedElements(FlowNodes.EventBikeUnavailable.ELEMENT_ID)
         verify(exactly = 1) { sendContractUseCase.sendContract(match { it.id == id }) }
         verify(exactly = 1) { issueInsurancePolicyUseCase.issuePolicy(id) }
         verify(exactly = 1) { activateLeasingUseCase.activate(match { it.id == id }) }
@@ -197,9 +193,9 @@ class BikeLeasingProcessTest {
         CamundaAssert.assertThatProcessInstance(instance)
             .hasCompletedElements(FlowNodes.ServiceTaskIssueInsurancePolicy, FlowNodes.ServiceTaskOrderBike)
 
-        val variables = awaitVariable(instanceKey, name = "bikeAvailable", value = "true")
+        val variables = awaitVariable(instanceKey, name = "solvent", value = "true")
         assertThat(variables.map { it.first })
-            .containsOnly("applicationId", "age", "monthlyNetIncome", "solvent", "bikeAvailable")
+            .containsOnly("applicationId", "age", "monthlyNetIncome", "solvent")
         assertThat(variables).contains("applicationId" to "\"${id.value}\"")
     }
 
@@ -250,30 +246,6 @@ class BikeLeasingProcessTest {
     }
 
     @Test
-    fun `invalid application - the BPMN error routes the application to rejection`() {
-        every { validateApplicationUseCase.validate(any()) } answers
-            { throw ApplicationInvalidException(firstArg<LeasingApplication>().id, "no income") }
-
-        val id = submit(age = 35, income = 0.0)
-        val instanceKey = awaitProcessInstance()
-        val instance = ProcessInstanceSelectors.byKey(instanceKey)
-
-        CamundaAssert.assertThatProcessInstance(instance).isCompleted()
-        // Zeebe terminates the task that threw the BPMN error, so the walk starts at the boundary event
-        CamundaAssert.assertThatProcessInstance(instance)
-            .hasTerminatedElements(FlowNodes.ServiceTaskValidateApplication.ELEMENT_ID)
-            .hasCompletedElementsInOrder(
-                ProcessPath.from(FlowNodes.EventApplicationInvalid)
-                    .then { it.gatewayRejectionJoin }
-                    .then { it.serviceTaskSendRejection }
-                    .then { it.endEventApplicationRejected },
-            )
-        verify(exactly = 1) { rejectApplicationUseCase.reject(match { it.id == id }) }
-        verify(exactly = 0) { sendContractUseCase.sendContract(any()) }
-        assertThat(aggregateOf(id).status).isEqualTo(LeasingStatus.REJECTED)
-    }
-
-    @Test
     fun `abort - withdrawing the application compensates the completed steps`() {
         every { requestOrderCancellationUseCase.requestCancellation(any()) } returns true
 
@@ -319,25 +291,15 @@ class BikeLeasingProcessTest {
 
     @Test
     fun `bike unavailable - clarifying an alternative re-orders and leasing becomes active`() {
-        // the first order finds the requested bike unavailable; the re-order after the alternative succeeds
-        every { orderBikeUseCase.orderBike(any()) } answers
-            { firstArg<LeasingApplication>() } andThenAnswer
-            { firstArg<LeasingApplication>().documentOrder(OrderId("ORDER-2")) }
-
-        val id = submit(age = 35, income = 3500.0)
-        val instanceKey = awaitProcessInstance()
-        val instance = ProcessInstanceSelectors.byKey(instanceKey)
-
-        CamundaAssert.assertThatProcessInstance(instance).hasCompletedElements(FlowNodes.ServiceTaskSendContract)
-        inTransaction { process.correlateContractSigned(id) }
-
         // the first order finds nothing -> parks on the clarify-alternative user task, which
         // VanillaBP reports to the workflow aggregate
-        awaitUserTaskCreated(FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID, instanceKey)
+        val (id, instanceKey) = submitUntilBikeUnavailable()
+        val instance = ProcessInstanceSelectors.byKey(instanceKey)
         val parked = aggregateOf(id)
         assertThat(parked.clarifyAlternativeTaskId).isNotNull()
         assertThat(parked.clarificationRequestedAt).isNotNull()
-        inTransaction { process.completeAlternativeClarification(id, alternativeFound = true) }
+        assertThat(parked.orderId).isNull()
+        acceptAlternative(id)
 
         // re-order succeeds -> join -> handover -> withdrawal period
         CamundaAssert.assertThatProcessInstance(instance)
@@ -346,23 +308,23 @@ class BikeLeasingProcessTest {
         CamundaAssert.assertThatProcessInstance(instance).hasCompletedElements(FlowNodes.EventHandoverReported)
         processTestContext.increaseTime(Duration.ofDays(14).plusHours(1))
 
+        // the first order is left through the error boundary event, so it is terminated, not completed
         CamundaAssert.assertThatProcessInstance(instance).isCompleted()
-        CamundaAssert.assertThatProcessInstance(instance).hasCompletedElementsInOrder(
-            ProcessPath.from(FlowNodes.GatewayFork)
-                .then { it.gatewayBikeSourceJoin }
-                .then { it.serviceTaskOrderBike }
-                .then { it.gatewayBikeAvailable }
-                .then { it.userTaskClarifyAlternative }
-                .then { it.gatewayAlternativeFound }
-                .then { it.gatewayBikeSourceJoin }
-                .then { it.serviceTaskOrderBike }
-                .then { it.gatewayBikeAvailable }
-                .then { it.gatewayJoin }
-                .then { it.eventHandoverReported }
-                .then { it.eventWithdrawalPeriodElapsed }
-                .then { it.serviceTaskActivateLeasing }
-                .then { it.endEventLeasingActive },
-        )
+        CamundaAssert.assertThatProcessInstance(instance)
+            .hasTerminatedElement(FlowNodes.ServiceTaskOrderBike.ELEMENT_ID, 1)
+            .hasCompletedElement(FlowNodes.ServiceTaskOrderBike.ELEMENT_ID, 1)
+            .hasCompletedElementsInOrder(
+                ProcessPath.from(FlowNodes.EventBikeUnavailable)
+                    .then { it.userTaskClarifyAlternative }
+                    .then { it.gatewayAlternativeFound }
+                    .then { it.gatewayBikeSourceJoin }
+                    .then { it.serviceTaskOrderBike }
+                    .then { it.gatewayJoin }
+                    .then { it.eventHandoverReported }
+                    .then { it.eventWithdrawalPeriodElapsed }
+                    .then { it.serviceTaskActivateLeasing }
+                    .then { it.endEventLeasingActive },
+            )
         verify(exactly = 2) { orderBikeUseCase.orderBike(match { it.id == id }) }
 
         // the clarification is closed on the reloaded workflow aggregate and the re-order is recorded
@@ -371,6 +333,99 @@ class BikeLeasingProcessTest {
         assertThat(aggregate.alternativeFound).isTrue()
         assertThat(aggregate.orderId).isEqualTo("ORDER-2")
         assertThat(aggregate.status).isEqualTo(LeasingStatus.ACTIVE)
+    }
+
+    @Test
+    fun `bike unavailable - declining the alternative reverses contract and policy without cancelling an order`() {
+        val (id, instanceKey) = submitUntilBikeUnavailable()
+        val instance = ProcessInstanceSelectors.byKey(instanceKey)
+
+        inTransaction { process.completeAlternativeClarification(id, alternativeFound = false) }
+
+        // compensation -> cancellation confirmation -> end cancelled; the failed order registered no compensation
+        CamundaAssert.assertThatProcessInstance(instance).isCompleted()
+        CamundaAssert.assertThatProcessInstance(instance)
+            .hasCompletedElements(
+                ProcessPath.from(FlowNodes.GatewayAlternativeFound)
+                    .then { it.eventTriggerReversal }
+                    .throwingCompensation(FlowNodes.EventCompensateContract) { it.serviceTaskCancelContract }
+                    .throwingCompensation(FlowNodes.EventCompensateInsurance) { it.serviceTaskCancelPolicy }
+                    .then { it.serviceTaskConfirmContractCancellation }
+                    .then { it.endEventContractCancelled },
+            )
+            .hasNotActivatedElements(
+                FlowNodes.EventCompensateOrder.ELEMENT_ID,
+                FlowNodes.CallActivityCancelBikeOrder.ELEMENT_ID,
+                FlowNodes.EndEventLeasingActive.ELEMENT_ID,
+            )
+        assertThat(orderCancellationsOf(instanceKey)).isZero()
+        assertThat(incidentsOf(instanceKey)).isZero()
+        verify(exactly = 1) { cancelContractUseCase.cancelContract(match { it.id == id }) }
+        verify(exactly = 1) { cancelInsurancePolicyUseCase.cancelPolicy(id) }
+        verify(exactly = 1) {
+            sendCancellationConfirmationUseCase.sendCancellationConfirmation(match { it.id == id })
+        }
+        verify(exactly = 0) { requestOrderCancellationUseCase.requestCancellation(any()) }
+
+        // the declined path leaves the workflow aggregate in a terminal status without an order
+        val aggregate = aggregateOf(id)
+        assertThat(aggregate.status).isEqualTo(LeasingStatus.CANCELLED)
+        assertThat(aggregate.alternativeFound).isFalse()
+        assertThat(aggregate.orderId).isNull()
+    }
+
+    @Test
+    fun `abort while clarifying an alternative - compensates contract and policy without cancelling an order`() {
+        val (id, instanceKey) = submitUntilBikeUnavailable()
+        val instance = ProcessInstanceSelectors.byKey(instanceKey)
+
+        inTransaction { process.correlateApplicationWithdrawn(id) }
+
+        CamundaAssert.assertThatProcessInstance(instance).isCompleted()
+        CamundaAssert.assertThatProcessInstance(instance)
+            .hasCompletedElements(
+                ProcessPath.from(FlowNodes.StartEventApplicationWithdrawn)
+                    .then { it.eventReverseApplication }
+                    .throwingCompensation(FlowNodes.EventCompensateContract) { it.serviceTaskCancelContract }
+                    .throwingCompensation(FlowNodes.EventCompensateInsurance) { it.serviceTaskCancelPolicy }
+                    .then { it.serviceTaskSendCancellationConfirmation }
+                    .then { it.endEventApplicationCancelled },
+            )
+            .hasNotActivatedElements(
+                FlowNodes.EventCompensateOrder.ELEMENT_ID,
+                FlowNodes.CallActivityCancelBikeOrder.ELEMENT_ID,
+            )
+        assertThat(orderCancellationsOf(instanceKey)).isZero()
+        assertThat(incidentsOf(instanceKey)).isZero()
+        verify(exactly = 1) {
+            sendCancellationConfirmationUseCase.sendCancellationConfirmation(match { it.id == id })
+        }
+        verify(exactly = 0) { requestOrderCancellationUseCase.requestCancellation(any()) }
+        assertThat(aggregateOf(id).status).isEqualTo(LeasingStatus.CANCELLED)
+    }
+
+    @Test
+    fun `abort after an accepted alternative - cancels the one placed order exactly once`() {
+        every { requestOrderCancellationUseCase.requestCancellation(any()) } returns true
+
+        val (id, instanceKey) = submitUntilBikeUnavailable()
+        val instance = ProcessInstanceSelectors.byKey(instanceKey)
+
+        // the re-order succeeds -> handover wait state
+        acceptAlternative(id)
+        CamundaAssert.assertThatProcessInstance(instance).hasCompletedElements(FlowNodes.ServiceTaskOrderBike)
+
+        inTransaction { process.correlateApplicationWithdrawn(id) }
+        awaitUserTaskCreated(CancelBikeOrderProcessApi.FlowNodes.UserTaskClarifyReturn.ELEMENT_ID)
+        processTestContext.completeUserTask(CancelBikeOrderProcessApi.FlowNodes.UserTaskClarifyReturn.ELEMENT_ID)
+
+        CamundaAssert.assertThatProcessInstance(instance).isCompleted()
+        CamundaAssert.assertThatProcessInstance(instance)
+            .hasCompletedElements(FlowNodes.EndEventApplicationCancelled)
+            .hasCompletedElement(FlowNodes.CallActivityCancelBikeOrder.ELEMENT_ID, 1)
+        assertThat(orderCancellationsOf(instanceKey)).isEqualTo(1)
+        verify(exactly = 1) { requestOrderCancellationUseCase.requestCancellation(OrderId("ORDER-2")) }
+        assertThat(aggregateOf(id).status).isEqualTo(LeasingStatus.CANCELLED)
     }
 
     @Test
@@ -404,9 +459,50 @@ class BikeLeasingProcessTest {
         assertThat(aggregateOf(id).orderId).isNull()
     }
 
+    /** Drives a signed, insured application to the clarify-alternative task: the dealer has no bike. */
+    private fun submitUntilBikeUnavailable(): Pair<ApplicationId, Long> {
+        every { orderBikeUseCase.orderBike(any()) } throws BikeUnavailableException(BikeId("BIKE-TEST"))
+
+        val id = submit(age = 35, income = 3500.0)
+        val instanceKey = awaitProcessInstance()
+        val instance = ProcessInstanceSelectors.byKey(instanceKey)
+
+        CamundaAssert.assertThatProcessInstance(instance).hasCompletedElements(FlowNodes.ServiceTaskSendContract)
+        inTransaction { process.correlateContractSigned(id) }
+        CamundaAssert.assertThatProcessInstance(instance)
+            .hasCompletedElements(FlowNodes.ServiceTaskIssueInsurancePolicy, FlowNodes.EventBikeUnavailable)
+        awaitUserTaskCreated(FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID, instanceKey)
+        return id to instanceKey
+    }
+
+    /** The dealer has the alternative in stock, so the re-order after the clarification succeeds. */
+    private fun acceptAlternative(id: ApplicationId) {
+        every { orderBikeUseCase.orderBike(any()) } answers
+            { firstArg<LeasingApplication>().documentOrder(OrderId("ORDER-2")) }
+        inTransaction { process.completeAlternativeClarification(id, alternativeFound = true) }
+    }
+
+    private fun orderCancellationsOf(processInstanceKey: Long): Int =
+        camundaClient.newProcessInstanceSearchRequest()
+            .filter {
+                it.processDefinitionId(CancelBikeOrderProcessApi.PROCESS_ID.value)
+                it.parentProcessInstanceKey(processInstanceKey)
+            }
+            .send()
+            .join()
+            .items()
+            .size
+
+    private fun incidentsOf(processInstanceKey: Long): Int =
+        camundaClient.newIncidentSearchRequest()
+            .filter { it.processInstanceKey(processInstanceKey) }
+            .send()
+            .join()
+            .items()
+            .size
+
     private fun pathUntilCreditRatingChecked() =
         ProcessPath.from(FlowNodes.StartEventLeasingRequestReceived)
-            .then { it.serviceTaskValidateApplication }
             .then { it.businessRuleTaskCheckCreditRating }
             .then { it.gatewayIsSolvent }
 

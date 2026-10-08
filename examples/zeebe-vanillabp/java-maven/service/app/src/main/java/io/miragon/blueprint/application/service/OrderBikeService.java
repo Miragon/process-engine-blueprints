@@ -2,6 +2,7 @@ package io.miragon.blueprint.application.service;
 
 import io.miragon.blueprint.application.port.inbound.OrderBikeUseCase;
 import io.miragon.blueprint.application.port.outbound.BikeDealerPort;
+import io.miragon.blueprint.domain.bike.BikeUnavailableException;
 import io.miragon.blueprint.domain.leasing.LeasingApplication;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +21,7 @@ public class OrderBikeService implements OrderBikeUseCase {
             return application;
         }
         if (!bikeDealer.checkAvailability(application.bikeId())) {
-            return application;
+            throw new BikeUnavailableException(application.bikeId());
         }
         return application.documentOrder(bikeDealer.order(application.bikeId()));
     }

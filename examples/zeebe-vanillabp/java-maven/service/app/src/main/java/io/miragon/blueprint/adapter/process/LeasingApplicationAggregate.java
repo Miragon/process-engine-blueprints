@@ -211,11 +211,6 @@ public class LeasingApplicationAggregate {
         this.cancellationPossible = cancellationPossible;
     }
 
-    @JsonProperty
-    public boolean isBikeAvailable() {
-        return orderId != null;
-    }
-
     private static String valueOf(OrderId orderId) {
         return orderId != null ? orderId.value() : null;
     }

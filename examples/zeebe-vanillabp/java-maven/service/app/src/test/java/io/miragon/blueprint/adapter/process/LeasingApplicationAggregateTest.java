@@ -133,13 +133,6 @@ class LeasingApplicationAggregateTest {
     class BikeOrder {
 
         @Test
-        void theBikeCountsAsAvailableOnceAnOrderIsPlaced() {
-            assertThat(LeasingApplicationAggregate.of(testLeasingApplication().orderId(null).build()).isBikeAvailable())
-                    .isFalse();
-            assertThat(LeasingApplicationAggregate.of(orderedApplication()).isBikeAvailable()).isTrue();
-        }
-
-        @Test
         void placedOrderIdReturnsTheRecordedOrder() {
             LeasingApplicationAggregate aggregate = LeasingApplicationAggregate.of(orderedApplication());
 
@@ -245,7 +238,7 @@ class LeasingApplicationAggregateTest {
         private final JsonMapper engineJson = JsonMapper.builder().build();
 
         @Test
-        void aFreshAggregateReleasesOnlyItsIdTheDecisionInputsAndTheOrderStateToTheEngine() {
+        void aFreshAggregateReleasesOnlyItsIdAndTheDecisionInputsToTheEngine() {
             // given: a freshly received application
             LeasingApplicationAggregate aggregate =
                     LeasingApplicationAggregate.of(testLeasingApplication().age(35).monthlyNetIncome(3500.0).build());
@@ -255,11 +248,10 @@ class LeasingApplicationAggregateTest {
 
             // then: neither personal data nor business state beyond the routing values leaves the service
             assertThat(released.propertyNames())
-                    .containsExactlyInAnyOrder("applicationId", "age", "monthlyNetIncome", "bikeAvailable");
+                    .containsExactlyInAnyOrder("applicationId", "age", "monthlyNetIncome");
             assertThat(released.get("applicationId").asString()).isEqualTo(aggregate.getApplicationId());
             assertThat(released.get("age").asInt()).isEqualTo(35);
             assertThat(released.get("monthlyNetIncome").asDouble()).isEqualTo(3500.0);
-            assertThat(released.get("bikeAvailable").asBoolean()).isFalse();
         }
 
         @Test
@@ -282,10 +274,8 @@ class LeasingApplicationAggregateTest {
                     "applicationId",
                     "age",
                     "monthlyNetIncome",
-                    "bikeAvailable",
                     "alternativeFound",
                     "cancellationPossible");
-            assertThat(released.get("bikeAvailable").asBoolean()).isTrue();
             assertThat(released.get("alternativeFound").asBoolean()).isTrue();
             assertThat(released.get("cancellationPossible").asBoolean()).isFalse();
         }

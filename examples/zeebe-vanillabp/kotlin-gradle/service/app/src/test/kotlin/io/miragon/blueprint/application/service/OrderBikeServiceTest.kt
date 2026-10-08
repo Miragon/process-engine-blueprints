@@ -2,6 +2,7 @@ package io.miragon.blueprint.application.service
 
 import io.miragon.blueprint.application.port.outbound.BikeDealerPort
 import io.miragon.blueprint.domain.bike.BikeId
+import io.miragon.blueprint.domain.bike.BikeUnavailableException
 import io.miragon.blueprint.domain.bike.OrderId
 import io.miragon.blueprint.domain.leasing.LeasingStatus
 import io.miragon.blueprint.domain.leasing.testLeasingApplication
@@ -10,6 +11,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 
 class OrderBikeServiceTest {
@@ -37,17 +39,16 @@ class OrderBikeServiceTest {
     }
 
     @Test
-    fun `orderBike leaves an out-of-stock bike unordered`() {
+    fun `orderBike reports an out-of-stock bike as unavailable`() {
 
         // given: an application whose bike is out of stock at the dealer
         val application = testLeasingApplication(bikeId = BikeId("BIKE-OOS"))
         every { bikeDealer.checkAvailability(application.bikeId) } returns false
 
-        // when: the bike is ordered
-        val unordered = underTest.orderBike(application)
-
-        // then: no order is placed and the application is untouched
-        assertThat(unordered).isEqualTo(application)
+        // when / then: ordering reports the bike as unavailable and places no order
+        assertThatThrownBy { underTest.orderBike(application) }
+            .isInstanceOf(BikeUnavailableException::class.java)
+            .hasMessage("Bike BIKE-OOS is not available at the dealer")
         verify { bikeDealer.checkAvailability(application.bikeId) }
         confirmVerified(bikeDealer)
     }

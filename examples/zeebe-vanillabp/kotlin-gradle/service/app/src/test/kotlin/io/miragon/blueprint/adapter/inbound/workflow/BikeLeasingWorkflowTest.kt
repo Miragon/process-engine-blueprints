@@ -34,7 +34,7 @@ class BikeLeasingWorkflowTest {
 
         // then
         assertThat(transaction).isNotNull()
-        assertThat(transaction?.rollbackOn(TaskException("applicationInvalid"))).isFalse()
+        assertThat(transaction?.rollbackOn(TaskException("bikeUnavailable"))).isFalse()
         assertThat(transaction?.rollbackOn(IllegalStateException("dealer outage"))).isTrue()
     }
 }

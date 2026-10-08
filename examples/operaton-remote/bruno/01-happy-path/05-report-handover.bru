@@ -12,7 +12,10 @@ post {
 
 script:pre-request {
   const id = bru.getVar('applicationId');
+  const pid = bru.getVar('processInstanceId');
   await pollApp(`/api/bike-leasing/${id}`, (b, s) => s === 200 && b && b.status === "ORDERED" && b.orderId != null);
+  await pollEngine(`/event-subscription?processInstanceId=${pid}&eventType=message&eventName=miravelo.handoverReported`,
+    (b) => Array.isArray(b) && b.length >= 1);
 }
 
 assert {

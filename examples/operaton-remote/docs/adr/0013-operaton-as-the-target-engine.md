@@ -28,7 +28,7 @@ Two facts shape the decision:
 
 ## Decision
 
-We target **Operaton** (pinned via the `operaton.version` property in `pom.xml`) as the remote
+We target **Operaton** (pinned to `operaton_version` in `gradle/libs.versions.toml`) as the remote
 engine, driven through the external-task pattern, mirroring the embedded sibling's conventions:
 `org.operaton.bpm.springboot:*` starters, `org.operaton.bpm:*` engine/test libraries, the
 `org.operaton.bpm.client.*` external-task client, `operaton.bpm.*` config properties, and the
@@ -49,5 +49,5 @@ deferred until the toolchain (notably `bpmn-to-code`) supports it first-class.
   accept for zero churn and toolchain compatibility; if Operaton ever drops Camunda-namespace
   compatibility, a one-time OpenRewrite migration to `operaton:` becomes necessary.
 - **Neutral:** the `/engine-rest` base path is unchanged, so the generated engine client
-  ([`common-operaton-client`](../../service/common-operaton-client/README.md)) and the hand-built
+  (`service/common-operaton-client`) and the hand-built
   multipart deployment adapter carry over as-is.

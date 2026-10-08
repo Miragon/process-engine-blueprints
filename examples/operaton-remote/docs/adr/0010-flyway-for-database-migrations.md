@@ -26,7 +26,7 @@ We use **[Flyway](https://flywaydb.org/)** as the owner of the worker's applicat
 Hibernate to **`ddl-auto: validate`** — Hibernate now only checks that the mapped entities match the
 migrated schema and never creates or drops a table.
 
-- **Dependencies** (declared in `service/example-service/pom.xml`):
+- **Dependencies** (`gradle/libs.versions.toml`, `database` bundle):
   **`spring-boot-starter-flyway`** + `flyway-database-postgresql`. The starter is required, not raw
   `flyway-core`: Spring Boot 4 modularised the Flyway autoconfiguration out of
   `spring-boot-autoconfigure`, so `flyway-core` alone puts Flyway on the classpath but never wires it
@@ -44,7 +44,7 @@ migrated schema and never creates or drops a table.
 - **Tests keep Flyway off.** The `test` profile runs on in-memory H2 with Hibernate building the
   schema; `spring.flyway.enabled: false` in `application-test.yaml` stops the Postgres-flavoured
   baseline from running against H2. The migrations are therefore exercised by the real-Postgres paths —
-  local `spring-boot:run` and the Bruno CI jobs.
+  local `bootRun` and the Bruno CI jobs.
 
 ## Consequences
 

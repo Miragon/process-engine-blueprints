@@ -17,8 +17,8 @@ plus a Micrometer registry — so the cost/benefit is clearly in favour. The ope
 We add **`spring-boot-starter-actuator` + `micrometer-registry-prometheus`** and expose a **minimal,
 documented set** in each service's `application.yaml`: `health`, `info`, `metrics`, `prometheus`. Health
 **liveness/readiness groups** are enabled (`management.endpoint.health.probes.enabled=true`), giving
-`/actuator/health/liveness` and `/actuator/health/readiness` for orchestration. The Spring Boot Maven
-plugin's `build-info` goal populates `/actuator/info`.
+`/actuator/health/liveness` and `/actuator/health/readiness` for orchestration. `springBoot {
+buildInfo() }` populates `/actuator/info`.
 
 Each service's built-in `db` indicator covers **its own datasource** — the worker's domain store
 (`bikeleasing_app`) and the engine host's own database respectively. The engine is **remote** relative

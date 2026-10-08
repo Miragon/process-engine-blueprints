@@ -5,7 +5,7 @@
 
 ## Context
 
-The stack sits on the newest major of nearly everything at once — Spring Boot 4, Java 21 on the
+The stack sits on the newest major of nearly everything at once — Spring Boot 4, Kotlin 2.x on the
 Operaton Spring-Boot-4 line, Operaton 2.1. That is a real choice with a real cost: newest majors have
 smaller ecosystems, more breaking-change churn, and occasionally force an early-adopter pin (e.g. the
 worker and engine host stay on Spring Boot 4.1.x even though Operaton 2.1.x is built against the Spring
@@ -27,7 +27,7 @@ contracts, linting) are meant to enable. A template pinned to yesterday's versio
 the capabilities and the starting point we actually recommend.
 
 Mechanics that make this safe rather than reckless: dependency updates are automated (Dependabot), every
-version is exact-pinned in the Maven `pom.xml` files, and each bump runs the full gate set
+version is exact-pinned in the `gradle/libs.versions.toml` catalog, and each bump runs the full gate set
 (build, architecture tests, mutation ≥ 80, contract drift), so updates can be taken continuously instead
 of in a scary big-bang. Bleeding-edge workarounds are documented at the point of use.
 

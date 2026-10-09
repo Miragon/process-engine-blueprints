@@ -68,6 +68,7 @@ export const de = {
     validationBike: "bitte ein fahrrad wählen.",
     validationAge: "bitte das alter angeben.",
     validationIncome: "bitte das einkommen angeben.",
+    validationIncomePositive: "das einkommen muss größer als null sein.",
   },
   detail: {
     title: "antrag",

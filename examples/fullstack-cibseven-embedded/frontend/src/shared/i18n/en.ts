@@ -66,6 +66,7 @@ export const en: Copy = {
     validationBike: "please choose a bike.",
     validationAge: "please enter an age.",
     validationIncome: "please enter an income.",
+    validationIncomePositive: "the income must be greater than zero.",
   },
   detail: {
     title: "application",

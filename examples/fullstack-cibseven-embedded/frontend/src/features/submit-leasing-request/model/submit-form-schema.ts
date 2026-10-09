@@ -11,13 +11,19 @@ import type { Copy } from "@/shared/i18n";
  * decisions evaluated by the process — enforcing them client-side would make the "not solvent"
  * scenario unreachable from the UI and quietly move a business rule out of the model. If the next
  * contributor is tempted to "fix" the form by adding them, this comment is why they must not.
+ *
+ * `monthlyNetIncome > 0` is different: the API refuses such a request with a 400 before any process
+ * starts, so it is an input rule like the presence checks, and the form names it instead of leaving
+ * the user with the generic error toast.
  */
 export function makeSubmitFormSchema(copy: Copy) {
   return SubmitLeasingRequestBody.extend({
     customerName: z.string().min(1, copy.submit.validationName),
     email: z.string().min(1, copy.submit.validationEmail).email(copy.submit.validationEmail),
     age: z.number({ message: copy.submit.validationAge }).int(copy.submit.validationAge),
-    monthlyNetIncome: z.number({ message: copy.submit.validationIncome }),
+    monthlyNetIncome: z
+      .number({ message: copy.submit.validationIncome })
+      .positive(copy.submit.validationIncomePositive),
     bikeId: z.string().min(1, copy.submit.validationBike),
     bikeModel: z.string().min(1, copy.submit.validationBike),
   });

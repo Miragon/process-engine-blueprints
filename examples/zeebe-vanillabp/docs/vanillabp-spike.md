@@ -5,6 +5,19 @@ branch `experiment/vanillabp`. Its purpose is to evaluate VanillaBP on a real pr
 differences to the plain Zeebe integration on `main` and to the bpm-crafters process-engine-api
 visible on the same example — not to be merged as is.
 
+> **The process has changed since this spike (#10).** This document records the model and the code as
+> they were when the spike was written, and its observations and measurements are left as recorded.
+> Three things it describes no longer exist:
+>
+> - `validateApplication` is not a process step any more. An application without income is refused on
+>   submit with a 400, so there is no `ValidateApplicationWorker` / `ValidateApplicationUseCase` and no
+>   `applicationInvalid` error.
+> - `bikeAvailable` and `gateway_bikeAvailable` are gone. An out-of-stock bike leaves `orderBike`
+>   through the BPMN error `bikeUnavailable` (`OrderBikeTask` throws a `TaskException`), and the
+>   aggregate has no derived `bikeAvailable` property. The engine-visible properties are therefore one
+>   fewer than listed in section 4.
+> - Declining an alternative now sends the cancellation confirmation before `Contract cancelled`.
+
 Every statement below is marked with where it comes from:
 
 - **[C]** observed in the code, the tests or a run of this repository (or of the sibling blueprint

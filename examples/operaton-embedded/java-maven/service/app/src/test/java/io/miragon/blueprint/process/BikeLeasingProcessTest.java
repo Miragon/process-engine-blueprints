@@ -7,6 +7,7 @@ import static io.miragon.blueprint.process.util.TimerUtils.fireTimer;
 import static org.operaton.bpm.engine.test.assertions.bpmn.BpmnAwareTests.assertThat;
 import static org.operaton.bpm.engine.test.assertions.bpmn.BpmnAwareTests.init;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -46,6 +47,7 @@ import org.operaton.bpm.engine.runtime.ProcessInstance;
 import org.operaton.bpm.engine.task.Task;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -106,7 +108,7 @@ class BikeLeasingProcessTest {
     @BeforeEach
     void setUp() {
         init(processEngine);
-        when(orderBikeUseCase.orderBike(any())).thenReturn(new OrderId("ORDER-1"));
+        when(orderBikeUseCase.orderBike(any(), any())).thenReturn(new OrderId("ORDER-1"));
     }
 
     @Test
@@ -256,7 +258,7 @@ class BikeLeasingProcessTest {
     @Test
     void bikeUnavailableClarifyingAnAlternativeReOrdersAndLeasingBecomesActive() {
         // the first order finds the requested bike unavailable, the re-order after the alternative succeeds
-        when(orderBikeUseCase.orderBike(any()))
+        when(orderBikeUseCase.orderBike(any(), any()))
                 .thenThrow(new BikeUnavailableException(new BikeId("BIKE-TEST")))
                 .thenReturn(new OrderId("ORDER-2"));
 
@@ -273,6 +275,9 @@ class BikeLeasingProcessTest {
 
         // the alternative is clarified from the outside — the "external" completion of the user task
         process.completeAlternativeClarification(id, true, new BikeId("BIKE-ALT"));
+        assertThat(instance)
+                .variables()
+                .containsEntry(FlowNodes.UserTaskClarifyAlternative.Variables.BIKE_ID.getValue(), "BIKE-ALT");
         continueToNextWaitState(processEngine); // re-order succeeds -> parallel join -> handover wait state
 
         process.correlateHandoverReported(id);
@@ -299,7 +304,9 @@ class BikeLeasingProcessTest {
                         FlowNodes.EndEventContractCancelled.ELEMENT_ID,
                         FlowNodes.EndEventApplicationRejected.ELEMENT_ID);
 
-        verify(orderBikeUseCase, times(2)).orderBike(id);
+        InOrder orders = inOrder(orderBikeUseCase);
+        orders.verify(orderBikeUseCase).orderBike(id, new BikeId("BIKE-TEST"));
+        orders.verify(orderBikeUseCase).orderBike(id, new BikeId("BIKE-ALT"));
         verify(activateLeasingUseCase, times(1)).activate(id);
     }
 
@@ -389,7 +396,7 @@ class BikeLeasingProcessTest {
 
     /** Drives a signed, insured application to the clarify-alternative task: the dealer has no bike. */
     private ApplicationId submitUntilBikeUnavailable() {
-        when(orderBikeUseCase.orderBike(any()))
+        when(orderBikeUseCase.orderBike(any(), any()))
                 .thenThrow(new BikeUnavailableException(new BikeId("BIKE-TEST")))
                 .thenReturn(new OrderId("ORDER-2"));
 

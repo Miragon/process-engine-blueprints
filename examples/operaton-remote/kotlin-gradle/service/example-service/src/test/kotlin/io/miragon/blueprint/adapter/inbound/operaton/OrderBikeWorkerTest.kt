@@ -21,6 +21,7 @@ class OrderBikeWorkerTest {
     private val applicationId = ApplicationId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"))
     private val task = mockk<ExternalTask>(relaxed = true) {
         every { businessKey } returns applicationId.value.toString()
+        every { getVariable<String>("bikeId") } returns "BIKE-900"
     }
     private val service = mockk<ExternalTaskService>(relaxed = true)
 
@@ -28,7 +29,7 @@ class OrderBikeWorkerTest {
     fun `completes with the order id as output variable`() {
 
         // given: the bike was available and an order was placed
-        every { useCase.orderBike(applicationId) } returns OrderId("ORDER-1")
+        every { useCase.orderBike(applicationId, BikeId("BIKE-900")) } returns OrderId("ORDER-1")
 
         // when: the worker runs
         underTest.execute(task, service)
@@ -42,7 +43,7 @@ class OrderBikeWorkerTest {
     fun `raises the bikeUnavailable BPMN error when the dealer cannot deliver the bike`() {
 
         // given: the dealer has the bike out of stock
-        every { useCase.orderBike(applicationId) } throws BikeUnavailableException(BikeId("BIKE-OOS"))
+        every { useCase.orderBike(applicationId, BikeId("BIKE-900")) } throws BikeUnavailableException(BikeId("BIKE-OOS"))
 
         // when: the worker runs
         underTest.execute(task, service)

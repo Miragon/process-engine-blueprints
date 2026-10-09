@@ -73,8 +73,7 @@ class RemoteLeasingProcessAdapter(
         val taskId = findTaskId(id, FlowNodes.UserTaskClarifyAlternative.id.value)
         val variables = buildMap {
             put(FlowNodes.UserTaskClarifyAlternative.Variables.ALTERNATIVE_FOUND.value, typedVar(alternativeFound))
-            // The re-order reads the same start-injected bike variable, so reuse its name.
-            bikeId?.let { put(FlowNodes.StartEventLeasingRequestReceived.Variables.BIKE_ID.value, typedVar(it.value)) }
+            bikeId?.let { put(FlowNodes.UserTaskClarifyAlternative.Variables.BIKE_ID.value, typedVar(it.value)) }
         }
         taskApi.completeWithHttpInfo(taskId, CompleteTaskDto(variables = variables))
         log.info { "Completed clarify-alternative task ($taskId) for application ${id.value}" }

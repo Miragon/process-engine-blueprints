@@ -6,7 +6,6 @@ import io.miragon.blueprint.application.port.outbound.LeasingApplicationReposito
 import io.miragon.blueprint.application.port.outbound.LeasingProcess;
 import io.miragon.blueprint.domain.bike.Bike;
 import io.miragon.blueprint.domain.bike.BikeId;
-import io.miragon.blueprint.domain.leasing.LeasingApplication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,15 +28,12 @@ public class SelectAlternativeService implements SelectAlternativeUseCase {
 
     @Override
     public void selectAlternative(SelectAlternativeUseCase.Command command) {
-        LeasingApplication application = repository.findById(command.applicationId())
+        repository.findById(command.applicationId())
                 .orElseThrow(() -> new IllegalStateException("Unknown application " + command.applicationId().value()));
         BikeId alternativeBike = command.bikeId();
-        if (command.alternativeFound() && alternativeBike != null) {
-            // Register the chosen alternative in the portfolio (its model may be new), then point the application at it.
-            if (command.bikeModel() != null) {
-                bikePortfolio.save(new Bike(alternativeBike, command.bikeModel()));
-            }
-            repository.save(application.selectAlternative(alternativeBike));
+        String bikeModel = command.bikeModel();
+        if (command.alternativeFound() && alternativeBike != null && bikeModel != null) {
+            bikePortfolio.save(new Bike(alternativeBike, bikeModel));
         }
         process.completeAlternativeClarification(
                 command.applicationId(),

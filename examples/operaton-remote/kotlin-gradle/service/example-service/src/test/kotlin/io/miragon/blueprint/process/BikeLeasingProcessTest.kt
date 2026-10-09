@@ -217,6 +217,8 @@ class BikeLeasingProcessTest {
         // the first order finds the requested bike unavailable -> parks on the clarify-alternative task
         engine.raiseBpmnErrorOnExternalTask(ServiceTasks.BIKE_LEASING_ORDER_BIKE, Errors.BIKE_UNAVAILABLE)
         engine.acceptAlternative()
+        assertThat(instance).variables().containsEntry(FlowNodes.UserTaskClarifyAlternative.Variables.BIKE_ID.value, "BIKE-ALT")
+        Assertions.assertThat(engine.bikeRequestedByWaitingOrder()).isEqualTo("BIKE-ALT")
 
         // the re-order succeeds -> parallel join -> handover wait state
         engine.completeExternalTask(ServiceTasks.BIKE_LEASING_ORDER_BIKE, orderPlaced)
@@ -331,9 +333,15 @@ class BikeLeasingProcessTest {
             FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID,
             mapOf(
                 FlowNodes.UserTaskClarifyAlternative.Variables.ALTERNATIVE_FOUND.value to true,
-                FlowNodes.StartEventLeasingRequestReceived.Variables.BIKE_ID.value to "BIKE-ALT",
+                FlowNodes.UserTaskClarifyAlternative.Variables.BIKE_ID.value to "BIKE-ALT",
             ),
         )
+
+    /** The bike the waiting `orderBike` external task hands to its worker. */
+    private fun ProcessEngine.bikeRequestedByWaitingOrder(): Any? {
+        val order = externalTaskService.createExternalTaskQuery().topicName(ServiceTasks.BIKE_LEASING_ORDER_BIKE).singleResult()
+        return runtimeService.getVariable(order.executionId, FlowNodes.ServiceTaskOrderBike.Variables.BIKE_ID.value)
+    }
 
     private fun pathUntilCreditRatingChecked() =
         ProcessPath.from(FlowNodes.StartEventLeasingRequestReceived)

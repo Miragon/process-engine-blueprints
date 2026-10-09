@@ -1,6 +1,7 @@
 package io.miragon.blueprint.adapter.inbound.operaton
 
 import io.miragon.blueprint.application.port.inbound.OrderBikeUseCase
+import io.miragon.blueprint.domain.bike.BikeId
 import io.miragon.blueprint.domain.bike.BikeUnavailableException
 import io.miragon.blueprint.domain.leasing.ApplicationId
 import io.miragon.blueprint.process.Errors
@@ -27,8 +28,9 @@ class OrderBikeWorker(
     override val failureRetryTimeoutMs: Long = 10_000L
 
     override fun executeTask(externalTask: ExternalTask, externalTaskService: ExternalTaskService) {
+        val bikeId = externalTask.getVariable<String>(FlowNodes.ServiceTaskOrderBike.Variables.BIKE_ID.value)
         val orderId = try {
-            useCase.orderBike(ApplicationId.of(externalTask.businessKey))
+            useCase.orderBike(ApplicationId.of(externalTask.businessKey), BikeId(bikeId))
         } catch (e: BikeUnavailableException) {
             // Raise the `bikeUnavailable` BPMN error so the error boundary event diverts to the
             // alternative clarification. Leaving the task this way registers no order compensation.

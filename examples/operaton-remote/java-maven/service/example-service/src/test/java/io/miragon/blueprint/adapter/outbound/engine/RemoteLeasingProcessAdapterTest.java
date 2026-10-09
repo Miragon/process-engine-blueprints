@@ -63,6 +63,24 @@ class RemoteLeasingProcessAdapterTest {
     }
 
     @Test
+    void correlateHandoverReportedSendsTheMessageCorrelatedByBusinessKey() {
+
+        // given: an engine that accepts the correlation
+        LeasingApplication application = testLeasingApplication().build();
+        server.expect(requestTo("http://engine/engine-rest/message"))
+                .andExpect(method(HttpMethod.POST))
+                .andExpect(jsonPath("$.messageName").value("miravelo.handoverReported"))
+                .andExpect(jsonPath("$.businessKey").value(application.id().value().toString()))
+                .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
+
+        // when: the handover-reported message is correlated
+        underTest.correlateHandoverReported(application.id());
+
+        // then: the message was sent
+        server.verify();
+    }
+
+    @Test
     void correlateContractSignedSendsTheMessageCorrelatedByBusinessKey() {
 
         // given: an engine that accepts the correlation

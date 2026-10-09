@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test;
 import org.operaton.bpm.engine.ProcessEngine;
 import org.operaton.bpm.engine.delegate.ExecutionListener;
 import org.operaton.bpm.engine.delegate.TaskListener;
+import org.operaton.bpm.engine.externaltask.ExternalTask;
 import org.operaton.bpm.engine.impl.cfg.StandaloneInMemProcessEngineConfiguration;
 import org.operaton.bpm.engine.impl.mock.MockExpressionManager;
 import org.operaton.bpm.engine.impl.mock.Mocks;
@@ -236,6 +237,8 @@ class BikeLeasingProcessTest {
         // the first order finds the requested bike unavailable -> parks on the clarify-alternative task
         raiseBpmnErrorOnExternalTask(engine, ServiceTasks.BIKE_LEASING_ORDER_BIKE, Errors.BIKE_UNAVAILABLE);
         acceptAlternative();
+        assertThat(instance).variables().containsEntry(FlowNodes.UserTaskClarifyAlternative.Variables.BIKE_ID.getValue(), "BIKE-ALT");
+        Assertions.assertThat(bikeRequestedByWaitingOrder()).isEqualTo("BIKE-ALT");
 
         // the re-order succeeds -> parallel join -> handover wait state
         completeExternalTask(engine, ServiceTasks.BIKE_LEASING_ORDER_BIKE, orderPlaced);
@@ -358,7 +361,17 @@ class BikeLeasingProcessTest {
                 FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID,
                 Map.of(
                         FlowNodes.UserTaskClarifyAlternative.Variables.ALTERNATIVE_FOUND.getValue(), true,
-                        FlowNodes.StartEventLeasingRequestReceived.Variables.BIKE_ID.getValue(), "BIKE-ALT"));
+                        FlowNodes.UserTaskClarifyAlternative.Variables.BIKE_ID.getValue(), "BIKE-ALT"));
+    }
+
+    /** The bike the waiting {@code orderBike} external task hands to its worker. */
+    private Object bikeRequestedByWaitingOrder() {
+        ExternalTask order = engine.getExternalTaskService()
+                .createExternalTaskQuery()
+                .topicName(ServiceTasks.BIKE_LEASING_ORDER_BIKE)
+                .singleResult();
+        return engine.getRuntimeService()
+                .getVariable(order.getExecutionId(), FlowNodes.ServiceTaskOrderBike.Variables.BIKE_ID.getValue());
     }
 
     private PathWalk<FlowNodes.GatewayIsSolvent, FlowNodes.GatewayIsSolvent.Next> pathUntilCreditRatingChecked() {

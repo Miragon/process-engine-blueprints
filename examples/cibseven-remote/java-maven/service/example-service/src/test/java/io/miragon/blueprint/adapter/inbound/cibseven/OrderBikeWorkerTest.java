@@ -36,6 +36,7 @@ class OrderBikeWorkerTest {
     @BeforeEach
     void stubBusinessKey() {
         when(task.getBusinessKey()).thenReturn(applicationId.value().toString());
+        when(task.getVariable("bikeId")).thenReturn("BIKE-900");
     }
 
     @Test
@@ -43,7 +44,7 @@ class OrderBikeWorkerTest {
     void completesWithTheOrderIdAsOutputVariable() {
 
         // given: the bike was available and an order was placed
-        when(useCase.orderBike(applicationId)).thenReturn(new OrderId("ORDER-1"));
+        when(useCase.orderBike(applicationId, new BikeId("BIKE-900"))).thenReturn(new OrderId("ORDER-1"));
 
         // when: the worker runs
         underTest.execute(task, service);
@@ -58,7 +59,7 @@ class OrderBikeWorkerTest {
     void raisesTheBikeUnavailableBpmnErrorWhenTheDealerCannotDeliverTheBike() {
 
         // given: the dealer has the bike out of stock
-        when(useCase.orderBike(applicationId)).thenThrow(new BikeUnavailableException(new BikeId("BIKE-OOS")));
+        when(useCase.orderBike(applicationId, new BikeId("BIKE-900"))).thenThrow(new BikeUnavailableException(new BikeId("BIKE-OOS")));
 
         // when: the worker runs
         underTest.execute(task, service);

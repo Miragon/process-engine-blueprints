@@ -18,6 +18,11 @@ public interface SelectAlternativeUseCase {
             @Nullable BikeId bikeId,
             @Nullable String bikeModel
     ) {
+        public Command {
+            if (alternativeFound && bikeId == null) {
+                throw new IllegalArgumentException("An accepted alternative must name the bike");
+            }
+        }
 
         /** No alternative bike: the customer declined or none was found. */
         public Command(ApplicationId applicationId, boolean alternativeFound) {

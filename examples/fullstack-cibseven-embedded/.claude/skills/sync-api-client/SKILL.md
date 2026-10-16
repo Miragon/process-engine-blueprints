@@ -22,7 +22,7 @@ order** — each gate protects the next.
 The spec is written by a JUnit-costumed generator, not hand-edited. Run it:
 
 ```bash
-./gradlew :service:app:test --tests "io.miragon.blueprint.openapi.OpenApiSpecExportTest"
+./gradlew :service:app:test --tests "io.miragon.blueprint.adapter.inbound.rest.OpenApiSpecExportTest"
 ```
 
 This boots the app, reads springdoc's live `/v3/api-docs`, and writes `openapi/openapi.json`

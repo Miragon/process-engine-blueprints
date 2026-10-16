@@ -45,7 +45,7 @@ npm --prefix frontend run dev                       # UI on :5173 (proxies /api 
 | Backend (arch + unit + process + model validation + spec export) | `./gradlew build` |
 | Mutation testing (gate 80) | `./gradlew :service:app:pitest` |
 | Regenerate the typed BPMN process API (after editing a `.bpmn`) | `./gradlew generateBpmnModels` |
-| Regenerate + verify the OpenAPI contract | `./gradlew :service:app:test --tests "io.miragon.blueprint.openapi.OpenApiSpecExportTest"` then `git diff --exit-code openapi/openapi.json` |
+| Regenerate + verify the OpenAPI contract | `./gradlew :service:app:test --tests "io.miragon.blueprint.adapter.inbound.rest.OpenApiSpecExportTest"` then `git diff --exit-code openapi/openapi.json` |
 | Frontend everything | `npm --prefix frontend run verify` |
 | Regenerate the API client | `npm --prefix frontend run api:generate` (check: `api:check`) |
 | API scenarios (running stack) | `cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r` |
@@ -86,7 +86,7 @@ codebase "process" means the BPMN model, so the step rail is `widgets/leasing-pr
   without a regenerate fails the build — same contract as the OpenAPI spec (ADR-0004).
 - Since bpmn-to-code 6 the API is node-centric: `<Process>ProcessApi.FlowNodes.<Node>` carries the
   element (`.id`, `ELEMENT_ID`), its `Variables` and its successors (`Next`). Process tests assert
-  the walked path as a compile-checked `ProcessPath` (`process/util/ProcessPathAssertions.kt`)
+  the walked path as a compile-checked `ProcessPath` (`adapter/process/ProcessPathAssertions.kt`)
   instead of hand-maintained element-id lists.
 - `bpmnlint` runs on staged `.bpmn` via `.githooks/pre-commit` (install: `npm run hooks:install`).
 
@@ -111,7 +111,7 @@ runs nightly. See ADR-0006.
 ## Verify After Each Task (targeted, not a full build)
 
 - Backend service/controller: `./gradlew :service:app:test --tests "*<Name>Test"`
-- Architecture only: `./gradlew :service:app:test --tests "io.miragon.blueprint.architecture.*"`
+- Architecture only: `./gradlew :service:app:test --tests "io.miragon.blueprint.ArchitectureTest"`
 - Contract changed: regenerate the spec, then `git diff --exit-code openapi/openapi.json`, then
   `npm --prefix frontend run api:check`
 - Frontend slice: `npm --prefix frontend run typecheck && npm --prefix frontend run test`

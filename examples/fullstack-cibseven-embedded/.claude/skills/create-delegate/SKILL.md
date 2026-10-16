@@ -89,6 +89,6 @@ Report created/updated/skipped, then remind the user to:
 
 1. Confirm the BPMN `delegateExpression`/listener expression matches the bean name — the
    [`review-process`](../../agents/review-process.md) subagent audits exactly this wiring.
-2. Add a `@WebMvcTest`-style or engine (`process.*` JGiven) test; note the `cibseven.*` package is
+2. Add a `@WebMvcTest`-style or engine (`adapter.process.*` JGiven) test; note the `cibseven.*` package is
    **excluded from the pitest kill-set** on purpose (thin glue, covered by the engine tests).
 3. Run `./gradlew build`.

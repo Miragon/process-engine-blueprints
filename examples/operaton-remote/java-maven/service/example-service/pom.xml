@@ -176,7 +176,7 @@
                     <baseDir>${project.basedir}</baseDir>
                     <filePattern>src/main/resources/bpmn/*.bpmn</filePattern>
                     <outputFolderPath>${project.basedir}/src/main/java</outputFolderPath>
-                    <packagePath>io.miragon.blueprint.process</packagePath>
+                    <packagePath>io.miragon.blueprint.adapter.process</packagePath>
                     <outputLanguage>JAVA</outputLanguage>
                     <processEngine>CAMUNDA_7</processEngine>
                 </configuration>
@@ -192,7 +192,7 @@
                     <failOnViolation>true</failOnViolation>
                     <violationSeverity>warning</violationSeverity>
                     <!-- process is generated; do not lint it -->
-                    <excludes>io/miragon/blueprint/process/**/*</excludes>
+                    <excludes>io/miragon/blueprint/adapter/process/**/*</excludes>
                 </configuration>
                 <executions>
                     <execution>
@@ -247,7 +247,7 @@
                     </targetTests>
                     <excludedClasses>
                         <!-- Generated typed process API — no behaviour of ours to mutate. -->
-                        <param>io.miragon.blueprint.process.*</param>
+                        <param>io.miragon.blueprint.adapter.process.*</param>
                         <!-- Application bootstrap / wiring, outside the hexagonal layers. -->
                         <param>io.miragon.blueprint.ExampleServiceApplication*</param>
                         <param>io.miragon.blueprint.BikeCatalogueSeeder*</param>
@@ -258,8 +258,8 @@
                         <param>io.miragon.blueprint.adapter.outbound.engine.ProcessModelDeploymentAdapter*</param>
                     </excludedClasses>
                     <excludedTestClasses>
-                        <param>io.miragon.blueprint.process.*</param>
-                        <param>io.miragon.blueprint.architecture.*</param>
+                        <param>io.miragon.blueprint.adapter.process.*</param>
+                        <param>io.miragon.blueprint.ArchitectureTest*</param>
                     </excludedTestClasses>
                     <avoidCallsTo>
                         <avoidCallsTo>org.slf4j</avoidCallsTo>

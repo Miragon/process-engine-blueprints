@@ -2,8 +2,8 @@ package io.miragon.blueprint.adapter.inbound.operaton
 
 import io.miragon.blueprint.application.port.inbound.BookCancellationCostsUseCase
 import io.miragon.blueprint.domain.bike.OrderId
-import io.miragon.blueprint.process.ServiceTasks
-import io.miragon.blueprint.process.CancelBikeOrderProcessApi.FlowNodes
+import io.miragon.blueprint.adapter.process.ServiceTasks
+import io.miragon.blueprint.adapter.process.CancelBikeOrderProcessApi.FlowNodes
 import org.operaton.bpm.client.spring.annotation.ExternalTaskSubscription
 import org.operaton.bpm.client.task.ExternalTask
 import org.operaton.bpm.client.task.ExternalTaskService

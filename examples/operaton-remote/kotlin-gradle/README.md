@@ -79,7 +79,7 @@ The resources are kept identical to the other variant's; CI fails when they diff
   no wildcard imports); the worker opts in with `class ArchitectureTest : ServiceArchitectureTest(...)`.
 - **Generated process API.** The `bpmn-to-code` Gradle plugin turns each `.bpmn` into a typed,
   node-centric `*ProcessApi` object, so element ids, topics, messages, variables and the paths the
-  process tests walk are compile-checked. Never hand-edit the `process` package.
+  process tests walk are compile-checked. Never hand-edit the `adapter.process` package.
 - **Unit tests** (JUnit 5 + MockK) cover every domain type, service and adapter — controllers via
   `@WebMvcTest`, persistence via `@DataJpaTest`, the external-task workers directly, the engine adapters
   via `MockRestServiceServer`.

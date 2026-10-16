@@ -81,6 +81,24 @@ class RemoteLeasingProcessAdapterTest {
     }
 
     @Test
+    void correlateApplicationWithdrawnSendsTheMessageCorrelatedByBusinessKey() {
+
+        // given: an engine that accepts the correlation
+        LeasingApplication application = testLeasingApplication().build();
+        server.expect(requestTo("http://engine/engine-rest/message"))
+                .andExpect(method(HttpMethod.POST))
+                .andExpect(jsonPath("$.messageName").value("miravelo.applicationWithdrawn"))
+                .andExpect(jsonPath("$.businessKey").value(application.id().value().toString()))
+                .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
+
+        // when: the application-withdrawn message is correlated
+        underTest.correlateApplicationWithdrawn(application.id());
+
+        // then: the message was sent
+        server.verify();
+    }
+
+    @Test
     void correlateContractSignedSendsTheMessageCorrelatedByBusinessKey() {
 
         // given: an engine that accepts the correlation
@@ -133,7 +151,9 @@ class RemoteLeasingProcessAdapterTest {
         // when / then: completing the clarification surfaces the missing task
         Throwable error = catchThrowable(() ->
                 underTest.completeAlternativeClarification(application.id(), false, null));
-        assertThat(error).isInstanceOf(IllegalStateException.class);
+        assertThat(error)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("No active task");
         server.verify();
     }
 }

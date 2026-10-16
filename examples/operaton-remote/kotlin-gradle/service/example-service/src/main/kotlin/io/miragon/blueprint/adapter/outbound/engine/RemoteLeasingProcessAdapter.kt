@@ -4,8 +4,8 @@ import io.miragon.blueprint.application.port.outbound.LeasingProcess
 import io.miragon.blueprint.domain.bike.BikeId
 import io.miragon.blueprint.domain.leasing.ApplicationId
 import io.miragon.blueprint.domain.leasing.LeasingApplication
-import io.miragon.blueprint.process.BikeLeasingProcessProcessApi.FlowNodes
-import io.miragon.blueprint.process.Messages
+import io.miragon.blueprint.adapter.process.BikeLeasingProcessProcessApi.FlowNodes
+import io.miragon.blueprint.adapter.process.Messages
 import mu.KotlinLogging
 import org.operaton.rest.client.api.MessageApi
 import org.operaton.rest.client.api.TaskApi

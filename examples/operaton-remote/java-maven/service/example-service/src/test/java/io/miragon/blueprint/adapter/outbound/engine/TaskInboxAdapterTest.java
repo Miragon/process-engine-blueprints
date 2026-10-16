@@ -58,4 +58,29 @@ class TaskInboxAdapterTest {
         // when / then: it is silently dropped rather than surfacing an unusable case
         assertThat(underTest.findOpenClarifications()).isEmpty();
     }
+
+    @Test
+    void skipsTasksWithoutAProcessInstance() {
+
+        // given: an open task the engine reports without a process instance (defensive)
+        when(taskApi.queryTasks(isNull(), isNull(), any(TaskQueryDto.class)))
+                .thenReturn(List.of(new TaskWithAttachmentAndCommentDto()
+                        .id("task-1").created(OffsetDateTime.now(ZoneOffset.UTC))));
+
+        // when / then: it is dropped without resolving a process instance
+        assertThat(underTest.findOpenClarifications()).isEmpty();
+    }
+
+    @Test
+    void skipsTasksWithoutACreationTime() {
+
+        // given: an open task the engine reports without a creation time (defensive)
+        when(taskApi.queryTasks(isNull(), isNull(), any(TaskQueryDto.class)))
+                .thenReturn(List.of(new TaskWithAttachmentAndCommentDto().id("task-1").processInstanceId("pi-1")));
+        when(processInstanceApi.getProcessInstance("pi-1"))
+                .thenReturn(new ProcessInstanceDto().id("pi-1").businessKey(UUID.randomUUID().toString()));
+
+        // when / then: it is dropped rather than surfacing a case without a waiting-since
+        assertThat(underTest.findOpenClarifications()).isEmpty();
+    }
 }

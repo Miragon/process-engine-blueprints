@@ -1,6 +1,6 @@
 package io.miragon.blueprint.adapter.outbound.engine
 
-import io.miragon.blueprint.process.BikeLeasingProcessProcessApi.FlowNodes
+import io.miragon.blueprint.adapter.process.BikeLeasingProcessProcessApi.FlowNodes
 import io.mockk.every
 import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
@@ -53,6 +53,30 @@ class TaskInboxAdapterTest {
         every { processInstanceApi.getProcessInstance("pi-1") } returns ProcessInstanceDto(id = "pi-1", businessKey = null)
 
         // when / then: it is silently dropped rather than surfacing an unusable case
+        assertThat(underTest.findOpenClarifications()).isEmpty()
+    }
+
+    @Test
+    fun `skips tasks without a process instance`() {
+
+        // given: an open task the engine reports without a process instance (defensive)
+        every { taskApi.getTasks(taskDefinitionKey = FlowNodes.UserTaskClarifyAlternative.id.value) } returns
+            listOf(TaskWithAttachmentAndCommentDto(id = "task-1", created = OffsetDateTime.now(ZoneOffset.UTC)))
+
+        // when / then: it is dropped without resolving a process instance
+        assertThat(underTest.findOpenClarifications()).isEmpty()
+    }
+
+    @Test
+    fun `skips tasks without a creation time`() {
+
+        // given: an open task the engine reports without a creation time (defensive)
+        every { taskApi.getTasks(taskDefinitionKey = FlowNodes.UserTaskClarifyAlternative.id.value) } returns
+            listOf(TaskWithAttachmentAndCommentDto(id = "task-1", processInstanceId = "pi-1"))
+        every { processInstanceApi.getProcessInstance("pi-1") } returns
+            ProcessInstanceDto(id = "pi-1", businessKey = UUID.randomUUID().toString())
+
+        // when / then: it is dropped rather than surfacing a case without a waiting-since
         assertThat(underTest.findOpenClarifications()).isEmpty()
     }
 }

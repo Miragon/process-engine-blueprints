@@ -62,7 +62,7 @@ service/
     adapter/outbound/engine     deploys the model + drives the remote engine via the generated client
     adapter/outbound/db         JPA persistence (leasing applications + bike portfolio)
     adapter/outbound/…          simulated dealer / contract / insurance / notification adapters
-    process                     generated *ProcessApi (bpmn-to-code)
+    adapter/process             generated *ProcessApi (bpmn-to-code)
     application/{port,service}  use-case ports and their services
     domain/{leasing,bike}       pure domain model
     resources/{bpmn,dmn,forms}  the process models and Camunda Forms
@@ -126,7 +126,7 @@ Under Conductor the ports are fixed and the workspace runs `nonconcurrent`
 | Everything (arch + unit + process + model validation + spec export, all modules) | `./gradlew build` |
 | Worker mutation testing (gate 80) | `./gradlew :service:example-service:pitest` |
 | Regenerate the typed BPMN process API (after editing a `.bpmn`) | `./gradlew generateBpmnModels` |
-| Regenerate the worker's OpenAPI contract | `./gradlew :service:example-service:test --tests "io.miragon.blueprint.openapi.OpenApiSpecExportTest"` |
+| Regenerate the worker's OpenAPI contract | `./gradlew :service:example-service:test --tests "io.miragon.blueprint.adapter.inbound.rest.OpenApiSpecExportTest"` |
 | Worker OCI image (`miravelo/example-service`) | `./gradlew :service:example-service:bootBuildImage` |
 <!-- /variant:kotlin-gradle -->
 
@@ -161,7 +161,7 @@ source-level tool for the rules bytecode cannot express) and **fail the build**.
   members of the root package, so `io.miragon.blueprint.config` would fail. Cross-cutting
   `@Configuration` (CORS, OpenAPI, error handling) goes in `adapter.inbound.rest` — the
   `Configuration` suffix is whitelisted there.
-- **The `process` package is generated.** Never hand-edit `*ProcessApi` or the shared
+- **The `adapter.process` package is generated.** Never hand-edit `*ProcessApi` or the shared
   `ServiceTasks`/`Messages`/`ProcessVariables`/`Errors`/`Escalations` files; edit the `.bpmn` and
   regenerate.
 - **Suffixes:** inbound port `UseCase|Query`; outbound `Port|Repository|Process`; service
@@ -213,7 +213,7 @@ Verify the variant you touched — which, for a change in behaviour, is both.
 In `kotlin-gradle/`:
 
 - Worker service/controller: `./gradlew :service:example-service:test --tests "*<Name>Test"`
-- Architecture only: `./gradlew :service:example-service:test --tests "io.miragon.blueprint.architecture.*"`
+- Architecture only: `./gradlew :service:example-service:test --tests "io.miragon.blueprint.ArchitectureTest*"`
   <!-- /variant:kotlin-gradle -->
 
 <!-- variant:java-maven -->
@@ -226,7 +226,7 @@ In `java-maven/`:
 From the repo root:
 
 - Contract changed: regenerate the spec, then `git diff --exit-code openapi/openapi.json`
-- Process changed: regenerate the process API, then the `process.*` tests
+- Process changed: regenerate the process API, then the `adapter.process.*` tests
 
 ## Working with GitHub
 

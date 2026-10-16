@@ -2,7 +2,7 @@ package io.miragon.blueprint.adapter.outbound.engine;
 
 import io.miragon.blueprint.application.port.outbound.TaskInboxPort;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
-import io.miragon.blueprint.process.BikeLeasingProcessProcessApi.FlowNodes;
+import io.miragon.blueprint.adapter.process.BikeLeasingProcessProcessApi.FlowNodes;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;

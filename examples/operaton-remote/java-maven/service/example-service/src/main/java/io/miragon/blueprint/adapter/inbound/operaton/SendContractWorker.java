@@ -2,7 +2,7 @@ package io.miragon.blueprint.adapter.inbound.operaton;
 
 import io.miragon.blueprint.application.port.inbound.SendContractUseCase;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
-import io.miragon.blueprint.process.ServiceTasks;
+import io.miragon.blueprint.adapter.process.ServiceTasks;
 import org.operaton.bpm.client.spring.annotation.ExternalTaskSubscription;
 import org.operaton.bpm.client.task.ExternalTask;
 import org.operaton.bpm.client.task.ExternalTaskService;

@@ -51,7 +51,7 @@ tasks.register<GenerateBpmnModelsTask>("generateBpmnModels") {
     baseDir = projectDir.toString()
     filePattern = "src/main/resources/bpmn/*.bpmn"
     outputFolderPath = "$projectDir/src/main/kotlin"
-    packagePath = "io.miragon.blueprint.process"
+    packagePath = "io.miragon.blueprint.adapter.process"
     outputLanguage = OutputLanguage.KOTLIN
     processEngine = ProcessEngine.CAMUNDA_7
 }
@@ -78,7 +78,7 @@ pitest {
     excludedClasses.set(
         listOf(
             // Generated typed process API — no behaviour of ours to mutate.
-            "io.miragon.blueprint.process.*",
+            "io.miragon.blueprint.adapter.process.*",
             // Application bootstrap / wiring, outside the hexagonal layers.
             "io.miragon.blueprint.ExampleServiceApplication*",
             "io.miragon.blueprint.BikeCatalogueSeeder*",
@@ -91,8 +91,8 @@ pitest {
     )
     excludedTestClasses.set(
         listOf(
-            "io.miragon.blueprint.process.*",
-            "io.miragon.blueprint.architecture.*",
+            "io.miragon.blueprint.adapter.process.*",
+            "io.miragon.blueprint.ArchitectureTest*",
         ),
     )
     threads.set(Runtime.getRuntime().availableProcessors())

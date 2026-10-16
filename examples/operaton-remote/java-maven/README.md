@@ -80,7 +80,7 @@ The resources are kept identical to the other variant's; CI fails when they diff
   enforces layering, dependency direction and naming with **ArchUnit**; **Checkstyle** adds the two
   source rules. The worker opts in with `class ArchitectureTest extends ServiceArchitectureTest`.
 - **Generated process API.** The `bpmn-to-code` Maven plugin turns each `.bpmn` into a typed,
-  node-centric `*ProcessApi` class on every build. Never hand-edit the `process` package.
+  node-centric `*ProcessApi` class on every build. Never hand-edit the `adapter.process` package.
 - **Unit tests** (JUnit 5 + Mockito) cover every domain type, service and adapter — controllers via
   `@WebMvcTest` with `@MockitoBean`, persistence via `@DataJpaTest`, the external-task workers directly,
   the engine adapters against the generated client.

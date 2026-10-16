@@ -25,7 +25,7 @@ We structure `service/example-service` as a **hexagon (ports & adapters)** under
   that subscribe to the engine's BPMN topics).
 - `adapter/outbound/{db,engine,dealer,notification,contract,insurance}` — driven adapters, including the
   `engine` adapter that deploys the model and drives the remote engine over `/engine-rest`.
-- `process/` — the **generated** `*ProcessApi` and shared constants (bpmn-to-code: flow nodes, topics,
+- `adapter/process/` — the **generated** `*ProcessApi` and shared constants (bpmn-to-code: flow nodes, topics,
   messages, variables);
   a technical seam that fits neither side of the split.
 
@@ -39,7 +39,7 @@ violation:
   `PersistenceAdapter`, `UseCase`, `Query`, …).
 - There is deliberately **no `config` package**; Spring configuration lives beside the adapter it
   configures.
-- The generated `process/` package is **explicitly excluded** from both suites — it is machine-written
+- The generated `adapter/process/` package is **explicitly excluded** from both suites — it is machine-written
   and does not follow the hand-written conventions.
 
 ## Consequences
@@ -48,6 +48,6 @@ violation:
   structure is a *fitness function*, not a style guide — agents get instant, local feedback.
 - **Negative / trade-offs:** more indirection (a port + a service + an adapter per operation) than a
   layered CRUD app; the "one use-case per adapter" rule means many small classes.
-- **Neutral:** the generated-code seam (`process/`) is a permanent, documented exception, analogous to
+- **Neutral:** the generated-code seam (`adapter/process/`) is a permanent, documented exception, analogous to
   the generated engine client in
   [ADR-0003](0003-openapi-as-the-checked-in-contract.md).

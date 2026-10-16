@@ -24,11 +24,11 @@ We run **PIT (pitest)** as a **blocking gate** with `mutationThreshold = 80`, co
 - **Nightly runs the full sweep.** `.github/workflows/nightly.yml` mutates the whole
   `io.miragon.blueprint.*` module with no property override — the authoritative gate-80 run — and
   uploads the HTML report as an artifact.
-- Both runs **exclude noise**: the generated `process` package, the Spring bootstrap and demo seeding, and
-  the `adapter.inbound.cibseven.*` external-task workers (thin glue exercised only by the slow engine
+- Both runs **exclude noise**: the generated `adapter/process` package, the Spring bootstrap and demo
+  seeding, and the `adapter.inbound.cibseven.*` external-task workers (thin glue exercised only by the slow engine
   tests).
 - The **kill-set** is the fast mockk / `@WebMvcTest` / `@DataJpaTest` unit tests; the engine
-  integration tests and the ArchUnit/Konsist tests (`architecture.*`) are excluded from the kill-set —
+  integration tests and the ArchUnit/Konsist tests (`ArchitectureTest`) are excluded from the kill-set —
   they'd make every run slow and non-deterministic without adding mutation signal.
 
 **Why 80 and not 100:** PIT mutates JVM bytecode, and Kotlin emits synthetic constructs (`value class`

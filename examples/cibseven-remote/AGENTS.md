@@ -62,7 +62,7 @@ service/
     adapter/outbound/engine     deploys the model + drives the remote engine via the generated client
     adapter/outbound/db         JPA persistence (leasing applications + bike portfolio)
     adapter/outbound/…          simulated dealer / contract / insurance / notification adapters
-    process                     generated *ProcessApi and shared constants (bpmn-to-code)
+    adapter/process             generated *ProcessApi and shared constants (bpmn-to-code)
     application/{port,service}  use-case ports and their services
     domain/{leasing,bike}       pure domain model
     resources/{bpmn,dmn,forms}  the process models and Camunda Forms
@@ -122,7 +122,7 @@ cd java-maven && ./mvnw -pl service/example-service -am spring-boot:run   # work
 | Everything (arch + unit + process + model validation + spec export, all modules) | `./gradlew build` |
 | Worker mutation testing (gate 80) | `./gradlew :service:example-service:pitest` |
 | Regenerate the typed BPMN process API (after editing a `.bpmn`) | `./gradlew generateBpmnModels` |
-| Regenerate the worker's OpenAPI contract | `./gradlew :service:example-service:test --tests "io.miragon.blueprint.openapi.OpenApiSpecExportTest"` |
+| Regenerate the worker's OpenAPI contract | `./gradlew :service:example-service:test --tests "io.miragon.blueprint.adapter.inbound.rest.OpenApiSpecExportTest"` |
 | Worker OCI image (`miravelo/example-service:<version>`) | `./gradlew :service:example-service:bootBuildImage` |
 <!-- /variant:kotlin-gradle -->
 
@@ -170,7 +170,7 @@ into the worker (`ArchitectureTest` extends `ServiceArchitectureTest`). See
 
 - The worker **owns** the `.bpmn`/`.dmn`/`.form` models under
   `service/example-service/src/main/resources` and deploys them into the remote engine at start-up.
-- `bpmn-to-code` generates the typed process API into the worker's `process` package — never
+- `bpmn-to-code` generates the typed process API into the worker's `adapter/process` package — never
   hand-edit `*ProcessApi` or the shared `ServiceTasks`/`Messages`/`ProcessVariables`/`Errors`/
   `Escalations` files; edit the `.bpmn` and regenerate. Since bpmn-to-code 6 the API is node-centric:
   `<Process>ProcessApi.FlowNodes.<Node>` carries the element (its id and `ELEMENT_ID`), its
@@ -209,7 +209,7 @@ Verify the variant you touched — which, for a change in behaviour, is both.
 In `kotlin-gradle/`:
 
 - Worker service/controller: `./gradlew :service:example-service:test --tests "*<Name>Test"`
-- Architecture only: `./gradlew :service:example-service:test --tests "io.miragon.blueprint.architecture.*"`
+- Architecture only: `./gradlew :service:example-service:test --tests "io.miragon.blueprint.ArchitectureTest"`
   <!-- /variant:kotlin-gradle -->
 
 <!-- variant:java-maven -->

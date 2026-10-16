@@ -6,7 +6,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import io.miragon.blueprint.application.port.outbound.TaskInboxPort;
-import io.miragon.blueprint.process.BikeLeasingProcessProcessApi.FlowNodes;
+import io.miragon.blueprint.adapter.process.BikeLeasingProcessProcessApi.FlowNodes;
 import org.cibseven.rest.client.api.ProcessInstanceApi;
 import org.cibseven.rest.client.api.TaskApi;
 import org.cibseven.rest.client.model.ProcessInstanceDto;

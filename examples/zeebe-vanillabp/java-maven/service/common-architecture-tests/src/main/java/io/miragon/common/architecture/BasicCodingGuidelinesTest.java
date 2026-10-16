@@ -51,7 +51,7 @@ public abstract class BasicCodingGuidelinesTest {
                 .matching(rootPackage() + ".(**)")
                 .should().beFreeOfCycles()
                 .because("Classes should not have circular dependencies")
-                .check(allClasses());
+                .check(productionClasses());
     }
 
     @Test

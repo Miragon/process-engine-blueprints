@@ -67,7 +67,7 @@ cd java-maven && ./mvnw -DskipTests install && ./mvnw -pl service/app spring-boo
 | Backend (arch + unit + process + model validation + spec export) | `./gradlew build` |
 | Mutation testing (gate 80) | `./gradlew :service:app:pitest` |
 | Regenerate the typed BPMN process API (after editing a `.bpmn`) | `./gradlew generateBpmnModels` |
-| Regenerate the OpenAPI contract | `./gradlew :service:app:test --tests "io.miragon.blueprint.openapi.OpenApiSpecExportTest"` |
+| Regenerate the OpenAPI contract | `./gradlew :service:app:test --tests "io.miragon.blueprint.adapter.inbound.rest.OpenApiSpecExportTest"` |
 | Backend OCI image (`miravelo/zeebe-example`) | `./gradlew :service:app:bootBuildImage` |
 <!-- /variant:kotlin-gradle -->
 
@@ -155,7 +155,7 @@ Verify the variant you touched — which, for a change in behaviour, is both.
 In `kotlin-gradle/`:
 
 - Backend service/controller: `./gradlew :service:app:test --tests "*<Name>Test"`
-- Architecture only: `./gradlew :service:app:test --tests "io.miragon.blueprint.architecture.*"`
+- Architecture only: `./gradlew :service:app:test --tests "io.miragon.blueprint.ArchitectureTest*"`
   <!-- /variant:kotlin-gradle -->
 
 <!-- variant:java-maven -->

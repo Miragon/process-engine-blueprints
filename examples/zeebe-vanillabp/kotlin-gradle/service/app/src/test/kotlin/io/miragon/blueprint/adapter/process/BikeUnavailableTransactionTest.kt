@@ -1,4 +1,4 @@
-package io.miragon.blueprint.process
+package io.miragon.blueprint.adapter.process
 
 import io.camunda.client.CamundaClient
 import io.camunda.client.api.search.enums.UserTaskState
@@ -6,10 +6,7 @@ import io.camunda.process.test.api.CamundaAssert
 import io.camunda.process.test.api.CamundaSpringProcessTest
 import io.camunda.process.test.api.assertions.ProcessInstanceSelectors
 import io.miragon.blueprint.adapter.outbound.db.LeasingApplicationJpaRepository
-import io.miragon.blueprint.adapter.process.BikeLeasingProcessProcessApi
 import io.miragon.blueprint.adapter.process.BikeLeasingProcessProcessApi.FlowNodes
-import io.miragon.blueprint.adapter.process.CancelBikeOrderProcessApi
-import io.miragon.blueprint.adapter.process.LeasingApplicationAggregate
 import io.miragon.blueprint.application.port.inbound.SelectAlternativeUseCase
 import io.miragon.blueprint.application.port.inbound.SignContractUseCase
 import io.miragon.blueprint.application.port.inbound.SubmitLeasingRequestUseCase

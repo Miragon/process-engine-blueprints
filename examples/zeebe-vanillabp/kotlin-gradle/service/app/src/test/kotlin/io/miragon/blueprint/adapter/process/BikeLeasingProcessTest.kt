@@ -1,4 +1,4 @@
-package io.miragon.blueprint.process
+package io.miragon.blueprint.adapter.process
 
 import com.ninjasquad.springmockk.MockkBean
 import io.camunda.client.CamundaClient
@@ -9,10 +9,7 @@ import io.camunda.process.test.api.CamundaSpringProcessTest
 import io.camunda.process.test.api.assertions.ProcessInstanceSelectors
 import io.miragon.blueprint.adapter.outbound.db.LeasingApplicationJpaRepository
 import io.miragon.blueprint.adapter.outbound.workflow.LeasingProcessAdapter
-import io.miragon.blueprint.adapter.process.BikeLeasingProcessProcessApi
 import io.miragon.blueprint.adapter.process.BikeLeasingProcessProcessApi.FlowNodes
-import io.miragon.blueprint.adapter.process.CancelBikeOrderProcessApi
-import io.miragon.blueprint.adapter.process.LeasingApplicationAggregate
 import io.miragon.blueprint.application.port.inbound.ActivateLeasingUseCase
 import io.miragon.blueprint.application.port.inbound.BookCancellationCostsUseCase
 import io.miragon.blueprint.application.port.inbound.CancelContractUseCase

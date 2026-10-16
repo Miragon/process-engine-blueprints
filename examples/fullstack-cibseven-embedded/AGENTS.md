@@ -33,6 +33,7 @@ npm --prefix frontend run dev                       # UI on :5173 (proxies /api 
 | Postgres | 5432 |
 | Backend (REST + engine-rest) | 8080 |
 | CIB seven Cockpit / webapps | 8080/camunda (admin/admin) |
+| CIB seven webclient (new UI, header "Cockpit" link) | 8080/webapp (admin/admin) |
 | OpenAPI spec · Swagger UI | 8080/v3/api-docs · 8080/swagger-ui.html |
 | Actuator (health/liveness/readiness · prometheus) | 8080/actuator |
 | Vite dev server | 5173 |

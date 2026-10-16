@@ -96,7 +96,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               </Link>
             ))}
             <WebappLink href="/camunda/app/tasklist/" label={copy.nav.tasklist} />
-            <WebappLink href="/camunda/app/cockpit/" label={copy.nav.cockpit} />
+            <WebappLink href="/webapp/#/seven/auth/start" label={copy.nav.cockpit} />
             <LanguageSwitch />
           </nav>
         </div>

@@ -31,11 +31,12 @@ npm --prefix frontend run dev                       # UI on :5173 (proxies /api 
 | Postgres | 5432 |
 | Backend (REST + `/engine-rest`) | 8080 |
 | CIB seven Cockpit / webapps | 8080/camunda (admin/admin) |
+| CIB seven webclient (new UI, header "Cockpit" link) | 8080/webapp (admin/admin) |
 | OpenAPI spec · Swagger UI | 8080/v3/api-docs · 8080/swagger-ui.html |
 | Actuator (health · liveness/readiness · prometheus) | 8080/actuator |
 | Vite dev server | 5173 |
 
-Vite proxies `/api`, `/v3/api-docs`, `/engine-rest` and `/camunda` to `:8080`, so the browser sees one
+Vite proxies `/api`, `/v3/api-docs`, `/engine-rest`, `/camunda` and `/webapp` to `:8080`, so the browser sees one
 origin and no CORS code runs on the production path. Under Conductor the ports are fixed and the
 workspace runs `nonconcurrent` (see [ADR-0008](docs/adr/0008-fixed-ports-for-v1-portless-as-the-upgrade.md)).
 
@@ -67,13 +68,14 @@ docker compose -f stack/docker-compose.full.yml up --build
 ```
 
 Then open <http://localhost:8090> and run the smoke test above. An nginx layer serves the built SPA
-and reverse-proxies `/api`, `/engine-rest`, `/camunda`, `/v3/api-docs` to the app, so it is the same
+and reverse-proxies `/api`, `/engine-rest`, `/camunda`, `/webapp`, `/v3/api-docs` to the app, so it is the same
 single-origin, no-CORS topology as the Vite dev proxy.
 
 | What | URL |
 |---|---|
 | Frontend (SPA + reverse proxy) | <http://localhost:8090> |
 | CIB seven Cockpit | <http://localhost:8090/camunda> (admin/admin) |
+| CIB seven webclient (new UI) | <http://localhost:8090/webapp> (admin/admin) |
 | Backend / engine REST · Swagger UI | <http://localhost:8080> · <http://localhost:8080/swagger-ui.html> |
 | Actuator probes | 8080/actuator/health/{readiness,liveness} |
 

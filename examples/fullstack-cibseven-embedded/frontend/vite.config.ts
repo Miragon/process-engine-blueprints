@@ -22,6 +22,7 @@ export default defineConfig({
       "/v3/api-docs": "http://localhost:8080",
       "/engine-rest": "http://localhost:8080",
       "/camunda": "http://localhost:8080",
+      "/webapp": "http://localhost:8080",
     },
   },
 });

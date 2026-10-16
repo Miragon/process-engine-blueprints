@@ -1,112 +1,59 @@
-# Fullstack Bike-Leasing Blueprint
+# Fullstack Bike-Leasing Blueprint [![Pre-Merge Checks](https://github.com/miragon-blueprints/fullstack-example/actions/workflows/pre-merge.yml/badge.svg)](https://github.com/miragon-blueprints/fullstack-example/actions/workflows/pre-merge.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> [!NOTE]
-> **🚧 Work in progress.** This is a **solution template**, a reference to fork and build on, for
-> our consultants and anyone else, not a product that ships. It's still being fleshed out, so parts
-> may be incomplete and it may not yet fully demonstrate what it's meant to. Treat it as a
-> living example, and expect it to keep evolving.
+One opinionated way to start a greenfield process-automation project, wired end to end: one BPMN
+process automated with a [CIB seven](https://cibseven.org) (community Camunda 7) **embedded engine**,
+a **React frontend**, and an **AI-agent setup**, with an architecture kept honest by tests. It is a
+work-in-progress **solution template** to fork and build on, not a product that ships.
 
-**One opinionated way to start a greenfield process-automation project, wired end to end.** One BPMN
-process, automated with a [CIB seven](https://cibseven.org) (community Camunda 7 fork) **embedded
-engine**, a **React frontend**, and an **AI-agent setup**. Its **architecture is kept honest by
-tests**, so it can't quietly rot as the process grows.
+## The process
 
 ![The MiraVelo bike-leasing BPMN process, from leasing request to active lease, with credit check, contract signing, insurance, bike order, and compensation](docs/assets/bike-leasing.png)
 
-## Why fork this
+**MiraVelo** is a (fictional) lifestyle bike brand that leases gravel and road bikes. The process
+takes a leasing application from first request to active lease (credit check, contract signing,
+insurance, and bike order, plus timers, a DMN decision, compensation, and a back-office inbox for the
+awkward cases): a customer submits an application, watches the case advance on its own, signs the
+contract when asked, and if the bike is out of stock an agent picks an alternative in `/aufgaben`.
 
-Most automation examples stop at a `.bpmn` file and a few delegates. Real projects need a UI, a
-contract between front and back, tests that mean something, and an architecture that survives the
-tenth feature. Fork this and you inherit all of it, **guardrailed**:
+## Quick start
 
-- 🧊 **Hexagonal backend**, enforced by ArchUnit + Konsist, so violations fail the build.
-- 🧩 **Feature-Sliced frontend**, enforced by steiger + ESLint + knip.
-- 🔗 **A committed, drift-gated OpenAPI contract**: the backend generates it, orval turns it into the
-  frontend's typed client.
-- 🧪 **A real quality net**: mutation testing (gated at 80), Bruno API scenarios, Playwright journeys.
-- 🤖 **AI-ready**: `AGENTS.md`, eight skills, and two review subagents, so agent- and hand-written
-  code get the same instant "you broke a rule" feedback.
+Requirements: JDK 21, Node ≥ 22.12, Docker (or Podman).
 
-## The scenario
+```bash
+docker compose -f stack/docker-compose.yml up -d   # Postgres
+./gradlew :service:app:bootRun                      # backend + engine on :8080
+npm --prefix frontend ci && npm --prefix frontend run dev   # UI on :5173
+```
 
-**MiraVelo** is a (fictional) lifestyle bike brand that leases gravel and road bikes to private and
-corporate customers. The process automates a leasing application from first request to active lease:
-credit check, contract signing, insurance, and bike order, plus timers, a DMN decision, compensation,
-and a back-office inbox for the awkward cases.
+| What | URL | Login |
+|---|---|---|
+| Frontend | <http://localhost:5173> | – |
+| CIB seven webclient | <http://localhost:8080/webapp> | admin/admin |
+| CIB seven Cockpit | <http://localhost:8080/camunda> | admin/admin |
+| Swagger UI | <http://localhost:8080/swagger-ui.html> | – |
 
-In the UI a customer submits an application, watches the case advance on its own (the detail page
-polls while the engine works), and signs the contract when asked. When a bike is out of stock the
-case lands in the back-office inbox (`/aufgaben`), where an agent picks an alternative and the process
-continues.
-
-![MiraVelo's React frontend, the leasing applications list with each case's bike and live status](docs/assets/frontend-applications.png)
+API scenarios against the running stack: `cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r`.
+The full dev loop (verification, containers, Playwright, contract regeneration) is in
+[CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## What's inside
 
-- **Backend:** Kotlin / Spring Boot, hexagonal, CIB seven embedded (JavaDelegates). The full BPMN
-  palette: message start, DMN, event-based gateway, timers, parallel fork/join, user tasks,
-  compensation.
-- **Frontend:** React, Feature-Sliced Design, Tailwind, TanStack Router/Query, forms with
-  react-hook-form + zod, MSW-backed vitest, Playwright e2e mapped 1:1 to the Bruno scenarios.
-- **The contract:** springdoc generates `openapi/openapi.json` (committed, drift-gated); orval
-  regenerates the frontend's typed TanStack Query client from it.
+| Path | Content |
+|---|---|
+| [`service/app`](service/app) | Hexagonal Kotlin / Spring Boot backend with the embedded CIB seven engine |
+| [`service/common-architecture-tests`](service/common-architecture-tests) | ArchUnit + Konsist rules that fail the build |
+| [`openapi/openapi.json`](openapi/openapi.json) | Generated, committed, drift-gated REST contract |
+| [`frontend`](frontend) | React, Feature-Sliced Design, Tailwind, TanStack; Playwright specs in `e2e/` |
+| [`bruno`](bruno) | API scenario collections |
+| [`stack`](stack) | `docker-compose.yml` (dev DB) · `docker-compose.full.yml` (full stack) |
+| [`docs`](docs/README.md) | Docs index and [ADRs](docs/adr/) explaining why it's shaped this way |
+| [`.claude`](.claude) · [`AGENTS.md`](AGENTS.md) | AI guidance: 8 skills, 2 review subagents |
+| [`.github/workflows`](.github/workflows) | Pre-merge (parallel jobs) and nightly pipelines |
 
-## Getting started
+## Contributing
 
-```bash
-# 1. start Postgres
-docker compose -f stack/docker-compose.yml up -d
+Contributions welcome: see [CONTRIBUTING.md](CONTRIBUTING.md) and use [Conventional Commits](https://www.conventionalcommits.org).
 
-# 2. run the backend + engine (CIB seven Cockpit at http://localhost:8080/camunda, admin/admin)
-./gradlew :service:app:bootRun
+## License
 
-# 3. run the UI (http://localhost:5173)
-npm --prefix frontend ci && npm --prefix frontend run dev
-```
-
-Then open <http://localhost:5173>, submit an application with the out-of-stock bike, sign the
-contract, open `/aufgaben`, resolve the clarification, and watch the status advance on its own.
-
-Prefer containers? `./gradlew :service:app:bootBuildImage` then
-`docker compose -f stack/docker-compose.full.yml up --build` brings up frontend + app + Postgres on
-<http://localhost:8090>.
-
-Verify the whole thing:
-
-```bash
-./gradlew build                        # arch + unit + process + model validation + spec export
-git diff --exit-code openapi/openapi.json
-./gradlew :service:app:pitest          # mutation score >= 80
-npm --prefix frontend run verify       # format, eslint, steiger, knip, tsc, vitest
-```
-
-The full dev loop (Bruno, Playwright, contract regeneration) is in [CONTRIBUTING.md](CONTRIBUTING.md).
-
-## Why it's shaped this way
-
-Every non-obvious decision (the embedded engine, hexagonal, FSD, the OpenAPI contract, the mutation
-gate, tracking the latest majors) is recorded as an **Architecture Decision Record**. Read the *why*
-before changing the *what*: start at the [docs index](docs/README.md) and its [ADRs](docs/adr/).
-
-## Repository structure
-
-```
-fullstack-example/
-├── AGENTS.md · CLAUDE.md            # AI guidance (AGENTS.md is the single source)
-├── service/
-│   ├── common-architecture-tests/  # ArchUnit + Konsist rules (fail the build)
-│   └── app/                         # hexagonal Kotlin/Spring Boot + CIB seven
-├── openapi/openapi.json            # GENERATED by a test, COMMITTED, drift-gated in CI
-├── frontend/                        # React + FSD (npm-only; e2e/ Playwright specs)
-├── bruno/                           # API scenario collections
-├── package.json                     # bpmnlint + git-hook installer tooling
-├── stack/                           # docker-compose.yml (dev DB) · docker-compose.full.yml (full stack)
-├── docs/{README.md, adr/, assets/}  # ADRs + diagrams
-├── .claude/{skills/, agents/}       # 8 skills, 2 subagents
-└── .github/workflows/               # pre-merge (parallel jobs) + nightly
-```
-
-## Contributing & License
-
-Contributions welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) and use
-[Conventional Commits](https://www.conventionalcommits.org). Licensed under MIT (see [LICENSE](LICENSE)).
+[MIT](LICENSE)

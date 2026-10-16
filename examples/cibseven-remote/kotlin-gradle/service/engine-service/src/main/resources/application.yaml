@@ -21,7 +21,7 @@ camunda:
       password: admin
     deployment-resource-pattern: []
     webapp:
-      application-path: /camunda
+      application-path: /webapp
     database:
       type: postgres
       schema-update: true
@@ -32,6 +32,8 @@ camunda:
 
 cibseven:
   webclient:
+    engineRest:
+      url: http://localhost:${server.port}
     authentication:
       # WARNING: This is a development/example secret key.
       # DO NOT use this in production! Generate your own secure secret key.

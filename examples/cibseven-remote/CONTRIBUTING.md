@@ -45,7 +45,8 @@ cd java-maven && ./mvnw -pl service/example-service -am spring-boot:run   # work
 |---|---|
 | Postgres (`bikeleasing_engine`, `bikeleasing_app`) | 5432 |
 | Engine host (`/engine-rest`) | 8081 |
-| CIB seven Cockpit / webapps | 8081/camunda (admin/admin) |
+| CIB seven webclient (new UI, entry point) | 8081/webapp (admin/admin) |
+| CIB seven Cockpit / Tasklist (classic) | 8081/camunda (admin/admin) |
 | Worker REST · OpenAPI spec · Swagger UI | 8082/api · 8082/v3/api-docs · 8082/swagger-ui.html |
 | Worker actuator (health · liveness/readiness · prometheus) | 8082/actuator |
 

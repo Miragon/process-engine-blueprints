@@ -84,7 +84,8 @@ cd java-maven && ./mvnw -pl service/example-service -am spring-boot:run
 ```
 <!-- /variant:java-maven -->
 
-**4. Use it** — open the Cockpit / Tasklist at <http://localhost:8081/camunda> (admin/admin) or the
+**4. Use it** — open the CIB seven webclient at <http://localhost:8081/webapp> (admin/admin; the classic
+Cockpit / Tasklist stay at <http://localhost:8081/camunda>) or the
 Swagger UI at <http://localhost:8082/swagger-ui.html>, or drive the whole process over REST:
 
 ```bash

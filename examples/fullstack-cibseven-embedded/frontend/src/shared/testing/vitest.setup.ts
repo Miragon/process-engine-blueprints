@@ -18,6 +18,6 @@ if (typeof window !== "undefined") {
 }
 
 // Start the MSW server for the whole test run; reset per test so `server.use(...)` overrides don't leak.
-beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
+beforeAll(() => server.listen({ onUnhandledFrame: "error" }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());

@@ -58,7 +58,7 @@ cib7-bpm-junit5 = { module = "org.cibseven.bpm:cibseven-bpm-junit5", version.ref
 # JGiven — CIB seven
 cib7-bpm-jgiven = { module = "org.cibseven.community:cibseven-bpm-jgiven", version.ref = "cib7_jgiven_version" }
 jgiven-kotlin = { module = "io.toolisticon.testing:jgiven-kotlin", version.ref = "jgiven_kotlin_version" }
-jgiven-junit5 = { module = "com.tngtech.jgiven:jgiven-junit5", version = "2.0.3" }
+jgiven-junit5 = { module = "com.tngtech.jgiven:jgiven-junit5", version = "3.0.0" }
 
 [bundles]
 defaultService = ["kotlin-reflect", "kotlin_logging", "jackson-kotlin", "devtools", "web", "actuator", "prometheus"]

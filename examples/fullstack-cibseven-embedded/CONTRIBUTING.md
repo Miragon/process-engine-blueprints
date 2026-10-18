@@ -8,7 +8,7 @@ welcome — bug reports, feature ideas, docs, and code.
 ```bash
 git clone git@github.com:miragon-blueprints/fullstack-example.git
 cd fullstack-example
-npm ci && npm run hooks:install                                # BPMN lint + git hooks
+npm ci && npm run hooks:install                                # bpmnlint, bpmn-cli, operate + git hooks
 npm --prefix frontend ci                                        # frontend dependencies
 ```
 
@@ -115,9 +115,16 @@ npm --prefix frontend run verify        # format, eslint, steiger (FSD), knip, t
 npm --prefix frontend run api:generate  # regenerate the typed client from openapi.json
 npm --prefix frontend run e2e           # Playwright specs (chromium)
 
-# BPMN
-npm run lint:bpmn                       # bpmnlint the .bpmn models
+# BPMN and the engine
+npm run lint:bpmn                                    # bpmnlint the .bpmn models
+npx bpmn guide --short                               # read, change, validate or render a model
+npx operate inspect --business-key <applicationId>   # where a running case waits and why
+npx operate status                                   # incidents and jobs at a glance
 ```
+
+bpmn-cli and operate are also Claude Code plugins (see `AGENTS.md`). Dependabot ignores them:
+bump each one by hand in two places together, its exact version in the root `package.json` and the
+`ref` of its marketplace in `.claude/settings.json`.
 
 ## Ground rules
 

@@ -1,7 +1,7 @@
 # 0006 — Mutation testing as a blocking PR gate
 
 - **Status:** Accepted
-- **Date:** 2026-08-20
+- **Date:** 2026-10-18
 
 ## Context
 
@@ -25,9 +25,10 @@ We run **PIT (pitest)** as a **blocking gate** with `mutationThreshold = 80`, co
   `io.miragon.blueprint.*` module with no property override — the authoritative gate-80 run — and
   uploads the HTML report as an artifact.
 - Both runs **exclude noise**: the generated `adapter.process` package, the Spring bootstrap and
-  `BikeCatalogueSeeder`, and the `adapter.inbound.cibseven.*` delegates/listeners (thin glue exercised
-  only by the slow engine tests).
-- The **kill-set** is the fast mockk / `@WebMvcTest` / `@DataJpaTest` unit tests; the JGiven engine
+  `BikeCatalogueSeeder`, and the two log-only listeners in `adapter.inbound.cibseven`. The delegates
+  are in the gate: each has a MockK unit test, because a delegate that drops a port call, a variable
+  or a `BpmnError` mapping otherwise surfaces only in the slow engine tests.
+- The **kill-set** is the fast mockk / `@WebMvcTest` / `@DataJpaTest` / delegate unit tests; the JGiven engine
   integration tests (`adapter.process.*`) and the ArchUnit/Konsist tests (`ArchitectureTest`) are excluded from
   the kill-set — they'd make every run slow and non-deterministic without adding mutation signal.
 

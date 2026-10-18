@@ -1,8 +1,8 @@
 ---
 name: create-delegate
 argument-hint: "[<path-to-ProcessApi-or-BPMN-file>] [element-id-or-task-name]"
-description: Create or update a CIB seven (Camunda 7) JavaDelegate — or an Execution/Task listener — in service/app for a BPMN service task or listener hook, wired as a Spring @Component and invoked by expression (#{beanName}). Use when the user asks to "create a delegate", "wire a service task to code", "add a JavaDelegate", or "add an execution/task listener". The delegate extends BaseDelegate, calls exactly one inbound port, and reads process variables via the typed ProcessApi.
-allowed-tools: Read, Write, Glob
+description: Create or update a CIB seven (Camunda 7) JavaDelegate — or an Execution/Task listener — in service/app for a BPMN service task or listener hook, wired as a Spring @Component and invoked by expression (#{beanName}). Use when the user asks to "create a delegate", "wire a service task to code", "add a JavaDelegate", "add an execution/task listener", "test a delegate", or when the mutation gate reports a surviving mutant in a delegate. The delegate extends BaseDelegate, calls exactly one inbound port, reads process variables via the typed ProcessApi, and ships with its MockK unit test.
+allowed-tools: Read, Write, Edit, Glob, Bash(./gradlew *)
 ---
 
 # Skill: create-delegate
@@ -40,6 +40,44 @@ class OrderBikeDelegate(
   (`BikeLeasingProcessProcessApi.FlowNodes.<Node>.Variables.…`) — never a raw string literal.
 - A **listener** (execution or task) is a plain `@Component` implementing `ExecutionListener` or
   `TaskListener` (see `ClarifyAlternativeTaskListener`, `BikeOrderAuditListener`) — no `BaseDelegate`.
+
+## Test pattern
+
+Every delegate gets a MockK unit test in
+`service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/cibseven/`. Delegates are in the
+mutation gate ([ADR-0006](../../../docs/adr/0006-mutation-testing-as-a-blocking-pr-gate.md)); only
+the log-only listeners are excluded.
+
+```kotlin
+class SendContractDelegateTest {
+
+    private val useCase = mockk<SendContractUseCase>()
+    private val execution = mockk<DelegateExecution>()
+    private val underTest = SendContractDelegate(useCase)
+
+    @Test
+    fun `sends the contract of the application in the business key`() {
+        val applicationId = ApplicationId.new()
+        every { execution.processBusinessKey } returns applicationId.value.toString()
+        every { useCase.sendContract(applicationId) } just Runs
+
+        underTest.execute(execution)
+
+        verify { useCase.sendContract(applicationId) }
+        confirmVerified(useCase)
+    }
+}
+```
+
+- **Call `execute`, not `executeTask`**, so `BaseDelegate` runs as in the engine. Its rethrow is
+  covered once in `BaseDelegateTest`; don't repeat it per delegate.
+- **Strict mocks.** Stub with `every { … } just Runs` (or `returns`), then `verify` the call with the
+  exact id and `confirmVerified(useCase)`. A relaxed mock lets a removed call survive the gate.
+- **One test per outcome:** the happy path, plus each `BpmnError` the delegate throws — assert the code
+  from the generated `Errors`, never a string literal (see `OrderBikeDelegateTest`).
+- **Variables** read or written are stubbed and verified with the names from
+  `<Process>ProcessApi.FlowNodes.<Node>.Variables`, never raw strings.
+- **No Spring, no engine.** Plain JUnit 5 + MockK + AssertJ, backtick names, `underTest`.
 
 ## IMPORTANT — the rules ArchUnit enforces
 
@@ -83,12 +121,21 @@ constants, calling the single port, translating domain exceptions to `BpmnError`
 exists. Listener → implement `ExecutionListener`/`TaskListener`. Existing file → add only what's
 missing, preserve logic.
 
-### Step 5 — Report and hand off
+### Step 5 — Test it twice
 
-Report created/updated/skipped, then remind the user to:
+1. The unit test (see Test pattern), then the mutation check for the class:
 
-1. Confirm the BPMN `delegateExpression`/listener expression matches the bean name — the
-   [`review-process`](../../agents/review-process.md) subagent audits exactly this wiring.
-2. Add a `@WebMvcTest`-style or engine (`adapter.process.*` JGiven) test; note the `cibseven.*` package is
-   **excluded from the pitest kill-set** on purpose (thin glue, covered by the engine tests).
-3. Run `./gradlew build`.
+   ```bash
+   ./gradlew :service:app:test --tests "*<Name>DelegateTest"
+   ./gradlew :service:app:pitest -PmutationTargetClasses=io.miragon.blueprint.adapter.inbound.cibseven.<Name>Delegate
+   ```
+
+   A surviving mutant means a missing assertion: add it, don't weaken the gate.
+2. The path through the engine with a process test in
+   `service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/`.
+
+### Step 6 — Report
+
+Report created/updated/skipped and confirm the BPMN `delegateExpression`/listener expression matches
+the bean name — the [`review-process`](../../agents/review-process.md) subagent audits exactly this
+wiring.

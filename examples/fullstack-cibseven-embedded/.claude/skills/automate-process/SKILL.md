@@ -1,98 +1,81 @@
 ---
 name: automate-process
-argument-hint: "[<path-to-ProcessApi-or-BPMN-file>]"
-description: Generate full hexagonal glue-code for a CIB seven (Camunda 7) BPMN process across all layers — inbound JavaDelegates/listeners, inbound/outbound ports, application services, and the process out-adapter that drives the engine. Use when the user asks to "automate a process", "generate glue-code for a BPMN process", or "scaffold delegates and adapters". Accepts a ProcessApi file, a BPMN model, or a description; skips files that already exist; offers to run review-process first.
-allowed-tools: Read, Write, Glob
+argument-hint: "[what should change in the process]"
+description: "Change an executable CIB seven BPMN model of this repo (bike-leasing.bpmn, cancel-bike-order.bpmn) and wire its glue code across the hexagon and up to the browser: edit the model with bpmn-cli, regenerate the typed process API, add ports, services, delegates and process-adapter methods, cover the new paths with process tests, carry REST-driven steps through the contract to the frontend, and validate the model with bpmnlint, bpmn-cli and a rendered image. Use when the user asks to automate a process step, add or change a task, event or gateway, or review the diagram after an edit. Business decisions are asked, never assumed."
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Skill, Agent
 ---
 
 # Skill: automate-process
 
-Generate the hexagonal glue-code that wires a **CIB seven / Camunda 7** BPMN process (embedded engine)
-to the application. This is not Zeebe — service tasks are JavaDelegates invoked by expression, and the
-engine is driven through `RuntimeService`/`TaskService`. See
-[ADR-0002](../../../docs/adr/0002-hexagonal-architecture-for-the-backend.md).
+The model is the business's artifact; this skill changes it technically. The rules it relies on are in
+`AGENTS.md` (Ground Rules for Changes, Process Glue, Agent Tooling); read them first.
 
-## What this creates
+Glue code and its tests live in the package `io.miragon.blueprint` under `service/app/src/main/` and
+`service/app/src/test/`. The agent `review-process` is loaded at session start; if it is not
+available, read `.claude/agents/review-process.md` and apply it yourself.
 
-| Layer                | Location (`io.miragon.blueprint.…`)  | What |
-| -------------------- | ------------------------------------ | ---- |
-| Inbound delegates    | `adapter.inbound.cibseven`           | one `*Delegate : BaseDelegate` per service task (+ `*Listener` per listener hook) |
-| Outbound adapter     | `adapter.outbound.cibseven`          | one `*ProcessAdapter` implementing the process out-port |
-| Inbound ports        | `application.port.inbound`           | one `*UseCase`/`*Query` per delegate |
-| Outbound port        | `application.port.outbound`          | one `*Process` interface (start + one method per message/user-task) |
-| Application services  | `application.service`                | one `*Service` per inbound port |
+## The models
 
-## IMPORTANT — string constants come from the ProcessApi, never raw literals
+| File in `service/app/src/main/resources/` | What |
+|---|---|
+| `bpmn/bike-leasing.bpmn` | process `bikeLeasingProcess`: credit check, contract subprocess, insurance and bike order in parallel, handover, compensation, the withdrawal event subprocess |
+| `bpmn/cancel-bike-order.bpmn` | process `cancelBikeOrder`, called by the compensation of the bike order (`callActivity_cancelBikeOrder`) |
+| `dmn/check-credit-rating.dmn` | decision `checkCreditRating`, read by `businessRuleTask_checkCreditRating` |
+| `forms/clarify-alternative.form`, `forms/clarify-return.form` | Camunda Forms of the two user tasks; *Clarify alternative* is also worked in the frontend inbox (`/aufgaben`) |
 
-- Delegate variable reads → `BikeLeasingProcessProcessApi.FlowNodes.<Node>.Variables.…`
-- Adapter `startProcessInstanceByMessage(...)` → the shared top-level `Messages.…`; user-task
-  completion → `FlowNodes.<UserTask>.id` + `FlowNodes.<Node>.Variables.…` (see
-  `LeasingProcessAdapter`).
-- Process tests assert the walked path as a `ProcessPath` over `FlowNodes` (see
-  `BikeLeasingProcessTest`), never as a hand-written element-id list.
-- The generated `adapter/process` `*ProcessApi` is the source of truth; regenerate it with
-  `./gradlew generateBpmnModels` if the model changed but the API is stale.
-- Delegate handler bodies take primitives / the business key and wrap them into domain value objects
-  before calling the port; adapter methods accept **domain types** and extract `.value` inside.
+## Rules
 
-## Instructions
+- **Edit a `.bpmn` only through bpmn-cli** (skill `bpmn-cli:bpmn`), never as XML: `bpmn show` to read,
+  one `bpmn apply` batch to change, `bpmn validate` to check (it also runs `.bpmnlintrc`). The DMN and
+  the forms are edited as files; the decision id `checkCreditRating` is referenced by the model.
+- **Business decisions are questions.** A new gateway condition, deadline, error path or user task
+  owner comes from the issue; otherwise ask before editing.
+- **Constants come from the generated API** (`BikeLeasingProcessProcessApi.FlowNodes.<Node>` with
+  `.ELEMENT_ID`, `Variables`, `Next`; the shared `Messages`, `Errors`, `Escalations`, `ServiceTasks`),
+  never raw strings. `adapter/process` is generated: never edit it (except
+  `HistoryCleanupConfiguration`).
+- **Engine limits:** a service task is a delegate by expression (`#{beanName}`, enforced by
+  `adapter/process/model/ServiceTaskDelegateExpressionRule`); the asynchronous continuations
+  (`asyncAfter` on the service tasks) are where retries and incidents happen; a compensation handler
+  (`isForCompensation`) only runs for an activity that completed.
 
-### Step 0 — Offer the review first
+## Steps
 
-Ask whether to run the [`review-process`](../../agents/review-process.md) subagent before generating —
-it's worth generating code only for a clean, styleguide-conforming model. If the user agrees, tell them
-to run it and **stop this skill**; they restart `automate-process` afterwards. If they decline, continue.
+1. **Review first.** Run the agent `review-process` on the current models and report blocking findings
+   before changing anything.
+2. **Agree the change.** Restate it in business terms (which element, which path, which outcome) with
+   the open questions. Wait for the answer.
+3. **Edit the model** with bpmn-cli, then regenerate the process API and lint:
+   ```bash
+   ./gradlew generateBpmnModels
+   npm run lint:bpmn
+   ```
+   Commit the regenerated `adapter/process` files with the model; CI fails when they are stale.
+4. **Glue code**, skipping what exists:
 
-### Step 1 — Resolve the input source
+   | Layer | Package (`io.miragon.blueprint.…`) | What |
+   |---|---|---|
+   | Domain | `domain.{leasing,bike}` | a value object per new variable (`ApplicationId`, `BikeId`, `OrderId`) |
+   | Inbound port | `application.port.inbound` | one `*UseCase`/`*Query` per delegate or endpoint |
+   | Service | `application.service` | one `*Service` per inbound port |
+   | Delegate / listener | `adapter.inbound.cibseven` | skill `create-delegate`, with its unit test |
+   | Outbound port | `application.port.outbound` | `LeasingProcess`: one method per message or user-task completion; `TaskInboxPort` for open tasks |
+   | Process adapter | `adapter.outbound.cibseven` | `LeasingProcessAdapter`, `TaskInboxAdapter`: correlate by business key (the application id) |
 
-`$ARGUMENTS` may be a `*ProcessApi.kt` (read directly) or a `.bpmn` (then `Glob
-**/adapter/process/*ProcessApi.kt` in the same module). No argument → `Glob` all `*ProcessApi.kt`, list,
-ask. If no ProcessApi exists, tell the user to run `./gradlew generateBpmnModels` first.
-
-Extract: package, object name, `PROCESS_ID`, `FlowNodes.*` (ids, `Variables`, `Next`), and the shared `Messages.*` / `ServiceTasks.*`.
-
-### Step 2 — Packages
-
-Base is fixed: `io.miragon.blueprint`. Delegates → `adapter.inbound.cibseven`; process adapter →
-`adapter.outbound.cibseven`; ports → `application.port.{inbound,outbound}`; services →
-`application.service`. Source root `service/app/src/main/kotlin/`.
-
-### Step 3 — Discover / create domain types
-
-Scan `domain/{leasing,bike}/` for a value object per process variable (e.g. `APPLICATION_ID` →
-`ApplicationId`, `BIKE_ID` → `BikeId`). Create a missing one (a data class wrapping `UUID`/`String`)
-before generating ports or adapters. Ask if a variable name doesn't map to a sensible type.
-
-### Step 4 — Inbound ports
-
-One `*UseCase` (state-changing) or `*Query` (read) per service task, method params in domain types.
-Skip existing.
-
-### Step 5 — Outbound process port
-
-One `*Process` interface: a start method (this model starts by **message** — see
-`Messages.MIRAVELO_LEASING_REQUEST_RECEIVED`), one method per remaining message, and one per user-task
-completion the app drives. Domain-typed params. Skip existing.
-
-### Step 6 — Application services
-
-One `@Service` per inbound port, implementing exactly one port (ArchUnit enforces this), body
-`TODO("Add implementation")`. Skip existing.
-
-### Step 7 — Delegates
-
-Per [`create-delegate`](../create-delegate/SKILL.md): `*Delegate : BaseDelegate`, inject the one port,
-read the business key/variables via typed constants, translate domain exceptions to `BpmnError` where a
-boundary event exists. Skip existing.
-
-### Step 8 — Process out-adapter
-
-Per the `LeasingProcessAdapter` pattern: `@Component … : XxxProcess`, inject `RuntimeService`/
-`TaskService`, `override` each method, use typed `Messages`/`Elements`/`Variables`, correlate by
-business key. Skip existing.
-
-### Step 9 — Report
-
-List every file created/skipped. Remind the user to fill the service `TODO`s, wire each BPMN
-`delegateExpression` to its bean, run [`review-process`](../../agents/review-process.md) to check the
-wiring, add tests, and `./gradlew build`.
+   A step driven over REST also gets its controller (skill `create-rest-controller`), the re-exported
+   `openapi.json` and the regenerated client (skill `sync-api-client`); a step users see gets its
+   FSD slice (skill `create-feature-slice`).
+5. **Process tests.** Derive the scenarios from the model's paths: every new outgoing flow of a
+   gateway, every boundary event, every event subprocess path gets a test in the test tree's
+   `adapter/process/` that asserts the walked path through `ProcessPathAssertions`, a typed path from
+   the generated API (see `BikeLeasingProcessTest`). A gateway's branch label must match its
+   condition.
+   The job executor is off in tests: `JobExecutionUtils` fires async continuations, `TimerUtils`
+   fires a timer job directly. Run `./gradlew :service:app:test --tests "io.miragon.blueprint.adapter.process.*"`.
+6. **Bruno and Playwright.** A path visible over REST gets a numbered scenario folder in `bruno/`, a
+   path users see a spec in `frontend/e2e/`. Both name element ids as strings (the `.bru` files and
+   `e2e/helpers/engine-rest.ts`): a renamed id is updated there too.
+7. **Validate the model** with the nets in [references/visual-check.md](references/visual-check.md).
+8. **Report** files created or skipped, the scenarios tested, the validation verdict and the
+   questions still open. Run `review-process` once more on the result, and the agent
+   `review-vertical-slice` when a step reaches the browser.

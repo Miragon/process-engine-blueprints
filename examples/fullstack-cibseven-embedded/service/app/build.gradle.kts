@@ -69,7 +69,8 @@ pitest {
             "io.miragon.blueprint.CibsevenBikeLeasingApplication*",
             "io.miragon.blueprint.BikeCatalogueSeeder*",
             "io.miragon.blueprint.adapter.inbound.rest.DevCorsConfiguration*",
-            "io.miragon.blueprint.adapter.inbound.cibseven.*",
+            "io.miragon.blueprint.adapter.inbound.cibseven.BikeOrderAuditListener*",
+            "io.miragon.blueprint.adapter.inbound.cibseven.ClarifyAlternativeTaskListener*",
         ),
     )
     excludedTestClasses.set(

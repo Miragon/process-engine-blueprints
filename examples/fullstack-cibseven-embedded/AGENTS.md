@@ -16,6 +16,17 @@ blueprints implement, plus a UI and an enforced architecture on both sides of th
   it is **committed and drift-gated**, and orval regenerates the frontend's typed client from it.
   A backend REST change reaches the browser via the `sync-api-client` skill. See ADR-0004.
 
+## Ground Rules for Changes
+
+- **Ask before deciding business logic.** Gateway conditions, deadlines, error paths, who works a
+  user task and the copy users read are business decisions: propose, don't pick.
+- **Derive, never invent.** Details come from the issue, the model or the code; mark anything else
+  as an assumption.
+- **Keep element ids stable.** The generated process API and the process tests follow a rename
+  through the compiler, but the Bruno scenarios and the Playwright specs in `frontend/e2e/` name
+  element ids as strings (`serviceTask_orderBike`, `userTask_clarifyAlternative`, …): a rename
+  updates them in the same change.
+
 ## Development Setup
 
 Three commands to a running stack:
@@ -67,7 +78,8 @@ before writing code. The hard rules:
   there.
 - **`adapter/process` is generated.** Never hand-edit `*ProcessApi.kt` or the shared
   `ServiceTasks`/`Messages`/`ProcessVariables`/`Errors`/`Escalations` files; edit the `.bpmn` and
-  re-run `generateBpmnModels`.
+  re-run `generateBpmnModels`. `.claude/settings.json` denies edits to them, to `openapi.json` and to
+  the generated frontend client.
 - **Suffixes:** inbound port `UseCase|Query`; outbound `Port|Repository|Process`; service
   `Service|Configuration`; `adapter.inbound.rest` `Controller|Dto|Input|Mapper|Configuration`;
   `adapter.outbound` `PersistenceAdapter|Adapter|Mapper|Entity|Repository`.
@@ -76,6 +88,19 @@ before writing code. The hard rules:
 The frontend's Feature-Sliced Design is enforced by steiger (`lint:fsd`) + ESLint import rules +
 knip (`lint:deadcode`). See `frontend/AGENTS.md`. Key rule: **`src/processes/` is banned** — in this
 codebase "process" means the BPMN model, so the step rail is `widgets/leasing-progress`.
+
+## Process Glue
+
+- A delegate extends `BaseDelegate` and overrides `executeTask`. It reads the application id from
+  the business key (`execution.processBusinessKey`) and every other variable through
+  `<Process>ProcessApi.FlowNodes.<Node>.Variables`, never a raw string.
+- A domain exception becomes `BpmnError(Errors.<X>.code, …)` where the model has a boundary event
+  for it (see `OrderBikeDelegate`).
+- A `@Transactional` service behind a delegate that throws the exception the delegate maps declares
+  it in `noRollbackFor` (see `OrderBikeService`). Otherwise the engine's job transaction is marked
+  rollback-only and the error path never runs.
+- Process variables stay minimal: ids, plus the inputs a gateway or decision reads (the DMN's `age`
+  and `monthlyNetIncome`). The engine is not a database.
 
 ## BPMN Quality Gates
 
@@ -99,6 +124,7 @@ TDD. Match the test style to the layer:
 | domain | plain unit tests |
 | application service | mockk unit tests (mock the ports) |
 | `adapter.inbound.rest` | `@WebMvcTest` + MockkBean |
+| `adapter.inbound.cibseven` | MockK unit test per delegate (skill `create-delegate`) |
 | `adapter.outbound.db` | `@DataJpaTest` |
 | process end-to-end | CIB seven process tests (JGiven), paths asserted via `ProcessPath` |
 | frontend slices | vitest + MSW (generated handlers) |
@@ -122,26 +148,42 @@ runs nightly. See ADR-0006.
 Use the `gh` CLI. Write everything (issues, PRs, commit messages) in **English**. Use
 **Conventional Commits** (`feat:`, `fix:`, `test:`, `chore:`, `docs:`, `ci:`, `build:`).
 
-## Skills
+## Agent Tooling
 
-Reusable procedures live in `.claude/skills/<name>/SKILL.md`:
+Two CLIs come as Claude Code plugins (`.claude/settings.json`) and are pinned in the root
+`package.json`:
 
-| Skill | Use it to |
+- **bpmn-cli** (`npx bpmn`, skill `bpmn-cli:bpmn`) for every change to a `.bpmn`: semantic edits, no
+  XML by hand, so the diagram (BPMNDI) stays intact. `BPMN_KEEP_FLOW_IDS=1` keeps flow ids stable.
+- **operate** (`npx operate`, skill `operate:operate`, `/operate:status`) for the local engine, via
+  `.operate.json`. Run `npx operate guide` before using it. It reads and repairs
+  (`inspect --business-key <applicationId>`, `status`, `incident`, history, `retry`). It never
+  deploys: the service deploys the models from its classpath, and a hand deploy is a version the
+  generated process API does not know. It never moves a case either (correlating a message,
+  completing a user task): that is a business action, taken through the app's UI or API or by a
+  human in the Tasklist, not by an agent.
+
+`.mcp.json` adds a pinned Playwright MCP server for skill `test-in-browser`. A PostToolUse hook
+(`.claude/hooks/lint-bpmn.sh`) runs bpmnlint after every edit of an executable `.bpmn` and hands the
+findings back.
+
+Skills and agents live in `.claude/` (see [.claude/README.md](.claude/README.md)); other agents can read
+them as recipes:
+
+| Use | When |
 |---|---|
-| `automate-process` | model/adjust a BPMN process and wire its glue code |
-| `create-rest-controller` | add a REST endpoint the hexagonal way (port → service → controller) |
-| `create-delegate` | add a JavaDelegate for a BPMN service task |
-| `create-persistence-adapter` | add an outbound persistence adapter |
-| `sync-api-client` | propagate a backend change to a clean frontend client (the highest-value one) |
-| `create-feature-slice` | scaffold a new FSD slice |
-| `verify-model-visually` | inspect a BPMN model's structure |
-| `create-adr` | record an architecture decision |
-
-## Subagents
-
-`.claude/agents/`: **`review-process`** (BPMN model ↔ glue-code consistency) and
-**`review-vertical-slice`** (walk BPMN element → port → service → controller → `openapi.json` →
-generated client → FSD slice → Bruno → Playwright and report what's missing at each hop).
+| skill `implement-issue` | take a GitHub issue from plan (with approval) to a verified change |
+| skill `automate-process` | change an executable model and its glue code, validate it |
+| skill `create-rest-controller` | add a REST endpoint the hexagonal way (port → service → controller) |
+| skill `create-delegate` | add or test a JavaDelegate for a BPMN service task |
+| skill `create-persistence-adapter` | add an outbound persistence adapter |
+| skill `sync-api-client` | propagate a backend change to a clean frontend client (the highest-value one) |
+| skill `create-feature-slice` | scaffold a new FSD slice |
+| skill `review-change` | review a diff or PR, findings by severity |
+| skill `test-in-browser` | check a flow in the running app with Playwright MCP, with screenshots |
+| skill `create-adr` | record a decision in `docs/adr/` |
+| agent `review-process` | read-only audit of the models against their glue code and tests |
+| agent `review-vertical-slice` | walk one feature BPMN element → port → service → controller → `openapi.json` → generated client → FSD slice → Bruno → Playwright and report what's missing at each hop |
 
 ## ADRs
 

@@ -36,7 +36,7 @@
         <vanillabp-spi.version>1.1.0</vanillabp-spi.version>
         <vanillabp-camunda8-adapter.version>1.10.0</vanillabp-camunda8-adapter.version>
         <springdoc.version>3.1.1</springdoc.version>
-        <bpmn-to-code.version>6.2.0</bpmn-to-code.version>
+        <bpmn-to-code.version>6.6.1</bpmn-to-code.version>
         <archunit.version>1.5.1</archunit.version>
         <testcontainers.version>2.0.5</testcontainers.version>
         <postgresql.version>42.7.13</postgresql.version>

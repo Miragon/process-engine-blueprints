@@ -179,7 +179,7 @@ Deliberately kept:
 |---|---|---|
 | `xmlns:camunda="http://camunda.org/schema/1.0/bpmn"` and all `camunda:*` attributes | `*.bpmn` | the namespace the engine parses |
 | `xmlns:camunda="http://camunda.org/schema/1.0/dmn"`, `camunda:historyTimeToLive` | `check-credit-rating.dmn` | same, for DMN |
-| `ProcessEngine.CAMUNDA_7` | `service/app/build.gradle.kts`, `BikeLeasingModelValidationTest` | `bpmn-to-code` 6.2.0 knows `ZEEBE`, `CAMUNDA_7` and `OPERATON`; `CAMUNDA_7` is its dialect for `camunda:` models |
+| `ProcessEngine.CAMUNDA_7` | `service/app/build.gradle.kts`, `BikeLeasingModelValidationTest` | `bpmn-to-code` 6.6.1 knows `ZEEBE`, `CAMUNDA_7` and `OPERATON`; `CAMUNDA_7` is its dialect for `camunda:` models |
 | `BpmnEngine.CAMUNDA_7` | generated `*ProcessApi.kt` | written by `bpmn-to-code` |
 | `plugin:camunda-compat/camunda-platform-7-24`, `camunda-bpmn-moddle` | `.bpmnlintrc` | lint rules and moddle descriptor for the same namespace |
 | `org.camunda.bpm.model:camunda-bpmn-model`, `camunda-xml-model` 7.24.0 | test classpath only | transitive dependency of `bpmn-to-code-testing`; allow-listed in `verifyFluxnovaIsTheOnlyEngine` |

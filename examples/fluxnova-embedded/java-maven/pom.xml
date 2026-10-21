@@ -31,7 +31,7 @@
         <!-- Third-party versions not managed by the Spring Boot BOM -->
         <fluxnova.version>3.0.1</fluxnova.version>
         <springdoc.version>3.1.1</springdoc.version>
-        <bpmn-to-code.version>6.2.0</bpmn-to-code.version>
+        <bpmn-to-code.version>6.6.1</bpmn-to-code.version>
         <archunit.version>1.5.1</archunit.version>
         <postgresql.version>42.7.13</postgresql.version>
         <h2.version>2.5.252</h2.version>

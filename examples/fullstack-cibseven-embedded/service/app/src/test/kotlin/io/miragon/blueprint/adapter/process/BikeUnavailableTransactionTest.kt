@@ -69,8 +69,9 @@ class BikeUnavailableTransactionTest {
         processEngine.executeJobFor(FlowNodes.StartEventLeasingRequestReceived)
         processEngine.executeJobFor(FlowNodes.ServiceTaskSendContract)
         process.correlateContractSigned(application.id)
-        processEngine.executeJobFor(FlowNodes.EventContractSigned) // order: unavailable -> BPMN error -> clarify alternative
+        processEngine.executeJobFor(FlowNodes.EventContractSigned) // forks into insurance + bike order
         processEngine.executeJobFor(FlowNodes.ServiceTaskIssueInsurancePolicy)
+        processEngine.executeJobFor(FlowNodes.ServiceTaskOrderBike) // unavailable -> BPMN error -> clarify alternative
 
         assertThat(instance)
             .isWaitingAt(FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID)
@@ -96,8 +97,9 @@ class BikeUnavailableTransactionTest {
         processEngine.executeJobFor(FlowNodes.StartEventLeasingRequestReceived)
         processEngine.executeJobFor(FlowNodes.ServiceTaskSendContract)
         process.correlateContractSigned(application.id)
-        processEngine.executeJobFor(FlowNodes.EventContractSigned) // order: unavailable -> BPMN error -> clarify alternative
+        processEngine.executeJobFor(FlowNodes.EventContractSigned) // forks into insurance + bike order
         processEngine.executeJobFor(FlowNodes.ServiceTaskIssueInsurancePolicy)
+        processEngine.executeJobFor(FlowNodes.ServiceTaskOrderBike) // unavailable -> BPMN error -> clarify alternative
 
         Assertions.assertThat(repository.findById(application.id)?.bikeId).isEqualTo(BikeId("BIKE-OOS"))
 

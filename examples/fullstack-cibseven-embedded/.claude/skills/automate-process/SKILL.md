@@ -36,7 +36,8 @@ available, read `.claude/agents/review-process.md` and apply it yourself.
   `HistoryCleanupConfiguration`).
 - **Engine limits:** a service task is a delegate by expression (`#{beanName}`, enforced by
   `adapter/process/model/ServiceTaskDelegateExpressionRule`); the asynchronous continuations
-  (`asyncAfter` on the service tasks) are where retries and incidents happen; a compensation handler
+  (`asyncBefore` on service tasks, start events, joins and message throws, `asyncAfter` on user
+  tasks; bpmnlint's `async-continuations` enforces it) are where retries and incidents happen; a compensation handler
   (`isForCompensation`) only runs for an activity that completed.
 
 ## Steps

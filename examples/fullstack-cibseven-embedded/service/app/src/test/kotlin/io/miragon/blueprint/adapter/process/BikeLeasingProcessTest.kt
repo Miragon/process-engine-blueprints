@@ -116,12 +116,14 @@ class BikeLeasingProcessTest {
         process.correlateContractSigned(id)
         processEngine.executeJobFor(FlowNodes.EventContractSigned) // forks into insurance + bike order
         processEngine.executeJobFor(FlowNodes.ServiceTaskIssueInsurancePolicy)
-        processEngine.executeJobFor(FlowNodes.ServiceTaskOrderBike) // joins -> handover wait state
+        processEngine.executeJobFor(FlowNodes.ServiceTaskOrderBike)
+        processEngine.continueToNextWaitState() // both branches join -> handover wait state
 
         process.correlateHandoverReported(id)
         processEngine.executeJobFor(FlowNodes.EventHandoverReported) // -> withdrawal-period timer
 
         processEngine.fireTimer(FlowNodes.EventWithdrawalPeriodElapsed)
+        processEngine.executeJobFor(FlowNodes.EndEventLeasingActive)
 
         assertThat(instance)
             .isEnded
@@ -262,8 +264,9 @@ class BikeLeasingProcessTest {
         processEngine.executeJobFor(FlowNodes.StartEventLeasingRequestReceived)
         processEngine.executeJobFor(FlowNodes.ServiceTaskSendContract)
         process.correlateContractSigned(id)
-        processEngine.executeJobFor(FlowNodes.EventContractSigned) // order: unavailable -> parks on the clarify-alternative user task
+        processEngine.executeJobFor(FlowNodes.EventContractSigned) // forks into insurance + bike order
         processEngine.executeJobFor(FlowNodes.ServiceTaskIssueInsurancePolicy)
+        processEngine.executeJobFor(FlowNodes.ServiceTaskOrderBike) // unavailable -> parks on the clarify-alternative user task
 
         // the alternative is clarified from the outside — the "external" completion of the user task
         process.completeAlternativeClarification(id, alternativeFound = true, bikeId = BikeId("BIKE-ALT"))
@@ -273,6 +276,7 @@ class BikeLeasingProcessTest {
         process.correlateHandoverReported(id)
         processEngine.executeJobFor(FlowNodes.EventHandoverReported)
         processEngine.fireTimer(FlowNodes.EventWithdrawalPeriodElapsed)
+        processEngine.executeJobFor(FlowNodes.EndEventLeasingActive)
 
         assertThat(instance)
             .isEnded
@@ -394,8 +398,9 @@ class BikeLeasingProcessTest {
         processEngine.executeJobFor(FlowNodes.StartEventLeasingRequestReceived)
         processEngine.executeJobFor(FlowNodes.ServiceTaskSendContract)
         process.correlateContractSigned(id)
-        processEngine.executeJobFor(FlowNodes.EventContractSigned) // order: unavailable -> parks on the clarify-alternative user task
+        processEngine.executeJobFor(FlowNodes.EventContractSigned) // forks into insurance + bike order
         processEngine.executeJobFor(FlowNodes.ServiceTaskIssueInsurancePolicy)
+        processEngine.executeJobFor(FlowNodes.ServiceTaskOrderBike) // unavailable -> parks on the clarify-alternative user task
         return id
     }
 

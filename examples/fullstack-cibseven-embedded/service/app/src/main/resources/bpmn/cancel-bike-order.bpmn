@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1d2hcmz" targetNamespace="http://miragon.io/miravelo/bike-order" exporter="Camunda Modeler" exporterVersion="5.20.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.24.0">
   <bpmn:process id="cancelBikeOrder" name="Cancel Bike Order" isExecutable="true" camunda:historyTimeToLive="P180D">
-    <bpmn:startEvent id="startEvent_cancellationRequired" name="Cancellation required">
+    <bpmn:startEvent id="startEvent_cancellationRequired" name="Cancellation required" camunda:asyncBefore="true">
       <bpmn:extensionElements>
         <!-- Variables the calling activity passes in via camunda:in; declared for bpmn-to-code. -->
         <camunda:properties>
@@ -37,11 +37,11 @@
     </bpmn:exclusiveGateway>
     <bpmn:sequenceFlow id="flow_joinToReversed" sourceRef="gateway_join" targetRef="endEvent_orderReversed" />
     <bpmn:sequenceFlow id="flow_bookCostsToJoin" sourceRef="serviceTask_bookCosts" targetRef="gateway_join" />
-    <bpmn:serviceTask id="serviceTask_bookCosts" name="Book costs" camunda:asyncAfter="true" camunda:delegateExpression="#{bookCostsDelegate}">
+    <bpmn:serviceTask id="serviceTask_bookCosts" name="Book costs" camunda:delegateExpression="#{bookCostsDelegate}" camunda:asyncBefore="true">
       <bpmn:incoming>flow_clarifyToBookCosts</bpmn:incoming>
       <bpmn:outgoing>flow_bookCostsToJoin</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:serviceTask id="serviceTask_requestCancellation" name="Request cancellation" camunda:asyncAfter="true" camunda:delegateExpression="#{requestCancellationDelegate}">
+    <bpmn:serviceTask id="serviceTask_requestCancellation" name="Request cancellation" camunda:delegateExpression="#{requestCancellationDelegate}" camunda:asyncBefore="true">
       <bpmn:extensionElements>
         <!-- Result variable the requestCancellationDelegate writes; declared for bpmn-to-code. -->
         <camunda:properties>

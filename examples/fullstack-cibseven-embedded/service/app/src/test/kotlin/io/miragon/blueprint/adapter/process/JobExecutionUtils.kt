@@ -9,8 +9,8 @@ import org.cibseven.bpm.engine.ProcessEngine
  * process and fails loudly (no job found) if the expected continuation is missing — which is the
  * safer, more readable choice for the deterministic, linear parts of a flow.
  *
- * The `camunda:asyncAfter` flags in the model create exactly these jobs after each step, and the job
- * executor is disabled in tests, so the test drives them by hand.
+ * The `camunda:asyncBefore` / `camunda:asyncAfter` flags in the model create exactly these jobs, and
+ * the job executor is disabled in tests, so the test drives them by hand.
  */
 fun ProcessEngine.executeJobFor(activity: FlowNode) {
     val job =

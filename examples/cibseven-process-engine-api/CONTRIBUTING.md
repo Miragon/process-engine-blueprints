@@ -6,8 +6,8 @@ welcome — bug reports, feature ideas, docs, and code.
 ## Getting started
 
 ```bash
-git clone git@github.com:miragon-blueprints/cibseven-process-engine-api-example.git
-cd cibseven-process-engine-api-example
+git clone <this repository> process-engine-blueprints
+cd process-engine-blueprints/examples/cibseven-process-engine-api
 npm ci && npm run hooks:install                                # BPMN lint + git hooks
 ```
 

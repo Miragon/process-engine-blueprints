@@ -6,8 +6,8 @@ welcome — bug reports, feature ideas, docs, and code.
 ## Getting started
 
 ```bash
-git clone git@github.com:miragon-blueprints/operaton-embedded-example.git
-cd operaton-embedded-example
+git clone <this repository> process-engine-blueprints
+cd process-engine-blueprints/examples/operaton-embedded
 npm ci && npm run hooks:install   # BPMN lint + git hooks
 ```
 

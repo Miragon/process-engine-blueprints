@@ -1,4 +1,4 @@
-# Fullstack Bike-Leasing Blueprint [![Pre-Merge Checks](https://github.com/miragon-blueprints/fullstack-example/actions/workflows/pre-merge.yml/badge.svg)](https://github.com/miragon-blueprints/fullstack-example/actions/workflows/pre-merge.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+# Fullstack Bike-Leasing Blueprint [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 One opinionated way to start a greenfield process-automation project, wired end to end: one BPMN
 process automated with a [CIB seven](https://cibseven.org) (community Camunda 7) **embedded engine**,

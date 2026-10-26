@@ -1,11 +1,11 @@
 # Fluxnova Bike-Leasing Blueprint
 
-[![Pre-Merge Kotlin/Gradle](https://github.com/miragon-blueprints/fluxnova-example/actions/workflows/pre-merge-kotlin-gradle.yml/badge.svg)](https://github.com/miragon-blueprints/fluxnova-example/actions/workflows/pre-merge-kotlin-gradle.yml) [![Pre-Merge Java/Maven](https://github.com/miragon-blueprints/fluxnova-example/actions/workflows/pre-merge-java-maven.yml/badge.svg)](https://github.com/miragon-blueprints/fluxnova-example/actions/workflows/pre-merge-java-maven.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 A solution template to fork for automating a business process on [Fluxnova](https://fluxnova.finos.org)
 (the FINOS-governed fork of Camunda 7): one complete, production-shaped BPMN service with the engine
 **embedded** in Spring Boot — no remote engine, no separate engine container. It is the Fluxnova port of
-the [CIB seven embedded example](https://github.com/miragon-blueprints/cibseven-embedded-example)
+the [CIB seven embedded example](../cibseven-embedded/README.md)
 ([migration notes](docs/fluxnova-migration.md)) and still a work in progress.
 
 <!-- variant:blueprint -->

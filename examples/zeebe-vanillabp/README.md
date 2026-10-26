@@ -1,5 +1,5 @@
 # MiraVelo bike leasing (Camunda 8 + VanillaBP)
-[![Pre-Merge Kotlin/Gradle](https://github.com/miragon-blueprints/zeebe-vanilla-bp-example/actions/workflows/pre-merge-kotlin-gradle.yml/badge.svg)](https://github.com/miragon-blueprints/zeebe-vanilla-bp-example/actions/workflows/pre-merge-kotlin-gradle.yml) [![Pre-Merge Java/Maven](https://github.com/miragon-blueprints/zeebe-vanilla-bp-example/actions/workflows/pre-merge-java-maven.yml/badge.svg)](https://github.com/miragon-blueprints/zeebe-vanilla-bp-example/actions/workflows/pre-merge-java-maven.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 A solution template to fork for automating a business process on [Camunda 8](https://camunda.com)
 (Zeebe, self-managed): one complete, production-shaped BPMN service with Spring Boot that targets an

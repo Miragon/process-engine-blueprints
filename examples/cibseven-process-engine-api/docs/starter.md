@@ -5,9 +5,22 @@ and kept equivalent. A project built on it needs only one. `scripts/create-start
 one and everything that exists only for it.
 
 ```bash
-git clone git@github.com:miragon-blueprints/cibseven-process-engine-api-example.git my-service
-cd my-service
+npm create miragon-blueprint@latest my-service -- --example cibseven-process-engine-api --lang kotlin   # our recommendation for a modern stack
+# or
+npm create miragon-blueprint@latest my-service -- --example cibseven-process-engine-api --lang java
+```
 
+The CLI downloads the starter of the latest release, renames the package and the project, and
+starts a fresh git history. From a checkout of the monorepo, the same starter, without the renaming:
+
+```bash
+tooling/starter/export.sh cibseven-process-engine-api kotlin-gradle ../my-service
+```
+
+Both run the script below on a copy of this example. On a standalone copy of the example you can
+run it in place:
+
+```bash
 scripts/create-starter.sh kotlin-gradle --flat     # our recommendation for a modern stack
 # or
 scripts/create-starter.sh java-maven --flat

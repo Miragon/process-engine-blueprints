@@ -1,6 +1,6 @@
 # CIB seven Bike-Leasing Blueprint
 
-[![Pre-Merge Kotlin/Gradle](https://github.com/miragon-blueprints/cibseven-process-engine-api-example/actions/workflows/pre-merge-kotlin-gradle.yml/badge.svg)](https://github.com/miragon-blueprints/cibseven-process-engine-api-example/actions/workflows/pre-merge-kotlin-gradle.yml) [![Pre-Merge Java/Maven](https://github.com/miragon-blueprints/cibseven-process-engine-api-example/actions/workflows/pre-merge-java-maven.yml/badge.svg)](https://github.com/miragon-blueprints/cibseven-process-engine-api-example/actions/workflows/pre-merge-java-maven.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 A solution template to fork for automating a business process on [CIB seven](https://cibseven.org)
 (the community fork of Camunda 7): one complete, production-shaped BPMN service on an **embedded

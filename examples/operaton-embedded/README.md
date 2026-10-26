@@ -1,6 +1,6 @@
 # Operaton Bike-Leasing Blueprint
 
-[![Pre-Merge Checks · Kotlin/Gradle](https://github.com/miragon-blueprints/operaton-embedded-example/actions/workflows/pre-merge-kotlin-gradle.yml/badge.svg)](https://github.com/miragon-blueprints/operaton-embedded-example/actions/workflows/pre-merge-kotlin-gradle.yml) [![Pre-Merge Checks · Java/Maven](https://github.com/miragon-blueprints/operaton-embedded-example/actions/workflows/pre-merge-java-maven.yml/badge.svg)](https://github.com/miragon-blueprints/operaton-embedded-example/actions/workflows/pre-merge-java-maven.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 A solution template to fork for automating a business process on [Operaton](https://operaton.org)
 (the community-driven fork of Camunda 7): one complete, runnable, production-shaped BPMN service on an

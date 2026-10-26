@@ -1,14 +1,3 @@
 {
-  "$schema": "https://json.schemastore.org/claude-code-settings.json",
-  "extraKnownMarketplaces": {
-    "miragon-blueprints": {
-      "source": {
-        "source": "github",
-        "repo": "miragon-blueprints/.github"
-      }
-    }
-  },
-  "enabledPlugins": {
-    "blueprint-tools@miragon-blueprints": true
-  }
+  "$schema": "https://json.schemastore.org/claude-code-settings.json"
 }

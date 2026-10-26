@@ -1,7 +1,7 @@
 # Camunda 8 Bike-Leasing Blueprint
 
 <!-- variant:blueprint -->
-[![Pre-Merge Checks · Kotlin/Gradle](https://github.com/miragon-blueprints/zeebe-example/actions/workflows/pre-merge-kotlin-gradle.yml/badge.svg)](https://github.com/miragon-blueprints/zeebe-example/actions/workflows/pre-merge-kotlin-gradle.yml) [![Pre-Merge Checks · Java/Maven](https://github.com/miragon-blueprints/zeebe-example/actions/workflows/pre-merge-java-maven.yml/badge.svg)](https://github.com/miragon-blueprints/zeebe-example/actions/workflows/pre-merge-java-maven.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 <!-- /variant:blueprint -->
 
 A ready-to-fork starting point for automating a business process on [Camunda 8](https://camunda.com)

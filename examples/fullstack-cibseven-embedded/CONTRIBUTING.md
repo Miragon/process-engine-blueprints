@@ -6,8 +6,8 @@ welcome — bug reports, feature ideas, docs, and code.
 ## Getting started
 
 ```bash
-git clone git@github.com:miragon-blueprints/fullstack-example.git
-cd fullstack-example
+git clone <this repository> process-engine-blueprints
+cd process-engine-blueprints/examples/fullstack-cibseven-embedded
 npm ci && npm run hooks:install                                # bpmnlint, bpmn-cli, operate + git hooks
 npm --prefix frontend ci                                        # frontend dependencies
 ```

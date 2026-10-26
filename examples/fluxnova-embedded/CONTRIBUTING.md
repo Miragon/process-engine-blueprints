@@ -6,8 +6,8 @@ are welcome — bug reports, feature ideas, docs, and code.
 ## Getting started
 
 ```bash
-git clone git@github.com:miragon-blueprints/fluxnova-example.git
-cd fluxnova-example
+git clone <this repository> process-engine-blueprints
+cd process-engine-blueprints/examples/fluxnova-embedded
 npm ci && npm run hooks:install   # BPMN lint + git hooks
 ```
 

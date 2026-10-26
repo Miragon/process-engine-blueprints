@@ -4,14 +4,10 @@ The blueprint carries the service twice — Kotlin + Gradle and Java + Maven —
 and kept equivalent. A project built on it needs only one. `scripts/create-starter.sh` removes the other
 one and everything that exists only for it.
 
-```bash
-npm create miragon-blueprint@latest my-service -- --example fluxnova-embedded --lang kotlin   # our recommendation for a modern stack
-# or
-npm create miragon-blueprint@latest my-service -- --example fluxnova-embedded --lang java
-```
-
-The CLI downloads the starter of the latest release, renames the package and the project, and
-starts a fresh git history. From a checkout of the monorepo, the same starter, without the renaming:
+The [quick start in the repository README](../../../README.md#quick-start) creates the starter with
+`npx`: pick `--example fluxnova-embedded` and `--lang kotlin` (our recommendation for a modern stack) or
+`--lang java`. It renames the package and the project and starts a fresh git history. From a checkout
+of the monorepo, the same starter, without the renaming:
 
 ```bash
 tooling/starter/export.sh fluxnova-embedded kotlin-gradle ../my-service

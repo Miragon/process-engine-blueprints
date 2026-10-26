@@ -1,6 +1,6 @@
 ---
 name: add-example
-description: Add a new example to this monorepo, or import an existing standalone repository as one, so that CI, Dependabot, the README matrix, releases and the starter CLI pick it up. Use when the user wants to add, import or migrate an example or blueprint into examples/.
+description: Add a new example to this monorepo, or import an existing standalone repository as one, so that CI, Dependabot, the README table and the starter CLI pick it up. Use when the user wants to add, import or migrate an example or blueprint into examples/.
 ---
 
 # Add an example
@@ -19,9 +19,6 @@ description: Add a new example to this monorepo, or import an existing standalon
    (`embedded` or `remote`), `summary`, `stack`, `variants` with their paths, `identicalResources`, and
    `missingVariants` with a reason when it has only one. New engine or integration values also need a label in
    `scripts/lib/readme.mjs`.
-5. **Register the release:** add `"examples/<name>": "1.0.0"` to `.release-please-manifest.json`.
-6. **Regenerate and check:** `npm run generate`, then `node scripts/check-drift.mjs --propose` to see which
+5. **Regenerate and check:** `npm run generate`, then `node scripts/check-drift.mjs --propose` to see which
    files it shares with the others and add the rules that should hold to `drift.yml`; `npm run drift`,
    `npm test`, and `tooling/starter/export.sh <name> <variant> /tmp/<name>` plus its build.
-7. After merging, bootstrap the first release with the `Release` workflow (`workflow_dispatch`, examples:
-   `<name>`).

@@ -71,7 +71,7 @@ function initializeGit(target, example, variant, ref) {
 export async function main(argv) {
   const parsed = parseOptions(argv);
   if (parsed.help) {
-    console.log(usage);
+    console.log(usage.replace('<owner>/process-engine-blueprints', catalog.repository));
     return;
   }
   if (parsed.list) {
@@ -97,8 +97,8 @@ export async function main(argv) {
   }
   mkdirSync(target, { recursive: true });
   try {
-    const { ref } = await materializeStarter(
-      { repository: catalog.repository, example: options.example.name, variant, ref: options.ref, from: options.from, fromCheckout: options.fromCheckout },
+    const { ref } = materializeStarter(
+      { repository: catalog.repository, example: options.example.name, variant, ref: options.ref, fromCheckout: options.fromCheckout },
       target,
     );
     renameProject(target, { fromPackage: defaultPackage, toPackage: options.package, toName: options.name });

@@ -1,32 +1,32 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { main } from '../src/cli.mjs';
 
-function starterArchive() {
-  const starter = mkdtempSync(join(tmpdir(), 'starter-'));
-  mkdirSync(join(starter, 'src/main/java/io/miragon/blueprint'), { recursive: true });
-  writeFileSync(join(starter, 'pom.xml'), '<project><groupId>io.miragon.blueprint</groupId><artifactId>cibseven-remote-example</artifactId></project>');
-  writeFileSync(join(starter, 'src/main/java/io/miragon/blueprint/App.java'), 'package io.miragon.blueprint;\n');
-  const archive = join(mkdtempSync(join(tmpdir(), 'archive-')), 'cibseven-remote-java-maven.tar.gz');
-  execFileSync('tar', ['-czf', archive, '-C', starter, '.']);
-  return archive;
+const checkout = new URL('../../../', import.meta.url).pathname;
+
+function newProjectDirectory() {
+  return join(mkdtempSync(join(tmpdir(), 'project-')), 'leasing-service');
 }
 
-test('creates a renamed project with its own repository from a starter archive', async () => {
-  const target = join(mkdtempSync(join(tmpdir(), 'project-')), 'leasing-service');
-  await main([target, '--example', 'cibseven-remote', '--lang', 'java', '--package', 'com.acme.leasing', '--from', starterArchive(), '--yes']);
+test('creates a renamed single-variant project with its own repository', async () => {
+  const target = newProjectDirectory();
+  await main([target, '--example', 'operaton-process-engine-api', '--lang', 'java', '--package', 'com.acme.leasing', '--from-checkout', checkout, '--yes']);
 
-  assert.equal(readFileSync(join(target, 'src/main/java/com/acme/leasing/App.java'), 'utf8'), 'package com.acme.leasing;\n');
-  assert.match(readFileSync(join(target, 'pom.xml'), 'utf8'), /<groupId>com\.acme\.leasing<\/groupId><artifactId>leasing-service<\/artifactId>/);
-  assert.equal(existsSync(join(target, '.git')), true);
+  const pom = readFileSync(join(target, 'pom.xml'), 'utf8');
+  assert.match(pom, /<groupId>com\.acme\.leasing<\/groupId>/);
+  assert.match(pom, /<artifactId>leasing-service<\/artifactId>/);
+  assert.equal(existsSync(join(target, 'service/app/src/main/java/com/acme/leasing')), true);
+  assert.equal(existsSync(join(target, 'service/app/src/main/java/io')), false);
+  assert.equal(existsSync(join(target, 'blueprint.yaml')), false);
+  assert.equal(execFileSync('git', ['rev-list', '--count', 'HEAD'], { cwd: target, encoding: 'utf8' }).trim(), '1');
 });
 
 test('refuses a language the example does not have and leaves nothing behind', async () => {
-  const target = join(mkdtempSync(join(tmpdir(), 'project-')), 'leasing-service');
-  await assert.rejects(main([target, '--example', 'fullstack-cibseven-embedded', '--lang', 'java', '--from', starterArchive(), '--yes']), /has no java-maven variant/);
+  const target = newProjectDirectory();
+  await assert.rejects(main([target, '--example', 'fullstack-cibseven-embedded', '--lang', 'java', '--from-checkout', checkout, '--yes']), /has no java-maven variant/);
   assert.equal(existsSync(target), false);
 });

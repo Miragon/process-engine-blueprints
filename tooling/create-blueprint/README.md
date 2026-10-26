@@ -1,32 +1,19 @@
 # create-miragon-blueprint
 
-Start a Spring Boot project from one of the Miragon process-engine blueprints: one engine, one integration style,
-Kotlin + Gradle or Java + Maven, renamed to your project and with a fresh git history.
-
-```bash
-npm create miragon-blueprint@latest my-service
-```
-
-It asks where the engine runs (embedded or remote), which blueprint, which language, and your base package.
-Without questions:
-
-```bash
-npm create miragon-blueprint@latest my-service -- \
-  --example cibseven-embedded --lang kotlin --package com.acme.leasing
-```
-
-`--list` shows the blueprints, `--help` all options.
+Starts a Spring Boot project from one example of this repository: one engine, one setup, Kotlin + Gradle or
+Java + Maven, renamed to your project and with a fresh git history. It is not published anywhere; `npx` runs
+it straight from the repository (see the [quick start](../../README.md#quick-start)).
 
 ## What it does
 
-1. Downloads `<example>-<variant>.tar.gz` from the example's latest release (or `--ref <tag>`). The archive is
-   built and tested by the blueprint's CI. While the repository is private, it needs `GITHUB_TOKEN` or a logged-in
-   `gh`.
-2. Moves the package `io.miragon.blueprint` to yours (sources, group id, architecture rules) and replaces the
+1. Asks for, or takes, the example, the language, the project name (default: the directory name) and the base
+   package.
+2. Clones the repository at `--ref` (default `main`) shallowly, over https or ssh with your own git access.
+3. Exports the starter with [`tooling/starter/export.sh`](../starter/export.sh), the same script CI builds every
+   starter with.
+4. Moves the package `io.miragon.blueprint` to yours (sources, group id, architecture rules) and replaces the
    project name (`rootProject.name` / `artifactId`, image name).
-3. Runs `git init` and makes the first commit.
+5. Runs `git init` and makes the first commit.
 
-`--from <archive>` uses a local archive; `--from-checkout <monorepo>` builds the starter from a local checkout
-with `tooling/starter/export.sh`.
-
-Needs Node 20+, `tar` and `git`.
+`--from-checkout <dir>` skips the clone and uses a local checkout. `--list` shows the examples, `--help` all
+options. No dependencies: Node 22+, `git` and `tar`.

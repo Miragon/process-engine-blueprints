@@ -24,7 +24,7 @@ target="$(cd "$target" && pwd)"
 git -C "$source_dir" ls-files -z --cached --others --exclude-standard -- . \
   | (cd "$source_dir" && tar --null -T - -cf -) \
   | tar -xf - -C "$target"
-rm -f "$target/blueprint.yaml" "$target/CHANGELOG.md" "$target/version.txt"
+rm -f "$target/blueprint.yaml"
 
 commit_all() {
   git -C "$target" add -A

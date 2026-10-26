@@ -14,9 +14,8 @@ deliberate ([ADR-0001](docs/adr/0001-one-repository-with-self-contained-examples
 - **Work inside one example by opening its folder.** Its README, `AGENTS.md`, `.claude/` skills and hooks assume
   the folder is the project root.
 - **Never hand-edit generated files.** `.github/workflows/ci.yml`, `nightly.yml`, `<example>.*.yml`,
-  `.github/dependabot.yml`, `.conductor/settings.toml`, `release-please-config.json`,
-  `tooling/create-blueprint/catalog.json`, the package's `repository` URL and the matrix in `README.md` come from
-  `npm run generate`. Change the source (an example's workflows, `dependabot.yml`, `.conductor/settings.toml` or
+  `.github/dependabot.yml`, `.conductor/settings.toml`, `tooling/create-blueprint/catalog.json` and the generated
+  blocks in `README.md` come from `npm run generate`. Change the source (an example's workflows, `dependabot.yml`, `.conductor/settings.toml` or
   `blueprint.yaml`) and regenerate in the same commit.
 - **Keep the copies in step.** `drift.yml` lists files that must stay identical across examples. A change to one
   of them goes to every example of the rule (skill `fan-out-change`), or the file leaves the rule with a reason.
@@ -46,8 +45,8 @@ deliberate ([ADR-0001](docs/adr/0001-one-repository-with-self-contained-examples
 `ci.yml` picks the examples a pull request touches, runs their own pre-merge workflows (generated as reusable
 workflows) plus `_blueprint.yml` (variants equivalent, starter builds outside the monorepo) and ends in the
 `CI gate` job, the only required check ([ADR-0002](docs/adr/0002-root-ci-generated-from-the-examples.md)).
-Releases are per example with release-please; each release carries the starter archives the CLI downloads
-([ADR-0003](docs/adr/0003-starters-as-release-archives.md)). Details: [docs/maintaining.md](docs/maintaining.md).
+Nothing is published: users start a project with `npx github:<owner>/process-engine-blueprints`, which clones
+the repository and runs the same export ([ADR-0003](docs/adr/0003-starters-with-npx-from-the-repository.md)). Details: [docs/maintaining.md](docs/maintaining.md).
 
 ## Skills
 

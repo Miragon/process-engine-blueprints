@@ -11,4 +11,4 @@
 5. Conventional Commits, scoped to the example: `fix(zeebe-native): …`. Pull requests target `main`; `CI gate`
    must be green. Merge with a merge commit or squash; never rewrite `main`.
 
-See [docs/maintaining.md](docs/maintaining.md) for how CI, Dependabot and releases work.
+See [docs/maintaining.md](docs/maintaining.md) for how CI, Dependabot and the starters work.

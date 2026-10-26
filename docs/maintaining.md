@@ -10,9 +10,8 @@
 | `.github/workflows/ci.yml`, `nightly.yml` | the examples and their workflows |
 | `.github/dependabot.yml` | `examples/*/.github/dependabot.yml` |
 | `.conductor/settings.toml` | `examples/*/.conductor/settings.toml` (targets prefixed `<example>:`) |
-| `release-please-config.json` (packages) | `examples/*/blueprint.yaml` |
 | `tooling/create-blueprint/catalog.json` | `examples/*/blueprint.yaml` and the root `package.json` |
-| `README.md` (between the markers) | `examples/*/blueprint.yaml` |
+| `README.md` (badges, quick start, examples table) | `examples/*/blueprint.yaml` and the root `package.json` |
 
 The example's own files stay what a starter gets; the root copies only make them run in the monorepo.
 
@@ -41,16 +40,13 @@ green (`dependabot-automerge.yml`); a red Dependabot pull request is handed to `
 per example. When a change has to differ in one example, move the file out of its rule with a reason in the pull
 request. `node scripts/check-drift.mjs --propose` prints what is shared right now, as a starting point.
 
-## Releases and starters
+## Starters
 
-- release-please keeps one release PR per example; merging it tags `<example>-v<version>` and attaches
-  `<example>-<variant>.tar.gz` and `.zip`, built by `tooling/starter/export.sh`.
-- `Release` → *Run workflow* (`examples: all` or a list) builds the starters for the versions in
-  `.release-please-manifest.json` and creates missing releases. Run it once after the first merge, and whenever
-  an example is added.
-- The CLI `create-miragon-blueprint` is released as its own component; it is published to npm with provenance
-  by trusted publishing (no `NPM_TOKEN`) once the repository is public and the package's trusted publisher is
-  configured on npmjs.com.
+Nothing is published or released. `npx github:<owner>/process-engine-blueprints` installs the root package from
+GitHub (only `tooling/create-blueprint`, per `files` in `package.json`), and its CLI clones the repository at
+`--ref` (default `main`) and runs `tooling/starter/export.sh`. A merged change is what the next user gets, so
+`_blueprint.yml` builds every starter of a touched example on each pull request. Trainings that need a fixed state
+point `--ref` at a tag.
 
 ## Moving the repository
 
@@ -58,5 +54,4 @@ The owner appears only in the root `package.json` (`scripts/check-owner.sh` enfo
 
 1. Transfer the repository on GitHub (old URLs redirect).
 2. Change `repository.url` in `package.json`, run `npm run generate`, commit.
-3. Re-create what does not move: the `claude-maintenance` environment and its secret, rulesets, and the npm
-   trusted publisher.
+3. Re-create what does not move: the `claude-maintenance` environment and its secret, and the rulesets.

@@ -2,8 +2,18 @@
   "name": "process-engine-blueprints-tooling",
   "version": "1.0.0",
   "private": true,
-  "description": "Maintainer tooling of the monorepo: generates the root CI, Dependabot, README matrix, Conductor targets and the starter catalog from examples/*/blueprint.yaml, and checks drift between the examples.",
+  "description": "Start a project from one of the process-engine blueprints (npx github:<owner>/process-engine-blueprints), and the maintainer tooling: generates the root CI, Dependabot, README blocks, Conductor targets and the starter catalog from examples/*/blueprint.yaml, and checks drift between the examples.",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/miragon-blueprints/process-engine-blueprints.git"
+  },
+  "bin": {
+    "create-miragon-blueprint": "tooling/create-blueprint/bin/create-miragon-blueprint.mjs"
+  },
+  "files": [
+    "tooling/create-blueprint"
+  ],
   "engines": {
     "node": ">=22"
   },
@@ -17,9 +27,5 @@
   "devDependencies": {
     "smol-toml": "1.9.1",
     "yaml": "2.9.1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/miragon-blueprints/process-engine-blueprints.git"
   }
 }

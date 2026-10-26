@@ -18,7 +18,6 @@
       "Edit(/.github/dependabot.yml)",
       "Edit(/.conductor/settings.toml)",
       "Edit(/tooling/create-blueprint/catalog.json)",
-      "Edit(/release-please-config.json)",
       "Edit(/**/adapter/process/*ProcessApi.*)",
       "Edit(/examples/*/openapi/*.json)",
       "Edit(/examples/*/frontend/src/shared/api/generated/**)"

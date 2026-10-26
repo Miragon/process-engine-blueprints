@@ -42,6 +42,23 @@ export function badges(repository) {
   return `[![CI](${ci}/badge.svg?branch=main)](${ci}) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)`;
 }
 
+export function quickStart(repository) {
+  return [
+    '```bash',
+    `npx github:${repository} my-service`,
+    '```',
+    '',
+    'It asks where the engine should run, which blueprint and which language you want, and your package name.',
+    'Then it creates a project that builds, with a fresh git history. Without questions:',
+    '',
+    '```bash',
+    `npx github:${repository} my-service --example cibseven-embedded --lang kotlin --package com.acme.leasing`,
+    '```',
+    '',
+    '`--ref <branch or tag>` starts from another state of the examples than `main`, `--list` shows the examples.',
+  ].join('\n');
+}
+
 function withBlock(readme, block, content) {
   const { begin, end } = markersOf(block);
   const from = readme.indexOf(begin);
@@ -53,7 +70,8 @@ function withBlock(readme, block, content) {
 }
 
 export function withGeneratedBlocks(readme, examples, repository) {
-  return withBlock(withBlock(readme, 'badges', badges(repository)), 'examples', examplesTable(examples));
+  const blocks = { badges: badges(repository), quickstart: quickStart(repository), examples: examplesTable(examples) };
+  return Object.entries(blocks).reduce((text, [block, content]) => withBlock(text, block, content), readme);
 }
 
 export { engines, integrations };

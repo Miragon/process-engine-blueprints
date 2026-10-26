@@ -30,7 +30,7 @@ lockfiles, stack, scenarios, ADRs, workflows, Dependabot configuration and agent
 build or run time; there is no root build and no npm workspace.
 
 Each example describes itself in `blueprint.yaml`. Everything the repository needs across examples (CI,
-Dependabot, the README matrix, Conductor targets, release configuration, the starter catalog) is generated
+Dependabot, the README blocks, Conductor targets, the starter catalog) is generated
 from those files and from the example's own configuration; see [ADR-0002](0002-root-ci-generated-from-the-examples.md).
 
 The copies the examples deliberately share are listed in `drift.yml` and checked in CI, so duplication stays a
@@ -39,7 +39,7 @@ decision and does not become drift.
 ## Consequences
 
 - **Positive:** one link to start from and to compare examples; a change across examples is one pull request;
-  each example still becomes a standalone project ([ADR-0003](0003-starters-as-release-archives.md)).
+  each example still becomes a standalone project ([ADR-0003](0003-starters-with-npx-from-the-repository.md)).
 - **Negative / trade-offs:** tooling that assumes "the example is the repository root" (Claude Code project
   settings, Conductor, git hooks) works when the example folder is opened, not the root. The root carries
   generated files that must be regenerated after an example's workflows or Dependabot configuration change.

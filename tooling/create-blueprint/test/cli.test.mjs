@@ -8,6 +8,13 @@ import { main } from '../src/cli.mjs';
 
 const checkout = new URL('../../../', import.meta.url).pathname;
 
+Object.assign(process.env, {
+  GIT_AUTHOR_NAME: 'Test',
+  GIT_AUTHOR_EMAIL: 'test@example.com',
+  GIT_COMMITTER_NAME: 'Test',
+  GIT_COMMITTER_EMAIL: 'test@example.com',
+});
+
 function newProjectDirectory() {
   return join(mkdtempSync(join(tmpdir(), 'project-')), 'leasing-service');
 }

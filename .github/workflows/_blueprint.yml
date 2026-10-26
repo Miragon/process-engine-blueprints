@@ -1,0 +1,108 @@
+name: Blueprint checks
+
+# Checks that exist because an example lives in this monorepo: its variants stay equivalent, and every
+# variant still becomes a starter that builds on its own, outside the monorepo.
+on:
+  workflow_call:
+    inputs:
+      example:
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  describe:
+    name: Read blueprint.yaml
+    runs-on: ubuntu-latest
+    outputs:
+      variants: ${{ steps.read.outputs.variants }}
+      identical-resources: ${{ steps.read.outputs.identical-resources }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Read the variants and the resources they share
+        id: read
+        env:
+          BLUEPRINT: examples/${{ inputs.example }}/blueprint.yaml
+        run: |
+          echo "variants=$(yq -o=json -I=0 '.variants | keys' "$BLUEPRINT")" >> "$GITHUB_OUTPUT"
+          echo "identical-resources=$(yq -o=json -I=0 '.identicalResources // []' "$BLUEPRINT")" >> "$GITHUB_OUTPUT"
+
+  identical-resources:
+    name: Both variants ship identical resources
+    needs: describe
+    if: needs.describe.outputs.identical-resources != '[]'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: examples/${{ inputs.example }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Compare the resources of both variants
+        env:
+          RESOURCES: ${{ needs.describe.outputs.identical-resources }}
+        run: |
+          for resource in $(jq -r '.[]' <<< "$RESOURCES"); do
+            diff -r "kotlin-gradle/$resource" "java-maven/$resource"
+          done
+
+  starter:
+    name: Starter builds on its own (${{ matrix.variant }})
+    needs: describe
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: ${{ fromJSON(needs.describe.outputs.variants) }}
+    defaults:
+      run:
+        working-directory: ${{ github.workspace }}/../starter
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: examples/${{ inputs.example }}/package-lock.json
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Set up Gradle
+        if: matrix.variant == 'kotlin-gradle'
+        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
+
+      - name: Export the starter next to the checkout, outside the monorepo
+        working-directory: ${{ github.workspace }}
+        run: tooling/starter/export.sh "${{ inputs.example }}" "${{ matrix.variant }}" ../starter
+
+      - name: Lint BPMN (bpmnlint)
+        run: |
+          npm ci
+          npm run lint:bpmn
+
+      - name: Build the starter
+        run: |
+          if [[ "${{ matrix.variant }}" == "kotlin-gradle" ]]; then
+            ./gradlew build --no-daemon
+          else
+            ./mvnw -B -ntp verify
+          fi
+
+      - name: Verify the starter still produces the committed OpenAPI contract
+        run: git diff --exit-code -- openapi/openapi.json
+
+      - name: Verify no marker and no path of the blueprint layout is left
+        run: |
+          ! git grep -n -E '(#|<!--) /?variant:|${{ matrix.variant }}/' -- ':!docs/adr' ':!package-lock.json'

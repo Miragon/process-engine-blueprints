@@ -337,7 +337,7 @@ class BikeLeasingProcessTest {
 
     /** The bike the waiting `orderBike` external task hands to its worker. */
     private fun ProcessEngine.bikeRequestedByWaitingOrder(): Any? {
-        val order = externalTaskService.createExternalTaskQuery().topicName(ServiceTasks.BIKE_LEASING_ORDER_BIKE).singleResult()
+        val order = externalTaskService.createExternalTaskQuery().topicName(ServiceTasks.BIKE_LEASING_ORDER_BIKE).singleResult()!!
         return runtimeService.getVariable(order.executionId, FlowNodes.ServiceTaskOrderBike.Variables.BIKE_ID.value)
     }
 

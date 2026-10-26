@@ -21,7 +21,7 @@ class TaskInboxAdapter(
 
     override fun findOpenClarifications(): List<TaskInboxPort.OpenClarification> {
         val tasks = taskService.findOpenTasks(FlowNodes.UserTaskClarifyAlternative.id.value)
-        val businessKeys = runtimeService.businessKeysById(tasks.map { it.processInstanceId })
+        val businessKeys = runtimeService.businessKeysById(tasks.mapNotNull { it.processInstanceId })
         return tasks.mapNotNull { task ->
             val applicationId = businessKeys[task.processInstanceId] ?: return@mapNotNull null
             TaskInboxPort.OpenClarification(

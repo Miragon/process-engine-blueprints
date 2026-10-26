@@ -3,7 +3,6 @@ package io.miragon.blueprint.adapter.process
 import io.miragon.bpmn.runtime.BpmnErrorDefinition
 import io.miragon.bpmn.runtime.FlowNode
 import io.miragon.bpmn.runtime.MessageName
-import org.assertj.core.api.Assertions.assertThat
 import org.operaton.bpm.engine.ProcessEngine
 import org.operaton.bpm.engine.externaltask.ExternalTask
 import org.operaton.bpm.engine.runtime.ProcessInstance
@@ -22,7 +21,7 @@ private const val TEST_LOCK_DURATION_MS = 60_000L
  * `orderBike` → `orderId`). Afterwards it settles the deterministic async plumbing
  * (asyncAfter jobs, the DMN, gateways) up to the next wait state or external task.
  */
-fun ProcessEngine.completeExternalTask(topicName: String, variables: Map<String, Any?> = emptyMap()) {
+fun ProcessEngine.completeExternalTask(topicName: String, variables: Map<String, Any> = emptyMap()) {
     val task = lockSingleExternalTask(topicName)
     externalTaskService.complete(task.id, TEST_WORKER, variables)
     executeAsyncContinuations()
@@ -50,7 +49,7 @@ private fun ProcessEngine.lockSingleExternalTask(topicName: String): ExternalTas
 }
 
 /** Completes the single waiting user task with [taskDefinitionKey], then settles the plumbing. */
-fun ProcessEngine.completeUserTask(taskDefinitionKey: String, variables: Map<String, Any?> = emptyMap()) {
+fun ProcessEngine.completeUserTask(taskDefinitionKey: String, variables: Map<String, Any> = emptyMap()) {
     val task = taskService.createTaskQuery().taskDefinitionKey(taskDefinitionKey).singleResult()
     requireNotNull(task) { "no waiting user task '$taskDefinitionKey'" }
     taskService.complete(task.id, variables)
@@ -81,7 +80,7 @@ fun ProcessEngine.fireTimer(timerEvent: FlowNode) {
  * until the next wait state. Prefer [completeExternalTask] for the deterministic, linear parts of a flow.
  */
 fun ProcessEngine.drainToWaitState(
-    externalTaskOutputs: Map<String, Map<String, Any?>> = emptyMap(),
+    externalTaskOutputs: Map<String, Map<String, Any>> = emptyMap(),
     maxIterations: Int = 100,
 ) {
     repeat(maxIterations) {
@@ -120,8 +119,7 @@ fun ProcessEngine.findInstance(businessKey: String): ProcessInstance {
         .processDefinitionKey(BikeLeasingProcessProcessApi.PROCESS_ID.value)
         .processInstanceBusinessKey(businessKey)
         .singleResult()
-    assertThat(instance).`as`("process instance for business key %s", businessKey).isNotNull
-    return instance
+    return requireNotNull(instance) { "no process instance for business key $businessKey" }
 }
 
 /**

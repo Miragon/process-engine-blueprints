@@ -234,7 +234,7 @@ class BikeLeasingProcessTest {
             taskService
                 .createTaskQuery()
                 .taskDefinitionKey(CancelBikeOrderProcessApi.FlowNodes.UserTaskClarifyReturn.ELEMENT_ID)
-                .singleResult()
+                .singleResult()!!
         taskService.complete(task.id, mapOf("returnClarified" to true))
         processEngine.continueToNextWaitState()
 
@@ -379,7 +379,7 @@ class BikeLeasingProcessTest {
             taskService
                 .createTaskQuery()
                 .taskDefinitionKey(CancelBikeOrderProcessApi.FlowNodes.UserTaskClarifyReturn.ELEMENT_ID)
-                .singleResult()
+                .singleResult()!!
         taskService.complete(task.id, mapOf("returnClarified" to true))
         processEngine.continueToNextWaitState()
 

@@ -5,6 +5,7 @@ topology: remote
 summary: Camunda 8 / Zeebe broker, wired through VanillaBP.
 stack: Postgres plus a Camunda 8 cluster (Zeebe, Operate, Tasklist, Elasticsearch)
 source: miragon-blueprints/zeebe-vanilla-bp-example
+experimental: true
 variants:
   kotlin-gradle:
     path: kotlin-gradle

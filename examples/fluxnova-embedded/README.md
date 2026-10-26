@@ -8,6 +8,10 @@ A solution template to fork for automating a business process on [Fluxnova](http
 the [CIB seven embedded example](../cibseven-embedded/README.md)
 ([migration notes](docs/fluxnova-migration.md)) and still a work in progress.
 
+> [!WARNING]
+> **Experimental.** This example is only a test for now: it is not listed in the overview of this
+> repository yet, and it may change or go away without notice.
+
 <!-- variant:blueprint -->
 ## Pick your stack
 

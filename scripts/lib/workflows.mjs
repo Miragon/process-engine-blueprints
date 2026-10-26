@@ -153,11 +153,13 @@ export function ciWorkflow(examples) {
         outputs: { examples: '${{ steps.select.outputs.examples }}' },
         steps: [
           { ...checkout, with: { 'fetch-depth': 0 } },
+          setupNode,
+          { name: 'Install the maintainer tooling', run: 'npm ci' },
           {
             name: 'Select examples by the changed paths',
             id: 'select',
             env: { BASE_SHA: '${{ github.event.pull_request.base.sha }}' },
-            run: 'echo "examples=$(node scripts/changed-examples.mjs "$BASE_SHA" HEAD)" >> "$GITHUB_OUTPUT"',
+            run: 'examples=$(node scripts/changed-examples.mjs "$BASE_SHA" HEAD)\necho "Selected: $examples"\necho "examples=$examples" >> "$GITHUB_OUTPUT"',
           },
         ],
       },
@@ -219,16 +221,20 @@ export function nightlyWorkflow(examples) {
         outputs: { examples: '${{ steps.select.outputs.examples }}' },
         steps: [
           { ...checkout, with: { 'fetch-depth': 0 } },
+          setupNode,
+          { name: 'Install the maintainer tooling', run: 'npm ci' },
           {
             name: 'Every example on Sundays and on demand, otherwise the ones changed in the last day',
             id: 'select',
             run: [
               'if [[ "${{ github.event_name }}" == "workflow_dispatch" || "$(date -u +%u)" == "7" ]]; then',
-              '  echo "examples=$(node scripts/changed-examples.mjs --all)" >> "$GITHUB_OUTPUT"',
+              '  examples=$(node scripts/changed-examples.mjs --all)',
               'else',
               '  since=$(git rev-list -n1 --before="25 hours ago" HEAD || true)',
-              '  echo "examples=$(node scripts/changed-examples.mjs "${since:-}" HEAD)" >> "$GITHUB_OUTPUT"',
+              '  examples=$(node scripts/changed-examples.mjs "${since:-}" HEAD)',
               'fi',
+              'echo "Selected: $examples"',
+              'echo "examples=$examples" >> "$GITHUB_OUTPUT"',
             ].join('\n'),
           },
         ],

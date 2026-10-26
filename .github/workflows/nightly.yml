@@ -17,15 +17,25 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+      - name: Set up Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: Install the maintainer tooling
+        run: npm ci
       - name: Every example on Sundays and on demand, otherwise the ones changed in the last day
         id: select
         run: |-
           if [[ "${{ github.event_name }}" == "workflow_dispatch" || "$(date -u +%u)" == "7" ]]; then
-            echo "examples=$(node scripts/changed-examples.mjs --all)" >> "$GITHUB_OUTPUT"
+            examples=$(node scripts/changed-examples.mjs --all)
           else
             since=$(git rev-list -n1 --before="25 hours ago" HEAD || true)
-            echo "examples=$(node scripts/changed-examples.mjs "${since:-}" HEAD)" >> "$GITHUB_OUTPUT"
+            examples=$(node scripts/changed-examples.mjs "${since:-}" HEAD)
           fi
+          echo "Selected: $examples"
+          echo "examples=$examples" >> "$GITHUB_OUTPUT"
   cibseven-embedded--nightly-java-maven:
     name: cibseven-embedded · Nightly Checks · Java/Maven
     needs: changes

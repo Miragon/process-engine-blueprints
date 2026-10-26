@@ -2,7 +2,6 @@ package io.miragon.blueprint.process.util
 
 import io.miragon.blueprint.adapter.process.BikeLeasingProcessProcessApi.PROCESS_ID
 import io.miragon.blueprint.domain.leasing.ApplicationId
-import org.assertj.core.api.Assertions.assertThat
 import org.operaton.bpm.engine.RuntimeService
 import org.operaton.bpm.engine.runtime.ProcessInstance
 
@@ -16,6 +15,5 @@ fun RuntimeService.findProcessInstance(id: ApplicationId): ProcessInstance {
             .processDefinitionKey(PROCESS_ID.value)
             .processInstanceBusinessKey(id.value.toString())
             .singleResult()
-    assertThat(instance).`as`("process instance for application %s", id.value).isNotNull
-    return instance
+    return requireNotNull(instance) { "no process instance for application ${id.value}" }
 }

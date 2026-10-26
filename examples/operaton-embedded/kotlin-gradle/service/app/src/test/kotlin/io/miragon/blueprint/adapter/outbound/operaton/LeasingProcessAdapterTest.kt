@@ -40,7 +40,7 @@ class LeasingProcessAdapterTest {
             runtimeService.startProcessInstanceByMessage(
                 Messages.MIRAVELO_LEASING_REQUEST_RECEIVED.value,
                 id.value.toString(),
-                match<Map<String, Any?>> {
+                match<Map<String, Any>> {
                     it["age"] == 35 &&
                         it["monthlyNetIncome"] == 3500.0 &&
                         it["bikeId"] == "BIKE-900"
@@ -72,7 +72,7 @@ class LeasingProcessAdapterTest {
         verify {
             taskService.complete(
                 "task-1",
-                match<Map<String, Any?>> { it["alternativeFound"] == true && it["bikeId"] == "BIKE-42" },
+                match<Map<String, Any>> { it["alternativeFound"] == true && it["bikeId"] == "BIKE-42" },
             )
         }
         confirmVerified(taskService)

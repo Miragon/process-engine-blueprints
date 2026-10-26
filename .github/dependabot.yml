@@ -134,7 +134,7 @@ updates:
           - "*"
     ignore:
       - dependency-name: "@miragon/bpmn-cli"
-      - dependency-name: "@miragon/operate"
+      - dependency-name: "@miragon/pulse-cli"
   - package-ecosystem: gradle
     directory: /examples/cibseven-process-engine-api/kotlin-gradle
     patterns:
@@ -383,7 +383,7 @@ updates:
           - "*"
     ignore:
       - dependency-name: "@miragon/bpmn-cli"
-      - dependency-name: "@miragon/operate"
+      - dependency-name: "@miragon/pulse-cli"
   - package-ecosystem: gradle
     directory: /examples/operaton-embedded/kotlin-gradle
     patterns:

@@ -60,7 +60,7 @@ updates:
     # Also pinned as a plugin marketplace ref in .claude/settings.json: bumped by hand, both together.
     ignore:
       - dependency-name: "@miragon/bpmn-cli"
-      - dependency-name: "@miragon/operate"
+      - dependency-name: "@miragon/pulse-cli"
 
   # GitHub Actions
   - package-ecosystem: "github-actions"

@@ -155,8 +155,8 @@ Two CLIs come as Claude Code plugins (`.claude/settings.json`) and are pinned in
 
 - **bpmn-cli** (`npx bpmn`, skill `bpmn-cli:bpmn`) for every change to a `.bpmn`: semantic edits, no
   XML by hand, so the diagram (BPMNDI) stays intact. `BPMN_KEEP_FLOW_IDS=1` keeps flow ids stable.
-- **operate** (`npx operate`, skill `operate:operate`, `/operate:status`) for the local engine, via
-  `.operate.json`. Run `npx operate guide` before using it. It reads and repairs
+- **pulse-cli** (`npx pulse-cli`, skill `pulse-cli:pulse-cli`, `/pulse-cli:status`) for the local engine, via
+  `.pulse-cli.json`. Run `npx pulse-cli guide` before using it. It reads and repairs
   (`inspect --business-key <applicationId>`, `status`, `incident`, history, `retry`). It never
   deploys: the service deploys the models from its classpath, and a hand deploy is a version the
   generated process API does not know. It never moves a case either (correlating a message,

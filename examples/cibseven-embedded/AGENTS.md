@@ -66,9 +66,9 @@ stack/                         Postgres dev stack (docker compose)
 .github/                       pre-merge + nightly pipelines + Dependabot
 .githooks/                     pre-commit hook (bpmnlint on staged .bpmn)
 .claude/                       Claude Code skills, review agent, guards on generated files, hook, plugins
-.operate.json                  operate's engine profile: the local engine on :8081
+.pulse-cli.json                pulse-cli's engine profile: the local engine on :8081
 scripts/create-starter.sh      strips the repo down to one variant (docs/starter.md)
-package.json / .bpmnlintrc     root-level bpmnlint config, bpmn-cli, operate + git-hook installer
+package.json / .bpmnlintrc     root-level bpmnlint config, bpmn-cli, pulse-cli + git-hook installer
 ```
 
 ## Ground Rules for Changes
@@ -266,8 +266,8 @@ Two CLIs come as Claude Code plugins (`.claude/settings.json`) and are pinned in
   <!-- variant:blueprint -->
   Edit one variant's model, then copy the file to the other variant.
   <!-- /variant:blueprint -->
-- **operate** (`npx operate`, skill `operate:operate`, `/operate:status`) for the local engine, via
-  `.operate.json`. Run `npx operate guide` before using it. It reads and repairs
+- **pulse-cli** (`npx pulse-cli`, skill `pulse-cli:pulse-cli`, `/pulse-cli:status`) for the local engine, via
+  `.pulse-cli.json`. Run `npx pulse-cli guide` before using it. It reads and repairs
   (`inspect --business-key <applicationId>`, `status`, `incident`, history, `retry`). It never
   deploys: the service deploys the models from its classpath, and a hand deploy is a version the
   generated process API does not know. It never moves a case either (correlating a message,

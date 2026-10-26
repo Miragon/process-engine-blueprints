@@ -59,7 +59,7 @@ in `AGENTS.md`. When the plan turns out wrong, stop and say what changed instead
 Run the checks of "Before opening a PR" in `CONTRIBUTING.md`, plus `npm run lint:bpmn` if a model
 changed. A targeted run proves nothing about tests you did not touch. If the stack runs, drive the new
 path with Bruno, check what users see with skill `test-in-browser`, and diagnose a stuck case with
-`npx operate inspect --business-key <applicationId>`. Then let the agent `review-vertical-slice` walk
+`npx pulse-cli inspect --business-key <applicationId>`. Then let the agent `review-vertical-slice` walk
 the feature, run skill `review-change` on the working tree (it covers staged and new files) and fix
 what they report.
 

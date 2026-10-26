@@ -96,7 +96,7 @@ updates:
         patterns:
           - "*"
 
-  # Dev tooling (bpmnlint, bpmn-cli, operate) — root package.json
+  # Dev tooling (bpmnlint, bpmn-cli, pulse-cli) — root package.json
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
@@ -121,7 +121,7 @@ updates:
     # Also pinned as a plugin marketplace ref in .claude/settings.json: bumped by hand, both together.
     ignore:
       - dependency-name: "@miragon/bpmn-cli"
-      - dependency-name: "@miragon/operate"
+      - dependency-name: "@miragon/pulse-cli"
 
   # GitHub Actions — fully grouped (SHA-pinned, mechanical majors, CI-gated)
   - package-ecosystem: "github-actions"

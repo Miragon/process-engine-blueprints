@@ -2,7 +2,7 @@
 name: test-in-browser
 argument-hint: "[issue number or flow, e.g. #18 or 'withdraw while the contract waits']"
 description: "Check a user flow in the locally running app with the Playwright MCP browser and record evidence: verify the stack is up, act as customer or back office, take a screenshot per step into .context/, watch the console, and give a PASS/FAIL/BLOCKED verdict per acceptance criterion. Use when the user asks to test or check something in the browser, to verify a UI change, or as the browser step of implement-issue. Exploratory evidence only; lasting coverage belongs in a Playwright spec under frontend/e2e."
-allowed-tools: Read, Write, Glob, Bash(docker compose *), Bash(podman compose *), Bash(curl *), Bash(mkdir *), Bash(npx --yes @usebruno/cli@4.0.0 *), Bash(npx operate inspect *), Bash(npx operate status), mcp__playwright
+allowed-tools: Read, Write, Glob, Bash(docker compose *), Bash(podman compose *), Bash(curl *), Bash(mkdir *), Bash(npx --yes @usebruno/cli@4.0.0 *), Bash(npx pulse-cli inspect *), Bash(npx pulse-cli status), mcp__playwright
 ---
 
 # Skill: test-in-browser
@@ -43,8 +43,8 @@ cd bruno && npx --yes @usebruno/cli@4.0.0 run 01-happy-path --env local
 - The engine works asynchronously: the detail page polls every 2 s. Wait for the visible change, never
   for a fixed time.
 - If a screenshot hangs (fonts), open a fresh tab and retry once.
-- If the page does not change, ask the engine where the case waits: `npx operate inspect
-  --business-key <applicationId>` (wait states, incidents with their root cause) or `npx operate
+- If the page does not change, ask the engine where the case waits: `npx pulse-cli inspect
+  --business-key <applicationId>` (wait states, incidents with their root cause) or `npx pulse-cli
   status`. That is diagnosis for the report, not evidence for a PASS.
 - **Never fix code during the run.** A defect is a finding; fixing it is a separate step the user
   decides on.

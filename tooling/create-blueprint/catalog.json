@@ -6,7 +6,7 @@
       "engine": "cibseven",
       "engineLabel": "CIB seven",
       "integration": "embedded",
-      "integrationLabel": "Embedded engine, JavaDelegates",
+      "integrationLabel": "embedded · JavaDelegates",
       "topology": "embedded",
       "summary": "CIB seven embedded in the Spring Boot service, service tasks as JavaDelegates.",
       "variants": [
@@ -19,7 +19,7 @@
       "engine": "cibseven",
       "engineLabel": "CIB seven",
       "integration": "process-engine-api",
-      "integrationLabel": "Embedded engine, bpm-crafters process-engine-api",
+      "integrationLabel": "embedded · process-engine-api",
       "topology": "embedded",
       "summary": "CIB seven embedded, wired through the bpm-crafters process-engine-api.",
       "variants": [
@@ -32,7 +32,7 @@
       "engine": "cibseven",
       "engineLabel": "CIB seven",
       "integration": "remote",
-      "integrationLabel": "Remote engine host, external tasks",
+      "integrationLabel": "remote engine host · external tasks",
       "topology": "remote",
       "summary": "A generic CIB seven engine host plus a worker service that owns the model and runs its logic as external tasks.",
       "variants": [
@@ -45,7 +45,7 @@
       "engine": "fluxnova",
       "engineLabel": "Fluxnova",
       "integration": "embedded",
-      "integrationLabel": "Embedded engine, JavaDelegates",
+      "integrationLabel": "embedded · JavaDelegates",
       "topology": "embedded",
       "summary": "Fluxnova embedded in the Spring Boot service, service tasks as JavaDelegates.",
       "variants": [
@@ -58,7 +58,7 @@
       "engine": "cibseven",
       "engineLabel": "CIB seven",
       "integration": "embedded",
-      "integrationLabel": "Embedded engine, JavaDelegates",
+      "integrationLabel": "embedded · JavaDelegates",
       "topology": "embedded",
       "summary": "CIB seven embedded plus a React front and back office, the reference for the whole family.",
       "variants": [
@@ -70,7 +70,7 @@
       "engine": "operaton",
       "engineLabel": "Operaton",
       "integration": "embedded",
-      "integrationLabel": "Embedded engine, JavaDelegates",
+      "integrationLabel": "embedded · JavaDelegates",
       "topology": "embedded",
       "summary": "Operaton embedded in the Spring Boot service, service tasks as JavaDelegates.",
       "variants": [
@@ -83,7 +83,7 @@
       "engine": "operaton",
       "engineLabel": "Operaton",
       "integration": "process-engine-api",
-      "integrationLabel": "Embedded engine, bpm-crafters process-engine-api",
+      "integrationLabel": "embedded · process-engine-api",
       "topology": "embedded",
       "summary": "Operaton embedded, wired through the bpm-crafters process-engine-api.",
       "variants": [
@@ -95,7 +95,7 @@
       "engine": "operaton",
       "engineLabel": "Operaton",
       "integration": "remote",
-      "integrationLabel": "Remote engine host, external tasks",
+      "integrationLabel": "remote engine host · external tasks",
       "topology": "remote",
       "summary": "A generic Operaton engine host plus a worker service that owns the model and runs its logic as external tasks.",
       "variants": [
@@ -108,7 +108,7 @@
       "engine": "zeebe",
       "engineLabel": "Camunda 8 (Zeebe)",
       "integration": "native",
-      "integrationLabel": "Zeebe broker, Spring job workers",
+      "integrationLabel": "Zeebe cluster · job workers",
       "topology": "remote",
       "summary": "Camunda 8 / Zeebe broker, service tasks as Spring job workers.",
       "variants": [
@@ -121,7 +121,7 @@
       "engine": "zeebe",
       "engineLabel": "Camunda 8 (Zeebe)",
       "integration": "vanillabp",
-      "integrationLabel": "Zeebe broker, VanillaBP",
+      "integrationLabel": "Zeebe cluster · VanillaBP",
       "topology": "remote",
       "summary": "Camunda 8 / Zeebe broker, wired through VanillaBP.",
       "variants": [

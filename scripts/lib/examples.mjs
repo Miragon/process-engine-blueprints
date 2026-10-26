@@ -5,16 +5,6 @@ import { parse } from 'yaml';
 export const repoRoot = new URL('../../', import.meta.url).pathname;
 export const examplesDir = join(repoRoot, 'examples');
 
-export const variantLabels = {
-  'kotlin-gradle': 'Kotlin · Gradle',
-  'java-maven': 'Java · Maven',
-};
-
-export const variantBuilds = {
-  'kotlin-gradle': './gradlew build --no-daemon',
-  'java-maven': './mvnw -B -ntp verify',
-};
-
 export function loadExamples() {
   return readdirSync(examplesDir, { withFileTypes: true })
     .filter((entry) => entry.isDirectory() && existsSync(join(examplesDir, entry.name, 'blueprint.yaml')))
@@ -33,8 +23,4 @@ function loadExample(name) {
 
 export function variantsOf(example) {
   return Object.entries(example.variants).map(([variant, { path }]) => ({ variant, path }));
-}
-
-export function hasNestedVariants(example) {
-  return variantsOf(example).every(({ path }) => path !== '.');
 }

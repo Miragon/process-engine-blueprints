@@ -22,7 +22,7 @@ you can compare them line by line. Four questions get you to one.
 
 ## 3. Engine inside the service, or as its own process?
 
-This is the **stack option** (topology column in the [README](../README.md#pick-an-example)):
+This is the **stack option** (the *Setup* column in the [README](../README.md#examples)):
 
 - **Embedded:** the engine runs inside your Spring Boot service, next to Postgres. One deployable, the simplest
   operations, service tasks as JavaDelegates. → `<engine>-embedded`

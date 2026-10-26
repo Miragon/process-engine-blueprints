@@ -1,0 +1,51 @@
+# Conductor workspace settings for the fullstack bike-leasing blueprint.
+#
+# This stack binds fixed ports (Postgres 5432, backend 8080, Vite 5173), so only one workspace can
+# run the app at a time — hence run_mode = "nonconcurrent". portless is deliberately deferred: it
+# only wraps the JS dev server, while 3 of this stack's 4 collisions are Postgres, Spring and the
+# engine schema. See docs/adr/0008-fixed-ports-for-v1-portless-as-the-upgrade.md.
+
+"$schema" = "https://conductor.build/schemas/settings.repo.schema.json"
+
+[scripts]
+run_mode = "nonconcurrent"
+
+# One-time setup per workspace: install BPMN tooling + git hooks, and the frontend deps.
+setup = """
+npm ci
+npm run hooks:install
+npm --prefix frontend ci
+"""
+
+# Tear down the local Postgres container when a workspace is archived.
+archive = "docker compose -f stack/docker-compose.yml down -v || true"
+
+# Named run targets — none is defaulted, so nothing autostarts. Start what you need from the Run menu.
+
+# Bruno API smoke tests against a running local stack.
+[scripts.run.smoke]
+command = "cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r"
+icon = "flask"
+
+# Playwright browser end-to-end tests against a running local stack.
+[scripts.run.e2e]
+command = "npm --prefix frontend run e2e"
+icon = "monitor"
+
+# Full local dev stack: Postgres + backend + Vite (current branch).
+[scripts.run.full-dev]
+command = '''
+docker compose -f stack/docker-compose.yml up -d && \
+npx --yes concurrently --kill-others --names backend,frontend --prefix-colors blue,magenta \
+  "./gradlew :service:app:bootRun" \
+  "npm --prefix frontend run dev"
+'''
+icon = "layers"
+
+# Full stack from freshly built images (current branch). Rebuilds the backend OCI image via
+# buildpacks (bootBuildImage) and the frontend image, then runs. `--build` alone only rebuilds the
+# frontend — the app service has no build context — so the bootBuildImage step is required to avoid
+# silently running a stale backend.
+[scripts.run.full-docker]
+command = "./gradlew :service:app:bootBuildImage && docker compose -f stack/docker-compose.full.yml up --build"
+icon = "package"

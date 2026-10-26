@@ -1,0 +1,7 @@
+@import "tailwindcss";
+
+/* Self-hosted Geist (GDPR-safe — never Google Fonts). */
+@import "@fontsource-variable/geist/index.css";
+@import "@fontsource-variable/geist-mono/index.css";
+
+@import "./theme.css";

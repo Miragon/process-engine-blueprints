@@ -1,0 +1,21 @@
+meta {
+  name: Assert the application was rejected
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/bike-leasing/{{applicationId}}
+  body: none
+  auth: none
+}
+
+script:pre-request {
+  const id = bru.getVar('applicationId');
+  await pollApp('/api/bike-leasing/' + id, (b, s) => s === 200 && b && b.status === 'REJECTED');
+}
+
+assert {
+  res.status: eq 200
+  res.body.status: eq REJECTED
+}

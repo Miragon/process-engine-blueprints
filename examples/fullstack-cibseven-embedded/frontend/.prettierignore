@@ -1,0 +1,7 @@
+node_modules
+dist
+coverage
+test-results
+playwright-report
+src/app/route-tree.gen.ts
+src/shared/api/generated

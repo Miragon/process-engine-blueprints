@@ -1,0 +1,144 @@
+version: 2
+
+updates:
+
+  # Backend (Gradle) — minor+patch grouped, every major its own PR
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "build"
+      include: "scope"
+    groups:
+      backend-dependencies:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      backend-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  # Dev-stack container images
+  - package-ecosystem: "docker-compose"
+    directory: "/stack"
+    schedule:
+      interval: "monthly"
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "build"
+      include: "scope"
+    groups:
+      stack-images:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      stack-images-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  # Frontend (React app + Playwright e2e)
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "build"
+      include: "scope"
+    groups:
+      frontend-dependencies:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      frontend-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  # Frontend container image (node build + nginx serve stages)
+  - package-ecosystem: "docker"
+    directory: "/frontend"
+    schedule:
+      interval: "monthly"
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "build"
+      include: "scope"
+    groups:
+      frontend-docker:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      frontend-docker-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  # Dev tooling (bpmnlint, bpmn-cli, operate) — root package.json
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "build"
+      include: "scope"
+    groups:
+      tooling-dependencies:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      tooling-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+    # Also pinned as a plugin marketplace ref in .claude/settings.json: bumped by hand, both together.
+    ignore:
+      - dependency-name: "@miragon/bpmn-cli"
+      - dependency-name: "@miragon/operate"
+
+  # GitHub Actions — fully grouped (SHA-pinned, mechanical majors, CI-gated)
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "build"
+      include: "scope"
+    groups:
+      github-actions:
+        applies-to: version-updates
+        patterns:
+          - "*"
+      github-actions-security:
+        applies-to: security-updates
+        patterns:
+          - "*"

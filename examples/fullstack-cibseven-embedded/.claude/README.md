@@ -38,9 +38,9 @@ each skill's `references/`.
   allows the build, lint and read-only `gh` commands, and wires one hook. Personal additions
   go in `settings.local.json` (git-ignored).
 - `settings.json` also enables two pinned plugins, `bpmn-cli@miragon-bpmn` (skill `bpmn-cli:bpmn`) and
-  `operate@miragon` (skill `operate:operate`, `/operate:status`), from marketplaces fixed to a release
+  `pulse-cli@pulse` (skill `pulse-cli:pulse-cli`, `/pulse-cli:status`), from marketplaces fixed to a release
   tag. Claude Code installs them once you trust the folder; cloud sessions do not load them. Its `env`
-  sets `BPMN_KEEP_FLOW_IDS=1`, so bpmn-cli keeps flow ids stable. `../.operate.json` points operate at
+  sets `BPMN_KEEP_FLOW_IDS=1`, so bpmn-cli keeps flow ids stable. `../.pulse-cli.json` points pulse-cli at
   the local engine on :8080.
 - `../.mcp.json` provides the Playwright MCP server (pinned) for `test-in-browser`.
 - `hooks/lint-bpmn.sh` (PostToolUse) runs bpmnlint after every edit of a model under

@@ -1,0 +1,56 @@
+script:pre-request {
+  // Shared eventual-consistency polling helpers (see ADR-0012). Budgets are
+  // env-driven: pollTimeoutMs / pollIntervalMs.
+  const axios = require('axios');
+
+  const timeoutDefault = Number(bru.getEnvVar('pollTimeoutMs') || 20000);
+  const intervalDefault = Number(bru.getEnvVar('pollIntervalMs') || 500);
+
+  globalThis.pollUntil = async function (config, predicate, opts) {
+    opts = opts || {};
+    const timeoutMs = Number(opts.timeoutMs != null ? opts.timeoutMs : timeoutDefault);
+    const intervalMs = Number(opts.intervalMs != null ? opts.intervalMs : intervalDefault);
+    const deadline = Date.now() + timeoutMs;
+    let attempts = 0;
+    let last;
+    for (;;) {
+      attempts++;
+      try {
+        last = await axios(Object.assign({ validateStatus: () => true }, config));
+        if (predicate(last.data, last.status)) return last;
+      } catch (err) {
+        last = { status: 0, data: null, error: err.message };
+      }
+      if (Date.now() >= deadline) {
+        const where = (config.method || 'get').toUpperCase() + ' ' + config.url;
+        console.log('pollUntil: condition not met after ' + attempts + ' attempt(s) / '
+          + timeoutMs + 'ms (' + where + ', last status ' + (last && last.status) + ')');
+        return last;
+      }
+      await new Promise((resolve) => setTimeout(resolve, intervalMs));
+    }
+  };
+
+  // GET {{baseUrl}}{path} until predicate(data, status) holds.
+  globalThis.pollApp = function (path, predicate, opts) {
+    return globalThis.pollUntil(
+      { method: 'get', url: bru.getEnvVar('baseUrl') + path },
+      predicate, opts);
+  };
+
+  // GET {{engineRest}}{path} (CIB seven engine REST) until predicate(data, status) holds.
+  globalThis.pollEngine = function (path, predicate, opts) {
+    return globalThis.pollUntil(
+      { method: 'get', url: bru.getEnvVar('engineRest') + path },
+      predicate, opts);
+  };
+
+  // Wait until the instance with this business key (the application id) has an open subscription for
+  // messageName, i.e. the token really sits in the wait state a message command correlates to. The read
+  // model runs ahead of the token: workers write it before their async continuation moves the token on.
+  globalThis.pollMessageSubscription = function (businessKey, messageName, opts) {
+    return globalThis.pollEngine(
+      `/execution?businessKey=${businessKey}&messageEventSubscriptionName=${messageName}`,
+      (b) => Array.isArray(b) && b.length >= 1, opts);
+  };
+}

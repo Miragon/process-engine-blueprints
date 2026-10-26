@@ -1,0 +1,41 @@
+meta {
+  name: Assert an incident was raised on the order task
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{camundaRest}}/incidents/search
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "filter": {
+      "processInstanceKey": "{{processInstanceKey}}",
+      "state": "ACTIVE",
+      "errorType": "JOB_NO_RETRIES"
+    }
+  }
+}
+
+script:pre-request {
+  const id = bru.getVar("processInstanceKey");
+  await pollSearch("/incidents/search",
+    { filter: { processInstanceKey: id, state: "ACTIVE", errorType: "JOB_NO_RETRIES" } },
+    (b) => b && Array.isArray(b.items) && b.items.length >= 1,
+    { timeoutMs: 60000 });
+}
+
+assert {
+  res.status: eq 200
+  res.body.items: length 1
+  res.body.items[0].errorType: eq JOB_NO_RETRIES
+  res.body.items[0].elementId: eq serviceTask_orderBike
+}
+
+vars:post-response {
+  incidentKey: res.body.items[0].incidentKey
+  failedJobKey: res.body.items[0].jobKey
+}

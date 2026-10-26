@@ -1,0 +1,466 @@
+# Files the examples deliberately carry as identical copies. CI fails when a copy drifts; change every
+# example of a rule together, or move the file out of the rule. Build files, wrappers, lockfiles, stacks and
+# workflows are left out on purpose: Dependabot bumps them per example.
+# Refresh the proposal with `node scripts/check-drift.mjs --propose`.
+identical:
+  - name: all examples
+    examples:
+      - cibseven-embedded
+      - cibseven-process-engine-api
+      - cibseven-remote
+      - fluxnova-embedded
+      - fullstack-cibseven-embedded
+      - operaton-embedded
+      - operaton-process-engine-api
+      - operaton-remote
+      - zeebe-native
+      - zeebe-vanillabp
+    files:
+      - .npmrc
+      - CLAUDE.md
+      - LICENSE
+      - bruno/01-happy-path/01-submit.bru
+  - name: cibseven-embedded + cibseven-process-engine-api + cibseven-remote + fluxnova-embedded + operaton-embedded + operaton-process-engine-api + operaton-remote + zeebe-native + zeebe-vanillabp
+    examples:
+      - cibseven-embedded
+      - cibseven-process-engine-api
+      - cibseven-remote
+      - fluxnova-embedded
+      - operaton-embedded
+      - operaton-process-engine-api
+      - operaton-remote
+      - zeebe-native
+      - zeebe-vanillabp
+    files:
+      - bruno/06-incident-demo/01-submit.bru
+      - bruno/07-list-and-inbox/01-list-bikes.bru
+      - bruno/07-list-and-inbox/02-submit-out-of-stock.bru
+      - bruno/07-list-and-inbox/03-list-received.bru
+      - bruno/09-invalid-request/01-submit-without-income.bru
+      - docs/adr/0000-adr-template.md
+  - name: cibseven-embedded + cibseven-process-engine-api + cibseven-remote + fluxnova-embedded + fullstack-cibseven-embedded + operaton-embedded + operaton-process-engine-api + operaton-remote
+    examples:
+      - cibseven-embedded
+      - cibseven-process-engine-api
+      - cibseven-remote
+      - fluxnova-embedded
+      - fullstack-cibseven-embedded
+      - operaton-embedded
+      - operaton-process-engine-api
+      - operaton-remote
+    files:
+      - .bpmnlintrc
+      - bruno/01-happy-path/02-get-instance.bru
+      - bruno/01-happy-path/03-get-application.bru
+      - bruno/01-happy-path/07-fire-withdrawal-timer.bru
+      - bruno/02-escalation/01-submit.bru
+      - bruno/02-escalation/02-get-instance.bru
+      - bruno/02-escalation/04-fire-signature-deadline-timer.bru
+      - bruno/03-abort/01-submit.bru
+      - bruno/03-abort/02-get-instance.bru
+      - bruno/04-not-solvent/01-submit.bru
+      - bruno/05-bike-unavailable/01-submit.bru
+      - bruno/05-bike-unavailable/02-get-instance.bru
+      - bruno/05-bike-unavailable/07-fire-withdrawal-timer.bru
+  - name: cibseven-embedded + cibseven-process-engine-api + cibseven-remote + fluxnova-embedded + operaton-embedded + operaton-process-engine-api + operaton-remote + zeebe-native
+    examples:
+      - cibseven-embedded
+      - cibseven-process-engine-api
+      - cibseven-remote
+      - fluxnova-embedded
+      - operaton-embedded
+      - operaton-process-engine-api
+      - operaton-remote
+      - zeebe-native
+    files:
+      - bruno/07-list-and-inbox/06-resolve-clarification.bru
+      - bruno/09-invalid-request/02-accept-alternative-without-bike.bru
+  - name: cibseven-embedded + cibseven-remote + fluxnova-embedded + fullstack-cibseven-embedded + operaton-embedded + operaton-remote + zeebe-native + zeebe-vanillabp
+    examples:
+      - cibseven-embedded
+      - cibseven-remote
+      - fluxnova-embedded
+      - fullstack-cibseven-embedded
+      - operaton-embedded
+      - operaton-remote
+      - zeebe-native
+      - zeebe-vanillabp
+    files:
+      - .github/CODEOWNERS
+  - name: cibseven-process-engine-api + cibseven-remote + fluxnova-embedded + operaton-embedded + operaton-process-engine-api + operaton-remote + zeebe-native + zeebe-vanillabp
+    examples:
+      - cibseven-process-engine-api
+      - cibseven-remote
+      - fluxnova-embedded
+      - operaton-embedded
+      - operaton-process-engine-api
+      - operaton-remote
+      - zeebe-native
+      - zeebe-vanillabp
+    files:
+      - .claude/settings.json
+  - name: cibseven-embedded + cibseven-process-engine-api + cibseven-remote + fluxnova-embedded + fullstack-cibseven-embedded + operaton-process-engine-api + operaton-remote
+    examples:
+      - cibseven-embedded
+      - cibseven-process-engine-api
+      - cibseven-remote
+      - fluxnova-embedded
+      - fullstack-cibseven-embedded
+      - operaton-process-engine-api
+      - operaton-remote
+    files:
+      - bruno/01-happy-path/09-get-application.bru
+      - bruno/03-abort/08-assert-contract-compensated.bru
+  - name: cibseven-embedded + cibseven-process-engine-api + cibseven-remote + fluxnova-embedded + operaton-embedded + operaton-process-engine-api + operaton-remote
+    examples:
+      - cibseven-embedded
+      - cibseven-process-engine-api
+      - cibseven-remote
+      - fluxnova-embedded
+      - operaton-embedded
+      - operaton-process-engine-api
+      - operaton-remote
+    files:
+      - bruno/06-incident-demo/02-get-instance.bru
+      - bruno/08-alternative-declined/02-get-instance.bru
+      - bruno/08-alternative-declined/06-assert-contract-compensated.bru
+      - bruno/08-alternative-declined/07-assert-no-order-cancellation.bru
+      - bruno/08-alternative-declined/08-assert-no-incident.bru
+      - bruno/08-alternative-declined/09-get-application.bru
+      - bruno/10-alternative-via-tasklist/01-submit.bru
+  - name: cibseven-embedded + cibseven-process-engine-api + cibseven-remote + operaton-embedded + operaton-process-engine-api + operaton-remote
+    examples:
+      - cibseven-embedded
+      - cibseven-process-engine-api
+      - cibseven-remote
+      - operaton-embedded
+      - operaton-process-engine-api
+      - operaton-remote
+    files:
+      - bruno/10-alternative-via-tasklist/04-complete-clarify-alternative.bru
+  - name: cibseven-embedded + cibseven-process-engine-api + fluxnova-embedded + operaton-embedded + zeebe-native + zeebe-vanillabp
+    examples:
+      - cibseven-embedded
+      - cibseven-process-engine-api
+      - fluxnova-embedded
+      - operaton-embedded
+      - zeebe-native
+      - zeebe-vanillabp
+    files:
+      - java-maven/service/app/src/test/resources/sql/leasing-application.sql
+      - kotlin-gradle/service/app/src/test/resources/sql/leasing-application.sql
+      - scripts/create-starter.sh
+  - name: cibseven-embedded + cibseven-remote + fluxnova-embedded + operaton-embedded + operaton-remote
+    examples:
+      - cibseven-embedded
+      - cibseven-remote
+      - fluxnova-embedded
+      - operaton-embedded
+      - operaton-remote
+    files:
+      - bruno/08-alternative-declined/01-submit.bru
+  - name: cibseven-process-engine-api + cibseven-remote + fluxnova-embedded + operaton-embedded + operaton-remote
+    examples:
+      - cibseven-process-engine-api
+      - cibseven-remote
+      - fluxnova-embedded
+      - operaton-embedded
+      - operaton-remote
+    files:
+      - .gitignore
+  - name: cibseven-process-engine-api + fluxnova-embedded + fullstack-cibseven-embedded + operaton-embedded + operaton-process-engine-api
+    examples:
+      - cibseven-process-engine-api
+      - fluxnova-embedded
+      - fullstack-cibseven-embedded
+      - operaton-embedded
+      - operaton-process-engine-api
+    files:
+      - bruno/environments/local.bru
+  - name: cibseven-embedded + cibseven-process-engine-api + cibseven-remote + fullstack-cibseven-embedded
+    examples:
+      - cibseven-embedded
+      - cibseven-process-engine-api
+      - cibseven-remote
+      - fullstack-cibseven-embedded
+    files:
+      - bruno/bruno.json
+  - name: cibseven-embedded + fluxnova-embedded + fullstack-cibseven-embedded + operaton-embedded
+    examples:
+      - cibseven-embedded
+      - fluxnova-embedded
+      - fullstack-cibseven-embedded
+      - operaton-embedded
+    files:
+      - docs/assets/bike-leasing.png
+  - name: cibseven-process-engine-api + cibseven-remote + operaton-process-engine-api + operaton-remote
+    examples:
+      - cibseven-process-engine-api
+      - cibseven-remote
+      - operaton-process-engine-api
+      - operaton-remote
+    files:
+      - bruno/01-happy-path/08-assert-leasing-active.bru
+      - bruno/02-escalation/05-assert-rejected.bru
+      - bruno/03-abort/07-assert-cancelled.bru
+      - bruno/04-not-solvent/02-assert-rejected.bru
+      - bruno/05-bike-unavailable/08-assert-leasing-active.bru
+      - bruno/08-alternative-declined/05-assert-contract-cancelled.bru
+      - bruno/10-alternative-via-tasklist/05-assert-alternative-ordered.bru
+  - name: cibseven-process-engine-api + operaton-embedded + zeebe-native + zeebe-vanillabp
+    examples:
+      - cibseven-process-engine-api
+      - operaton-embedded
+      - zeebe-native
+      - zeebe-vanillabp
+    files:
+      - docs/adr/0007-two-architecture-test-tools-archunit-and-konsist.md
+  - name: cibseven-embedded + cibseven-process-engine-api + operaton-embedded
+    examples:
+      - cibseven-embedded
+      - cibseven-process-engine-api
+      - operaton-embedded
+    files:
+      - java-maven/service/app/src/main/resources/dmn/check-credit-rating.dmn
+      - java-maven/service/app/src/main/resources/forms/clarify-alternative.form
+      - java-maven/service/app/src/main/resources/forms/clarify-return.form
+      - kotlin-gradle/service/app/src/main/resources/dmn/check-credit-rating.dmn
+      - kotlin-gradle/service/app/src/main/resources/forms/clarify-alternative.form
+      - kotlin-gradle/service/app/src/main/resources/forms/clarify-return.form
+  - name: cibseven-embedded + fluxnova-embedded + fullstack-cibseven-embedded
+    examples:
+      - cibseven-embedded
+      - fluxnova-embedded
+      - fullstack-cibseven-embedded
+    files:
+      - bruno/01-happy-path/08-assert-leasing-active.bru
+      - bruno/05-bike-unavailable/09-get-application.bru
+  - name: cibseven-embedded + fluxnova-embedded + operaton-embedded
+    examples:
+      - cibseven-embedded
+      - fluxnova-embedded
+      - operaton-embedded
+    files:
+      - .githooks/pre-commit
+      - bruno/06-incident-demo/05-get-failed-job.bru
+      - bruno/08-alternative-declined/03-sign-contract.bru
+      - bruno/08-alternative-declined/04-decline-alternative.bru
+      - bruno/08-alternative-declined/05-assert-contract-cancelled.bru
+      - java-maven/config/checkstyle/checkstyle.xml
+  - name: operaton-embedded + operaton-process-engine-api + operaton-remote
+    examples:
+      - operaton-embedded
+      - operaton-process-engine-api
+      - operaton-remote
+    files:
+      - bruno/bruno.json
+  - name: operaton-embedded + zeebe-native + zeebe-vanillabp
+    examples:
+      - operaton-embedded
+      - zeebe-native
+      - zeebe-vanillabp
+    files:
+      - bruno/06-incident-demo/03-sign-contract.bru
+      - bruno/07-list-and-inbox/04-sign-contract.bru
+      - bruno/07-list-and-inbox/05-inbox-has-task.bru
+      - bruno/07-list-and-inbox/07-inbox-empty.bru
+  - name: cibseven-embedded + cibseven-process-engine-api
+    examples:
+      - cibseven-embedded
+      - cibseven-process-engine-api
+    files:
+      - java-maven/service/app/src/main/resources/db/migration/V1__init.sql
+      - kotlin-gradle/service/app/src/main/resources/db/migration/V1__init.sql
+      - openapi/openapi.json
+  - name: cibseven-embedded + fluxnova-embedded
+    examples:
+      - cibseven-embedded
+      - fluxnova-embedded
+    files:
+      - bruno/01-happy-path/04-sign-contract.bru
+      - bruno/01-happy-path/05-report-handover.bru
+      - bruno/01-happy-path/06-get-withdrawal-timer.bru
+      - bruno/02-escalation/03-get-signature-deadline-timer.bru
+      - bruno/02-escalation/05-assert-rejected.bru
+      - bruno/03-abort/03-sign-contract.bru
+      - bruno/03-abort/04-withdraw.bru
+      - bruno/03-abort/05-get-clarify-return-task.bru
+      - bruno/03-abort/07-assert-cancelled.bru
+      - bruno/04-not-solvent/02-assert-rejected.bru
+      - bruno/05-bike-unavailable/03-sign-contract.bru
+      - bruno/05-bike-unavailable/04-clarify-alternative.bru
+      - bruno/05-bike-unavailable/05-report-handover.bru
+      - bruno/05-bike-unavailable/06-get-withdrawal-timer.bru
+      - bruno/05-bike-unavailable/08-assert-leasing-active.bru
+      - bruno/06-incident-demo/03-sign-contract.bru
+      - bruno/06-incident-demo/04-assert-incident.bru
+      - bruno/07-list-and-inbox/04-sign-contract.bru
+      - bruno/07-list-and-inbox/05-inbox-has-task.bru
+      - bruno/07-list-and-inbox/07-inbox-empty.bru
+      - bruno/10-alternative-via-tasklist/02-sign-contract.bru
+      - bruno/10-alternative-via-tasklist/03-get-clarify-alternative-task.bru
+      - bruno/10-alternative-via-tasklist/05-assert-alternative-ordered.bru
+      - docs/adr/0001-record-architecture-decisions.md
+      - docs/adr/0007-two-architecture-test-tools-archunit-and-konsist.md
+  - name: cibseven-embedded + fullstack-cibseven-embedded
+    examples:
+      - cibseven-embedded
+      - fullstack-cibseven-embedded
+    files:
+      - .claude/hooks/lint-bpmn.sh
+  - name: cibseven-embedded + operaton-embedded
+    examples:
+      - cibseven-embedded
+      - operaton-embedded
+    files:
+      - bruno/03-abort/06-complete-clarify-return.bru
+      - bruno/06-incident-demo/06-retry-job.bru
+      - java-maven/service/app/src/main/resources/bpmn/bike-leasing.bpmn
+      - java-maven/service/app/src/main/resources/bpmn/cancel-bike-order.bpmn
+      - kotlin-gradle/service/app/src/main/resources/bpmn/bike-leasing.bpmn
+      - kotlin-gradle/service/app/src/main/resources/bpmn/cancel-bike-order.bpmn
+  - name: cibseven-process-engine-api + operaton-process-engine-api
+    examples:
+      - cibseven-process-engine-api
+      - operaton-process-engine-api
+    files:
+      - .githooks/pre-commit
+      - bruno/01-happy-path/06-get-withdrawal-timer.bru
+      - bruno/02-escalation/03-get-signature-deadline-timer.bru
+      - bruno/03-abort/05-get-clarify-return-task.bru
+      - bruno/03-abort/06-complete-clarify-return.bru
+      - bruno/05-bike-unavailable/04-clarify-alternative.bru
+      - bruno/05-bike-unavailable/06-get-withdrawal-timer.bru
+      - bruno/05-bike-unavailable/09-get-application.bru
+      - bruno/06-incident-demo/04-assert-incident.bru
+      - bruno/06-incident-demo/05-get-failed-task.bru
+      - bruno/06-incident-demo/06-retry-task.bru
+      - bruno/07-list-and-inbox/05-inbox-has-task.bru
+      - bruno/07-list-and-inbox/07-inbox-empty.bru
+      - bruno/08-alternative-declined/01-submit.bru
+      - bruno/08-alternative-declined/04-decline-alternative.bru
+      - bruno/10-alternative-via-tasklist/03-get-clarify-alternative-task.bru
+      - docs/adr/0001-record-architecture-decisions.md
+      - docs/adr/0005-agents-md-as-the-single-source.md
+      - docs/assets/bike-leasing.png
+  - name: cibseven-remote + operaton-remote
+    examples:
+      - cibseven-remote
+      - operaton-remote
+    files:
+      - .githooks/pre-commit
+      - bruno/01-happy-path/06-get-withdrawal-timer.bru
+      - bruno/02-escalation/03-get-signature-deadline-timer.bru
+      - bruno/03-abort/05-get-clarify-return-task.bru
+      - bruno/03-abort/06-complete-clarify-return.bru
+      - bruno/05-bike-unavailable/04-clarify-alternative.bru
+      - bruno/05-bike-unavailable/06-get-withdrawal-timer.bru
+      - bruno/05-bike-unavailable/09-get-application.bru
+      - bruno/06-incident-demo/04-assert-incident.bru
+      - bruno/06-incident-demo/05-get-failed-task.bru
+      - bruno/06-incident-demo/06-retry-task.bru
+      - bruno/07-list-and-inbox/05-inbox-has-task.bru
+      - bruno/07-list-and-inbox/07-inbox-empty.bru
+      - bruno/08-alternative-declined/04-decline-alternative.bru
+      - bruno/10-alternative-via-tasklist/03-get-clarify-alternative-task.bru
+      - bruno/environments/local.bru
+      - docs/adr/0005-agents-md-as-the-single-source.md
+      - docs/adr/0007-two-architecture-test-tools-archunit-and-konsist.md
+      - docs/adr/0009-actuator-probes-and-prometheus-metrics.md
+      - docs/adr/0011-build-and-deployment-approach.md
+      - docs/assets/bike-leasing.png
+      - java-maven/service/example-service/src/main/resources/bpmn/bike-leasing.bpmn
+      - java-maven/service/example-service/src/main/resources/bpmn/cancel-bike-order.bpmn
+      - java-maven/service/example-service/src/main/resources/dmn/check-credit-rating.dmn
+      - java-maven/service/example-service/src/main/resources/forms/clarify-alternative.form
+      - java-maven/service/example-service/src/main/resources/forms/clarify-return.form
+      - java-maven/service/example-service/src/test/resources/sql/leasing-application.sql
+      - kotlin-gradle/service/example-service/src/main/resources/bpmn/bike-leasing.bpmn
+      - kotlin-gradle/service/example-service/src/main/resources/bpmn/cancel-bike-order.bpmn
+      - kotlin-gradle/service/example-service/src/main/resources/dmn/check-credit-rating.dmn
+      - kotlin-gradle/service/example-service/src/main/resources/forms/clarify-alternative.form
+      - kotlin-gradle/service/example-service/src/main/resources/forms/clarify-return.form
+      - kotlin-gradle/service/example-service/src/test/resources/sql/leasing-application.sql
+      - openapi/openapi.json
+      - stack/init-databases.sql
+  - name: fluxnova-embedded + operaton-embedded
+    examples:
+      - fluxnova-embedded
+      - operaton-embedded
+    files:
+      - openapi/openapi.json
+  - name: fullstack-cibseven-embedded + operaton-process-engine-api
+    examples:
+      - fullstack-cibseven-embedded
+      - operaton-process-engine-api
+    files:
+      - service/app/src/main/resources/dmn/check-credit-rating.dmn
+      - service/app/src/main/resources/forms/clarify-alternative.form
+      - service/app/src/main/resources/forms/clarify-return.form
+      - service/app/src/test/resources/sql/leasing-application.sql
+  - name: operaton-process-engine-api + operaton-remote
+    examples:
+      - operaton-process-engine-api
+      - operaton-remote
+    files:
+      - bruno/01-happy-path/04-sign-contract.bru
+      - bruno/03-abort/03-sign-contract.bru
+      - bruno/05-bike-unavailable/03-sign-contract.bru
+      - bruno/06-incident-demo/03-sign-contract.bru
+      - bruno/07-list-and-inbox/04-sign-contract.bru
+      - bruno/08-alternative-declined/03-sign-contract.bru
+      - bruno/10-alternative-via-tasklist/02-sign-contract.bru
+  - name: zeebe-native + zeebe-vanillabp
+    examples:
+      - zeebe-native
+      - zeebe-vanillabp
+    files:
+      - .githooks/pre-commit
+      - .gitignore
+      - bruno/01-happy-path/02-get-application.bru
+      - bruno/01-happy-path/03-sign-contract.bru
+      - bruno/01-happy-path/04-report-handover.bru
+      - bruno/01-happy-path/05-get-application.bru
+      - bruno/03-abort/01-submit.bru
+      - bruno/03-abort/02-sign-contract.bru
+      - bruno/03-abort/03-withdraw.bru
+      - bruno/03-abort/04-find-clarify-return-task.bru
+      - bruno/03-abort/06-assert-cancelled.bru
+      - bruno/04-not-solvent/01-submit.bru
+      - bruno/04-not-solvent/02-assert-rejected.bru
+      - bruno/05-bike-unavailable/01-submit.bru
+      - bruno/05-bike-unavailable/02-sign-contract.bru
+      - bruno/05-bike-unavailable/04-report-handover.bru
+      - bruno/06-incident-demo/02-get-instance.bru
+      - bruno/06-incident-demo/04-assert-incident.bru
+      - bruno/06-incident-demo/05-reset-job-retries.bru
+      - bruno/06-incident-demo/06-resolve-incident.bru
+      - bruno/08-alternative-declined/01-submit.bru
+      - bruno/08-alternative-declined/02-get-instance.bru
+      - bruno/08-alternative-declined/03-sign-contract.bru
+      - bruno/08-alternative-declined/05-assert-contract-cancelled.bru
+      - bruno/08-alternative-declined/06-assert-contract-compensated.bru
+      - bruno/08-alternative-declined/07-assert-no-order-cancellation.bru
+      - bruno/08-alternative-declined/08-assert-no-incident.bru
+      - bruno/08-alternative-declined/09-assert-cancelled.bru
+      - bruno/bruno.json
+      - bruno/collection.bru
+      - bruno/environments/local.bru
+      - docs/adr/0001-record-architecture-decisions.md
+      - docs/adr/0002-hexagonal-architecture-for-the-backend.md
+      - docs/adr/0003-openapi-as-the-checked-in-contract.md
+      - docs/adr/0005-agents-md-as-the-single-source.md
+      - docs/adr/0006-fixed-ports-for-v1-portless-as-the-upgrade.md
+      - docs/adr/0008-track-the-latest-major-versions.md
+      - docs/adr/0009-actuator-probes-and-prometheus-metrics.md
+      - docs/adr/0010-flyway-for-database-migrations.md
+      - docs/adr/0011-build-and-deployment-approach.md
+      - docs/adr/0012-polling-for-eventual-consistency-in-e2e-tests.md
+      - docs/assets/bike-leasing.png
+      - java-maven/service/app/src/main/resources/db/migration/V1__init.sql
+      - java-maven/service/common-zeebe/src/main/resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports
+      - kotlin-gradle/gradle.properties
+      - kotlin-gradle/service/app/src/main/resources/db/migration/V1__init.sql
+      - kotlin-gradle/service/common-zeebe/src/main/resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports
+      - openapi/openapi.json
+

@@ -1,0 +1,26 @@
+meta {
+  name: Find the signature-deadline timer
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{engineRest}}/job?processInstanceId={{processInstanceId}}&activityId=event_signatureDeadline&timers=true
+  body: none
+  auth: none
+}
+
+script:pre-request {
+  await pollEngine("/job?processInstanceId=" + bru.getVar("processInstanceId")
+    + "&activityId=event_signatureDeadline&timers=true",
+    (b) => Array.isArray(b) && b.length >= 1);
+}
+
+assert {
+  res.status: eq 200
+  res.body[0].id: isDefined
+}
+
+vars:post-response {
+  deadlineJobId: res.body[0].id
+}

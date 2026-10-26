@@ -1,0 +1,199 @@
+# Contributing
+
+Thanks for your interest in the Fluxnova embedded bike-leasing blueprint! Contributions of all kinds
+are welcome — bug reports, feature ideas, docs, and code.
+
+## Getting started
+
+```bash
+git clone <this repository> process-engine-blueprints
+cd process-engine-blueprints/examples/fluxnova-embedded
+npm ci && npm run hooks:install   # BPMN lint + git hooks
+```
+
+You need **JDK 21** and **Docker (or Podman)** for Postgres. BPMN linting uses Node (the root
+`package.json`) but the service itself has no Node runtime dependency.
+
+<!-- variant:blueprint -->
+The service exists in two equivalent variants: [`kotlin-gradle/`](kotlin-gradle/README.md) (recommended)
+and [`java-maven/`](java-maven/README.md). Run either one.
+<!-- /variant:blueprint -->
+
+The build wrapper is included, so nothing else needs installing. Start Postgres, then the backend and
+engine on :8080:
+
+```bash
+docker compose -f stack/docker-compose.yml up -d
+```
+
+<!-- variant:kotlin-gradle -->
+```bash
+cd kotlin-gradle && ./gradlew :service:app:bootRun
+```
+<!-- /variant:kotlin-gradle -->
+<!-- variant:java-maven -->
+```bash
+cd java-maven && ./mvnw -DskipTests install && ./mvnw -pl service/app spring-boot:run
+```
+<!-- /variant:java-maven -->
+
+### Ports
+
+| What | Port |
+|---|---|
+| Postgres | 5432 |
+| Backend (REST + `/engine-rest`) | 8080 |
+| Fluxnova Monitoring / Tasklist / Admin webapps | 8080/fluxnova (admin/admin) |
+| OpenAPI spec · Swagger UI | 8080/v3/api-docs · 8080/swagger-ui.html |
+| Actuator (health · liveness/readiness · prometheus) | 8080/actuator |
+
+Under Conductor the ports are fixed and the workspace runs `nonconcurrent` (see
+[ADR-0006](docs/adr/0006-fixed-ports-for-v1-portless-as-the-upgrade.md)).
+
+### Smoke test
+
+With the service running, drive the REST scenarios end to end:
+
+```bash
+cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r
+```
+
+The happy path submits an application, signs the contract, and reports the handover; the other numbered
+folders cover escalation, abort, not-solvent, bike-unavailable, the incident demo, the list/inbox
+endpoints, a declined alternative and an invalid request. Confirm <http://localhost:8080/fluxnova> (admin/admin), <http://localhost:8080/swagger-ui.html>
+and <http://localhost:8080/actuator/health> (status `UP`) all load.
+
+## Run it in containers
+
+The dev loop above runs the backend from source. To run it as a container instead, build the backend
+OCI image (Spring buildpacks — no Dockerfile) and run it against the Postgres compose stack. The
+rationale is in [ADR-0011](docs/adr/0011-build-and-deployment-approach.md).
+
+Build the backend OCI image; it produces `miravelo/fluxnova-embedded-example:1.0-SNAPSHOT`:
+
+<!-- variant:kotlin-gradle -->
+```bash
+(cd kotlin-gradle && ./gradlew :service:app:bootBuildImage)
+```
+<!-- /variant:kotlin-gradle -->
+<!-- variant:java-maven -->
+```bash
+(cd java-maven && ./mvnw -pl service/app -am -DskipTests spring-boot:build-image)
+```
+<!-- /variant:java-maven -->
+
+Then run it against the compose Postgres:
+
+```bash
+# 1. start Postgres
+docker compose -f stack/docker-compose.yml up -d
+
+# 2. run the image against it (host networking; point it at the compose Postgres)
+docker run --rm -p 8080:8080 \
+  -e SPRING_DATASOURCE_URL=jdbc:postgresql://host.docker.internal:5432/bikeleasing \
+  -e SPRING_DATASOURCE_USERNAME=admin -e SPRING_DATASOURCE_PASSWORD=admin \
+  miravelo/fluxnova-embedded-example:1.0-SNAPSHOT
+```
+
+Then open <http://localhost:8080/fluxnova> (admin/admin), <http://localhost:8080/swagger-ui.html> and
+<http://localhost:8080/actuator/health>.
+
+**Podman:** the image build needs a Docker-API socket. Expose podman's, then build the image as above:
+
+```bash
+podman system service --time=0 unix:///tmp/podman.sock &
+export DOCKER_HOST=unix:///tmp/podman.sock
+```
+
+**Configuration.** `application.yaml` ships dev defaults; the deploy-relevant
+values are read from the environment (they win over the baked defaults):
+
+| Env var | Purpose | Default |
+|---|---|---|
+| `SPRING_DATASOURCE_URL` | JDBC URL | `jdbc:postgresql://localhost:5432/bikeleasing` |
+| `SPRING_DATASOURCE_USERNAME` / `_PASSWORD` | DB credentials | `admin` / `admin` |
+
+> **Not production-hardened.** The image carries the admin/admin credentials from `application.yaml`
+> and an unauthenticated `/engine-rest`. Override and secure them (and the DB credentials) before
+> running anywhere real. Schema
+> is owned by Flyway and Hibernate only validates ([ADR-0010](docs/adr/0010-flyway-for-database-migrations.md)),
+> so the Postgres volume persists across `down`/`up` — reset it with `docker compose -f
+> stack/docker-compose.yml down -v`.
+
+## Scripts
+
+The build, mutation-testing and code-generation commands are listed in the README next to the code:
+
+<!-- variant:kotlin-gradle -->
+- [`kotlin-gradle/README.md`](kotlin-gradle/README.md#-commands)
+  <!-- /variant:kotlin-gradle -->
+  <!-- variant:java-maven -->
+- [`java-maven/README.md`](java-maven/README.md#-commands)
+  <!-- /variant:java-maven -->
+
+From the repo root:
+
+```bash
+npm run lint:bpmn        # bpmnlint the .bpmn models
+```
+
+## Ground rules
+
+- **Start from an issue.** Every change traces back to one — open an issue (or pick an existing one)
+  and agree on the approach *before* you write code, then reference it in the PR (`Closes #123`).
+  This keeps substantial changes discussed up front and the history navigable.
+- **Read [`AGENTS.md`](AGENTS.md) first.** It is the single source of guidance for humans and AI
+  agents alike (see [ADR-0005](docs/adr/0005-agents-md-as-the-single-source.md)).
+- **Conventional Commits.** Commit messages and PR titles follow
+  [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`,
+  `refactor:`, `test:`, `chore:`). Write everything in **English**.
+  <!-- variant:blueprint -->
+- **Change both variants together.** A change in behaviour goes into `kotlin-gradle/` *and*
+  `java-maven/` in the same PR, with equivalent tests. Changes that only concern one language's idioms
+  stay on that side. Models, forms, migrations and `application.yaml` exist in both variants and must
+  be byte-identical — copy your change over; the `Blueprint Checks` workflow fails otherwise. See
+  [ADR-0013](docs/adr/0013-two-stack-variants-side-by-side-on-main.md).
+  <!-- /variant:blueprint -->
+- **Keep the gates green.** The architecture, contract-drift and mutation (≥ 80) gates run in CI on
+  every PR. They are fitness functions, not style guides — a violation fails the
+  build. The mutation gate is **diff-scoped** on PRs (only the classes you changed); the full-module
+  gate-80 sweep runs nightly.
+- **Add tests.** This is a TDD codebase; match the test style to the layer (see `AGENTS.md`).
+  Mutation testing means a test that runs without asserting will fail CI.
+- **Changing the API?** Re-export the spec (the `OpenApiSpecExportTest`, which every full build runs)
+  so the committed `openapi/openapi.json` contract stays in sync — it is **drift-gated in CI**.
+- **Changing the process?** Edit the `.bpmn` model under `service/app/src/main/resources/bpmn`,
+  regenerate the typed `*ProcessApi`, and lint it with `npm run lint:bpmn`.
+- **Changing the database schema?** Flyway owns it. Add a new forward-only migration
+  `V{n}__description.sql` under `service/app/src/main/resources/db/migration/` in the same change as
+  the entity edit — never edit an already-applied migration. Hibernate runs `validate`, so a mismatch
+  fails startup. A dev database first created by the old `ddl-auto: create` has no Flyway history;
+  reset it once with `docker compose -f stack/docker-compose.yml down -v` before running. See
+  [ADR-0010](docs/adr/0010-flyway-for-database-migrations.md).
+
+## Before opening a PR
+
+<!-- variant:kotlin-gradle -->
+```bash
+(cd kotlin-gradle && ./gradlew build && ./gradlew :service:app:pitest)   # mutation score >= 80
+```
+<!-- /variant:kotlin-gradle -->
+<!-- variant:java-maven -->
+```bash
+(cd java-maven && ./mvnw verify \
+  && ./mvnw -pl service/app -am test-compile org.pitest:pitest-maven:mutationCoverage)   # mutation score >= 80
+```
+<!-- /variant:java-maven -->
+
+```bash
+git diff --exit-code openapi/openapi.json    # the API contract must not drift
+```
+
+All of these run in CI on every pull request (JDK 21). Before opening a PR, sanity-check that a feature
+is wired end to end across the backend — BPMN element → outbound port → service → inbound port → REST
+controller → `openapi.json` → Bruno scenario.
+
+## Reporting bugs / requesting features
+
+Open an issue. For a process- or contract-related bug, attaching the relevant `.bpmn` model or the
+`openapi.json` diff is the fastest path to a fix.

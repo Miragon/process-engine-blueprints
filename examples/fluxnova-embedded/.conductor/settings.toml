@@ -1,0 +1,56 @@
+# Conductor workspace settings for the Fluxnova embedded bike-leasing blueprint.
+#
+# This stack binds fixed ports (Postgres 5432, backend 8080 — which also serves the embedded
+# Fluxnova webapp/Monitoring and engine-rest), so only one workspace can run the app at a time — hence
+# run_mode = "nonconcurrent". portless is deliberately deferred: it only wraps a JS dev server, while
+# both of this stack's collisions are Postgres and the Spring/engine schema. See
+# docs/adr/0006-fixed-ports-for-v1-portless-as-the-upgrade.md.
+
+"$schema" = "https://conductor.build/schemas/settings.repo.schema.json"
+
+[scripts]
+run_mode = "nonconcurrent"
+
+# One-time setup per workspace: install BPMN linting tooling + git hooks.
+setup = """
+npm ci
+npm run hooks:install
+"""
+
+# Tear down the local Postgres container when a workspace is archived.
+archive = "docker compose -f stack/docker-compose.yml down -v || true"
+
+# Named run targets — none is defaulted, so nothing autostarts. Start what you need from the Run menu.
+
+# Local Postgres for the engine + read model.
+[scripts.run.infra]
+command = "docker compose -f stack/docker-compose.yml up"
+icon = "database"
+
+# The Spring Boot application (embedded Fluxnova engine), and its full verification:
+# arch + unit + process + model-validation + OpenAPI spec export.
+
+# variant:kotlin-gradle
+[scripts.run.backend-kotlin]
+command = "cd kotlin-gradle && ./gradlew :service:app:bootRun"
+icon = "play"
+
+[scripts.run.test-kotlin]
+command = "cd kotlin-gradle && ./gradlew build"
+icon = "check"
+# /variant:kotlin-gradle
+
+# variant:java-maven
+[scripts.run.backend-java]
+command = "cd java-maven && ./mvnw -DskipTests install && ./mvnw -pl service/app spring-boot:run"
+icon = "play"
+
+[scripts.run.test-java]
+command = "cd java-maven && ./mvnw verify"
+icon = "check"
+# /variant:java-maven
+
+# Bruno API smoke tests against a running local stack.
+[scripts.run.smoke]
+command = "cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r"
+icon = "flask"

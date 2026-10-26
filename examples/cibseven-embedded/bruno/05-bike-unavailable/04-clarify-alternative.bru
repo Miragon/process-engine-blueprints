@@ -1,0 +1,35 @@
+meta {
+  name: Clarify an alternative bike (external completion)
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/bike-leasing/{{applicationId}}/clarify-alternative
+  body: json
+  auth: none
+}
+
+script:pre-request {
+  await pollApp("/api/tasks/clarify-alternative",
+    (b, s) => s === 200 && Array.isArray(b) && b.some((t) => t.applicationId === bru.getVar("applicationId")));
+}
+
+body:json {
+  {
+    "alternativeFound": true,
+    "bikeId": "BIKE-900",
+    "bikeModel": "Gravel Explorer 900"
+  }
+}
+
+assert {
+  res.status: eq 202
+}
+
+docs {
+  The domain-routed completion path: this endpoint registers the chosen bike's model in
+  the portfolio and completes the user task with the bikeId. The re-order reads that
+  variable and persists it on the aggregate. 10-alternative-via-tasklist completes the
+  same task the way the Tasklist form does.
+}

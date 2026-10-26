@@ -1,0 +1,12 @@
+name: operaton-process-engine-api
+engine: operaton
+integration: process-engine-api
+topology: embedded
+summary: Operaton embedded, wired through the bpm-crafters process-engine-api.
+stack: Postgres
+source: miragon-blueprints/operaton-process-engine-api-example
+variants:
+  java-maven:
+    path: .
+missingVariants:
+  kotlin-gradle: not built yet

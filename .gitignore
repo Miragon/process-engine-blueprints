@@ -1,0 +1,8 @@
+node_modules/
+.context
+.DS_Store
+.idea
+*.iml
+.vscode
+.claude/settings.local.json
+.claude/logs/

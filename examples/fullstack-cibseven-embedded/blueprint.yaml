@@ -1,0 +1,13 @@
+name: fullstack-cibseven-embedded
+engine: cibseven
+integration: embedded
+topology: embedded
+summary: CIB seven embedded plus a React front and back office, the reference for the whole family.
+stack: Postgres; a full stack with backend and frontend images
+source: miragon-blueprints/fullstack-example
+variants:
+  kotlin-gradle:
+    path: .
+frontend: frontend
+missingVariants:
+  java-maven: 'by decision: this example is about the frontend and the agent tooling, not the language'

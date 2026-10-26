@@ -1,0 +1,17 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "entry": [
+    "src/app/routes/**/*.tsx",
+    "src/**/*.test.{ts,tsx}",
+    "src/shared/ui/index.ts",
+    "steiger.config.ts"
+  ],
+  "project": ["src/**/*.{ts,tsx}"],
+  "ignore": ["src/shared/api/generated/**", "src/app/route-tree.gen.ts"],
+  "ignoreDependencies": [
+    "@fontsource-variable/geist",
+    "@fontsource-variable/geist-mono",
+    "tailwindcss",
+    "lint-staged"
+  ]
+}

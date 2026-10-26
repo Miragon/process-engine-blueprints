@@ -1,0 +1,32 @@
+"$schema" = "https://conductor.build/schemas/settings.repo.schema.json"
+
+[scripts]
+run_mode = "nonconcurrent"
+
+# One-time setup per workspace: install BPMN linting tooling and the git hooks path.
+setup = "npm ci && npm run hooks:install"
+
+# Tear down the local Camunda stack when a workspace is archived.
+archive = "docker compose -f stack/docker-compose.yml down -v || true"
+
+[scripts.run.infra]
+command = "docker compose -f stack/docker-compose.yml up"
+
+# variant:kotlin-gradle
+[scripts.run.backend-kotlin]
+command = "cd kotlin-gradle && ./gradlew :service:app:bootRun"
+
+[scripts.run.test-kotlin]
+command = "cd kotlin-gradle && ./gradlew build"
+# /variant:kotlin-gradle
+
+# variant:java-maven
+[scripts.run.backend-java]
+command = "cd java-maven && ./mvnw -DskipTests install && ./mvnw -pl service/app spring-boot:run"
+
+[scripts.run.test-java]
+command = "cd java-maven && ./mvnw verify"
+# /variant:java-maven
+
+[scripts.run.smoke]
+command = "cd bruno && npx --yes @usebruno/cli run . --env local -r"

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.miragon.blueprint</groupId>
+        <artifactId>cibseven-remote-example</artifactId>
+        <version>1.0-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>engine-service</artifactId>
+    <name>engine-service</name>
+
+    <!--
+        The engine host: a **model-agnostic** CIB seven engine. It runs the engine and exposes
+        `/engine-rest` + Cockpit/Tasklist at `/camunda`, but ships **no** process model of its own — the
+        `example-service` (which owns the process) deploys the model into it over REST at start-up.
+
+        The engine host carries only the two **execution/task-listener** beans: listeners have no
+        external-task equivalent and always run *inside* the engine. It deliberately does **not** depend
+        on the worker (that would drag the worker's business code + JPA into the engine), so those
+        listeners reference process variables by **plain string name** rather than the worker's generated
+        `*ProcessApi` contract — the price of letting a single service own the whole model.
+    -->
+    <properties>
+        <spring-boot.run.skip>false</spring-boot.run.skip>
+        <spring-boot.build-image.skip>false</spring-boot.build-image.skip>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Database -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-flyway</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+        </dependency>
+
+        <!-- CIB seven engine + REST API + webapps (Cockpit/Tasklist) -->
+        <dependency>
+            <groupId>org.cibseven.bpm.springboot</groupId>
+            <artifactId>cibseven-bpm-spring-boot-starter-webapp-4</artifactId>
+            <exclusions>
+                <!--
+                    CIB seven 2.2.0 pulls in both the generic `cibseven-webclient-web` and the Spring-Boot-4
+                    variant `cibseven-webclient-web-spring-boot-4`. The generic one calls
+                    PathMatchConfigurer.setUseSuffixPatternMatch(...), which was removed in Spring 7 /
+                    Spring Boot 4, and crashes the app on start-up. Drop it so only the SB4 variant remains.
+                -->
+                <exclusion>
+                    <groupId>org.cibseven.webapp</groupId>
+                    <artifactId>cibseven-webclient-web</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.cibseven.bpm.springboot</groupId>
+            <artifactId>cibseven-bpm-spring-boot-starter-rest-4</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <image>
+                        <name>miravelo/engine-service:${project.version}</name>
+                        <env>
+                            <BP_JVM_VERSION>${java.version}</BP_JVM_VERSION>
+                        </env>
+                    </image>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

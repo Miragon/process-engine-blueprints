@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "fluxnova-bike-leasing",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

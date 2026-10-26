@@ -1,0 +1,14 @@
+name: cibseven-process-engine-api
+engine: cibseven
+integration: process-engine-api
+topology: embedded
+summary: CIB seven embedded, wired through the bpm-crafters process-engine-api.
+stack: Postgres
+source: miragon-blueprints/cibseven-process-engine-api-example
+variants:
+  kotlin-gradle:
+    path: kotlin-gradle
+  java-maven:
+    path: java-maven
+identicalResources:
+  - service/app/src/main/resources

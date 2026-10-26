@@ -1,0 +1,21 @@
+meta {
+  name: Report the handover
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/api/bike-leasing/{{applicationId}}/report-handover
+  body: none
+  auth: none
+}
+
+script:pre-request {
+  const id = bru.getVar('applicationId');
+  await pollApp('/api/bike-leasing/' + id,
+    (b, s) => s === 200 && b && b.status === 'ORDERED' && b.orderId != null);
+}
+
+assert {
+  res.status: eq 202
+}

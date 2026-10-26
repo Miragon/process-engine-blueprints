@@ -1,0 +1,31 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: operaton-engine
+  datasource:
+    url: jdbc:postgresql://localhost:5432/bikeleasing_engine
+    username: admin
+    password: admin
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+
+operaton:
+  bpm:
+    admin-user:
+      id: admin
+      password: admin
+    deployment-resource-pattern: []
+    webapp:
+      application-path: /operaton
+    database:
+      type: postgres
+      schema-update: true
+    # Poll async-continuation jobs quickly so the process advances promptly between wait states.
+    job-execution:
+      wait-time-in-millis: 250
+      max-wait: 1000

@@ -1,0 +1,14 @@
+name: cibseven-embedded
+engine: cibseven
+integration: embedded
+topology: embedded
+summary: CIB seven embedded in the Spring Boot service, service tasks as JavaDelegates.
+stack: Postgres
+source: miragon-blueprints/cibseven-embedded-example
+variants:
+  kotlin-gradle:
+    path: kotlin-gradle
+  java-maven:
+    path: java-maven
+identicalResources:
+  - service/app/src/main/resources

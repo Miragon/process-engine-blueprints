@@ -1,0 +1,74 @@
+[versions]
+spring_version = "4.1.1"
+spring_dependency_version = "1.1.7"
+kotlin_version = "2.4.0"
+kotlin_logging_version = "3.0.5"
+fluxnova_version = "3.0.1"
+bpmn_to_code_version = "6.6.1"
+bpmn_to_code_testing_version = "6.6.1"
+archunit_version = "1.5.1"
+konsist_version = "0.17.3"
+springdoc_version = "3.1.1"   # 3.x = the Spring Boot 4 line; 3.1.0 is built against SB 4.1.0
+
+[libraries]
+web = { module = "org.springframework.boot:spring-boot-starter-web", version.ref = "spring_version" }
+devtools = { module = "org.springframework.boot:spring-boot-devtools", version.ref = "spring_version" }
+jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa", version.ref = "spring_version" }
+postgres = { module = "org.postgresql:postgresql", version = "42.7.13" }
+flyway = { module = "org.springframework.boot:spring-boot-starter-flyway", version.ref = "spring_version" }
+flyway-postgres = { module = "org.flywaydb:flyway-database-postgresql" }
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin_version" }
+kotlin_logging = { module = "io.github.microutils:kotlin-logging", version.ref = "kotlin_logging_version" }
+jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin" }
+
+# OpenAPI — springdoc generates the contract served at /v3/api-docs and the Swagger UI
+springdoc = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc_version" }
+
+# Observability — actuator probes (health/liveness/readiness, info, metrics) and a Prometheus registry
+actuator = { module = "org.springframework.boot:spring-boot-starter-actuator", version.ref = "spring_version" }
+prometheus = { module = "io.micrometer:micrometer-registry-prometheus" }   # version pinned by the Spring Boot BOM
+
+# Fluxnova (FINOS fork of Camunda 7) — Spring Boot 4 starters
+fluxnova-webapp = { module = "org.finos.fluxnova.bpm.springboot:fluxnova-bpm-spring-boot-starter-webapp", version.ref = "fluxnova_version" }
+fluxnova-rest = { module = "org.finos.fluxnova.bpm.springboot:fluxnova-bpm-spring-boot-starter-rest", version.ref = "fluxnova_version" }
+
+# BPMN-to-code (generates the typed process API from the *.bpmn models; testing = model validation)
+bpmn-to-code-runtime = { module = "io.miragon:bpmn-to-code-runtime", version.ref = "bpmn_to_code_version" }
+bpmn-to-code-testing = { module = "io.miragon:bpmn-to-code-testing", version.ref = "bpmn_to_code_testing_version" }
+
+# Architecture tests
+archunit = { module = "com.tngtech.archunit:archunit", version.ref = "archunit_version" }
+konsist = { module = "com.lemonappdev:konsist", version.ref = "konsist_version" }
+
+# Testing
+spring_test = { module = "org.springframework.boot:spring-boot-starter-test", version.ref = "spring_version" }
+spring_web_test = { module = "org.springframework.boot:spring-boot-webmvc-test", version.ref = "spring_version" }
+spring_data_jpa_test = { module = "org.springframework.boot:spring-boot-starter-data-jpa-test", version.ref = "spring_version" }
+mockito = { module = "org.mockito:mockito-inline", version = "5.2.0" }
+kotlin_mockito = { module = "org.mockito.kotlin:mockito-kotlin", version = "6.4.0" }
+mockk = { module = "io.mockk:mockk", version = "1.14.11" }
+spring_mockk = { module = "com.ninja-squad:springmockk", version = "5.0.1" }
+h2 = { module = "com.h2database:h2", version = "2.5.252" }
+
+# Process test — Fluxnova
+fluxnova-bpm-assert = { module = "org.finos.fluxnova.bpm:fluxnova-bpm-assert", version.ref = "fluxnova_version" }
+fluxnova-bpm-junit5 = { module = "org.finos.fluxnova.bpm:fluxnova-bpm-junit5", version.ref = "fluxnova_version" }
+
+[bundles]
+defaultService = ["kotlin-reflect", "kotlin_logging", "jackson-kotlin", "devtools", "web", "actuator", "prometheus"]
+database = ["jpa", "postgres", "flyway", "flyway-postgres"]
+fluxnova = ["fluxnova-webapp", "fluxnova-rest"]
+test = ["spring_test", "spring_web_test", "spring_data_jpa_test", "mockito", "mockk", "spring_mockk", "kotlin_mockito"]
+archunit = ["archunit"]
+konsist = ["konsist"]
+fluxnovaProcessTest = ["fluxnova-bpm-assert", "fluxnova-bpm-junit5", "h2"]
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin_version" }
+kotlin-spring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotlin_version" }
+kotlin-jpa = { id = "org.jetbrains.kotlin.plugin.jpa", version.ref = "kotlin_version" }
+kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin_version" }
+springframework = { id = "org.springframework.boot", version.ref = "spring_version" }
+spring-dependency = { id = "io.spring.dependency-management", version.ref = "spring_dependency_version" }
+bpmnToCode = { id = "io.miragon.bpmn-to-code-gradle", version.ref = "bpmn_to_code_version" }
+pitest = { id = "info.solidsoft.pitest", version = "1.19.0" }

@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# Repo-wide pre-commit hook. Install once with: npm run hooks:install (from the root or any example).
+#
+# Lints the BPMN models of every example whose models are staged, with that example's own bpmnlint.
+set -euo pipefail
+
+root="$(git rev-parse --show-toplevel)"
+examples_with_staged_models="$(git diff --cached --name-only --diff-filter=ACMR \
+  | grep -E '^examples/[^/]+/.*\.bpmn$' | cut -d/ -f2 | sort -u || true)"
+
+for example in $examples_with_staged_models; do
+  echo "pre-commit: linting the BPMN models of $example"
+  if [[ ! -d "$root/examples/$example/node_modules" ]]; then
+    echo "pre-commit: run npm ci in examples/$example first" >&2
+    exit 1
+  fi
+  npm --prefix "$root/examples/$example" run --silent lint:bpmn
+done

@@ -1,0 +1,15 @@
+name: operaton-remote
+engine: operaton
+integration: remote
+topology: remote
+summary: A generic Operaton engine host plus a worker service that owns the model and runs its logic as external tasks.
+stack: Postgres with one database per service
+source: miragon-blueprints/operaton-remote-example
+variants:
+  kotlin-gradle:
+    path: kotlin-gradle
+  java-maven:
+    path: java-maven
+identicalResources:
+  - service/engine-service/src/main/resources
+  - service/example-service/src/main/resources

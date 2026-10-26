@@ -1,0 +1,73 @@
+version: 2
+
+multi-ecosystem-groups:
+  backend:
+    schedule:
+      interval: "monthly"
+    labels:
+      - "dependencies"
+
+updates:
+
+  # Backend dependencies (Maven + the Postgres image in the dev stack) grouped into one PR.
+  # Note: unlike the gradle ecosystem, Dependabot does not bump the Maven wrapper — update
+  # .mvn/wrapper/maven-wrapper.properties manually when a new Maven 3.9.x lands.
+  - package-ecosystem: "maven"
+    directory: "/"
+    patterns:
+      - "*"
+    multi-ecosystem-group: "backend"
+
+  - package-ecosystem: "docker-compose"
+    directory: "/stack"
+    patterns:
+      - "*"
+    multi-ecosystem-group: "backend"
+
+  # Dev tooling (bpmnlint and its plugin) — package.json lives at the repo root
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "build"
+      include: "scope"
+    groups:
+      tooling-dependencies:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+          - "minor"
+          - "major"
+      tooling-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "build"
+      include: "scope"
+    groups:
+      github-actions:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+          - "minor"
+          - "major"
+      github-actions-security:
+        applies-to: security-updates
+        patterns:
+          - "*"

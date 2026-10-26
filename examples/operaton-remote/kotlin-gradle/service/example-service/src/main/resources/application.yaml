@@ -1,0 +1,70 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: operaton-example-service
+  datasource:
+    # Overridable via SPRING_DATASOURCE_* env vars for containerized/remote runs; the defaults target
+    # the local dev Postgres (stack/docker-compose.yml). See CONTRIBUTING.md "Run it in containers".
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/bikeleasing_app}
+    username: ${SPRING_DATASOURCE_USERNAME:admin}
+    password: ${SPRING_DATASOURCE_PASSWORD:admin}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      # Flyway owns the schema (db/migration); Hibernate only validates the entities against it.
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  mvc:
+    problemdetails:
+      enabled: true
+
+# A minimal, deploy/ops-ready surface. Everything else stays disabled.
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      # Component detail is hidden. To expose it, set: show-details: always
+      show-details: never
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+  # Keep the engine-internal /engine-rest API out of the committed customer/back-office contract.
+  paths-to-match: /api/**
+
+# Operaton external-task client — connects to the *remote* engine hosted by `engine-service` and
+# fetches/locks/completes the external service-tasks. Topic subscriptions are declared via
+# @ExternalTaskSubscription annotations on the handlers in adapter/inbound/operaton.
+operaton:
+  bpm:
+    client:
+      base-url: http://localhost:8081/engine-rest
+      worker-id: bikeLeasing-worker
+      lock-duration: 20000
+      # Pick up external tasks promptly. The default exponential backoff grows to 60s while idle.
+      async-response-timeout: 1000
+      disable-backoff-strategy: true
+      # Only needed if the engine's REST API is protected:
+      # basic-auth:
+      #   username: admin
+      #   password: admin
+
+# Base URL the RestClient uses to start the process, complete user tasks and correlate messages.
+bike-leasing:
+  engine-rest-base-url: http://localhost:8081/engine-rest

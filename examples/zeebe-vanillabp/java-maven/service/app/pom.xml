@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.miragon.blueprint</groupId>
+        <artifactId>zeebe-example</artifactId>
+        <version>1.0-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>app</artifactId>
+    <name>app</name>
+    <description>The Camunda 8 bike-leasing service (hexagonal)</description>
+
+    <dependencies>
+        <!-- Web + observability -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Persistence -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-flyway</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+        </dependency>
+
+        <!-- Zeebe glue: the Camunda client and the VanillaBP Camunda 8 adapter, at runtime only, so the
+             service cannot compile against an engine API -->
+        <dependency>
+            <groupId>io.miragon.blueprint</groupId>
+            <artifactId>common-zeebe</artifactId>
+            <version>${project.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- VanillaBP SPI — the only workflow API the service compiles against -->
+        <dependency>
+            <groupId>io.vanillabp</groupId>
+            <artifactId>spi-for-java</artifactId>
+        </dependency>
+
+        <!-- OpenAPI contract (served at /v3/api-docs + Swagger UI) -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+        </dependency>
+
+        <!-- bpmn-to-code runtime — types referenced by the generated process API -->
+        <dependency>
+            <groupId>io.miragon</groupId>
+            <artifactId>bpmn-to-code-runtime</artifactId>
+        </dependency>
+
+        <!-- ================= test ================= -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-webmvc-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Camunda 8 process tests (in-container Zeebe) and their helpers -->
+        <dependency>
+            <groupId>io.camunda</groupId>
+            <artifactId>camunda-process-test-spring-4</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.miragon.blueprint</groupId>
+            <artifactId>common-zeebe-test</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- BPMN model validation (build-time, no engine) -->
+        <dependency>
+            <groupId>io.miragon</groupId>
+            <artifactId>bpmn-to-code-testing</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Reusable ArchUnit rule suite -->
+        <dependency>
+            <groupId>io.miragon.blueprint</groupId>
+            <artifactId>common-architecture-tests</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Generate the typed process API (Java) from the *.bpmn models into src/main/java.
+                 Mirrors the Gradle generateBpmnModels task. Never hand-edit the generated files. -->
+            <plugin>
+                <groupId>io.miragon</groupId>
+                <artifactId>bpmn-to-code-maven</artifactId>
+                <executions>
+                    <execution>
+                        <id>generate-bpmn-api</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate-bpmn-api</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <baseDir>${project.basedir}</baseDir>
+                    <filePattern>src/main/resources/bpmn/*.bpmn</filePattern>
+                    <outputFolderPath>${project.basedir}/src/main/java</outputFolderPath>
+                    <packagePath>io.miragon.blueprint.adapter.process</packagePath>
+                    <outputLanguage>JAVA</outputLanguage>
+                    <processEngine>ZEEBE</processEngine>
+                </configuration>
+            </plugin>
+
+            <!-- Checkstyle: no wildcard imports + one top-level type per file (Konsist's source rules). -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <configuration>
+                    <configLocation>${maven.multiModuleProjectDirectory}/config/checkstyle/checkstyle.xml</configLocation>
+                    <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                    <failOnViolation>true</failOnViolation>
+                    <violationSeverity>warning</violationSeverity>
+                    <!-- the generated process API is not hand-maintained; do not lint it -->
+                    <excludes>
+                        io/miragon/blueprint/adapter/process/*ProcessApi.java,
+                        io/miragon/blueprint/adapter/process/ServiceTasks.java,
+                        io/miragon/blueprint/adapter/process/Messages.java,
+                        io/miragon/blueprint/adapter/process/ProcessVariables.java,
+                        io/miragon/blueprint/adapter/process/Errors.java,
+                        io/miragon/blueprint/adapter/process/Escalations.java
+                    </excludes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>checkstyle-check</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- In-container Camunda process tests are mildly async; retry to keep CI stable. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <rerunFailingTestsCount>3</rerunFailingTestsCount>
+                </configuration>
+            </plugin>
+
+            <!-- Spring Boot: repackage, build-info, and the OCI image (miravelo/zeebe-example). -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <image>
+                        <name>miravelo/zeebe-example:${project.version}</name>
+                        <env>
+                            <BP_JVM_VERSION>21</BP_JVM_VERSION>
+                        </env>
+                    </image>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>build-info</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- PIT mutation testing configuration (run explicitly, see the README). -->
+            <plugin>
+                <groupId>org.pitest</groupId>
+                <artifactId>pitest-maven</artifactId>
+                <configuration>
+                    <targetTests>
+                        <param>io.miragon.blueprint.*</param>
+                    </targetTests>
+                    <excludedClasses>
+                        <!-- Generated typed process API — not hand-written logic. -->
+                        <param>io.miragon.blueprint.adapter.process.*ProcessApi*</param>
+                        <param>io.miragon.blueprint.adapter.process.ServiceTasks*</param>
+                        <param>io.miragon.blueprint.adapter.process.Messages*</param>
+                        <param>io.miragon.blueprint.adapter.process.ProcessVariables*</param>
+                        <param>io.miragon.blueprint.adapter.process.Errors*</param>
+                        <param>io.miragon.blueprint.adapter.process.Escalations*</param>
+                        <!-- Application bootstrap, outside the hexagonal layers. -->
+                        <param>io.miragon.blueprint.BikeLeasingApplication*</param>
+                        <param>io.miragon.blueprint.BikeCatalogueSeeder*</param>
+                        <!-- Dev-only CORS escape hatch. -->
+                        <param>io.miragon.blueprint.adapter.inbound.rest.DevCorsConfiguration*</param>
+                    </excludedClasses>
+                    <excludedTestClasses>
+                        <param>io.miragon.blueprint.adapter.process.*</param>
+                        <param>io.miragon.blueprint.ArchitectureTest*</param>
+                    </excludedTestClasses>
+                    <avoidCallsTo>
+                        <avoidCallsTo>org.slf4j</avoidCallsTo>
+                    </avoidCallsTo>
+                    <mutators>
+                        <mutator>DEFAULTS</mutator>
+                    </mutators>
+                    <outputFormats>
+                        <param>HTML</param>
+                        <param>XML</param>
+                    </outputFormats>
+                    <timestampedReports>false</timestampedReports>
+                    <timeoutFactor>2.0</timeoutFactor>
+                    <threads>4</threads>
+                    <mutationThreshold>80</mutationThreshold>
+                    <failWhenNoMutations>false</failWhenNoMutations>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <!-- Full-module mutation sweep (nightly + local). Active unless a CLI profile overrides it. -->
+        <profile>
+            <id>pit-full</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.pitest</groupId>
+                        <artifactId>pitest-maven</artifactId>
+                        <configuration>
+                            <targetClasses>
+                                <param>io.miragon.blueprint.*</param>
+                            </targetClasses>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <!-- Diff-scoped mutation (PR gate): CI passes -DtargetClasses="a.*,b.*". -->
+        <profile>
+            <id>pit-diff</id>
+        </profile>
+    </profiles>
+</project>

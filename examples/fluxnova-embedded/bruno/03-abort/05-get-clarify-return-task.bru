@@ -1,0 +1,26 @@
+meta {
+  name: Find the clarify-return task (in the cancel sub-process)
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{engineRest}}/task?processInstanceBusinessKey={{applicationId}}&taskDefinitionKey=userTask_clarifyReturn
+  body: none
+  auth: none
+}
+
+script:pre-request {
+  await pollEngine("/task?processInstanceBusinessKey=" + bru.getVar("applicationId")
+    + "&taskDefinitionKey=userTask_clarifyReturn",
+    (b) => Array.isArray(b) && b.length >= 1);
+}
+
+assert {
+  res.status: eq 200
+  res.body[0].id: isDefined
+}
+
+vars:post-response {
+  clarifyReturnTaskId: res.body[0].id
+}

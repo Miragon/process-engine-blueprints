@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.miragon.blueprint</groupId>
+        <artifactId>fluxnova-embedded-example</artifactId>
+        <version>1.0-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>app</artifactId>
+    <name>app</name>
+    <description>The Fluxnova bike-leasing service (hexagonal)</description>
+
+    <dependencies>
+        <!-- Web + observability -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Persistence -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-flyway</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+        </dependency>
+
+        <!-- Fluxnova (FINOS fork of Camunda 7) — embedded engine + webapps + REST.
+             Fluxnova 3.0.1's engine-rest pins the pre-release tools.jackson.datatype:jackson-datatype-jsr310:3.0.0-rc2,
+             which Spring's JSON converter auto-discovers and which breaks java.time (de)serialization on
+             Jackson 3.1 (NoSuchFieldError). Jackson 3 handles java.time natively, so the module is dropped —
+             the same fix as upstream (https://github.com/finos/fluxnova-bpm-platform/issues/244).
+             Remove once Fluxnova 3.1.0 is used. -->
+        <dependency>
+            <groupId>org.finos.fluxnova.bpm.springboot</groupId>
+            <artifactId>fluxnova-bpm-spring-boot-starter-webapp</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>tools.jackson.datatype</groupId>
+                    <artifactId>jackson-datatype-jsr310</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.fluxnova.bpm.springboot</groupId>
+            <artifactId>fluxnova-bpm-spring-boot-starter-rest</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>tools.jackson.datatype</groupId>
+                    <artifactId>jackson-datatype-jsr310</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- OpenAPI contract (served at /v3/api-docs + Swagger UI) -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+        </dependency>
+
+        <!-- bpmn-to-code runtime — types referenced by the generated process API -->
+        <dependency>
+            <groupId>io.miragon</groupId>
+            <artifactId>bpmn-to-code-runtime</artifactId>
+        </dependency>
+
+        <!-- ================= test ================= -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-webmvc-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Fluxnova process tests -->
+        <dependency>
+            <groupId>org.finos.fluxnova.bpm</groupId>
+            <artifactId>fluxnova-bpm-assert</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.fluxnova.bpm</groupId>
+            <artifactId>fluxnova-bpm-junit5</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- BPMN model validation (build-time, no engine) -->
+        <dependency>
+            <groupId>io.miragon</groupId>
+            <artifactId>bpmn-to-code-testing</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Reusable ArchUnit rule suite -->
+        <dependency>
+            <groupId>io.miragon.blueprint</groupId>
+            <artifactId>common-architecture-tests</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Generate the typed process API (Java) from the *.bpmn models into src/main/java.
+                 Mirrors the Gradle generateBpmnModels task. Never hand-edit adapter/process/*. -->
+            <plugin>
+                <groupId>io.miragon</groupId>
+                <artifactId>bpmn-to-code-maven</artifactId>
+                <executions>
+                    <execution>
+                        <id>generate-bpmn-api</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate-bpmn-api</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <baseDir>${project.basedir}</baseDir>
+                    <filePattern>src/main/resources/bpmn/*.bpmn</filePattern>
+                    <outputFolderPath>${project.basedir}/src/main/java</outputFolderPath>
+                    <packagePath>io.miragon.blueprint.adapter.process</packagePath>
+                    <outputLanguage>JAVA</outputLanguage>
+                    <processEngine>CAMUNDA_7</processEngine>
+                </configuration>
+            </plugin>
+
+            <!-- Fluxnova is the only engine: fails when a CIB seven, Camunda or Operaton artifact reaches the
+                 runtime or test classpath. The two Camunda model parsers are a test-scoped transitive
+                 dependency of bpmn-to-code-testing. Do not widen the allow-list to make a build pass. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>verify-fluxnova-is-the-only-engine</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <bannedDependencies>
+                                    <excludes>
+                                        <exclude>org.cibseven.*</exclude>
+                                        <exclude>org.camunda.*</exclude>
+                                        <exclude>org.operaton.*</exclude>
+                                    </excludes>
+                                    <includes>
+                                        <include>org.camunda.bpm.model:camunda-bpmn-model:*:*:test</include>
+                                        <include>org.camunda.bpm.model:camunda-xml-model:*:*:test</include>
+                                    </includes>
+                                    <searchTransitive>true</searchTransitive>
+                                    <message>Fluxnova must be the only process engine on the classpath.</message>
+                                </bannedDependencies>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Checkstyle: no wildcard imports + one top-level type per file (Konsist's source rules). -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <configuration>
+                    <configLocation>${maven.multiModuleProjectDirectory}/config/checkstyle/checkstyle.xml</configLocation>
+                    <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                    <failOnViolation>true</failOnViolation>
+                    <violationSeverity>warning</violationSeverity>
+                    <!-- adapter/process is generated; do not lint it -->
+                    <excludes>io/miragon/blueprint/adapter/process/**/*</excludes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>checkstyle-check</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Fork a fresh JVM per test class — mirrors Gradle forkEvery=1 so the embedded engine and
+                 BpmnAwareTests static state never leak between process tests. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <reuseForks>false</reuseForks>
+                    <forkCount>1</forkCount>
+                </configuration>
+            </plugin>
+
+            <!-- Spring Boot: repackage, build-info, and the OCI image (miravelo/fluxnova-embedded-example). -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <image>
+                        <name>miravelo/fluxnova-embedded-example:${project.version}</name>
+                        <env>
+                            <BP_JVM_VERSION>21</BP_JVM_VERSION>
+                        </env>
+                    </image>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>build-info</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- PIT mutation testing configuration (run explicitly: mvn -pl service/app pitest:mutationCoverage). -->
+            <plugin>
+                <groupId>org.pitest</groupId>
+                <artifactId>pitest-maven</artifactId>
+                <configuration>
+                    <targetTests>
+                        <param>io.miragon.blueprint.*</param>
+                    </targetTests>
+                    <excludedClasses>
+                        <param>io.miragon.blueprint.adapter.process.*</param>
+                        <param>io.miragon.blueprint.FluxnovaBikeLeasingApplication*</param>
+                        <param>io.miragon.blueprint.BikeCatalogueSeeder*</param>
+                        <param>io.miragon.blueprint.adapter.inbound.rest.DevCorsConfiguration*</param>
+                        <param>io.miragon.blueprint.adapter.inbound.fluxnova.*</param>
+                    </excludedClasses>
+                    <excludedTestClasses>
+                        <param>io.miragon.blueprint.adapter.process.*</param>
+                        <param>io.miragon.blueprint.ArchitectureTest*</param>
+                    </excludedTestClasses>
+                    <avoidCallsTo>
+                        <avoidCallsTo>org.slf4j</avoidCallsTo>
+                    </avoidCallsTo>
+                    <mutators>
+                        <mutator>DEFAULTS</mutator>
+                    </mutators>
+                    <outputFormats>
+                        <param>HTML</param>
+                        <param>XML</param>
+                    </outputFormats>
+                    <timestampedReports>false</timestampedReports>
+                    <timeoutFactor>2.0</timeoutFactor>
+                    <threads>4</threads>
+                    <mutationThreshold>80</mutationThreshold>
+                    <failWhenNoMutations>false</failWhenNoMutations>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <!-- Full-module mutation sweep (nightly + local). Active unless a CLI profile overrides it. -->
+        <profile>
+            <id>pit-full</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.pitest</groupId>
+                        <artifactId>pitest-maven</artifactId>
+                        <configuration>
+                            <targetClasses>
+                                <param>io.miragon.blueprint.*</param>
+                            </targetClasses>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <!-- Diff-scoped mutation (PR gate): CI passes -DtargetClasses="a.*,b.*". -->
+        <profile>
+            <id>pit-diff</id>
+        </profile>
+    </profiles>
+</project>

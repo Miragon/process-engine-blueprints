@@ -10,7 +10,9 @@ description: Add a new example to this monorepo, or import an existing standalon
 2. **Bring the files.**
    - Importing a repository keeps its history:
      `git filter-repo --to-subdirectory-filter examples/<name>` on a fresh clone, then
-     `git merge --allow-unrelated-histories` into the branch.
+     `git merge --allow-unrelated-histories` into the branch. The `main` ruleset allows only signed squash
+     merges, so such a PR is merged by a repository admin with *Merge commit* and the bypass on the pull request;
+     squashing would drop the history.
    - A new example starts as a copy of the closest existing one.
 3. **Shape it like the others:** variants in `kotlin-gradle/` and `java-maven/`, its own
    `.github/workflows/pre-merge*.yml` and `nightly*.yml`, `.github/dependabot.yml`, `package.json` with

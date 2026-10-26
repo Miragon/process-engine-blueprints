@@ -1,0 +1,25 @@
+meta {
+  name: Assert an incident was raised on the order task
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{engineRest}}/incident?processInstanceId={{processInstanceId}}&incidentType=failedExternalTask
+  body: none
+  auth: none
+}
+
+script:pre-request {
+  const pid = bru.getVar('processInstanceId');
+  await pollEngine(`/incident?processInstanceId=${pid}&incidentType=failedExternalTask`,
+    (b) => Array.isArray(b) && b.length >= 1 && b[0].incidentType === "failedExternalTask",
+    { timeoutMs: 45000 });
+}
+
+assert {
+  res.status: eq 200
+  res.body: length 1
+  res.body[0].incidentType: eq failedExternalTask
+  res.body[0].activityId: eq serviceTask_orderBike
+}

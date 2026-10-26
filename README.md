@@ -36,13 +36,11 @@ timers, messages, escalations, compensation and user tasks along the way. What y
 | [`cibseven-embedded`](examples/cibseven-embedded/README.md) | CIB seven | embedded | [Kotlin](examples/cibseven-embedded/kotlin-gradle/README.md) · [Java](examples/cibseven-embedded/java-maven/README.md) |
 | [`cibseven-process-engine-api`](examples/cibseven-process-engine-api/README.md) | CIB seven | embedded | [Kotlin](examples/cibseven-process-engine-api/kotlin-gradle/README.md) · [Java](examples/cibseven-process-engine-api/java-maven/README.md) |
 | [`cibseven-remote`](examples/cibseven-remote/README.md) | CIB seven | remote | [Kotlin](examples/cibseven-remote/kotlin-gradle/README.md) · [Java](examples/cibseven-remote/java-maven/README.md) |
-| [`fluxnova-embedded`](examples/fluxnova-embedded/README.md) | Fluxnova | embedded | [Kotlin](examples/fluxnova-embedded/kotlin-gradle/README.md) · [Java](examples/fluxnova-embedded/java-maven/README.md) |
 | [`fullstack-cibseven-embedded`](examples/fullstack-cibseven-embedded/README.md) | CIB seven | embedded | [Kotlin](examples/fullstack-cibseven-embedded/README.md) |
 | [`operaton-embedded`](examples/operaton-embedded/README.md) | Operaton | embedded | [Kotlin](examples/operaton-embedded/kotlin-gradle/README.md) · [Java](examples/operaton-embedded/java-maven/README.md) |
 | [`operaton-process-engine-api`](examples/operaton-process-engine-api/README.md) | Operaton | embedded | [Java](examples/operaton-process-engine-api/README.md) |
 | [`operaton-remote`](examples/operaton-remote/README.md) | Operaton | remote | [Kotlin](examples/operaton-remote/kotlin-gradle/README.md) · [Java](examples/operaton-remote/java-maven/README.md) |
 | [`zeebe-native`](examples/zeebe-native/README.md) | Camunda 8 (Zeebe) | remote | [Kotlin](examples/zeebe-native/kotlin-gradle/README.md) · [Java](examples/zeebe-native/java-maven/README.md) |
-| [`zeebe-vanillabp`](examples/zeebe-vanillabp/README.md) | Camunda 8 (Zeebe) | remote | [Kotlin](examples/zeebe-vanillabp/kotlin-gradle/README.md) · [Java](examples/zeebe-vanillabp/java-maven/README.md) |
 <!-- END:examples -->
 
 **Embedded** runs the engine inside your service, **remote** in its own engine host or Camunda 8 cluster. The

@@ -7,6 +7,10 @@ external Zeebe broker and binds each BPMN task to a use case through [VanillaBP]
 This branch is a spike comparing VanillaBP with the plain Zeebe integration, written up in
 [docs/vanillabp-spike.md](docs/vanillabp-spike.md), and still a work in progress.
 
+> [!WARNING]
+> **Experimental.** This example is only a test for now: it is not listed in the overview of this
+> repository yet, and it may change or go away without notice.
+
 <!-- variant:blueprint -->
 ## Pick your stack
 

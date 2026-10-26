@@ -22,7 +22,7 @@ function markersOf(block) {
 }
 
 export function examplesTable(examples) {
-  const rows = examples.map((example) => {
+  const rows = examples.filter((example) => !example.experimental).map((example) => {
     const link = `[\`${example.name}\`](examples/${example.name}/README.md)`;
     return `| ${link} | ${engines[example.engine]} | ${example.topology} | ${languagesCell(example)} |`;
   });

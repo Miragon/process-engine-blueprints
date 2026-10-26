@@ -1,0 +1,15 @@
+.claude/logs/
+**/bin/
+**/target/
+# variant:kotlin-gradle
+.gradle
+**/build/
+!kotlin-gradle/gradle/wrapper/gradle-wrapper.jar
+.kotlin/
+# /variant:kotlin-gradle
+.idea
+*.iml
+.DS_Store
+.vscode
+.context
+node_modules/

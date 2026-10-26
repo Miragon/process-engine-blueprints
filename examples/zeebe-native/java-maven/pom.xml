@@ -13,7 +13,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.1.1</version>
+        <version>4.1.2</version>
         <relativePath/>
     </parent>
 
@@ -36,7 +36,7 @@
         <java.version>21</java.version>
 
         <!-- Camunda 8 / Zeebe -->
-        <camunda.version>8.10.5</camunda.version>
+        <camunda.version>8.10.6</camunda.version>
 
         <!-- BPMN-to-code (typed process API generation, runtime and model validation) -->
         <bpmn-to-code.version>6.6.1</bpmn-to-code.version>

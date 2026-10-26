@@ -1,0 +1,10 @@
+.claude/logs/
+target/
+**/bin/
+**/jgiven-reports/
+.idea
+*.iml
+.DS_Store
+.vscode
+.context
+node_modules/

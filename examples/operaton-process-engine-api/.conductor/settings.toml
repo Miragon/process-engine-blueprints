@@ -1,0 +1,28 @@
+"$schema" = "https://conductor.build/schemas/settings.repo.schema.json"
+
+[scripts]
+run_mode = "nonconcurrent"
+
+# This stack binds fixed ports (Postgres 5432, backend 8080), so only one workspace can run the app
+# at a time — hence run_mode = "nonconcurrent". See docs/adr/0006-fixed-ports-for-v1-portless-as-the-upgrade.md.
+
+# One-time setup per workspace: install BPMN linting tooling (root package.json) + git hooks.
+setup = """
+npm ci
+npm run hooks:install
+"""
+
+# Tear down the local Postgres container when a workspace is archived.
+archive = "docker compose -f stack/docker-compose.yml down -v || true"
+
+[scripts.run.infra]
+command = "docker compose -f stack/docker-compose.yml up"
+
+[scripts.run.backend]
+command = "./mvnw -q -DskipTests install && ./mvnw -pl service/app spring-boot:run"
+
+[scripts.run.test]
+command = "./mvnw verify"
+
+[scripts.run.smoke]
+command = "cd bruno && npx --yes @usebruno/cli run . --env local -r"

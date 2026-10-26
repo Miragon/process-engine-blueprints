@@ -1,0 +1,31 @@
+meta {
+  name: Decline the alternative bike
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/bike-leasing/{{applicationId}}/clarify-alternative
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "alternativeFound": false
+  }
+}
+
+script:pre-request {
+  const id = bru.getVar("applicationId");
+  await pollApp("/api/tasks/clarify-alternative",
+    (b) => Array.isArray(b) && b.some((t) => t.applicationId === id));
+  await pollSearch("/user-tasks/search",
+    { filter: { elementId: "userTask_clarifyAlternative", state: "CREATED",
+      processInstanceVariables: [{ name: "applicationId", value: `"${id}"` }] } },
+    (b) => b && Array.isArray(b.items) && b.items.length > 0);
+}
+
+assert {
+  res.status: eq 202
+}

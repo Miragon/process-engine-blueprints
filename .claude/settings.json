@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(npm run generate)",
+      "Bash(npm run generate:check)",
+      "Bash(npm run drift)",
+      "Bash(npm test)",
+      "Bash(gh pr view *)",
+      "Bash(gh pr diff *)",
+      "Bash(gh pr checks *)"
+    ],
+    "deny": [
+      "Edit(/.github/workflows/ci.yml)",
+      "Edit(/.github/workflows/nightly.yml)",
+      "Edit(/.github/workflows/*.pre-merge*.yml)",
+      "Edit(/.github/workflows/*.nightly*.yml)",
+      "Edit(/.github/dependabot.yml)",
+      "Edit(/.conductor/settings.toml)",
+      "Edit(/tooling/create-blueprint/catalog.json)",
+      "Edit(/release-please-config.json)",
+      "Edit(/**/adapter/process/*ProcessApi.*)",
+      "Edit(/examples/*/openapi/*.json)",
+      "Edit(/examples/*/frontend/src/shared/api/generated/**)"
+    ]
+  }
+}

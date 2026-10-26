@@ -116,7 +116,7 @@ jobs:
 
       - name: Start the application
         working-directory: examples/cibseven-process-engine-api/java-maven
-        run: (./mvnw -B -DskipTests package && java -jar service/app/target/app-1.0-SNAPSHOT.jar) > "$GITHUB_WORKSPACE/app.log" 2>&1 &
+        run: (./mvnw -B -DskipTests package && java -jar service/app/target/app-1.0-SNAPSHOT.jar) > "$GITHUB_WORKSPACE/examples/cibseven-process-engine-api/app.log" 2>&1 &
 
       - name: Wait for the engine to be ready
         run: |

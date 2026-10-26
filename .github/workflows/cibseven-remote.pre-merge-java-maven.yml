@@ -123,7 +123,7 @@ jobs:
 
       - name: Start the engine host (engine-service)
         working-directory: examples/cibseven-remote/java-maven
-        run: java -jar service/engine-service/target/engine-service-1.0-SNAPSHOT.jar > "$GITHUB_WORKSPACE/engine.log" 2>&1 &
+        run: java -jar service/engine-service/target/engine-service-1.0-SNAPSHOT.jar > "$GITHUB_WORKSPACE/examples/cibseven-remote/engine.log" 2>&1 &
 
       - name: Wait for the engine to be ready
         run: |
@@ -137,7 +137,7 @@ jobs:
 
       - name: Start the worker (example-service)
         working-directory: examples/cibseven-remote/java-maven
-        run: java -jar service/example-service/target/example-service-1.0-SNAPSHOT.jar > "$GITHUB_WORKSPACE/worker.log" 2>&1 &
+        run: java -jar service/example-service/target/example-service-1.0-SNAPSHOT.jar > "$GITHUB_WORKSPACE/examples/cibseven-remote/worker.log" 2>&1 &
 
       - name: Wait for the worker to be ready
         run: |

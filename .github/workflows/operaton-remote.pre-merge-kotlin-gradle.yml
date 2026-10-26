@@ -125,7 +125,7 @@ jobs:
 
       - name: Start the engine host (engine-service)
         working-directory: examples/operaton-remote/kotlin-gradle
-        run: ./gradlew :service:engine-service:bootRun --no-daemon > "$GITHUB_WORKSPACE/engine.log" 2>&1 &
+        run: ./gradlew :service:engine-service:bootRun --no-daemon > "$GITHUB_WORKSPACE/examples/operaton-remote/engine.log" 2>&1 &
 
       - name: Wait for the engine to be ready
         run: |
@@ -139,7 +139,7 @@ jobs:
 
       - name: Start the worker (example-service)
         working-directory: examples/operaton-remote/kotlin-gradle
-        run: ./gradlew :service:example-service:bootRun --no-daemon > "$GITHUB_WORKSPACE/worker.log" 2>&1 &
+        run: ./gradlew :service:example-service:bootRun --no-daemon > "$GITHUB_WORKSPACE/examples/operaton-remote/worker.log" 2>&1 &
 
       - name: Wait for the worker to be ready
         run: |

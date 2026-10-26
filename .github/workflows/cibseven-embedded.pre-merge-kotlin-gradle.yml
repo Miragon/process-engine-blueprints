@@ -126,7 +126,7 @@ jobs:
 
       - name: Start the application
         working-directory: examples/cibseven-embedded/kotlin-gradle
-        run: (./gradlew :service:app:bootRun --no-daemon) > "$GITHUB_WORKSPACE/app.log" 2>&1 &
+        run: (./gradlew :service:app:bootRun --no-daemon) > "$GITHUB_WORKSPACE/examples/cibseven-embedded/app.log" 2>&1 &
 
       - name: Wait for the engine to be ready
         run: |

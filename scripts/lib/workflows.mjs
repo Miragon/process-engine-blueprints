@@ -59,7 +59,7 @@ function relocateStep(example, exampleRoot, step) {
   }
   const run = step.get('run', true);
   if (run) {
-    run.value = run.value.replaceAll('git diff --name-only', 'git diff --relative --name-only');
+    run.value = run.value.replaceAll('git diff --name-only', 'git diff --relative --name-only').replaceAll('$GITHUB_WORKSPACE/', `$GITHUB_WORKSPACE/${exampleRoot}/`);
   }
   const inputs = step.get('with');
   if (inputs) {

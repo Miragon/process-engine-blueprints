@@ -136,7 +136,7 @@ jobs:
 
       - name: Start the application
         working-directory: examples/zeebe-native/kotlin-gradle
-        run: (./gradlew :service:app:bootRun --no-daemon) > "$GITHUB_WORKSPACE/app.log" 2>&1 &
+        run: (./gradlew :service:app:bootRun --no-daemon) > "$GITHUB_WORKSPACE/examples/zeebe-native/app.log" 2>&1 &
 
       - name: Wait for the application to be ready
         run: |

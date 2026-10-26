@@ -28,6 +28,7 @@ jobs:
       - working-directory: java-maven
         run: ./mvnw verify
       - run: git diff --name-only base HEAD -- java-maven/src
+      - run: ./mvnw spring-boot:run > "$GITHUB_WORKSPACE/app.log" 2>&1 &
       - uses: actions/upload-artifact@ghi # v7
         with:
           name: pitest-report
@@ -55,8 +56,9 @@ test('turns an example workflow into a reusable one rooted in the example', () =
   assert.equal(steps[1].with['cache-dependency-path'], 'examples/demo-embedded/package-lock.json');
   assert.equal(steps[2]['working-directory'], 'examples/demo-embedded/java-maven');
   assert.equal(steps[3].run, 'git diff --relative --name-only base HEAD -- java-maven/src');
-  assert.equal(steps[4].with.name, 'demo-embedded-pitest-report');
-  assert.equal(steps[4].with.path, 'examples/demo-embedded/java-maven/target/pit-reports');
+  assert.equal(steps[4].run, './mvnw spring-boot:run > "$GITHUB_WORKSPACE/examples/demo-embedded/app.log" 2>&1 &');
+  assert.equal(steps[5].with.name, 'demo-embedded-pitest-report');
+  assert.equal(steps[5].with.path, 'examples/demo-embedded/java-maven/target/pit-reports');
   assert.match(rendered, /uses: actions\/checkout@abc # v7\.0\.1/);
 });
 

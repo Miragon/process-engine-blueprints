@@ -121,7 +121,7 @@ jobs:
 
       - name: Start the application
         working-directory: examples/zeebe-vanillabp/java-maven
-        run: (./mvnw -B -ntp -DskipTests package && java -jar service/app/target/app-1.0-SNAPSHOT.jar) > "$GITHUB_WORKSPACE/app.log" 2>&1 &
+        run: (./mvnw -B -ntp -DskipTests package && java -jar service/app/target/app-1.0-SNAPSHOT.jar) > "$GITHUB_WORKSPACE/examples/zeebe-vanillabp/app.log" 2>&1 &
 
       - name: Wait for the application to be ready
         run: |

@@ -1,5 +1,5 @@
 [versions]
-spring_version = "4.1.1"
+spring_version = "4.1.2"
 spring_dependency_version = "1.1.7"
 kotlin_version = "2.4.0"
 kotlin_logging_version = "3.0.5"

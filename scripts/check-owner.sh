@@ -10,6 +10,7 @@ if git grep -n -F "$owner/" -- \
   ':!package.json' \
   ':!tooling/create-blueprint/package.json' \
   ':!tooling/create-blueprint/catalog.json' \
+  ':!README.md' \
   ':!examples/*/blueprint.yaml' \
   ':!examples/*/docs/adr/*' \
   ':!examples/*/docs/*-migration.md' \

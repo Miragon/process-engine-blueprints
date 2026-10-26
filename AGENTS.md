@@ -45,7 +45,7 @@ deliberate ([ADR-0001](docs/adr/0001-one-repository-with-self-contained-examples
 `ci.yml` picks the examples a pull request touches, runs their own pre-merge workflows (generated as reusable
 workflows) plus `_blueprint.yml` (variants equivalent, starter builds outside the monorepo) and ends in the
 `CI gate` job, the only required check ([ADR-0002](docs/adr/0002-root-ci-generated-from-the-examples.md)).
-Nothing is published: users start a project with `npx github:<owner>/process-engine-blueprints`, which clones
+Nothing is published: users start a project with `npx --allow-git=root github:<owner>/process-engine-blueprints`, which clones
 the repository and runs the same export ([ADR-0003](docs/adr/0003-starters-with-npx-from-the-repository.md)). Details: [docs/maintaining.md](docs/maintaining.md).
 
 ## Skills

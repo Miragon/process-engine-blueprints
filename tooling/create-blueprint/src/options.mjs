@@ -6,7 +6,7 @@ export const defaultPackage = 'io.miragon.blueprint';
 const packagePattern = /^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)*$/;
 const projectNamePattern = /^[a-z][a-z0-9-]*$/;
 
-export const usage = `Usage: npx github:<owner>/process-engine-blueprints [directory] [options]
+export const usage = `Usage: npx --allow-git=root github:<owner>/process-engine-blueprints [directory] [options]
 
 Options:
   --example <name>     the blueprint, e.g. cibseven-embedded (see --list)

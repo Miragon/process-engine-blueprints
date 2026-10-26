@@ -16,7 +16,8 @@ do not want to publish anything.
 A starter is **one example in one variant as a flat project**, built by `tooling/starter/export.sh`: it copies
 the example, runs the example's own `scripts/create-starter.sh <variant> --flat`, and starts a fresh history.
 
-Users run it with **`npx github:<owner>/process-engine-blueprints`**. npm installs the root package from GitHub
+Users run it with **`npx --allow-git=root github:<owner>/process-engine-blueprints`** (npm 12 refuses packages from
+git unless `--allow-git` allows it). npm installs the root package from GitHub
 (only `tooling/create-blueprint`, see `files` in `package.json`) and runs its `bin`, a CLI without dependencies.
 The CLI clones the repository at `--ref` (default `main`) shallowly, exports the starter, renames package, group
 and project, and makes the first commit.
@@ -28,6 +29,6 @@ what users get is what CI built.
 
 - **Positive:** nothing to publish or release; a merged change reaches users right away. Access follows git: a
   private repository works for everyone who can clone it. `--ref` gives trainings a fixed state (a tag).
-- **Negative / trade-offs:** users need Node, git and access to the repository. There are no versioned releases
+- **Negative / trade-offs:** users need Node, git and access to the repository, and the `--allow-git` flag. There are no versioned releases
   of the starters; a tag is the way to pin one.
 - **Neutral:** without the CLI, `git clone` plus `tooling/starter/export.sh` gives the same starter, unrenamed.

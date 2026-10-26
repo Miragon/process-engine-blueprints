@@ -45,17 +45,18 @@ export function badges(repository) {
 export function quickStart(repository) {
   return [
     '```bash',
-    `npx github:${repository} my-service`,
+    `npx --allow-git=root github:${repository} my-service`,
     '```',
     '',
     'It asks where the engine should run, which blueprint and which language you want, and your package name.',
     'Then it creates a project that builds, with a fresh git history. Without questions:',
     '',
     '```bash',
-    `npx github:${repository} my-service --example cibseven-embedded --lang kotlin --package com.acme.leasing`,
+    `npx --allow-git=root github:${repository} my-service --example cibseven-embedded --lang kotlin --package com.acme.leasing`,
     '```',
     '',
-    '`--ref <branch or tag>` starts from another state of the examples than `main`, `--list` shows the examples.',
+    '`--allow-git=root` lets npm 12 and later run a package from git, which they refuse by default. `--ref <branch or tag>`',
+    'starts from another state of the examples than `main`, `--list` shows the examples.',
   ].join('\n');
 }
 

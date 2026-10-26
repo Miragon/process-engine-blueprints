@@ -42,7 +42,7 @@ request. `node scripts/check-drift.mjs --propose` prints what is shared right no
 
 ## Starters
 
-Nothing is published or released. `npx github:<owner>/process-engine-blueprints` installs the root package from
+Nothing is published or released. `npx --allow-git=root github:<owner>/process-engine-blueprints` installs the root package from
 GitHub (only `tooling/create-blueprint`, per `files` in `package.json`), and its CLI clones the repository at
 `--ref` (default `main`) and runs `tooling/starter/export.sh`. A merged change is what the next user gets, so
 `_blueprint.yml` builds every starter of a touched example on each pull request. Trainings that need a fixed state

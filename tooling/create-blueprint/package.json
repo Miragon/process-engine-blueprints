@@ -1,0 +1,36 @@
+{
+  "name": "create-miragon-blueprint",
+  "version": "0.1.0",
+  "description": "Start a project from one of the Miragon process-engine blueprints: pick an engine, an integration style and Kotlin/Gradle or Java/Maven, and get a renamed, self-contained Spring Boot project.",
+  "type": "module",
+  "bin": {
+    "create-miragon-blueprint": "bin/create-miragon-blueprint.mjs"
+  },
+  "files": [
+    "bin",
+    "src",
+    "catalog.json"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/miragon-blueprints/process-engine-blueprints.git",
+    "directory": "tooling/create-blueprint"
+  },
+  "keywords": [
+    "bpmn",
+    "camunda",
+    "cibseven",
+    "operaton",
+    "fluxnova",
+    "zeebe",
+    "spring-boot",
+    "starter"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test \"test/*.test.mjs\""
+  }
+}

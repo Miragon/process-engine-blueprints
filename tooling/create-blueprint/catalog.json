@@ -1,0 +1,133 @@
+{
+  "repository": "miragon-blueprints/process-engine-blueprints",
+  "examples": [
+    {
+      "name": "cibseven-embedded",
+      "engine": "cibseven",
+      "engineLabel": "CIB seven",
+      "integration": "embedded",
+      "integrationLabel": "Embedded engine, JavaDelegates",
+      "topology": "embedded",
+      "summary": "CIB seven embedded in the Spring Boot service, service tasks as JavaDelegates.",
+      "variants": [
+        "kotlin-gradle",
+        "java-maven"
+      ]
+    },
+    {
+      "name": "cibseven-process-engine-api",
+      "engine": "cibseven",
+      "engineLabel": "CIB seven",
+      "integration": "process-engine-api",
+      "integrationLabel": "Embedded engine, bpm-crafters process-engine-api",
+      "topology": "embedded",
+      "summary": "CIB seven embedded, wired through the bpm-crafters process-engine-api.",
+      "variants": [
+        "kotlin-gradle",
+        "java-maven"
+      ]
+    },
+    {
+      "name": "cibseven-remote",
+      "engine": "cibseven",
+      "engineLabel": "CIB seven",
+      "integration": "remote",
+      "integrationLabel": "Remote engine host, external tasks",
+      "topology": "remote",
+      "summary": "A generic CIB seven engine host plus a worker service that owns the model and runs its logic as external tasks.",
+      "variants": [
+        "kotlin-gradle",
+        "java-maven"
+      ]
+    },
+    {
+      "name": "fluxnova-embedded",
+      "engine": "fluxnova",
+      "engineLabel": "Fluxnova",
+      "integration": "embedded",
+      "integrationLabel": "Embedded engine, JavaDelegates",
+      "topology": "embedded",
+      "summary": "Fluxnova embedded in the Spring Boot service, service tasks as JavaDelegates.",
+      "variants": [
+        "kotlin-gradle",
+        "java-maven"
+      ]
+    },
+    {
+      "name": "fullstack-cibseven-embedded",
+      "engine": "cibseven",
+      "engineLabel": "CIB seven",
+      "integration": "embedded",
+      "integrationLabel": "Embedded engine, JavaDelegates",
+      "topology": "embedded",
+      "summary": "CIB seven embedded plus a React front and back office, the reference for the whole family.",
+      "variants": [
+        "kotlin-gradle"
+      ]
+    },
+    {
+      "name": "operaton-embedded",
+      "engine": "operaton",
+      "engineLabel": "Operaton",
+      "integration": "embedded",
+      "integrationLabel": "Embedded engine, JavaDelegates",
+      "topology": "embedded",
+      "summary": "Operaton embedded in the Spring Boot service, service tasks as JavaDelegates.",
+      "variants": [
+        "kotlin-gradle",
+        "java-maven"
+      ]
+    },
+    {
+      "name": "operaton-process-engine-api",
+      "engine": "operaton",
+      "engineLabel": "Operaton",
+      "integration": "process-engine-api",
+      "integrationLabel": "Embedded engine, bpm-crafters process-engine-api",
+      "topology": "embedded",
+      "summary": "Operaton embedded, wired through the bpm-crafters process-engine-api.",
+      "variants": [
+        "java-maven"
+      ]
+    },
+    {
+      "name": "operaton-remote",
+      "engine": "operaton",
+      "engineLabel": "Operaton",
+      "integration": "remote",
+      "integrationLabel": "Remote engine host, external tasks",
+      "topology": "remote",
+      "summary": "A generic Operaton engine host plus a worker service that owns the model and runs its logic as external tasks.",
+      "variants": [
+        "kotlin-gradle",
+        "java-maven"
+      ]
+    },
+    {
+      "name": "zeebe-native",
+      "engine": "zeebe",
+      "engineLabel": "Camunda 8 (Zeebe)",
+      "integration": "native",
+      "integrationLabel": "Zeebe broker, Spring job workers",
+      "topology": "remote",
+      "summary": "Camunda 8 / Zeebe broker, service tasks as Spring job workers.",
+      "variants": [
+        "kotlin-gradle",
+        "java-maven"
+      ]
+    },
+    {
+      "name": "zeebe-vanillabp",
+      "engine": "zeebe",
+      "engineLabel": "Camunda 8 (Zeebe)",
+      "integration": "vanillabp",
+      "integrationLabel": "Zeebe broker, VanillaBP",
+      "topology": "remote",
+      "summary": "Camunda 8 / Zeebe broker, wired through VanillaBP.",
+      "variants": [
+        "kotlin-gradle",
+        "java-maven"
+      ]
+    }
+  ]
+}

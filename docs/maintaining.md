@@ -15,6 +15,22 @@
 
 The example's own files stay what a starter gets; the root copies only make them run in the monorepo.
 
+## Branch rules
+
+One ruleset, `main`, protects the default branch:
+
+| Rule | Why |
+|---|---|
+| Pull request required, squash merge only, open review threads resolved | every change is reviewed as one unit and lands as one commit with the PR title and body |
+| `CI gate` must pass (from GitHub Actions) | the one check that is always reported; the example jobs it waits for are skipped when a PR does not touch them, so they cannot be required themselves |
+| Linear history, signed commits | `main` reads as a list of signed, squashed changes |
+| No force push, no deletion | the history the examples were imported with stays |
+
+The branch does not need to be up to date before merging: that would re-run the CI of every example on each update.
+Repository admins may bypass the rules **on a pull request only**, never with a direct push. That is the way in for
+importing another repository with its history (skill `add-example`): a merge commit of unrelated histories cannot be
+squashed or signed.
+
 ## CI
 
 - `CI gate` is the only required status check. It fails when any job it needs failed or was cancelled, and passes

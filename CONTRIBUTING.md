@@ -8,7 +8,7 @@
    `npm run generate` and commit the result with it.
 4. Changed a file that `drift.yml` lists? Carry the change to the other examples of the rule, or take the file out
    of the rule and say why.
-5. Conventional Commits, scoped to the example: `fix(zeebe-native): …`. Pull requests target `main`; `CI gate`
-   must be green. Merge with a merge commit or squash; never rewrite `main`.
+5. Conventional Commits, scoped to the example: `fix(zeebe-native): …`. Pull requests target `main` and are
+   squash-merged: the PR title and body become the commit. Commits must be signed, and `CI gate` must be green.
 
 See [docs/maintaining.md](docs/maintaining.md) for how CI, Dependabot and the starters work.

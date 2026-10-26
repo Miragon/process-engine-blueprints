@@ -1,0 +1,15 @@
+name: zeebe-vanillabp
+engine: zeebe
+integration: vanillabp
+topology: remote
+summary: Camunda 8 / Zeebe broker, wired through VanillaBP.
+stack: Postgres plus a Camunda 8 cluster (Zeebe, Operate, Tasklist, Elasticsearch)
+source: miragon-blueprints/zeebe-vanilla-bp-example
+variants:
+  kotlin-gradle:
+    path: kotlin-gradle
+  java-maven:
+    path: java-maven
+identicalResources:
+  - service/app/src/main/resources
+  - service/common-zeebe/src/main/resources

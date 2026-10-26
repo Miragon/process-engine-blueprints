@@ -1,0 +1,14 @@
+name: fluxnova-embedded
+engine: fluxnova
+integration: embedded
+topology: embedded
+summary: Fluxnova embedded in the Spring Boot service, service tasks as JavaDelegates.
+stack: Postgres
+source: miragon-blueprints/fluxnova-example
+variants:
+  kotlin-gradle:
+    path: kotlin-gradle
+  java-maven:
+    path: java-maven
+identicalResources:
+  - service/app/src/main/resources

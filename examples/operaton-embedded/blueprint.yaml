@@ -1,0 +1,14 @@
+name: operaton-embedded
+engine: operaton
+integration: embedded
+topology: embedded
+summary: Operaton embedded in the Spring Boot service, service tasks as JavaDelegates.
+stack: Postgres
+source: miragon-blueprints/operaton-embedded-example
+variants:
+  kotlin-gradle:
+    path: kotlin-gradle
+  java-maven:
+    path: java-maven
+identicalResources:
+  - service/app/src/main/resources

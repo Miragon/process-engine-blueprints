@@ -4,24 +4,31 @@ import io.miragon.bpmn.runtime.FlowNode
 import org.operaton.bpm.engine.ProcessEngine
 
 /**
- * Executes the async-continuation job of a **specific** element (by activity id), rather than
+ * Executes the async-continuation jobs of a **specific** element (by activity id), rather than
  * whichever job happens to be next. This lets a test read as an explicit, ordered trace of the
  * process and fails loudly (no job found) if the expected continuation is missing — which is the
  * safer, more readable choice for the deterministic, linear parts of a flow.
  *
- * The `camunda:asyncAfter` flags in the model create exactly these jobs after each step, and the job
- * executor is disabled in tests, so the test drives them by hand.
+ * The `camunda:asyncBefore` and `camunda:asyncAfter` flags in the model create up to two jobs per
+ * element, and a joining gateway gets one per incoming path; this runs them all. The job executor
+ * is disabled in tests, so the test drives them by hand.
  */
 fun ProcessEngine.executeJobFor(activity: FlowNode) {
-    val job =
-        managementService
-            .createJobQuery()
-            .messages()
-            .activityId(activity.id.value)
-            .singleResult()
+    var job = findJobFor(activity)
     requireNotNull(job) { "no async-continuation job found for activity '${activity.id.value}'" }
-    managementService.executeJob(job.id)
+    while (job != null) {
+        managementService.executeJob(job.id)
+        job = findJobFor(activity)
+    }
 }
+
+private fun ProcessEngine.findJobFor(activity: FlowNode) =
+    managementService
+        .createJobQuery()
+        .messages()
+        .activityId(activity.id.value)
+        .listPage(0, 1)
+        .firstOrNull()
 
 /**
  * Drives *all* pending async-continuation jobs until the process reaches its next wait state. Use

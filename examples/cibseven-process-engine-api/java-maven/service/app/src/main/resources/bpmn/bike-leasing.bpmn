@@ -7,7 +7,7 @@
   <bpmn:error id="Error_BikeUnavailable" name="Bike_Unavailable" errorCode="bikeUnavailable" />
   <bpmn:escalation id="Escalation_ContractNotSigned" name="Contract_Not_Signed" escalationCode="contractNotSigned" />
   <bpmn:process id="bikeLeasingProcess" name="MiraVelo Bike Leasing" isExecutable="true" camunda:historyTimeToLive="P180D">
-    <bpmn:startEvent id="startEvent_leasingRequestReceived" name="Leasing request received" camunda:asyncAfter="true">
+    <bpmn:startEvent id="startEvent_leasingRequestReceived" camunda:asyncBefore="true" name="Leasing request received" camunda:asyncAfter="true">
       <bpmn:extensionElements>
         <!-- The message start event injects these variables. Message start events don't support
              camunda:inputOutput, so they are declared for bpmn-to-code via this extension property. -->
@@ -108,7 +108,7 @@
       <bpmn:outgoing>flow_forkToBikeSource</bpmn:outgoing>
       <bpmn:outgoing>flow_forkToInsurance</bpmn:outgoing>
     </bpmn:parallelGateway>
-    <bpmn:parallelGateway id="gateway_join">
+    <bpmn:parallelGateway id="gateway_join" camunda:asyncBefore="true">
       <bpmn:incoming>flow_insuranceToJoin</bpmn:incoming>
       <bpmn:incoming>flow_orderedToJoin</bpmn:incoming>
       <bpmn:outgoing>flow_joinToHandover</bpmn:outgoing>

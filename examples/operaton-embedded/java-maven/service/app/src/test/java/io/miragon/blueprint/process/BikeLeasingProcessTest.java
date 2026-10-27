@@ -123,12 +123,14 @@ class BikeLeasingProcessTest {
         process.correlateContractSigned(id);
         executeJobFor(processEngine, FlowNodes.EventContractSigned.INSTANCE); // forks into insurance + bike order
         executeJobFor(processEngine, FlowNodes.ServiceTaskIssueInsurancePolicy.INSTANCE);
-        executeJobFor(processEngine, FlowNodes.ServiceTaskOrderBike.INSTANCE); // joins -> handover wait state
+        executeJobFor(processEngine, FlowNodes.ServiceTaskOrderBike.INSTANCE);
+        executeJobFor(processEngine, FlowNodes.GatewayJoin.INSTANCE); // -> handover wait state
 
         process.correlateHandoverReported(id);
         executeJobFor(processEngine, FlowNodes.EventHandoverReported.INSTANCE); // -> withdrawal-period timer
 
         fireTimer(processEngine, FlowNodes.EventWithdrawalPeriodElapsed.INSTANCE);
+        executeJobFor(processEngine, FlowNodes.EndEventLeasingActive.INSTANCE);
 
         assertThat(instance)
                 .isEnded()
@@ -283,6 +285,7 @@ class BikeLeasingProcessTest {
         process.correlateHandoverReported(id);
         executeJobFor(processEngine, FlowNodes.EventHandoverReported.INSTANCE);
         fireTimer(processEngine, FlowNodes.EventWithdrawalPeriodElapsed.INSTANCE);
+        executeJobFor(processEngine, FlowNodes.EndEventLeasingActive.INSTANCE);
 
         assertThat(instance)
                 .isEnded()

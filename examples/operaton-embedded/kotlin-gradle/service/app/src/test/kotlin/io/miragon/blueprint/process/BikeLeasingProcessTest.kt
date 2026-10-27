@@ -123,12 +123,14 @@ class BikeLeasingProcessTest {
         process.correlateContractSigned(id)
         processEngine.executeJobFor(FlowNodes.EventContractSigned) // forks into insurance + bike order
         processEngine.executeJobFor(FlowNodes.ServiceTaskIssueInsurancePolicy)
-        processEngine.executeJobFor(FlowNodes.ServiceTaskOrderBike) // joins -> handover wait state
+        processEngine.executeJobFor(FlowNodes.ServiceTaskOrderBike)
+        processEngine.executeJobFor(FlowNodes.GatewayJoin) // -> handover wait state
 
         process.correlateHandoverReported(id)
         processEngine.executeJobFor(FlowNodes.EventHandoverReported) // -> withdrawal-period timer
 
         processEngine.fireTimer(FlowNodes.EventWithdrawalPeriodElapsed)
+        processEngine.executeJobFor(FlowNodes.EndEventLeasingActive)
 
         assertThat(instance)
             .isEnded
@@ -281,6 +283,7 @@ class BikeLeasingProcessTest {
         process.correlateHandoverReported(id)
         processEngine.executeJobFor(FlowNodes.EventHandoverReported)
         processEngine.fireTimer(FlowNodes.EventWithdrawalPeriodElapsed)
+        processEngine.executeJobFor(FlowNodes.EndEventLeasingActive)
 
         assertThat(instance)
             .isEnded

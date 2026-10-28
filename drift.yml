@@ -197,7 +197,6 @@ identical:
       - operaton-embedded
       - operaton-process-engine-api
     files:
-      - .pulse-cli.json
       - bruno/environments/local.bru
   - name: cibseven-embedded + cibseven-process-engine-api + cibseven-remote + fullstack-cibseven-embedded
     examples:
@@ -266,13 +265,6 @@ identical:
       - kotlin-gradle/service/app/src/main/resources/dmn/check-credit-rating.dmn
       - kotlin-gradle/service/app/src/main/resources/forms/clarify-alternative.form
       - kotlin-gradle/service/app/src/main/resources/forms/clarify-return.form
-  - name: cibseven-embedded + cibseven-remote + operaton-remote
-    examples:
-      - cibseven-embedded
-      - cibseven-remote
-      - operaton-remote
-    files:
-      - .pulse-cli.json
   - name: cibseven-embedded + fluxnova-embedded + fullstack-cibseven-embedded
     examples:
       - cibseven-embedded
@@ -537,3 +529,21 @@ identical:
       - kotlin-gradle/service/common-zeebe/src/main/resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports
       - openapi/openapi.json
 
+  - name: cibseven-embedded + cibseven-remote
+    examples:
+      - cibseven-embedded
+      - cibseven-remote
+    files:
+      - .pulse-cli.json
+  - name: cibseven-process-engine-api + fullstack-cibseven-embedded
+    examples:
+      - cibseven-process-engine-api
+      - fullstack-cibseven-embedded
+    files:
+      - .pulse-cli.json
+  - name: operaton-embedded + operaton-process-engine-api
+    examples:
+      - operaton-embedded
+      - operaton-process-engine-api
+    files:
+      - .pulse-cli.json

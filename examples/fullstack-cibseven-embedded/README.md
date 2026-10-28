@@ -32,7 +32,9 @@ npm --prefix frontend ci && npm --prefix frontend run dev   # UI on :5173
 | CIB seven Cockpit | <http://localhost:8080/camunda> | admin/admin |
 | Swagger UI | <http://localhost:8080/swagger-ui.html> | – |
 
-API scenarios against the running stack: `cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r`.
+API scenarios against the running stack: `cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r --exclude-tags=demo-data`.
+Fill an empty stack with seven demo cases, one per state (CI skips them, tag `demo-data`):
+`cd bruno && npx --yes @usebruno/cli@4.0.0 run 00-demo-data --env local -r`.
 The full dev loop (verification, containers, Playwright, contract regeneration) is in
 [CONTRIBUTING.md](CONTRIBUTING.md).
 

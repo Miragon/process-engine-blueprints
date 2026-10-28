@@ -20,6 +20,11 @@ identical:
       - .npmrc
       - CLAUDE.md
       - LICENSE
+      - bruno/00-demo-data/01-awaiting-signature/01-submit.bru
+      - bruno/00-demo-data/02-awaiting-handover/01-submit.bru
+      - bruno/00-demo-data/03-in-withdrawal-period/01-submit.bru
+      - bruno/00-demo-data/05-rejected/01-submit.bru
+      - bruno/00-demo-data/07-withdrawn-return-open/01-submit.bru
       - bruno/01-happy-path/01-submit.bru
   - name: cibseven-embedded + cibseven-process-engine-api + cibseven-remote + fluxnova-embedded + operaton-embedded + operaton-process-engine-api + operaton-remote + zeebe-native + zeebe-vanillabp
     examples:
@@ -52,6 +57,20 @@ identical:
       - operaton-remote
     files:
       - .bpmnlintrc
+      - bruno/00-demo-data/01-awaiting-signature/02-assert-received.bru
+      - bruno/00-demo-data/02-awaiting-handover/03-assert-ordered.bru
+      - bruno/00-demo-data/03-in-withdrawal-period/04-assert-handed-over.bru
+      - bruno/00-demo-data/04-active/01-submit.bru
+      - bruno/00-demo-data/04-active/02-get-instance.bru
+      - bruno/00-demo-data/04-active/05-get-withdrawal-timer.bru
+      - bruno/00-demo-data/04-active/06-fire-withdrawal-timer.bru
+      - bruno/00-demo-data/04-active/07-assert-active.bru
+      - bruno/00-demo-data/05-rejected/02-assert-rejected.bru
+      - bruno/00-demo-data/06-alternative-in-inbox/01-submit.bru
+      - bruno/00-demo-data/06-alternative-in-inbox/03-assert-in-inbox.bru
+      - bruno/00-demo-data/07-withdrawn-return-open/02-get-instance.bru
+      - bruno/00-demo-data/07-withdrawn-return-open/05-assert-withdrawn.bru
+      - bruno/00-demo-data/07-withdrawn-return-open/06-assert-clarify-return-open.bru
       - bruno/01-happy-path/02-get-instance.bru
       - bruno/01-happy-path/03-get-application.bru
       - bruno/01-happy-path/07-fire-withdrawal-timer.bru
@@ -202,6 +221,14 @@ identical:
       - fullstack-cibseven-embedded
       - operaton-embedded
     files:
+      - bruno/00-demo-data/02-awaiting-handover/02-sign-contract.bru
+      - bruno/00-demo-data/03-in-withdrawal-period/02-sign-contract.bru
+      - bruno/00-demo-data/03-in-withdrawal-period/03-report-handover.bru
+      - bruno/00-demo-data/04-active/03-sign-contract.bru
+      - bruno/00-demo-data/04-active/04-report-handover.bru
+      - bruno/00-demo-data/06-alternative-in-inbox/02-sign-contract.bru
+      - bruno/00-demo-data/07-withdrawn-return-open/03-sign-contract.bru
+      - bruno/00-demo-data/07-withdrawn-return-open/04-withdraw.bru
       - docs/assets/bike-leasing.png
   - name: cibseven-process-engine-api + cibseven-remote + operaton-process-engine-api + operaton-remote
     examples:
@@ -423,6 +450,14 @@ identical:
       - operaton-process-engine-api
       - operaton-remote
     files:
+      - bruno/00-demo-data/02-awaiting-handover/02-sign-contract.bru
+      - bruno/00-demo-data/03-in-withdrawal-period/02-sign-contract.bru
+      - bruno/00-demo-data/03-in-withdrawal-period/03-report-handover.bru
+      - bruno/00-demo-data/04-active/03-sign-contract.bru
+      - bruno/00-demo-data/04-active/04-report-handover.bru
+      - bruno/00-demo-data/06-alternative-in-inbox/02-sign-contract.bru
+      - bruno/00-demo-data/07-withdrawn-return-open/03-sign-contract.bru
+      - bruno/00-demo-data/07-withdrawn-return-open/04-withdraw.bru
       - bruno/01-happy-path/04-sign-contract.bru
       - bruno/03-abort/03-sign-contract.bru
       - bruno/05-bike-unavailable/03-sign-contract.bru
@@ -438,6 +473,20 @@ identical:
       - .claude/settings.json
       - .githooks/pre-commit
       - .gitignore
+      - bruno/00-demo-data/01-awaiting-signature/02-assert-received.bru
+      - bruno/00-demo-data/02-awaiting-handover/02-sign-contract.bru
+      - bruno/00-demo-data/02-awaiting-handover/03-assert-ordered.bru
+      - bruno/00-demo-data/03-in-withdrawal-period/02-sign-contract.bru
+      - bruno/00-demo-data/03-in-withdrawal-period/03-report-handover.bru
+      - bruno/00-demo-data/03-in-withdrawal-period/04-assert-handed-over.bru
+      - bruno/00-demo-data/05-rejected/02-assert-rejected.bru
+      - bruno/00-demo-data/06-alternative-in-inbox/01-submit.bru
+      - bruno/00-demo-data/06-alternative-in-inbox/02-sign-contract.bru
+      - bruno/00-demo-data/06-alternative-in-inbox/03-assert-in-inbox.bru
+      - bruno/00-demo-data/07-withdrawn-return-open/02-sign-contract.bru
+      - bruno/00-demo-data/07-withdrawn-return-open/03-withdraw.bru
+      - bruno/00-demo-data/07-withdrawn-return-open/04-assert-withdrawn.bru
+      - bruno/00-demo-data/07-withdrawn-return-open/05-assert-clarify-return-open.bru
       - bruno/01-happy-path/02-get-application.bru
       - bruno/01-happy-path/03-sign-contract.bru
       - bruno/01-happy-path/04-report-handover.bru

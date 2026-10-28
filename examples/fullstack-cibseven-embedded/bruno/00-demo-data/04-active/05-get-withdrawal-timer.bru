@@ -1,0 +1,29 @@
+meta {
+  name: Find the withdrawal-period timer
+  type: http
+  seq: 5
+  tags: [
+    demo-data
+  ]
+}
+
+get {
+  url: {{engineRest}}/job?processInstanceId={{processInstanceId}}&activityId=event_withdrawalPeriodElapsed&timers=true
+  body: none
+  auth: none
+}
+
+script:pre-request {
+  await pollEngine("/job?processInstanceId=" + bru.getVar("processInstanceId")
+    + "&activityId=event_withdrawalPeriodElapsed&timers=true",
+    (b) => Array.isArray(b) && b.length >= 1);
+}
+
+assert {
+  res.status: eq 200
+  res.body[0].id: isDefined
+}
+
+vars:post-response {
+  withdrawalJobId: res.body[0].id
+}

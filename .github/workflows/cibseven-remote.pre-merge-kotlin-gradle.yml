@@ -154,7 +154,7 @@ jobs:
 
       - name: Run Bruno scenarios
         working-directory: examples/cibseven-remote/bruno
-        run: npx --yes @usebruno/cli@4.0.0 run . --env local -r
+        run: npx --yes @usebruno/cli@4.0.0 run . --env local -r --exclude-tags=demo-data
 
       - name: Dump application logs on failure
         if: failure()

@@ -1,0 +1,30 @@
+meta {
+  name: Assert the clarification waits in the inbox
+  type: http
+  seq: 3
+  tags: [
+    demo-data
+  ]
+}
+
+get {
+  url: {{baseUrl}}/api/tasks/clarify-alternative
+  body: none
+  auth: none
+}
+
+script:pre-request {
+  await pollApp("/api/tasks/clarify-alternative",
+    (b, s) => s === 200 && Array.isArray(b) && b.some((t) => t.applicationId === bru.getVar("applicationId")));
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("our application waits in the inbox", function () {
+    const found = res.getBody().some((t) => t.applicationId === bru.getVar("applicationId"));
+    expect(found).to.equal(true);
+  });
+}

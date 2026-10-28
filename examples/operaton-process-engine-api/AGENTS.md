@@ -49,7 +49,7 @@ repository.
 | Mutation testing (gate 80) | `./mvnw -DskipTests install && ./mvnw -pl service/app org.pitest:pitest-maven:mutationCoverage` — report under `service/app/target/pit-reports` |
 | Regenerate the typed BPMN process API (after editing a `.bpmn`) | `./mvnw -pl service/app generate-sources` (also runs automatically on every build) |
 | Regenerate + verify the OpenAPI contract | `./mvnw -pl service/app -am test -Dtest=OpenApiSpecExportTest` then `git diff --exit-code openapi/openapi.json` |
-| API scenarios (running stack) | `cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r` |
+| API scenarios (running stack) | `cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r --exclude-tags=demo-data` |
 | BPMN lint | `npm ci && npm run lint:bpmn` |
 | Backend OCI image | `./mvnw -DskipTests install && ./mvnw -pl service/app spring-boot:build-image -DskipTests` — [ADR-0011](docs/adr/0011-build-and-deployment-approach.md), CONTRIBUTING "Run it in containers" |
 

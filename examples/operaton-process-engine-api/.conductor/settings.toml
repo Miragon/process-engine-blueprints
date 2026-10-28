@@ -25,4 +25,4 @@ command = "./mvnw -q -DskipTests install && ./mvnw -pl service/app spring-boot:r
 command = "./mvnw verify"
 
 [scripts.run.smoke]
-command = "cd bruno && npx --yes @usebruno/cli run . --env local -r"
+command = "cd bruno && npx --yes @usebruno/cli run . --env local -r --exclude-tags=demo-data"

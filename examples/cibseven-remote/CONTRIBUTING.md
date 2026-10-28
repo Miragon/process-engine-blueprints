@@ -75,7 +75,7 @@ Cockpit.
 Against a running stack, drive every scenario from `bruno/`:
 
 ```bash
-cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r
+cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r --exclude-tags=demo-data
 ```
 
 The scenarios and the polling helpers are described in [`bruno/README.md`](bruno/README.md).

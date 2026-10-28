@@ -131,7 +131,7 @@ the engine in it under Platform Settings → Engines with base URL
 | Area (repo root) | Command |
 |---|---|
 | Verify the OpenAPI contract after regenerating it | `git diff --exit-code openapi/openapi.json` |
-| API scenarios (running stack) | `cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r` |
+| API scenarios (running stack) | `cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r --exclude-tags=demo-data` |
 | BPMN lint | `npm run lint:bpmn` |
 
 The OCI image decision is [ADR-0011](docs/adr/0011-build-and-deployment-approach.md); the how-to is

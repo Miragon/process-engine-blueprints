@@ -50,7 +50,7 @@ cd java-maven && ./mvnw -DskipTests install && ./mvnw -pl service/app spring-boo
 | Classic Cockpit / Tasklist | <http://localhost:8081/camunda> | admin / admin |
 | Swagger UI | <http://localhost:8081/swagger-ui.html> | |
 
-Drive the whole process over REST: `cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r`.
+Drive the whole process over REST: `cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r --exclude-tags=demo-data`.
 Tests, ports and containers are in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## What's inside

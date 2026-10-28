@@ -1,0 +1,24 @@
+meta {
+  name: Withdraw the application
+  type: http
+  seq: 4
+  tags: [
+    demo-data
+  ]
+}
+
+post {
+  url: {{baseUrl}}/api/bike-leasing/{{applicationId}}/withdraw
+  body: none
+  auth: none
+}
+
+script:pre-request {
+  await pollApp("/api/bike-leasing/" + bru.getVar("applicationId"),
+    (b, s) => s === 200 && b && b.status === "ORDERED" && b.orderId != null);
+  await awaitMessageSubscription(bru.getVar("applicationId"), "miravelo.handoverReported");
+}
+
+assert {
+  res.status: eq 202
+}

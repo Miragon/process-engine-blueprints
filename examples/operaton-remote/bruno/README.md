@@ -7,11 +7,12 @@ user tasks and fires timer jobs, so the whole flow runs without real 14-day wait
 collection against both variants on every pull request.
 
 ```bash
-npx --yes @usebruno/cli@4.0.0 run . --env local -r
+npx --yes @usebruno/cli@4.0.0 run . --env local -r --exclude-tags=demo-data
 ```
 
 | Folder | Scenario |
 |---|---|
+| `00-demo-data` | seven cases left open for a demo, one per state: waiting for the signature, waiting for the handover, in the withdrawal period, active, rejected, an alternative waiting in the inbox, withdrawn with the return clarification open. CI skips it (tag `demo-data`) |
 | `01-happy-path` | submit → sign the contract → report the handover → active lease |
 | `02-escalation` | the signature deadline passes and the application is rejected |
 | `03-abort` | the customer withdraws after signing; the bike order is cancelled and the contract compensated |
@@ -22,6 +23,12 @@ npx --yes @usebruno/cli@4.0.0 run . --env local -r
 | `08-alternative-declined` | the bike is out of stock and no alternative is found; contract and policy are compensated, no order is cancelled |
 | `09-invalid-request` | invalid input is refused with a 400: a request without income, an accepted alternative without a bike |
 | `10-alternative-via-tasklist` | the bike is out of stock and the alternative is chosen the way the Tasklist form does it |
+
+Fill an empty stack with demo cases:
+
+```bash
+npx --yes @usebruno/cli@4.0.0 run 00-demo-data --env local -r
+```
 
 The suite polls for eventual consistency instead of sleeping (see
 [ADR-0012](../docs/adr/0012-polling-for-eventual-consistency-in-e2e-tests.md)): the worker and the

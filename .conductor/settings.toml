@@ -31,7 +31,7 @@ command = "cd examples/cibseven-embedded && cd java-maven && ./mvnw verify"
 icon = "check"
 
 [scripts.run."cibseven-embedded:smoke"]
-command = "cd examples/cibseven-embedded && cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r"
+command = "cd examples/cibseven-embedded && cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r --exclude-tags=demo-data"
 icon = "flask"
 
 [scripts.run."cibseven-process-engine-api:setup"]
@@ -54,7 +54,7 @@ command = "cd examples/cibseven-process-engine-api && cd java-maven && ./mvnw -p
 command = "cd examples/cibseven-process-engine-api && cd java-maven && ./mvnw verify"
 
 [scripts.run."cibseven-process-engine-api:smoke"]
-command = "cd examples/cibseven-process-engine-api && cd bruno && npx --yes @usebruno/cli run . --env local -r"
+command = "cd examples/cibseven-process-engine-api && cd bruno && npx --yes @usebruno/cli run . --env local -r --exclude-tags=demo-data"
 
 [scripts.run."cibseven-remote:setup"]
 command = "cd examples/cibseven-remote && "
@@ -76,7 +76,7 @@ command = "cd examples/cibseven-remote && cd java-maven && ./mvnw -pl service/ex
 command = "cd examples/cibseven-remote && cd java-maven && ./mvnw verify"
 
 [scripts.run."cibseven-remote:smoke"]
-command = "cd examples/cibseven-remote && cd bruno && npx --yes @usebruno/cli run . --env local -r"
+command = "cd examples/cibseven-remote && cd bruno && npx --yes @usebruno/cli run . --env local -r --exclude-tags=demo-data"
 
 [scripts.run."fluxnova-embedded:setup"]
 command = "cd examples/fluxnova-embedded && npm ci"
@@ -103,7 +103,7 @@ command = "cd examples/fluxnova-embedded && cd java-maven && ./mvnw verify"
 icon = "check"
 
 [scripts.run."fluxnova-embedded:smoke"]
-command = "cd examples/fluxnova-embedded && cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r"
+command = "cd examples/fluxnova-embedded && cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r --exclude-tags=demo-data"
 icon = "flask"
 
 [scripts.run."fullstack-cibseven-embedded:setup"]
@@ -111,7 +111,7 @@ command = "cd examples/fullstack-cibseven-embedded && npm ci && npm --prefix fro
 icon = "download"
 
 [scripts.run."fullstack-cibseven-embedded:smoke"]
-command = "cd examples/fullstack-cibseven-embedded && cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r"
+command = "cd examples/fullstack-cibseven-embedded && cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r --exclude-tags=demo-data"
 icon = "flask"
 
 [scripts.run."fullstack-cibseven-embedded:e2e"]
@@ -146,7 +146,7 @@ command = "cd examples/operaton-embedded && cd java-maven && ./mvnw -DskipTests 
 command = "cd examples/operaton-embedded && cd java-maven && ./mvnw verify"
 
 [scripts.run."operaton-embedded:smoke"]
-command = "cd examples/operaton-embedded && cd bruno && npx --yes @usebruno/cli run . --env local -r"
+command = "cd examples/operaton-embedded && cd bruno && npx --yes @usebruno/cli run . --env local -r --exclude-tags=demo-data"
 
 [scripts.run."operaton-process-engine-api:setup"]
 command = "cd examples/operaton-process-engine-api && npm ci"
@@ -162,7 +162,7 @@ command = "cd examples/operaton-process-engine-api && ./mvnw -q -DskipTests inst
 command = "cd examples/operaton-process-engine-api && ./mvnw verify"
 
 [scripts.run."operaton-process-engine-api:smoke"]
-command = "cd examples/operaton-process-engine-api && cd bruno && npx --yes @usebruno/cli run . --env local -r"
+command = "cd examples/operaton-process-engine-api && cd bruno && npx --yes @usebruno/cli run . --env local -r --exclude-tags=demo-data"
 
 [scripts.run."operaton-remote:setup"]
 command = "cd examples/operaton-remote && "
@@ -190,7 +190,7 @@ command = "cd examples/operaton-remote && cd java-maven && ./mvnw -DskipTests in
 command = "cd examples/operaton-remote && cd java-maven && ./mvnw verify"
 
 [scripts.run."operaton-remote:smoke"]
-command = "cd examples/operaton-remote && cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r"
+command = "cd examples/operaton-remote && cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r --exclude-tags=demo-data"
 
 [scripts.run."zeebe-native:setup"]
 command = "cd examples/zeebe-native && "
@@ -212,7 +212,7 @@ command = "cd examples/zeebe-native && cd java-maven && ./mvnw -pl service/app -
 command = "cd examples/zeebe-native && cd java-maven && ./mvnw verify"
 
 [scripts.run."zeebe-native:smoke"]
-command = "cd examples/zeebe-native && cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r"
+command = "cd examples/zeebe-native && cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r --exclude-tags=demo-data"
 
 [scripts.run."zeebe-vanillabp:setup"]
 command = "cd examples/zeebe-vanillabp && "
@@ -234,5 +234,5 @@ command = "cd examples/zeebe-vanillabp && cd java-maven && ./mvnw -DskipTests in
 command = "cd examples/zeebe-vanillabp && cd java-maven && ./mvnw verify"
 
 [scripts.run."zeebe-vanillabp:smoke"]
-command = "cd examples/zeebe-vanillabp && cd bruno && npx --yes @usebruno/cli run . --env local -r"
+command = "cd examples/zeebe-vanillabp && cd bruno && npx --yes @usebruno/cli run . --env local -r --exclude-tags=demo-data"
 

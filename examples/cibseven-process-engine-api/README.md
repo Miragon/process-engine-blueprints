@@ -51,7 +51,7 @@ cd java-maven && ./mvnw -pl service/app -am spring-boot:run   # service + embedd
 | Classic Cockpit / Tasklist | <http://localhost:8080/camunda> | admin / admin |
 | Swagger UI | <http://localhost:8080/swagger-ui.html> | |
 
-Drive the whole process over REST: `cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r`.
+Drive the whole process over REST: `cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r --exclude-tags=demo-data`.
 Setup, ports, containers and tests are in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## What's inside

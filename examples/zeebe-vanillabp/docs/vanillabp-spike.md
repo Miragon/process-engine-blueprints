@@ -164,7 +164,7 @@ docker compose -f stack/docker-compose.yml up -d   # Camunda 8.9 + Postgres + El
 ./gradlew build                                     # all tests incl. the in-container process test
 npm run lint:bpmn
 ./gradlew :service:app:pitest                       # mutation gate
-cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r
+cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r --exclude-tags=demo-data
 ```
 
 `WORKER_ID` names the instance towards Zeebe and defaults to `local`; every instance of a scaled

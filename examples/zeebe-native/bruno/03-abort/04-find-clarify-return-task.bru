@@ -14,14 +14,19 @@ body:json {
   {
     "filter": {
       "elementId": "userTask_clarifyReturn",
-      "state": "CREATED"
+      "state": "CREATED",
+      "processInstanceVariables": [
+        { "name": "applicationId", "value": "\"{{applicationId}}\"" }
+      ]
     }
   }
 }
 
 script:pre-request {
+  const id = bru.getVar("applicationId");
   await pollSearch("/user-tasks/search",
-    { filter: { elementId: "userTask_clarifyReturn", state: "CREATED" } },
+    { filter: { elementId: "userTask_clarifyReturn", state: "CREATED",
+      processInstanceVariables: [{ name: "applicationId", value: `"${id}"` }] } },
     (b) => b && Array.isArray(b.items) && b.items.length > 0 && b.items[0].userTaskKey != null);
 }
 

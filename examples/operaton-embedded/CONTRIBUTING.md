@@ -59,7 +59,7 @@ To use The Bridge, register the engine under **Platform Settings → Engines** w
 With the service running, drive the REST scenarios end to end:
 
 ```bash
-cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r
+cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r --exclude-tags=demo-data
 ```
 
 The happy path submits an application, signs the contract, and reports the handover; the other numbered

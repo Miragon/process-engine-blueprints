@@ -133,7 +133,7 @@ npm ci && npm run lint:bpmn
 
 # 4. drive the scenarios (build + arch + process tests first, then the REST flows)
 ./mvnw verify
-cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r
+cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r --exclude-tags=demo-data
 ```
 
 Prefer containers? `./mvnw -DskipTests install && ./mvnw -pl service/app spring-boot:build-image

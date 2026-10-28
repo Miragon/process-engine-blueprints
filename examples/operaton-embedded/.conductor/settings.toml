@@ -37,4 +37,4 @@ command = "cd java-maven && ./mvnw verify"
 # /variant:java-maven
 
 [scripts.run.smoke]
-command = "cd bruno && npx --yes @usebruno/cli run . --env local -r"
+command = "cd bruno && npx --yes @usebruno/cli run . --env local -r --exclude-tags=demo-data"

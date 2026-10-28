@@ -40,7 +40,7 @@ Under Conductor the ports are fixed and the workspace runs `nonconcurrent` (see
 Drive the running app with the Bruno API scenarios:
 
 ```bash
-cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r
+cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r --exclude-tags=demo-data
 ```
 
 They start a case over the domain REST endpoints, complete user tasks and fire timer jobs via the
@@ -48,6 +48,15 @@ Operaton `/engine-rest` API, and assert the whole flow — happy path, escalatio
 rejection, the bike-unavailable → alternative-selection loop, the incident demo, a declined
 alternative (contract and policy are compensated, no order is cancelled), and a request without income
 that is refused with a 400 before any process starts.
+
+Fill an empty stack with demo cases: `00-demo-data` leaves seven cases open, one per state (waiting for
+the signature, waiting for the handover, in the withdrawal period, active, rejected, an alternative
+waiting in the inbox, withdrawn with the return clarification open). The run above skips it (tag
+`demo-data`).
+
+```bash
+cd bruno && npx --yes @usebruno/cli@4.0.0 run 00-demo-data --env local -r
+```
 
 Confirm <http://localhost:8080/operaton> (admin/admin), <http://localhost:8080/swagger-ui.html> and
 <http://localhost:8080/actuator/health> (status `UP`) all load.
@@ -106,6 +115,13 @@ npx pulse-cli inspect --business-key <applicationId>   # where a running case wa
 npx pulse-cli status                                   # incidents and jobs at a glance
 ```
 
+bpmn-cli and pulse-cli are also Claude Code plugins (see `AGENTS.md`). Dependabot ignores them:
+bump each one by hand in two places together, its exact version in the root `package.json` and the
+`ref` of its marketplace in `.claude/settings.json`. The bpmn-to-code and bpmnlint-rules plugins
+follow the versions Dependabot bumps (`bpmn-to-code.version` in `pom.xml`,
+`@miragon/bpmnlint-plugin-rules` in the root `package.json`): when one of them moves, bump the `ref`
+of its marketplace in `.claude/settings.json` by hand together with it.
+
 ## Ground rules
 
 - **Start from an issue.** Every change traces back to one — open an issue (or pick an existing one)
@@ -115,13 +131,6 @@ npx pulse-cli status                                   # incidents and jobs at a
   agents alike.
 - **Conventional Commits.** Commit messages and PR titles follow
   [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`,
-bpmn-cli and pulse-cli are also Claude Code plugins (see `AGENTS.md`). Dependabot ignores them:
-bump each one by hand in two places together, its exact version in the root `package.json` and the
-`ref` of its marketplace in `.claude/settings.json`. The bpmn-to-code and bpmnlint-rules plugins
-follow the versions Dependabot bumps (`bpmn-to-code.version` in `pom.xml`,
-`@miragon/bpmnlint-plugin-rules` in the root `package.json`): when one of them moves, bump the `ref`
-of its marketplace in `.claude/settings.json` by hand together with it.
-
   `refactor:`, `test:`, `chore:`). Write everything in **English**.
 - **Keep the gates green.** The architecture (ArchUnit + Checkstyle), contract-drift and mutation (≥ 80)
   gates run in CI on every PR. They are fitness functions, not style guides — a violation fails the

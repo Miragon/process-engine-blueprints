@@ -145,7 +145,7 @@ Under Conductor the ports are fixed and the workspace runs `nonconcurrent`
 | Area (repo root) | Command |
 |---|---|
 | Verify the OpenAPI contract after regenerating it | `git diff --exit-code openapi/openapi.json` |
-| End-to-end scenarios against a running stack (Bruno) | `cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r` — **pin the CLI version** (sandbox capabilities shift between majors; see [ADR-0012](docs/adr/0012-polling-for-eventual-consistency-in-e2e-tests.md)) |
+| End-to-end scenarios against a running stack (Bruno) | `cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r --exclude-tags=demo-data` — **pin the CLI version** (sandbox capabilities shift between majors; see [ADR-0012](docs/adr/0012-polling-for-eventual-consistency-in-e2e-tests.md)) |
 | BPMN lint | `npm run lint:bpmn` |
 
 The OCI image decision is [ADR-0011](docs/adr/0011-build-and-deployment-approach.md); the how-to is

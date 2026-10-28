@@ -76,7 +76,7 @@ Cockpit.
 Against a running stack, drive every scenario from `bruno/`:
 
 ```bash
-cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r
+cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r --exclude-tags=demo-data
 ```
 
 The suite polls for eventual consistency instead of sleeping (see

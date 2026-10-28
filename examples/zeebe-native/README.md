@@ -51,7 +51,7 @@ cd java-maven && ./mvnw -pl service/app -am spring-boot:run
 | Operate / Tasklist | <http://localhost:8080> | demo / demo |
 | Swagger UI | <http://localhost:8081/swagger-ui.html> | — |
 
-Drive the whole process over REST with the [Bruno](bruno/README.md) scenarios: `cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r`.
+Drive the whole process over REST with the [Bruno](bruno/README.md) scenarios: `cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r --exclude-tags=demo-data`.
 Setup, ports, containers and the PR workflow are in [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ## What's inside

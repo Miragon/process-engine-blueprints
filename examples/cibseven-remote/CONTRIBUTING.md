@@ -8,7 +8,7 @@ welcome — bug reports, feature ideas, docs, and code.
 ```bash
 git clone <this repository> process-engine-blueprints
 cd process-engine-blueprints/examples/cibseven-remote
-npm ci && npm run hooks:install                                # BPMN lint + git hooks
+npm ci && npm run hooks:install   # bpmnlint, bpmn-cli, pulse-cli + git hooks
 ```
 
 You need **JDK 21** and **Docker (or Podman)** for Postgres.
@@ -132,8 +132,18 @@ The build, mutation-testing and code-generation commands are listed in the READM
 From the repo root:
 
 ```bash
-npm run lint:bpmn        # bpmnlint the .bpmn models
+npm run lint:bpmn                                    # bpmnlint the .bpmn models
+npx bpmn guide --short                               # read, change, validate or render a model
+npx pulse-cli inspect --business-key <applicationId>   # where a running case waits and why
+npx pulse-cli status                                   # incidents and jobs at a glance
 ```
+
+bpmn-cli and pulse-cli are also Claude Code plugins (see `AGENTS.md`). Dependabot ignores them:
+bump each one by hand in two places together, its exact version in the root `package.json` and the
+`ref` of its marketplace in `.claude/settings.json`. The plugins bpmn-to-code and bpmnlint-rules
+follow the bpmn-to-code version in the build files and `@miragon/bpmnlint-plugin-rules` in the root
+`package.json`. Dependabot bumps those, not the plugin: bump the `ref` of its marketplace by hand in
+the same change.
 
 ## Ground rules
 

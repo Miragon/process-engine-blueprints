@@ -4,7 +4,7 @@ set -uo pipefail
 edited_file=$(node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{process.stdout.write(JSON.parse(s).tool_input?.file_path??"")}catch{}})')
 
 case "$edited_file" in
-  */service/app/src/main/resources/bpmn/*.bpmn | service/app/src/main/resources/bpmn/*.bpmn) ;;
+  */src/main/resources/bpmn/*.bpmn) ;;
   *) exit 0 ;;
 esac
 

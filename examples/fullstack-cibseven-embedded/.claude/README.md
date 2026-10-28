@@ -37,11 +37,12 @@ each skill's `references/`.
   also hold for further services under `service/`; `HistoryCleanupConfiguration` stays editable. It
   allows the build, lint and read-only `gh` commands, and wires one hook. Personal additions
   go in `settings.local.json` (git-ignored).
-- `settings.json` also enables two pinned plugins, `bpmn-cli@miragon-bpmn` (skill `bpmn-cli:bpmn`) and
-  `pulse-cli@pulse` (skill `pulse-cli:pulse-cli`, `/pulse-cli:status`), from marketplaces fixed to a release
-  tag. Claude Code installs them once you trust the folder; cloud sessions do not load them. Its `env`
-  sets `BPMN_KEEP_FLOW_IDS=1`, so bpmn-cli keeps flow ids stable. `../.pulse-cli.json` points pulse-cli at
-  the local engine on :8080.
+- `settings.json` also enables four pinned plugins from marketplaces fixed to a release tag:
+  `bpmn-cli@miragon-bpmn` (skill `bpmn-cli:bpmn`), `pulse-cli@pulse` (skill `pulse-cli:pulse-cli`,
+  `/pulse-cli:status`), `bpmn-to-code@bpmn-to-code` (skills `bpmn-to-code:*`) and
+  `bpmnlint-rules@miragon-bpmnlint` (skills `bpmnlint-rules:*`). Claude Code installs them once you
+  trust the folder; cloud sessions do not load them. Its `env` sets `BPMN_KEEP_FLOW_IDS=1`, so bpmn-cli
+  keeps flow ids stable. `../.pulse-cli.json` points pulse-cli at the local engine on :8080.
 - `../.mcp.json` provides the Playwright MCP server (pinned) for `test-in-browser`.
 - `hooks/lint-bpmn.sh` (PostToolUse) runs bpmnlint after every edit of a model under
   `service/app/src/main/resources/bpmn/` and hands the findings back to Claude (exit 2). It changes

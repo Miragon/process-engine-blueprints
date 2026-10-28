@@ -8,7 +8,7 @@ welcome — bug reports, feature ideas, docs, and code.
 ```bash
 git clone <this repository> process-engine-blueprints
 cd process-engine-blueprints/examples/operaton-embedded
-npm ci && npm run hooks:install   # BPMN lint + git hooks
+npm ci && npm run hooks:install   # bpmnlint, bpmn-cli, pulse-cli + git hooks
 ```
 
 You need **JDK 21**, **Node ≥ 22.12**, and **Docker (or Podman)** for Postgres. BPMN linting uses Node
@@ -137,8 +137,18 @@ The build, mutation-testing and code-generation commands are listed in the READM
 From the repo root:
 
 ```bash
-npm run lint:bpmn        # bpmnlint the .bpmn models
+npm run lint:bpmn                                    # bpmnlint the .bpmn models
+npx bpmn guide --short                               # read, change, validate or render a model
+npx pulse-cli inspect --business-key <applicationId>   # where a running case waits and why
+npx pulse-cli status                                   # incidents and jobs at a glance
 ```
+
+bpmn-cli and pulse-cli are also Claude Code plugins (see `AGENTS.md`). Dependabot ignores them:
+bump each one by hand in two places together, its exact version in the root `package.json` and the
+`ref` of its marketplace in `.claude/settings.json`. The plugins bpmn-to-code and bpmnlint-rules follow
+the bpmn-to-code version in the build files and `@miragon/bpmnlint-plugin-rules` in `package.json`:
+when Dependabot bumps one of those, bump the `ref` of its marketplace in `.claude/settings.json` by
+hand in the same PR.
 
 ## Ground rules
 
@@ -193,7 +203,8 @@ git diff --exit-code openapi/openapi.json    # the API contract must not drift
 
 All of these run in CI on every pull request (JDK 21 / Node ≥ 22.12). Before opening a PR, sanity-check
 that a feature is wired end to end across the backend — BPMN element → outbound port → service →
-inbound port → REST controller → `openapi.json` → Bruno scenario.
+inbound port → REST controller → `openapi.json` → Bruno scenario. The Claude Code agent
+`review-vertical-slice` walks this chain for you.
 
 ## Reporting bugs / requesting features
 

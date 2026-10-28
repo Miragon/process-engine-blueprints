@@ -68,8 +68,10 @@ docs/                          Architecture Decision Records + diagrams
 stack/                         Postgres dev stack (docker compose)
 .github/                       pre-merge + nightly pipelines + Dependabot
 .githooks/                     pre-commit hook (bpmnlint on staged .bpmn)
+.claude/                       Claude Code skills, review agents, guards on generated files, hook, plugins
+.pulse-cli.json                pulse-cli's engine profile: the local engine on :8080
 scripts/create-starter.sh      strips the repo down to one variant (docs/starter.md)
-package.json / .bpmnlintrc     root-level bpmnlint config + git-hook installer (npm run lint:bpmn)
+package.json / .bpmnlintrc     root-level bpmnlint config, bpmn-cli, pulse-cli + git-hook installer (npm run lint:bpmn)
 ```
 
 ## Development Setup
@@ -149,7 +151,8 @@ rules:
   there.
 - **`adapter/process` is generated.** Never hand-edit `*ProcessApi` or the shared
   `ServiceTasks`/`Messages`/`ProcessVariables`/`Errors`/`Escalations` files; edit the `.bpmn` and
-  regenerate.
+  regenerate. The same holds for `openapi/openapi.json`. `.claude/settings.json` denies these edits,
+  and CI fails when the committed `openapi.json` is stale.
 - **Service tasks are external topics.** A custom model rule (`ServiceTaskExternalTopicRule`) requires
   every service task to be an external task with a topic — no embedded delegates. The trade-offs
   behind this are written up in [`docs/execution-and-task-listeners.md`](docs/execution-and-task-listeners.md).
@@ -210,6 +213,46 @@ From the repo root:
 
 - Contract changed: regenerate the spec, then `git diff --exit-code openapi/openapi.json`
 - Process changed: regenerate the process API, then the `adapter.process.*` tests
+
+## Agent Tooling
+
+Two CLIs come as Claude Code plugins (`.claude/settings.json`) and are pinned in the root
+`package.json`:
+
+- **bpmn-cli** (`npx bpmn`, skill `bpmn-cli:bpmn`) for every change to a `.bpmn`: semantic edits, no
+  XML by hand, so the diagram (BPMNDI) stays intact. `BPMN_KEEP_FLOW_IDS=1` keeps flow ids stable.
+  <!-- variant:blueprint -->
+  Edit one variant's model, then copy the file to the other variant.
+  <!-- /variant:blueprint -->
+- **pulse-cli** (`npx pulse-cli`, skill `pulse-cli:pulse-cli`, `/pulse-cli:status`) for the local engine, via
+  `.pulse-cli.json`. Run `npx pulse-cli guide` before using it. It reads and repairs
+  (`inspect --business-key <applicationId>`, `status`, `incident`, history, `retry`). It never
+  deploys: the service deploys the models from its classpath, and a hand deploy is a version the
+  generated process API does not know. It never moves a case either (correlating a message,
+  completing a user task): that is a business action, taken by a client of the app's API or by a
+  human in the Tasklist, not by an agent.
+
+Two more plugins follow the libraries the build uses: **bpmn-to-code** (skills `bpmn-to-code:*`) writes
+the workers, the process adapter and their tests against the generated process API
+(`bpmn-to-code:create-worker`, `bpmn-to-code:create-process-adapter`, `bpmn-to-code:test-worker`,
+`bpmn-to-code:test-process`), and **bpmnlint-rules** (skills `bpmnlint-rules:*`) checks the models
+against the modelling style.
+
+A PostToolUse hook (`.claude/hooks/lint-bpmn.sh`) runs bpmnlint after every edit of an executable
+`.bpmn` and hands the findings back.
+
+Skills and agents live in `.claude/` (see [.claude/README.md](.claude/README.md)); other agents can read
+them as recipes:
+
+| Use | When |
+|---|---|
+| skill `implement-issue` | take a GitHub issue from plan (with approval) to a verified change |
+| skill `review-change` | review a diff or PR, findings by severity |
+| skill `create-adr` | record a decision in `docs/adr/` |
+| skills `create-rest-controller`, `create-persistence-adapter` | one building block of a layer, with its production and test pattern |
+| skills `bpmn-to-code:create-worker`, `bpmn-to-code:create-process-adapter`, `bpmn-to-code:test-worker`, `bpmn-to-code:test-process` | a worker, a process-adapter method or their tests |
+| agent `review-process` | read-only audit of the models against their glue code and tests |
+| agent `review-vertical-slice` | read-only walk of one feature from the BPMN element to the Bruno scenario |
 
 ## Working with GitHub
 

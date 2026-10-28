@@ -274,6 +274,13 @@ Two CLIs come as Claude Code plugins (`.claude/settings.json`) and are pinned in
   completing a user task): that is a business action, taken by a client of the app's API or by a
   human in the Tasklist, not by an agent.
 
+Two more plugins bring recipes, no CLI: **bpmn-to-code** (skills `bpmn-to-code:*`, e.g.
+`bpmn-to-code:test-process`, `bpmn-to-code:create-process-adapter`) for the generated process API and
+the code around it, pinned to the bpmn-to-code version of the build files, and **bpmnlint-rules**
+(skills `bpmnlint-rules:*`) for the Miragon rules in `.bpmnlintrc`, pinned to
+`@miragon/bpmnlint-plugin-rules` in `package.json`. They are generic: where they differ from this file
+or the local skills below, this file and the local skills win.
+
 A PostToolUse hook (`.claude/hooks/lint-bpmn.sh`) runs bpmnlint after every edit of an executable
 `.bpmn` and hands the findings back.
 

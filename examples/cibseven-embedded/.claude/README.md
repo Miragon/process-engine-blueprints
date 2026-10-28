@@ -38,11 +38,12 @@ Read-only reviewers with their own context, loaded at session start.
   Personal additions go in `settings.local.json` (git-ignored).
 - `hooks/lint-bpmn.sh` (PostToolUse) runs bpmnlint after every edit of an executable `.bpmn` and
   hands the findings back to Claude. It changes nothing.
-- `settings.json` also enables two pinned plugins, `bpmn-cli@miragon-bpmn` (skill `bpmn-cli:bpmn`) and
-  `pulse-cli@pulse` (skill `pulse-cli:pulse-cli`, `/pulse-cli:status`), from marketplaces fixed to a release
-  tag. Claude Code installs them once you trust the folder; cloud sessions do not load them. Its `env`
-  sets `BPMN_KEEP_FLOW_IDS=1`, so bpmn-cli keeps flow ids stable. `../.pulse-cli.json` points pulse-cli at
-  the local engine.
+- `settings.json` also enables four pinned plugins from marketplaces fixed to a release tag:
+  `bpmn-cli@miragon-bpmn` (skill `bpmn-cli:bpmn`), `pulse-cli@pulse` (skill `pulse-cli:pulse-cli`,
+  `/pulse-cli:status`), `bpmn-to-code@bpmn-to-code` (skills `bpmn-to-code:*`) and
+  `bpmnlint-rules@miragon-bpmnlint` (skills `bpmnlint-rules:*`). Claude Code installs them once you
+  trust the folder; cloud sessions do not load them. Its `env` sets `BPMN_KEEP_FLOW_IDS=1`, so bpmn-cli
+  keeps flow ids stable. `../.pulse-cli.json` points pulse-cli at the local engine.
 
 ## What goes where
 

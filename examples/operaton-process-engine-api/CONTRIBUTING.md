@@ -8,7 +8,7 @@ welcome — bug reports, feature ideas, docs, and code.
 ```bash
 git clone <this repository> process-engine-blueprints
 cd process-engine-blueprints/examples/operaton-process-engine-api
-npm ci && npm run hooks:install                                # BPMN lint + git hooks
+npm ci && npm run hooks:install   # bpmnlint, bpmn-cli, pulse-cli + git hooks
 ```
 
 You need **JDK 21**, **Node ≥ 22.12** (for the BPMN lint tooling), and **Docker (or Podman)** for
@@ -99,8 +99,11 @@ environment (they win over the baked defaults):
 ./mvnw -pl service/app generate-sources # regenerate the typed process API after editing a .bpmn
                                         # (also runs automatically on every build)
 
-# BPMN (tooling at repo root)
-npm ci && npm run lint:bpmn             # bpmnlint the .bpmn models
+# BPMN and the running engine (tooling at repo root)
+npm ci && npm run lint:bpmn                            # bpmnlint the .bpmn models
+npx bpmn guide --short                                 # read, change, validate or render a model
+npx pulse-cli inspect --business-key <applicationId>   # where a running case waits and why
+npx pulse-cli status                                   # incidents and jobs at a glance
 ```
 
 ## Ground rules
@@ -112,6 +115,13 @@ npm ci && npm run lint:bpmn             # bpmnlint the .bpmn models
   agents alike.
 - **Conventional Commits.** Commit messages and PR titles follow
   [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`,
+bpmn-cli and pulse-cli are also Claude Code plugins (see `AGENTS.md`). Dependabot ignores them:
+bump each one by hand in two places together, its exact version in the root `package.json` and the
+`ref` of its marketplace in `.claude/settings.json`. The bpmn-to-code and bpmnlint-rules plugins
+follow the versions Dependabot bumps (`bpmn-to-code.version` in `pom.xml`,
+`@miragon/bpmnlint-plugin-rules` in the root `package.json`): when one of them moves, bump the `ref`
+of its marketplace in `.claude/settings.json` by hand together with it.
+
   `refactor:`, `test:`, `chore:`). Write everything in **English**.
 - **Keep the gates green.** The architecture (ArchUnit + Checkstyle), contract-drift and mutation (≥ 80)
   gates run in CI on every PR. They are fitness functions, not style guides — a violation fails the
@@ -140,7 +150,10 @@ git diff --exit-code openapi/openapi.json    # the API contract must not drift
 npm ci && npm run lint:bpmn                   # the BPMN models lint clean
 ```
 
-All of these run in CI on every pull request (JDK 21 / Node ≥ 22.12).
+All of these run in CI on every pull request (JDK 21 / Node ≥ 22.12). Before opening a PR,
+sanity-check that a feature is wired end to end across the backend — BPMN element → outbound port →
+service → inbound port → REST controller or worker → `openapi.json` → Bruno scenario. The Claude Code
+agent `review-vertical-slice` walks this chain for you.
 
 ## Reporting bugs / requesting features
 

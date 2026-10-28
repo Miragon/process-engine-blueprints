@@ -167,6 +167,7 @@ identical:
       - zeebe-native
       - zeebe-vanillabp
     files:
+      - designiq.yml
       - java-maven/service/app/src/test/resources/sql/leasing-application.sql
       - kotlin-gradle/service/app/src/test/resources/sql/leasing-application.sql
       - scripts/create-starter.sh
@@ -412,6 +413,7 @@ identical:
       - bruno/08-alternative-declined/04-decline-alternative.bru
       - bruno/10-alternative-via-tasklist/03-get-clarify-alternative-task.bru
       - bruno/environments/local.bru
+      - designiq.yml
       - docs/adr/0005-agents-md-as-the-single-source.md
       - docs/adr/0007-two-architecture-test-tools-archunit-and-konsist.md
       - docs/adr/0009-actuator-probes-and-prometheus-metrics.md
@@ -441,6 +443,7 @@ identical:
       - fullstack-cibseven-embedded
       - operaton-process-engine-api
     files:
+      - designiq.yml
       - service/app/src/main/resources/dmn/check-credit-rating.dmn
       - service/app/src/main/resources/forms/clarify-alternative.form
       - service/app/src/main/resources/forms/clarify-return.form

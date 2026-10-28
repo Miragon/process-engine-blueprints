@@ -1,0 +1,2 @@
+# designIQ reads its models from this one folder.
+models: service/app/src/main/resources/bpmn

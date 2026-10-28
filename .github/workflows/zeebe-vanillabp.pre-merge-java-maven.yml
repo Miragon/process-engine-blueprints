@@ -138,7 +138,7 @@ jobs:
         # Pin the CLI: sandbox capabilities (available globals, require whitelist)
         # can change between majors, so an unpinned "latest" is a correctness risk,
         # not just a supply-chain one. The polling helpers rely on require('axios').
-        run: npx --yes @usebruno/cli@4.0.0 run . --env local -r
+        run: npx --yes @usebruno/cli@4.0.0 run . --env local -r --exclude-tags=demo-data
 
       - name: Dump application log on failure
         if: failure()

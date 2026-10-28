@@ -56,7 +56,7 @@ Under Conductor the ports are fixed and the workspace runs `nonconcurrent` (see
 With the service running, drive the REST scenarios end to end:
 
 ```bash
-cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r
+cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r --exclude-tags=demo-data
 ```
 
 The happy path submits an application, signs the contract, and reports the handover; the other numbered
@@ -143,7 +143,10 @@ npx pulse-cli status                                   # incidents and jobs at a
 
 bpmn-cli and pulse-cli are also Claude Code plugins (see `AGENTS.md`). Dependabot ignores them:
 bump each one by hand in two places together, its exact version in the root `package.json` and the
-`ref` of its marketplace in `.claude/settings.json`.
+`ref` of its marketplace in `.claude/settings.json`. The plugins bpmn-to-code and bpmnlint-rules follow
+the bpmn-to-code version in the build files and `@miragon/bpmnlint-plugin-rules` in `package.json`:
+when Dependabot bumps one of those, bump the `ref` of its marketplace in `.claude/settings.json` by
+hand in the same PR.
 
 ## Ground rules
 

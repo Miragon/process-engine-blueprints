@@ -78,7 +78,9 @@ docs/                          Architecture Decision Records + diagrams
 stack/                         Postgres dev stack (docker compose)
 .github/                       pre-merge + nightly pipelines + Dependabot
 .githooks/                     pre-commit hook (bpmnlint on staged .bpmn)
-package.json / .bpmnlintrc     root-level bpmnlint config + git-hook installer (npm run lint:bpmn)
+.claude/                       Claude Code skills, review agents, guards on generated files, hook, plugins
+.pulse-cli.json                pulse-cli's engine profile: the local engine host on :8081
+package.json / .bpmnlintrc     root-level bpmnlint config, bpmn-cli, pulse-cli + git-hook installer
 ```
 
 ## Development Setup
@@ -140,7 +142,7 @@ cd java-maven && ./mvnw -pl service/example-service -am spring-boot:run   # work
 |---|---|
 | Verify the OpenAPI contract after regenerating it | `git diff --exit-code openapi/openapi.json` |
 | BPMN lint | `npm run lint:bpmn` |
-| End-to-end scenarios against a running stack (Bruno) | `cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r` — **pin the CLI version** (sandbox capabilities shift between majors; see [ADR-0012](docs/adr/0012-polling-for-eventual-consistency-in-e2e-tests.md)) |
+| End-to-end scenarios against a running stack (Bruno) | `cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r --exclude-tags=demo-data` — **pin the CLI version** (sandbox capabilities shift between majors; see [ADR-0012](docs/adr/0012-polling-for-eventual-consistency-in-e2e-tests.md)) |
 
 The OCI image decision is [ADR-0011](docs/adr/0011-build-and-deployment-approach.md); the how-to is
 CONTRIBUTING "Run it in containers".
@@ -172,7 +174,8 @@ into the worker (`ArchitectureTest` extends `ServiceArchitectureTest`). See
   `service/example-service/src/main/resources` and deploys them into the remote engine at start-up.
 - `bpmn-to-code` generates the typed process API into the worker's `adapter/process` package — never
   hand-edit `*ProcessApi` or the shared `ServiceTasks`/`Messages`/`ProcessVariables`/`Errors`/
-  `Escalations` files; edit the `.bpmn` and regenerate. Since bpmn-to-code 6 the API is node-centric:
+  `Escalations` files; edit the `.bpmn` and regenerate (`.claude/settings.json` denies these edits,
+  and those to `openapi/openapi.json`). Since bpmn-to-code 6 the API is node-centric:
   `<Process>ProcessApi.FlowNodes.<Node>` carries the element (its id and `ELEMENT_ID`), its
   `Variables` and its successors (`Next`). Process tests assert the walked path as a compile-checked
   path over these nodes instead of hand-maintained element-id lists.
@@ -223,6 +226,47 @@ From the repo root:
 
 - Contract changed: regenerate the spec, then `git diff --exit-code openapi/openapi.json`
 - Process changed: regenerate the process API, then the `process.*` tests
+
+## Agent Tooling
+
+Four Claude Code plugins come pinned in `.claude/settings.json`; the two CLIs are also pinned in the
+root `package.json`:
+
+- **bpmn-cli** (`npx bpmn`, skill `bpmn-cli:bpmn`) for every change to a `.bpmn`: semantic edits, no
+  XML by hand, so the diagram (BPMNDI) stays intact. `BPMN_KEEP_FLOW_IDS=1` keeps flow ids stable.
+  <!-- variant:blueprint -->
+  Edit one variant's model, then copy the file to the other variant.
+  <!-- /variant:blueprint -->
+- **pulse-cli** (`npx pulse-cli`, skill `pulse-cli:pulse-cli`, `/pulse-cli:status`) for the engine host
+  on :8081, via `.pulse-cli.json`. Run `npx pulse-cli guide` before using it. It reads and repairs
+  (`inspect --business-key <applicationId>`, `status`, `incident`, history, `retry`). It never
+  deploys: the worker deploys the models from its classpath at start-up, and a hand deploy is a
+  version the generated process API does not know. It never moves a case either (correlating a
+  message, completing a user task): that is a business action, taken by a client of the worker's API
+  or by a human in the Tasklist, not by an agent.
+- **bpmn-to-code** (skills `bpmn-to-code:*`) for the glue around the generated process API:
+  `bpmn-to-code:create-worker` and `bpmn-to-code:test-worker` for an external-task worker,
+  `bpmn-to-code:create-process-adapter` for a message or user task the worker drives,
+  `bpmn-to-code:test-process` for a process test. The agent `bpmn-to-code:process-reviewer` audits a
+  model against its code.
+- **bpmnlint-rules** (skills `bpmnlint-rules:*`) for the modelling style: `fix-model-layout` and
+  `verify-model-visually` after an edit; `validate-bpmn-style` needs a `BPMN_STYLE_GUIDE.md`, which
+  this repo does not have yet (`build-bpmn-styleguide` writes one).
+
+A PostToolUse hook (`.claude/hooks/lint-bpmn.sh`) runs bpmnlint after every edit of an executable
+`.bpmn` and hands the findings back.
+
+Skills and agents live in `.claude/` (see [.claude/README.md](.claude/README.md)); other agents can read
+them as recipes:
+
+| Use | When |
+|---|---|
+| skill `implement-issue` | take a GitHub issue from plan (with approval) to a verified change |
+| skill `review-change` | review a diff or PR, findings by severity |
+| skill `create-adr` | record a decision in `docs/adr/` |
+| skills `create-rest-controller`, `create-persistence-adapter` | one building block of a layer, with its production and test pattern |
+| agent `review-process` | read-only audit of the models against their workers, adapters and tests |
+| agent `review-vertical-slice` | read-only walk of one feature from the BPMN element to the Bruno scenario |
 
 ## Working with GitHub
 

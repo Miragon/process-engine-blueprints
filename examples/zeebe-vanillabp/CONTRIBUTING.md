@@ -8,7 +8,7 @@ are welcome — bug reports, feature ideas, docs, and code.
 ```bash
 git clone <this repository> process-engine-blueprints
 cd process-engine-blueprints/examples/zeebe-vanillabp
-npm ci && npm run hooks:install                                # BPMN lint + git hooks
+npm ci && npm run hooks:install   # bpmnlint, bpmn-cli + git hooks
 ```
 
 You need **JDK 21**, **Node ≥ 22**, and **Docker (or Podman)** for the local Camunda 8 stack and
@@ -58,7 +58,7 @@ workspace runs `nonconcurrent` (see [ADR-0006](docs/adr/0006-fixed-ports-for-v1-
 With the stack and backend running, drive the API scenarios and confirm the operational surface:
 
 ```bash
-cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r   # the end-to-end API scenarios
+cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r --exclude-tags=demo-data   # the end-to-end API scenarios
 ```
 
 Confirm <http://localhost:8081/swagger-ui.html>, <http://localhost:8081/actuator/health> (status
@@ -131,7 +131,15 @@ From the repo root:
 
 ```bash
 npm run lint:bpmn        # bpmnlint the .bpmn models
+npx bpmn guide --short   # read, change, validate or render a model
 ```
+
+bpmn-cli is also a Claude Code plugin (see `AGENTS.md`). Dependabot ignores it: bump it by hand in two
+places together, its exact version in the root `package.json` and the `ref` of its marketplace in
+`.claude/settings.json`. The plugins bpmn-to-code and bpmnlint-rules follow the versions the repo
+already uses: the `ref` of `bpmn-to-code` matches bpmn-to-code in the build files, the `ref` of
+`miragon-bpmnlint` matches `@miragon/bpmnlint-plugin-rules` in the root `package.json`. Dependabot
+bumps those versions but not the refs: bump each ref by hand together with its version.
 
 ## Ground rules
 
@@ -183,7 +191,10 @@ npm run lint:bpmn        # bpmnlint the .bpmn models
 git diff --exit-code openapi/openapi.json    # the API contract must not drift
 ```
 
-All of these run in CI on every pull request (JDK 21 / Node ≥ 22).
+All of these run in CI on every pull request (JDK 21 / Node ≥ 22). Before opening a PR, sanity-check
+that a feature is wired end to end across the backend — BPMN element → outbound port → service →
+inbound port → REST controller → `openapi.json` → Bruno scenario. The Claude Code agent
+`review-vertical-slice` walks this chain for you.
 
 ## Reporting bugs / requesting features
 

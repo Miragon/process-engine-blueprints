@@ -53,7 +53,7 @@ cd java-maven && ./mvnw -DskipTests install && ./mvnw -pl service/app spring-boo
 
 In The Bridge, register the engine under Platform Settings → Engines with base URL
 `http://host.docker.internal:8080/engine-rest`.
-Drive the whole process over REST: `cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r`.
+Drive the whole process over REST: `cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r --exclude-tags=demo-data`.
 Tests, ports and containers are in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## What's inside

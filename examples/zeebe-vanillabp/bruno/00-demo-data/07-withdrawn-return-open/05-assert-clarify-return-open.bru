@@ -1,0 +1,39 @@
+meta {
+  name: Assert the return clarification is open
+  type: http
+  seq: 5
+  tags: [
+    demo-data
+  ]
+}
+
+post {
+  url: {{camundaRest}}/user-tasks/search
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "filter": {
+      "elementId": "userTask_clarifyReturn",
+      "state": "CREATED",
+      "processInstanceVariables": [
+        { "name": "applicationId", "value": "\"{{applicationId}}\"" }
+      ]
+    }
+  }
+}
+
+script:pre-request {
+  const id = bru.getVar("applicationId");
+  await pollSearch("/user-tasks/search",
+    { filter: { elementId: "userTask_clarifyReturn", state: "CREATED",
+      processInstanceVariables: [{ name: "applicationId", value: `"${id}"` }] } },
+    (b) => b && Array.isArray(b.items) && b.items.length > 0 && b.items[0].userTaskKey != null);
+}
+
+assert {
+  res.status: eq 200
+  res.body.items[0].userTaskKey: isDefined
+}

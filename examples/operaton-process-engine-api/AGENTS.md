@@ -49,7 +49,7 @@ repository.
 | Mutation testing (gate 80) | `./mvnw -DskipTests install && ./mvnw -pl service/app org.pitest:pitest-maven:mutationCoverage` — report under `service/app/target/pit-reports` |
 | Regenerate the typed BPMN process API (after editing a `.bpmn`) | `./mvnw -pl service/app generate-sources` (also runs automatically on every build) |
 | Regenerate + verify the OpenAPI contract | `./mvnw -pl service/app -am test -Dtest=OpenApiSpecExportTest` then `git diff --exit-code openapi/openapi.json` |
-| API scenarios (running stack) | `cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r` |
+| API scenarios (running stack) | `cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r --exclude-tags=demo-data` |
 | BPMN lint | `npm ci && npm run lint:bpmn` |
 | Backend OCI image | `./mvnw -DskipTests install && ./mvnw -pl service/app spring-boot:build-image -DskipTests` — [ADR-0011](docs/adr/0011-build-and-deployment-approach.md), CONTRIBUTING "Run it in containers" |
 
@@ -69,7 +69,8 @@ before writing code. The hard rules:
   there.
 - **`adapter/process` is generated.** Never hand-edit `*ProcessApi.java` or the shared
   `ServiceTasks`/`Messages`/`ProcessVariables`/`Errors`/`Escalations` files; edit the `.bpmn` and re-run
-  `./mvnw -pl service/app generate-sources`.
+  `./mvnw -pl service/app generate-sources`. The same holds for `openapi/openapi.json`.
+  `.claude/settings.json` denies these edits, and CI fails when the committed files are stale.
 - **Service tasks are external topics.** A custom model rule (`ServiceTaskExternalTopicRule`) requires
   every service task to be an external task with a topic — no embedded delegates. The trade-offs
   behind this are written up in [`docs/execution-and-task-listeners.md`](docs/execution-and-task-listeners.md).
@@ -109,6 +110,43 @@ runs nightly. See ADR-0004.
 - Backend service/controller: `./mvnw -pl service/app -am test "-Dtest=*<Name>Test" -Dsurefire.failIfNoSpecifiedTests=false`
 - Architecture only: `./mvnw -pl service/app -am test "-Dtest=io.miragon.blueprint.architecture.*"`
 - Contract changed: regenerate the spec, then `git diff --exit-code openapi/openapi.json`
+
+## Agent Tooling
+
+Two CLIs come as Claude Code plugins (`.claude/settings.json`) and are pinned in the root
+`package.json`:
+
+- **bpmn-cli** (`npx bpmn`, skill `bpmn-cli:bpmn`) for every change to a `.bpmn`: semantic edits, no
+  XML by hand, so the diagram (BPMNDI) stays intact. `BPMN_KEEP_FLOW_IDS=1` keeps flow ids stable.
+- **pulse-cli** (`npx pulse-cli`, skill `pulse-cli:pulse-cli`, `/pulse-cli:status`) for the local engine, via
+  `.pulse-cli.json` (the engine on :8080). Run `npx pulse-cli guide` before using it. It reads and repairs
+  (`inspect --business-key <applicationId>`, `status`, `incident`, history, `retry`). It never
+  deploys: the service deploys the models from its classpath, and a hand deploy is a version the
+  generated process API does not know. It never moves a case either (correlating a message,
+  completing a user task): that is a business action, taken by a client of the app's API or by a
+  human in the Tasklist, not by an agent.
+
+Two more plugins follow the libraries the build uses: **bpmn-to-code** (skills `bpmn-to-code:*`) writes
+the workers, the process adapter and their tests against the generated process API
+(`bpmn-to-code:create-worker`, `bpmn-to-code:create-process-adapter`, `bpmn-to-code:test-worker`,
+`bpmn-to-code:test-process`), and **bpmnlint-rules** (skills `bpmnlint-rules:*`) checks the models
+against the modelling style.
+
+A PostToolUse hook (`.claude/hooks/lint-bpmn.sh`) runs bpmnlint after every edit of an executable
+`.bpmn` and hands the findings back.
+
+Skills and agents live in `.claude/` (see [.claude/README.md](.claude/README.md)); other agents can read
+them as recipes:
+
+| Use | When |
+|---|---|
+| skill `implement-issue` | take a GitHub issue from plan (with approval) to a verified change |
+| skill `review-change` | review a diff or PR, findings by severity |
+| skill `create-adr` | record a decision in `docs/adr/` |
+| skills `create-rest-controller`, `create-persistence-adapter` | one building block of a layer, with its production and test pattern |
+| skills `bpmn-to-code:create-worker`, `bpmn-to-code:create-process-adapter`, `bpmn-to-code:test-worker`, `bpmn-to-code:test-process` | a worker, a process-adapter method or their tests |
+| agent `review-process` | read-only audit of the models against their glue code and tests |
+| agent `review-vertical-slice` | read-only walk of one feature from the BPMN element to the Bruno scenario |
 
 ## Working with GitHub
 

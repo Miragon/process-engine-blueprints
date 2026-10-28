@@ -179,6 +179,9 @@ updates:
         applies-to: security-updates
         patterns:
           - "*"
+    ignore:
+      - dependency-name: "@miragon/bpmn-cli"
+      - dependency-name: "@miragon/pulse-cli"
   - package-ecosystem: gradle
     directory: /examples/cibseven-remote/kotlin-gradle
     patterns:
@@ -223,6 +226,9 @@ updates:
         applies-to: security-updates
         patterns:
           - "*"
+    ignore:
+      - dependency-name: "@miragon/bpmn-cli"
+      - dependency-name: "@miragon/pulse-cli"
   - package-ecosystem: gradle
     directory: /examples/fluxnova-embedded/kotlin-gradle
     patterns:
@@ -269,6 +275,9 @@ updates:
         applies-to: security-updates
         patterns:
           - "*"
+    ignore:
+      - dependency-name: "@miragon/bpmn-cli"
+      - dependency-name: "@miragon/pulse-cli"
   - package-ecosystem: gradle
     directory: /examples/fullstack-cibseven-embedded
     schedule:
@@ -428,6 +437,9 @@ updates:
         applies-to: security-updates
         patterns:
           - "*"
+    ignore:
+      - dependency-name: "@miragon/bpmn-cli"
+      - dependency-name: "@miragon/pulse-cli"
   - package-ecosystem: maven
     directory: /examples/operaton-process-engine-api
     patterns:
@@ -465,6 +477,9 @@ updates:
         applies-to: security-updates
         patterns:
           - "*"
+    ignore:
+      - dependency-name: "@miragon/bpmn-cli"
+      - dependency-name: "@miragon/pulse-cli"
   - package-ecosystem: gradle
     directory: /examples/operaton-remote/kotlin-gradle
     patterns:
@@ -509,6 +524,9 @@ updates:
         applies-to: security-updates
         patterns:
           - "*"
+    ignore:
+      - dependency-name: "@miragon/bpmn-cli"
+      - dependency-name: "@miragon/pulse-cli"
   - package-ecosystem: gradle
     directory: /examples/zeebe-native/kotlin-gradle
     patterns:
@@ -553,6 +571,8 @@ updates:
         applies-to: security-updates
         patterns:
           - "*"
+    ignore:
+      - dependency-name: "@miragon/bpmn-cli"
   - package-ecosystem: gradle
     directory: /examples/zeebe-vanillabp/kotlin-gradle
     patterns:
@@ -597,3 +617,5 @@ updates:
         applies-to: security-updates
         patterns:
           - "*"
+    ignore:
+      - dependency-name: "@miragon/bpmn-cli"

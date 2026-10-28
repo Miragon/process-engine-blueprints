@@ -65,8 +65,10 @@ docs/                          Architecture Decision Records, migration notes + 
 stack/                         Postgres dev stack (docker compose)
 .github/                       pre-merge + nightly pipelines + Dependabot
 .githooks/                     pre-commit hook (bpmnlint on staged .bpmn)
+.claude/                       Claude Code skills, review agent, guards on generated files, hook, plugins
+.pulse-cli.json                pulse-cli's engine profile: the local engine on :8080
 scripts/create-starter.sh      strips the repo down to one variant (docs/starter.md)
-package.json / .bpmnlintrc     root-level bpmnlint config + git-hook installer (npm run lint:bpmn)
+package.json / .bpmnlintrc     root-level bpmnlint config, bpmn-cli, pulse-cli + git-hook installer
 ```
 
 ## Development Setup
@@ -126,7 +128,7 @@ Under Conductor the ports are fixed and the workspace runs `nonconcurrent`
 | Area (repo root) | Command |
 |---|---|
 | Verify the OpenAPI contract after regenerating it | `git diff --exit-code openapi/openapi.json` |
-| API scenarios (running stack) | `cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r` |
+| API scenarios (running stack) | `cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r --exclude-tags=demo-data` |
 | BPMN lint | `npm run lint:bpmn` |
 
 The OCI image decision is [ADR-0011](docs/adr/0011-build-and-deployment-approach.md); the how-to is
@@ -147,7 +149,7 @@ hard rules:
   there.
 - **`adapter/process` is generated.** Never hand-edit `*ProcessApi` or the shared
   `ServiceTasks`/`Messages`/`ProcessVariables`/`Errors`/`Escalations` files; edit the `.bpmn` and
-  regenerate.
+  regenerate. The same holds for `openapi/openapi.json`; `.claude/settings.json` denies these edits.
 - **Suffixes:** inbound port `UseCase|Query`; outbound `Port|Repository|Process`; service
   `Service|Configuration`; `adapter.inbound.rest` `Controller|Dto|Input|Mapper|Configuration`;
   `adapter.inbound.fluxnova` `Delegate|Worker|Listener`; `adapter.outbound`
@@ -221,6 +223,47 @@ From the repo root:
 
 - Contract changed: regenerate the spec, then `git diff --exit-code openapi/openapi.json`
 - Process changed: regenerate the process API, then the `adapter.process.*` tests
+
+## Agent Tooling
+
+Two CLIs come as Claude Code plugins (`.claude/settings.json`) and are pinned in the root
+`package.json`:
+
+- **bpmn-cli** (`npx bpmn`, skill `bpmn-cli:bpmn`) for every change to a `.bpmn`: semantic edits, no
+  XML by hand, so the diagram (BPMNDI) stays intact. `BPMN_KEEP_FLOW_IDS=1` keeps flow ids stable.
+  <!-- variant:blueprint -->
+  Edit one variant's model, then copy the file to the other variant.
+  <!-- /variant:blueprint -->
+- **pulse-cli** (`npx pulse-cli`, skill `pulse-cli:pulse-cli`, `/pulse-cli:status`) for the local engine, via
+  `.pulse-cli.json`. Run `npx pulse-cli guide` before using it. It reads and repairs
+  (`inspect --business-key <applicationId>`, `status`, `incident`, history, `retry`). It never
+  deploys: the service deploys the models from its classpath, and a hand deploy is a version the
+  generated process API does not know. It never moves a case either (correlating a message,
+  completing a user task): that is a business action, taken by a client of the app's API or by a
+  human in the Tasklist, not by an agent.
+
+Two more plugins bring recipes, no CLI: **bpmn-to-code** (skills `bpmn-to-code:*`, e.g.
+`bpmn-to-code:test-process`, `bpmn-to-code:create-process-adapter`) for the generated process API and
+the code around it, pinned to the bpmn-to-code version of the build files, and **bpmnlint-rules**
+(skills `bpmnlint-rules:*`) for the Miragon rules in `.bpmnlintrc`, pinned to
+`@miragon/bpmnlint-plugin-rules` in `package.json`. They are generic: where they differ from this file
+or the local skills below, this file and the local skills win.
+
+A PostToolUse hook (`.claude/hooks/lint-bpmn.sh`) runs bpmnlint after every edit of an executable
+`.bpmn` and hands the findings back.
+
+Skills and agents live in `.claude/` (see [.claude/README.md](.claude/README.md)); other agents can read
+them as recipes:
+
+| Use | When |
+|---|---|
+| skill `implement-issue` | take a GitHub issue from plan (with approval) to a verified change |
+| skill `automate-process` | change an executable model and its glue code, validate it |
+| skill `review-change` | review a diff or PR, findings by severity |
+| skill `create-adr` | record a decision in `docs/adr/` |
+| skills `create-rest-controller`, `create-persistence-adapter`, `create-delegate` | one building block of a layer, with its production and test pattern |
+| agent `review-process` | read-only audit of the models against their glue code and tests |
+| agent `review-vertical-slice` | read-only walk of one feature from the BPMN element to the Bruno scenario |
 
 ## Working with GitHub
 

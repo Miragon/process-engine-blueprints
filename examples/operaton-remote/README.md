@@ -53,7 +53,7 @@ cd java-maven && ./mvnw -pl service/example-service spring-boot:run             
 | Operaton Cockpit / Tasklist | <http://localhost:8081/operaton> | admin / admin |
 | Worker Swagger UI | <http://localhost:8082/swagger-ui.html> | |
 
-Drive the whole process over REST: `cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r`.
+Drive the whole process over REST: `cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r --exclude-tags=demo-data`.
 Tests, ports and containers are in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## What's inside

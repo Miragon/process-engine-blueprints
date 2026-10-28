@@ -140,7 +140,7 @@ Under Conductor the ports are fixed and the workspace runs `nonconcurrent`
 | Area (repo root) | Command |
 |---|---|
 | Verify the OpenAPI contract after regenerating it | `git diff --exit-code openapi/openapi.json` |
-| API scenarios (running stack) | `cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r` |
+| API scenarios (running stack) | `cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r --exclude-tags=demo-data` |
 | BPMN lint | `npm run lint:bpmn` |
 
 The OCI image decision is [ADR-0011](docs/adr/0011-build-and-deployment-approach.md); the how-to is
@@ -273,6 +273,13 @@ Two CLIs come as Claude Code plugins (`.claude/settings.json`) and are pinned in
   generated process API does not know. It never moves a case either (correlating a message,
   completing a user task): that is a business action, taken by a client of the app's API or by a
   human in the Tasklist, not by an agent.
+
+Two more plugins bring recipes, no CLI: **bpmn-to-code** (skills `bpmn-to-code:*`, e.g.
+`bpmn-to-code:test-process`, `bpmn-to-code:create-process-adapter`) for the generated process API and
+the code around it, pinned to the bpmn-to-code version of the build files, and **bpmnlint-rules**
+(skills `bpmnlint-rules:*`) for the Miragon rules in `.bpmnlintrc`, pinned to
+`@miragon/bpmnlint-plugin-rules` in `package.json`. They are generic: where they differ from this file
+or the local skills below, this file and the local skills win.
 
 A PostToolUse hook (`.claude/hooks/lint-bpmn.sh`) runs bpmnlint after every edit of an executable
 `.bpmn` and hands the findings back.

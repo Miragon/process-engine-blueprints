@@ -59,7 +59,7 @@ npm --prefix frontend run dev                       # UI on :5173 (proxies /api 
 | Regenerate + verify the OpenAPI contract | `./gradlew :service:app:test --tests "io.miragon.blueprint.adapter.inbound.rest.OpenApiSpecExportTest"` then `git diff --exit-code openapi/openapi.json` |
 | Frontend everything | `npm --prefix frontend run verify` |
 | Regenerate the API client | `npm --prefix frontend run api:generate` (check: `api:check`) |
-| API scenarios (running stack) | `cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r` |
+| API scenarios (running stack) | `cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r --exclude-tags=demo-data` |
 | Browser e2e (running stack) | `npm --prefix frontend run e2e` |
 | BPMN lint | `npm run lint:bpmn` |
 | Backend OCI image · full-stack run | `./gradlew :service:app:bootBuildImage` · `docker compose -f stack/docker-compose.full.yml up` — [ADR-0014](docs/adr/0014-build-and-deployment-approach.md), CONTRIBUTING "Run it in containers" |
@@ -162,6 +162,13 @@ Two CLIs come as Claude Code plugins (`.claude/settings.json`) and are pinned in
   generated process API does not know. It never moves a case either (correlating a message,
   completing a user task): that is a business action, taken through the app's UI or API or by a
   human in the Tasklist, not by an agent.
+
+Two more plugins bring recipes, no CLI: **bpmn-to-code** (skills `bpmn-to-code:*`, e.g.
+`bpmn-to-code:test-process`, `bpmn-to-code:create-process-adapter`) for the generated process API and
+the code around it, pinned to the bpmn-to-code version of the build files, and **bpmnlint-rules**
+(skills `bpmnlint-rules:*`) for the Miragon rules in `.bpmnlintrc`, pinned to
+`@miragon/bpmnlint-plugin-rules` in `package.json`. They are generic: where they differ from this file
+or the local skills below, this file and the local skills win.
 
 `.mcp.json` adds a pinned Playwright MCP server for skill `test-in-browser`. A PostToolUse hook
 (`.claude/hooks/lint-bpmn.sh`) runs bpmnlint after every edit of an executable `.bpmn` and hands the

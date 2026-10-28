@@ -84,7 +84,7 @@ cd java-maven && ./mvnw -DskipTests install && ./mvnw -pl service/app spring-boo
 | Area (repo root) | Command |
 |---|---|
 | Verify the OpenAPI contract after regenerating it | `git diff --exit-code openapi/openapi.json` |
-| API scenarios (running stack) | `cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r` |
+| API scenarios (running stack) | `cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r --exclude-tags=demo-data` |
 | BPMN lint | `npm run lint:bpmn` |
 
 The OCI image decision is [ADR-0011](docs/adr/0011-build-and-deployment-approach.md); the how-to is
@@ -105,7 +105,8 @@ writing code. The hard rules:
   there.
 - **`adapter/process` holds the generated process API and the workflow aggregate.** Never hand-edit
   `*ProcessApi` or the shared `ServiceTasks`/`Messages`/`ProcessVariables`/`Errors`/`Escalations`
-  files; edit the `.bpmn` and regenerate. `LeasingApplicationAggregate` is
+  files; edit the `.bpmn` and regenerate. The same holds for `openapi/openapi.json`.
+  `.claude/settings.json` denies these edits. `LeasingApplicationAggregate` is
   hand-written: it is the VanillaBP workflow aggregate the workflow tasks and the persistence share.
 - **No engine API in the service.** Production code must not depend on `io.camunda` (or any other
   engine API); the VanillaBP SPI is only allowed in `adapter.inbound.workflow` and
@@ -168,6 +169,48 @@ In `java-maven/`:
 From the repo root:
 
 - Contract changed: regenerate the spec, then `git diff --exit-code openapi/openapi.json`
+
+## Agent Tooling
+
+Three Claude Code plugins come with the repo (`.claude/settings.json`), each pinned to the version the
+repo uses:
+
+- **bpmn-cli** (`npx bpmn`, skill `bpmn-cli:bpmn`, pinned in the root `package.json`) for every change
+  to a `.bpmn`: semantic edits, no XML by hand, so the diagram (BPMNDI) stays intact. It knows the
+  Camunda 8 extensions (job workers, I/O mappings, error handling, forms). `BPMN_KEEP_FLOW_IDS=1` keeps
+  flow ids stable.
+  <!-- variant:blueprint -->
+  Edit one variant's model, then copy the file to the other variant.
+  <!-- /variant:blueprint -->
+- **bpmn-to-code** (skills `bpmn-to-code:*`) for the glue around the generated process API:
+  `create-worker` and `test-worker` for a workflow task, `create-process-adapter` for a start, message
+  or user task completion, `test-process` for a process path. They know job workers, not VanillaBP:
+  take the generated names and the test shape from them, the code shape from the existing
+  `@WorkflowTask` classes and `LeasingProcessAdapter`.
+- **bpmnlint-rules** (skills `bpmnlint-rules:*`, the plugin of `@miragon/bpmnlint-plugin-rules`) to
+  check a model after an edit: `verify-model-visually` (bpmnlint plus a look at the rendered image),
+  `fix-model-layout`, and the style-guide skills.
+
+No engine CLI comes with the repo. Diagnose a running case in Operate (<http://localhost:8080>) or over
+the Zeebe REST API on `:8080/v2` (process-instance and incident search, as in `bruno/06-incident-demo`).
+Moving a case on (correlating a message, completing a user task) is a business action, taken by a
+client of the app's API, not by an agent.
+
+A PostToolUse hook (`.claude/hooks/lint-bpmn.sh`) runs bpmnlint after every edit of an executable
+`.bpmn` and hands the findings back.
+
+Skills and agents live in `.claude/` (see [.claude/README.md](.claude/README.md)); other agents can read
+them as recipes:
+
+| Use | When |
+|---|---|
+| skill `implement-issue` | take a GitHub issue from plan (with approval) to a verified change |
+| skill `review-change` | review a diff or PR, findings by severity |
+| skill `create-adr` | record a decision in `docs/adr/` |
+| skills `create-rest-controller`, `create-persistence-adapter` | one building block of a layer, with its production and test pattern |
+| skills `bpmn-to-code:create-worker`, `bpmn-to-code:create-process-adapter`, `bpmn-to-code:test-worker`, `bpmn-to-code:test-process` | a workflow task, a process-adapter call and their tests |
+| agent `review-process` | read-only audit of the models against their glue code and tests |
+| agent `review-vertical-slice` | read-only walk of one feature from the BPMN element to the Bruno scenario |
 
 ## Working with GitHub
 

@@ -1,0 +1,25 @@
+meta {
+  name: Assert the application is RECEIVED
+  type: http
+  seq: 2
+  tags: [
+    demo-data
+  ]
+}
+
+get {
+  url: {{baseUrl}}/api/bike-leasing/{{applicationId}}
+  body: none
+  auth: none
+}
+
+script:pre-request {
+  await pollApp("/api/bike-leasing/" + bru.getVar("applicationId"),
+    (b, s) => s === 200 && b && b.status === "RECEIVED" && b.contractId != null);
+}
+
+assert {
+  res.status: eq 200
+  res.body.status: eq RECEIVED
+  res.body.contractId: isDefined
+}

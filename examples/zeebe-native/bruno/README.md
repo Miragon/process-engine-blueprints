@@ -6,11 +6,12 @@ actions; the Camunda 8 REST API (`/v2`) completes the form-only user task and re
 runs the collection against both variants on every pull request.
 
 ```bash
-npx --yes @usebruno/cli@4.0.0 run . --env local -r
+npx --yes @usebruno/cli@4.0.0 run . --env local -r --exclude-tags=demo-data
 ```
 
 | Folder | Scenario |
 |---|---|
+| `00-demo-data` | six cases left open for a demo, one per state: waiting for the signature, waiting for the handover, in the withdrawal period, rejected, an alternative waiting in the inbox, withdrawn with the return clarification open. ACTIVE is left out: Zeebe timers cannot be fast-forwarded over REST, see `01-happy-path`. CI skips it (tag `demo-data`) |
 | `01-happy-path` | submit → sign the contract → report the handover |
 | `03-abort` | the customer withdraws after signing; the bike order is cancelled and the contract compensated |
 | `04-not-solvent` | the DMN rejects the applicant |
@@ -20,6 +21,12 @@ npx --yes @usebruno/cli@4.0.0 run . --env local -r
 | `08-alternative-declined` | the bike is out of stock and no alternative is found; contract and policy are compensated, no order is cancelled |
 | `09-invalid-request` | invalid input is refused with a 400: a request without income, an accepted alternative without a bike |
 | `10-alternative-via-tasklist` | the bike is out of stock and the alternative is chosen the way the Tasklist form does it |
+
+Fill an empty stack with demo cases:
+
+```bash
+npx --yes @usebruno/cli@4.0.0 run 00-demo-data --env local -r
+```
 
 A running Zeebe broker cannot fast-forward timers over REST, so the timer-gated steps — the signature
 deadline and the 14-day withdrawal period that ends in an active lease — are covered by the process

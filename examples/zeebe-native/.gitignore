@@ -1,4 +1,5 @@
 .claude/logs/
+.claude/settings.local.json
 **/bin/
 **/target/
 # variant:kotlin-gradle

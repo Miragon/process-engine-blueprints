@@ -8,7 +8,7 @@ welcome — bug reports, feature ideas, docs, and code.
 ```bash
 git clone <this repository> process-engine-blueprints
 cd process-engine-blueprints/examples/operaton-process-engine-api
-npm ci && npm run hooks:install                                # BPMN lint + git hooks
+npm ci && npm run hooks:install   # bpmnlint, bpmn-cli, pulse-cli + git hooks
 ```
 
 You need **JDK 21**, **Node ≥ 22.12** (for the BPMN lint tooling), and **Docker (or Podman)** for
@@ -40,7 +40,7 @@ Under Conductor the ports are fixed and the workspace runs `nonconcurrent` (see
 Drive the running app with the Bruno API scenarios:
 
 ```bash
-cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r
+cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r --exclude-tags=demo-data
 ```
 
 They start a case over the domain REST endpoints, complete user tasks and fire timer jobs via the
@@ -48,6 +48,15 @@ Operaton `/engine-rest` API, and assert the whole flow — happy path, escalatio
 rejection, the bike-unavailable → alternative-selection loop, the incident demo, a declined
 alternative (contract and policy are compensated, no order is cancelled), and a request without income
 that is refused with a 400 before any process starts.
+
+Fill an empty stack with demo cases: `00-demo-data` leaves seven cases open, one per state (waiting for
+the signature, waiting for the handover, in the withdrawal period, active, rejected, an alternative
+waiting in the inbox, withdrawn with the return clarification open). The run above skips it (tag
+`demo-data`).
+
+```bash
+cd bruno && npx --yes @usebruno/cli@4.0.0 run 00-demo-data --env local -r
+```
 
 Confirm <http://localhost:8080/operaton> (admin/admin), <http://localhost:8080/swagger-ui.html> and
 <http://localhost:8080/actuator/health> (status `UP`) all load.
@@ -99,9 +108,19 @@ environment (they win over the baked defaults):
 ./mvnw -pl service/app generate-sources # regenerate the typed process API after editing a .bpmn
                                         # (also runs automatically on every build)
 
-# BPMN (tooling at repo root)
-npm ci && npm run lint:bpmn             # bpmnlint the .bpmn models
+# BPMN and the running engine (tooling at repo root)
+npm ci && npm run lint:bpmn                            # bpmnlint the .bpmn models
+npx bpmn guide --short                                 # read, change, validate or render a model
+npx pulse-cli inspect --business-key <applicationId>   # where a running case waits and why
+npx pulse-cli status                                   # incidents and jobs at a glance
 ```
+
+bpmn-cli and pulse-cli are also Claude Code plugins (see `AGENTS.md`). Dependabot ignores them:
+bump each one by hand in two places together, its exact version in the root `package.json` and the
+`ref` of its marketplace in `.claude/settings.json`. The bpmn-to-code and bpmnlint-rules plugins
+follow the versions Dependabot bumps (`bpmn-to-code.version` in `pom.xml`,
+`@miragon/bpmnlint-plugin-rules` in the root `package.json`): when one of them moves, bump the `ref`
+of its marketplace in `.claude/settings.json` by hand together with it.
 
 ## Ground rules
 
@@ -140,7 +159,10 @@ git diff --exit-code openapi/openapi.json    # the API contract must not drift
 npm ci && npm run lint:bpmn                   # the BPMN models lint clean
 ```
 
-All of these run in CI on every pull request (JDK 21 / Node ≥ 22.12).
+All of these run in CI on every pull request (JDK 21 / Node ≥ 22.12). Before opening a PR,
+sanity-check that a feature is wired end to end across the backend — BPMN element → outbound port →
+service → inbound port → REST controller or worker → `openapi.json` → Bruno scenario. The Claude Code
+agent `review-vertical-slice` walks this chain for you.
 
 ## Reporting bugs / requesting features
 

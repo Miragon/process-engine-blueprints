@@ -1,0 +1,25 @@
+meta {
+  name: Assert the return clarification is open
+  type: http
+  seq: 6
+  tags: [
+    demo-data
+  ]
+}
+
+get {
+  url: {{engineRest}}/task?processInstanceBusinessKey={{applicationId}}&taskDefinitionKey=userTask_clarifyReturn
+  body: none
+  auth: none
+}
+
+script:pre-request {
+  await pollEngine("/task?processInstanceBusinessKey=" + bru.getVar("applicationId")
+    + "&taskDefinitionKey=userTask_clarifyReturn",
+    (b) => Array.isArray(b) && b.length >= 1);
+}
+
+assert {
+  res.status: eq 200
+  res.body[0].id: isDefined
+}

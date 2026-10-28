@@ -16,9 +16,15 @@ identical:
       - zeebe-native
       - zeebe-vanillabp
     files:
+      - .claude/hooks/lint-bpmn.sh
       - .npmrc
       - CLAUDE.md
       - LICENSE
+      - bruno/00-demo-data/01-awaiting-signature/01-submit.bru
+      - bruno/00-demo-data/02-awaiting-handover/01-submit.bru
+      - bruno/00-demo-data/03-in-withdrawal-period/01-submit.bru
+      - bruno/00-demo-data/05-rejected/01-submit.bru
+      - bruno/00-demo-data/07-withdrawn-return-open/01-submit.bru
       - bruno/01-happy-path/01-submit.bru
   - name: cibseven-embedded + cibseven-process-engine-api + cibseven-remote + fluxnova-embedded + operaton-embedded + operaton-process-engine-api + operaton-remote + zeebe-native + zeebe-vanillabp
     examples:
@@ -32,6 +38,7 @@ identical:
       - zeebe-native
       - zeebe-vanillabp
     files:
+      - .claude/skills/create-adr/SKILL.md
       - bruno/06-incident-demo/01-submit.bru
       - bruno/07-list-and-inbox/01-list-bikes.bru
       - bruno/07-list-and-inbox/02-submit-out-of-stock.bru
@@ -50,6 +57,20 @@ identical:
       - operaton-remote
     files:
       - .bpmnlintrc
+      - bruno/00-demo-data/01-awaiting-signature/02-assert-received.bru
+      - bruno/00-demo-data/02-awaiting-handover/03-assert-ordered.bru
+      - bruno/00-demo-data/03-in-withdrawal-period/04-assert-handed-over.bru
+      - bruno/00-demo-data/04-active/01-submit.bru
+      - bruno/00-demo-data/04-active/02-get-instance.bru
+      - bruno/00-demo-data/04-active/05-get-withdrawal-timer.bru
+      - bruno/00-demo-data/04-active/06-fire-withdrawal-timer.bru
+      - bruno/00-demo-data/04-active/07-assert-active.bru
+      - bruno/00-demo-data/05-rejected/02-assert-rejected.bru
+      - bruno/00-demo-data/06-alternative-in-inbox/01-submit.bru
+      - bruno/00-demo-data/06-alternative-in-inbox/03-assert-in-inbox.bru
+      - bruno/00-demo-data/07-withdrawn-return-open/02-get-instance.bru
+      - bruno/00-demo-data/07-withdrawn-return-open/05-assert-withdrawn.bru
+      - bruno/00-demo-data/07-withdrawn-return-open/06-assert-clarify-return-open.bru
       - bruno/01-happy-path/02-get-instance.bru
       - bruno/01-happy-path/03-get-application.bru
       - bruno/01-happy-path/07-fire-withdrawal-timer.bru
@@ -87,18 +108,6 @@ identical:
       - zeebe-vanillabp
     files:
       - .github/CODEOWNERS
-  - name: cibseven-process-engine-api + cibseven-remote + fluxnova-embedded + operaton-embedded + operaton-process-engine-api + operaton-remote + zeebe-native + zeebe-vanillabp
-    examples:
-      - cibseven-process-engine-api
-      - cibseven-remote
-      - fluxnova-embedded
-      - operaton-embedded
-      - operaton-process-engine-api
-      - operaton-remote
-      - zeebe-native
-      - zeebe-vanillabp
-    files:
-      - .claude/settings.json
   - name: cibseven-embedded + cibseven-process-engine-api + cibseven-remote + fluxnova-embedded + fullstack-cibseven-embedded + operaton-process-engine-api + operaton-remote
     examples:
       - cibseven-embedded
@@ -128,6 +137,17 @@ identical:
       - bruno/08-alternative-declined/08-assert-no-incident.bru
       - bruno/08-alternative-declined/09-get-application.bru
       - bruno/10-alternative-via-tasklist/01-submit.bru
+  - name: cibseven-embedded + cibseven-process-engine-api + cibseven-remote + fluxnova-embedded + operaton-embedded + operaton-remote
+    examples:
+      - cibseven-embedded
+      - cibseven-process-engine-api
+      - cibseven-remote
+      - fluxnova-embedded
+      - operaton-embedded
+      - operaton-remote
+    files:
+      - .claude/settings.json
+      - .gitignore
   - name: cibseven-embedded + cibseven-process-engine-api + cibseven-remote + operaton-embedded + operaton-process-engine-api + operaton-remote
     examples:
       - cibseven-embedded
@@ -147,9 +167,19 @@ identical:
       - zeebe-native
       - zeebe-vanillabp
     files:
+      - designiq.yml
       - java-maven/service/app/src/test/resources/sql/leasing-application.sql
       - kotlin-gradle/service/app/src/test/resources/sql/leasing-application.sql
       - scripts/create-starter.sh
+  - name: cibseven-embedded + cibseven-process-engine-api + fluxnova-embedded + operaton-embedded + zeebe-native
+    examples:
+      - cibseven-embedded
+      - cibseven-process-engine-api
+      - fluxnova-embedded
+      - operaton-embedded
+      - zeebe-native
+    files:
+      - .claude/skills/create-persistence-adapter/SKILL.md
   - name: cibseven-embedded + cibseven-remote + fluxnova-embedded + operaton-embedded + operaton-remote
     examples:
       - cibseven-embedded
@@ -159,15 +189,6 @@ identical:
       - operaton-remote
     files:
       - bruno/08-alternative-declined/01-submit.bru
-  - name: cibseven-process-engine-api + cibseven-remote + fluxnova-embedded + operaton-embedded + operaton-remote
-    examples:
-      - cibseven-process-engine-api
-      - cibseven-remote
-      - fluxnova-embedded
-      - operaton-embedded
-      - operaton-remote
-    files:
-      - .gitignore
   - name: cibseven-process-engine-api + fluxnova-embedded + fullstack-cibseven-embedded + operaton-embedded + operaton-process-engine-api
     examples:
       - cibseven-process-engine-api
@@ -176,6 +197,7 @@ identical:
       - operaton-embedded
       - operaton-process-engine-api
     files:
+      - .pulse-cli.json
       - bruno/environments/local.bru
   - name: cibseven-embedded + cibseven-process-engine-api + cibseven-remote + fullstack-cibseven-embedded
     examples:
@@ -185,6 +207,14 @@ identical:
       - fullstack-cibseven-embedded
     files:
       - bruno/bruno.json
+  - name: cibseven-embedded + cibseven-process-engine-api + fluxnova-embedded + operaton-embedded
+    examples:
+      - cibseven-embedded
+      - cibseven-process-engine-api
+      - fluxnova-embedded
+      - operaton-embedded
+    files:
+      - .claude/skills/create-rest-controller/SKILL.md
   - name: cibseven-embedded + fluxnova-embedded + fullstack-cibseven-embedded + operaton-embedded
     examples:
       - cibseven-embedded
@@ -192,6 +222,14 @@ identical:
       - fullstack-cibseven-embedded
       - operaton-embedded
     files:
+      - bruno/00-demo-data/02-awaiting-handover/02-sign-contract.bru
+      - bruno/00-demo-data/03-in-withdrawal-period/02-sign-contract.bru
+      - bruno/00-demo-data/03-in-withdrawal-period/03-report-handover.bru
+      - bruno/00-demo-data/04-active/03-sign-contract.bru
+      - bruno/00-demo-data/04-active/04-report-handover.bru
+      - bruno/00-demo-data/06-alternative-in-inbox/02-sign-contract.bru
+      - bruno/00-demo-data/07-withdrawn-return-open/03-sign-contract.bru
+      - bruno/00-demo-data/07-withdrawn-return-open/04-withdraw.bru
       - docs/assets/bike-leasing.png
   - name: cibseven-process-engine-api + cibseven-remote + operaton-process-engine-api + operaton-remote
     examples:
@@ -207,6 +245,7 @@ identical:
       - bruno/05-bike-unavailable/08-assert-leasing-active.bru
       - bruno/08-alternative-declined/05-assert-contract-cancelled.bru
       - bruno/10-alternative-via-tasklist/05-assert-alternative-ordered.bru
+      - docs/assets/bike-leasing.png
   - name: cibseven-process-engine-api + operaton-embedded + zeebe-native + zeebe-vanillabp
     examples:
       - cibseven-process-engine-api
@@ -227,6 +266,13 @@ identical:
       - kotlin-gradle/service/app/src/main/resources/dmn/check-credit-rating.dmn
       - kotlin-gradle/service/app/src/main/resources/forms/clarify-alternative.form
       - kotlin-gradle/service/app/src/main/resources/forms/clarify-return.form
+  - name: cibseven-embedded + cibseven-remote + operaton-remote
+    examples:
+      - cibseven-embedded
+      - cibseven-remote
+      - operaton-remote
+    files:
+      - .pulse-cli.json
   - name: cibseven-embedded + fluxnova-embedded + fullstack-cibseven-embedded
     examples:
       - cibseven-embedded
@@ -241,6 +287,10 @@ identical:
       - fluxnova-embedded
       - operaton-embedded
     files:
+      - .claude/README.md
+      - .claude/skills/automate-process/references/visual-check.md
+      - .claude/skills/implement-issue/SKILL.md
+      - .claude/skills/review-change/SKILL.md
       - .githooks/pre-commit
       - bruno/06-incident-demo/05-get-failed-job.bru
       - bruno/08-alternative-declined/03-sign-contract.bru
@@ -302,12 +352,6 @@ identical:
       - bruno/10-alternative-via-tasklist/05-assert-alternative-ordered.bru
       - docs/adr/0001-record-architecture-decisions.md
       - docs/adr/0007-two-architecture-test-tools-archunit-and-konsist.md
-  - name: cibseven-embedded + fullstack-cibseven-embedded
-    examples:
-      - cibseven-embedded
-      - fullstack-cibseven-embedded
-    files:
-      - .claude/hooks/lint-bpmn.sh
   - name: cibseven-embedded + operaton-embedded
     examples:
       - cibseven-embedded
@@ -342,12 +386,17 @@ identical:
       - bruno/10-alternative-via-tasklist/03-get-clarify-alternative-task.bru
       - docs/adr/0001-record-architecture-decisions.md
       - docs/adr/0005-agents-md-as-the-single-source.md
-      - docs/assets/bike-leasing.png
   - name: cibseven-remote + operaton-remote
     examples:
       - cibseven-remote
       - operaton-remote
     files:
+      - .claude/README.md
+      - .claude/agents/review-vertical-slice.md
+      - .claude/skills/create-persistence-adapter/SKILL.md
+      - .claude/skills/create-rest-controller/SKILL.md
+      - .claude/skills/implement-issue/SKILL.md
+      - .claude/skills/review-change/SKILL.md
       - .githooks/pre-commit
       - bruno/01-happy-path/06-get-withdrawal-timer.bru
       - bruno/02-escalation/03-get-signature-deadline-timer.bru
@@ -364,11 +413,11 @@ identical:
       - bruno/08-alternative-declined/04-decline-alternative.bru
       - bruno/10-alternative-via-tasklist/03-get-clarify-alternative-task.bru
       - bruno/environments/local.bru
+      - designiq.yml
       - docs/adr/0005-agents-md-as-the-single-source.md
       - docs/adr/0007-two-architecture-test-tools-archunit-and-konsist.md
       - docs/adr/0009-actuator-probes-and-prometheus-metrics.md
       - docs/adr/0011-build-and-deployment-approach.md
-      - docs/assets/bike-leasing.png
       - java-maven/service/example-service/src/main/resources/bpmn/bike-leasing.bpmn
       - java-maven/service/example-service/src/main/resources/bpmn/cancel-bike-order.bpmn
       - java-maven/service/example-service/src/main/resources/dmn/check-credit-rating.dmn
@@ -394,6 +443,7 @@ identical:
       - fullstack-cibseven-embedded
       - operaton-process-engine-api
     files:
+      - designiq.yml
       - service/app/src/main/resources/dmn/check-credit-rating.dmn
       - service/app/src/main/resources/forms/clarify-alternative.form
       - service/app/src/main/resources/forms/clarify-return.form
@@ -403,6 +453,14 @@ identical:
       - operaton-process-engine-api
       - operaton-remote
     files:
+      - bruno/00-demo-data/02-awaiting-handover/02-sign-contract.bru
+      - bruno/00-demo-data/03-in-withdrawal-period/02-sign-contract.bru
+      - bruno/00-demo-data/03-in-withdrawal-period/03-report-handover.bru
+      - bruno/00-demo-data/04-active/03-sign-contract.bru
+      - bruno/00-demo-data/04-active/04-report-handover.bru
+      - bruno/00-demo-data/06-alternative-in-inbox/02-sign-contract.bru
+      - bruno/00-demo-data/07-withdrawn-return-open/03-sign-contract.bru
+      - bruno/00-demo-data/07-withdrawn-return-open/04-withdraw.bru
       - bruno/01-happy-path/04-sign-contract.bru
       - bruno/03-abort/03-sign-contract.bru
       - bruno/05-bike-unavailable/03-sign-contract.bru
@@ -415,8 +473,23 @@ identical:
       - zeebe-native
       - zeebe-vanillabp
     files:
+      - .claude/settings.json
       - .githooks/pre-commit
       - .gitignore
+      - bruno/00-demo-data/01-awaiting-signature/02-assert-received.bru
+      - bruno/00-demo-data/02-awaiting-handover/02-sign-contract.bru
+      - bruno/00-demo-data/02-awaiting-handover/03-assert-ordered.bru
+      - bruno/00-demo-data/03-in-withdrawal-period/02-sign-contract.bru
+      - bruno/00-demo-data/03-in-withdrawal-period/03-report-handover.bru
+      - bruno/00-demo-data/03-in-withdrawal-period/04-assert-handed-over.bru
+      - bruno/00-demo-data/05-rejected/02-assert-rejected.bru
+      - bruno/00-demo-data/06-alternative-in-inbox/01-submit.bru
+      - bruno/00-demo-data/06-alternative-in-inbox/02-sign-contract.bru
+      - bruno/00-demo-data/06-alternative-in-inbox/03-assert-in-inbox.bru
+      - bruno/00-demo-data/07-withdrawn-return-open/02-sign-contract.bru
+      - bruno/00-demo-data/07-withdrawn-return-open/03-withdraw.bru
+      - bruno/00-demo-data/07-withdrawn-return-open/04-assert-withdrawn.bru
+      - bruno/00-demo-data/07-withdrawn-return-open/05-assert-clarify-return-open.bru
       - bruno/01-happy-path/02-get-application.bru
       - bruno/01-happy-path/03-sign-contract.bru
       - bruno/01-happy-path/04-report-handover.bru

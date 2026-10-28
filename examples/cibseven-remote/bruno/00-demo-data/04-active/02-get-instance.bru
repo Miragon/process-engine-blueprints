@@ -1,0 +1,28 @@
+meta {
+  name: Find the process instance
+  type: http
+  seq: 2
+  tags: [
+    demo-data
+  ]
+}
+
+get {
+  url: {{engineRest}}/process-instance?businessKey={{applicationId}}
+  body: none
+  auth: none
+}
+
+script:pre-request {
+  await pollEngine("/process-instance?businessKey=" + bru.getVar("applicationId"),
+    (b) => Array.isArray(b) && b.length >= 1);
+}
+
+assert {
+  res.status: eq 200
+  res.body[0].id: isDefined
+}
+
+vars:post-response {
+  processInstanceId: res.body[0].id
+}

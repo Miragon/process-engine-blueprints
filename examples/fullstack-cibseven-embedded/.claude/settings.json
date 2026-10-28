@@ -53,10 +53,26 @@
         "repo": "Miragon/pulse",
         "ref": "v0.24.2"
       }
+    },
+    "bpmn-to-code": {
+      "source": {
+        "source": "github",
+        "repo": "Miragon/bpmn-to-code",
+        "ref": "v6.6.1"
+      }
+    },
+    "miragon-bpmnlint": {
+      "source": {
+        "source": "github",
+        "repo": "Miragon/bpmnlint-rules",
+        "ref": "v0.16.0"
+      }
     }
   },
   "enabledPlugins": {
     "bpmn-cli@miragon-bpmn": true,
-    "pulse-cli@pulse": true
+    "pulse-cli@pulse": true,
+    "bpmn-to-code@bpmn-to-code": true,
+    "bpmnlint-rules@miragon-bpmnlint": true
   }
 }

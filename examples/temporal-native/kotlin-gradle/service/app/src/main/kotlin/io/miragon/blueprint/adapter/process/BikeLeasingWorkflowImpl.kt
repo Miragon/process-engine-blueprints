@@ -44,16 +44,16 @@ class BikeLeasingWorkflowImpl : BikeLeasingWorkflow {
             )
             .build()
 
-    private val sendContract = Workflow.newActivityStub(SendContract::class.java, activityOptions)
-    private val sendReminderMail = Workflow.newActivityStub(SendReminderMail::class.java, activityOptions)
-    private val sendRejection = Workflow.newActivityStub(SendRejection::class.java, activityOptions)
-    private val orderBike = Workflow.newActivityStub(OrderBike::class.java, dealerActivityOptions)
-    private val issueInsurancePolicy = Workflow.newActivityStub(IssueInsurancePolicy::class.java, compensableActivityOptions)
-    private val activateLeasing = Workflow.newActivityStub(ActivateLeasing::class.java, activityOptions)
-    private val cancelContract = Workflow.newActivityStub(CancelContract::class.java, activityOptions)
-    private val cancelPolicy = Workflow.newActivityStub(CancelPolicy::class.java, activityOptions)
+    private val sendContract = Workflow.newActivityStub(Activities.SendContract::class.java, activityOptions)
+    private val sendReminderMail = Workflow.newActivityStub(Activities.SendReminderMail::class.java, activityOptions)
+    private val sendRejection = Workflow.newActivityStub(Activities.SendRejection::class.java, activityOptions)
+    private val orderBike = Workflow.newActivityStub(Activities.OrderBike::class.java, dealerActivityOptions)
+    private val issueInsurancePolicy = Workflow.newActivityStub(Activities.IssueInsurancePolicy::class.java, compensableActivityOptions)
+    private val activateLeasing = Workflow.newActivityStub(Activities.ActivateLeasing::class.java, activityOptions)
+    private val cancelContract = Workflow.newActivityStub(Activities.CancelContract::class.java, activityOptions)
+    private val cancelPolicy = Workflow.newActivityStub(Activities.CancelPolicy::class.java, activityOptions)
     private val sendCancellationConfirmation =
-        Workflow.newActivityStub(SendCancellationConfirmation::class.java, activityOptions)
+        Workflow.newActivityStub(Activities.SendCancellationConfirmation::class.java, activityOptions)
 
     private val saga = Saga(Saga.Options.Builder().build())
 

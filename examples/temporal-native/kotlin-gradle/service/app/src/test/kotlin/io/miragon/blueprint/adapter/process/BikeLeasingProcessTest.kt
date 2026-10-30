@@ -236,6 +236,7 @@ class BikeLeasingProcessTest {
     fun `withdrawal before signing - only the cancellation is confirmed`() {
         submit()
         verify(timeout = TIMEOUT_MILLIS) { sendContractUseCase.sendContract(id) }
+        env.awaitActivitySettled(workflowId, "SendContract")
 
         process.correlateApplicationWithdrawn(id)
         awaitCompletion()
@@ -250,7 +251,7 @@ class BikeLeasingProcessTest {
         submit()
         process.correlateContractSigned(id)
         verify(timeout = TIMEOUT_MILLIS) { orderBikeUseCase.orderBike(id, BIKE) }
-        awaitPolicySettled()
+        awaitOrderAndPolicySettled()
 
         process.correlateApplicationWithdrawn(id)
         awaitCompletion()
@@ -268,7 +269,7 @@ class BikeLeasingProcessTest {
         process.correlateContractSigned(id)
         process.correlateHandoverReported(id)
         verify(timeout = TIMEOUT_MILLIS) { orderBikeUseCase.orderBike(id, BIKE) }
-        awaitPolicySettled()
+        awaitOrderAndPolicySettled()
         env.sleep(Duration.ofDays(1))
 
         process.correlateApplicationWithdrawn(id)
@@ -284,7 +285,7 @@ class BikeLeasingProcessTest {
         submit()
         process.correlateContractSigned(id)
         verify(timeout = TIMEOUT_MILLIS) { orderBikeUseCase.orderBike(id, BIKE) }
-        awaitPolicySettled()
+        awaitOrderAndPolicySettled()
 
         process.correlateApplicationWithdrawn(id)
         awaitCompletion()
@@ -302,7 +303,7 @@ class BikeLeasingProcessTest {
         process.correlateContractSigned(id)
         clarify(alternativeFound = true, ALTERNATIVE_BIKE)
         verify(timeout = TIMEOUT_MILLIS) { orderBikeUseCase.orderBike(id, ALTERNATIVE_BIKE) }
-        awaitPolicySettled()
+        awaitOrderAndPolicySettled()
 
         process.correlateApplicationWithdrawn(id)
         awaitCompletion()
@@ -362,7 +363,7 @@ class BikeLeasingProcessTest {
         submit()
         process.correlateContractSigned(id)
         verify(timeout = TIMEOUT_MILLIS) { orderBikeUseCase.orderBike(id, BIKE) }
-        awaitPolicySettled()
+        awaitOrderAndPolicySettled()
 
         process.correlateApplicationWithdrawn(id)
         verify(timeout = TIMEOUT_MILLIS) { requestOrderCancellationUseCase.requestCancellation(orderId) }
@@ -387,7 +388,7 @@ class BikeLeasingProcessTest {
         submit()
         process.correlateContractSigned(id)
         verify(timeout = TIMEOUT_MILLIS) { orderBikeUseCase.orderBike(id, BIKE) }
-        awaitPolicySettled()
+        awaitOrderAndPolicySettled()
 
         process.correlateApplicationWithdrawn(id)
         awaitCompletion()
@@ -453,6 +454,11 @@ class BikeLeasingProcessTest {
     private fun awaitPolicySettled() {
         verify(timeout = TIMEOUT_MILLIS) { issueInsurancePolicyUseCase.issuePolicy(id) }
         env.awaitActivitySettled(workflowId, "IssueInsurancePolicy")
+    }
+
+    private fun awaitOrderAndPolicySettled() {
+        awaitPolicySettled()
+        env.awaitActivitySettled(workflowId, "OrderBike")
     }
 
     private fun awaitCompletion() {

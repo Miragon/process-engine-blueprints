@@ -44,16 +44,21 @@ class BikeLeasingWorkflowImpl : BikeLeasingWorkflow {
             )
             .build()
 
-    private val sendContract = Workflow.newActivityStub(Activities.SendContract::class.java, activityOptions)
-    private val sendReminderMail = Workflow.newActivityStub(Activities.SendReminderMail::class.java, activityOptions)
-    private val sendRejection = Workflow.newActivityStub(Activities.SendRejection::class.java, activityOptions)
-    private val orderBike = Workflow.newActivityStub(Activities.OrderBike::class.java, dealerActivityOptions)
-    private val issueInsurancePolicy = Workflow.newActivityStub(Activities.IssueInsurancePolicy::class.java, compensableActivityOptions)
-    private val activateLeasing = Workflow.newActivityStub(Activities.ActivateLeasing::class.java, activityOptions)
-    private val cancelContract = Workflow.newActivityStub(Activities.CancelContract::class.java, activityOptions)
-    private val cancelPolicy = Workflow.newActivityStub(Activities.CancelPolicy::class.java, activityOptions)
+    private val sendContract = Workflow.newActivityStub(BikeLeasingActivities.SendContract::class.java, activityOptions)
+    private val sendReminderMail =
+        Workflow.newActivityStub(BikeLeasingActivities.SendReminderMail::class.java, activityOptions)
+    private val sendRejection =
+        Workflow.newActivityStub(BikeLeasingActivities.SendRejection::class.java, activityOptions)
+    private val orderBike = Workflow.newActivityStub(BikeLeasingActivities.OrderBike::class.java, dealerActivityOptions)
+    private val issueInsurancePolicy =
+        Workflow.newActivityStub(BikeLeasingActivities.IssueInsurancePolicy::class.java, compensableActivityOptions)
+    private val activateLeasing =
+        Workflow.newActivityStub(BikeLeasingActivities.ActivateLeasing::class.java, activityOptions)
+    private val cancelContract =
+        Workflow.newActivityStub(BikeLeasingActivities.CancelContract::class.java, activityOptions)
+    private val cancelPolicy = Workflow.newActivityStub(BikeLeasingActivities.CancelPolicy::class.java, activityOptions)
     private val sendCancellationConfirmation =
-        Workflow.newActivityStub(Activities.SendCancellationConfirmation::class.java, activityOptions)
+        Workflow.newActivityStub(BikeLeasingActivities.SendCancellationConfirmation::class.java, activityOptions)
 
     private val saga = Saga(Saga.Options.Builder().build())
 

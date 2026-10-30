@@ -2,8 +2,8 @@ package io.miragon.blueprint.adapter.process
 
 import io.temporal.activity.ActivityInterface
 
-/** Every step the workflows run, in one place. One `*Activity` in `adapter/inbound/temporal` implements each. */
-object Activities {
+/** Every step [BikeLeasingWorkflow] runs. One `*Activity` in `adapter/inbound/temporal` implements each. */
+object BikeLeasingActivities {
 
     @ActivityInterface
     interface SendContract {
@@ -48,15 +48,5 @@ object Activities {
     @ActivityInterface
     interface SendCancellationConfirmation {
         fun sendCancellationConfirmation(applicationId: String)
-    }
-
-    @ActivityInterface
-    interface RequestCancellation {
-        fun requestCancellation(orderId: String): Boolean
-    }
-
-    @ActivityInterface
-    interface BookCosts {
-        fun bookCosts(orderId: String)
     }
 }

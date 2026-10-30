@@ -1,7 +1,7 @@
 package io.miragon.blueprint.adapter.inbound.temporal
 
-import io.miragon.blueprint.adapter.process.Activities
 import io.miragon.blueprint.adapter.process.BIKE_LEASING_TASK_QUEUE
+import io.miragon.blueprint.adapter.process.BikeLeasingActivities
 import io.miragon.blueprint.application.port.inbound.CancelInsurancePolicyUseCase
 import io.miragon.blueprint.domain.leasing.ApplicationId
 import io.temporal.spring.boot.ActivityImpl
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component
 @ActivityImpl(taskQueues = [BIKE_LEASING_TASK_QUEUE])
 class CancelPolicyActivity(
     private val useCase: CancelInsurancePolicyUseCase,
-) : Activities.CancelPolicy {
+) : BikeLeasingActivities.CancelPolicy {
 
     override fun cancelPolicy(applicationId: String) = useCase.cancelPolicy(ApplicationId.of(applicationId))
 }

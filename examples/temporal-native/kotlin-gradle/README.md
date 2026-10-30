@@ -31,7 +31,7 @@ service/
     adapter/outbound/temporal   starts and signals the workflows + task inbox
     adapter/outbound/db         JPA persistence (leasing applications + bike portfolio)
     adapter/outbound/…          simulated dealer / contract / insurance / notification adapters
-    adapter/process             workflows, activity contracts (Activities.kt), credit rule
+    adapter/process             workflows, activity contracts (<Process>Activities.kt), credit rule
     application/{port,service}  use-case ports and their services
     domain/{leasing,bike}       pure domain model
     resources/db/migration      Flyway versioned schema migrations

@@ -18,7 +18,7 @@ repository's README table, still offered by the starter CLI, Kotlin only.
 | BPMN | Temporal |
 |---|---|
 | process, called process | `BikeLeasingWorkflow`, child workflow `CancelBikeOrderWorkflow` |
-| service task, job worker | `@ActivityInterface` in `adapter/process/Activities.kt`, like `ServiceTasks` in the siblings; `*Activity` in `adapter/inbound/temporal` |
+| service task, job worker | `@ActivityInterface` in `adapter/process/<Process>Activities.kt`, one contract per workflow like the `*ProcessApi` of the siblings; `*Activity` in `adapter/inbound/temporal` |
 | business key, correlation | workflow id = application id |
 | message catch event | signal |
 | user task `clarifyAlternative` | update with a validator that rejects a call without an open clarification |
@@ -48,7 +48,8 @@ A BPMN step costs one constant and one worker; a typed Temporal step costs one i
 `*Activity`, because the workflow may not see the use cases. Temporal's samples usually group several
 methods in one interface. We keep one interface per step: a grouped interface needs one implementation
 with several use cases, which `onlyFulfilOneUseCase` forbids, and the 1:1 mapping stays comparable with
-the workers of `zeebe-native`. The interfaces share one file, so a reader sees every step in one place.
+the workers of `zeebe-native`. Each workflow bundles its interfaces in one file, so a reader sees all its
+steps in one place.
 
 ### Deliberate differences to `zeebe-native`
 

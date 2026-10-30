@@ -13,8 +13,9 @@ import java.time.Duration
 class CancelBikeOrderWorkflowImpl : CancelBikeOrderWorkflow {
 
     private val activityOptions = ActivityOptions.newBuilder().setStartToCloseTimeout(Duration.ofSeconds(30)).build()
-    private val requestCancellation = Workflow.newActivityStub(Activities.RequestCancellation::class.java, activityOptions)
-    private val bookCosts = Workflow.newActivityStub(Activities.BookCosts::class.java, activityOptions)
+    private val requestCancellation =
+        Workflow.newActivityStub(CancelBikeOrderActivities.RequestCancellation::class.java, activityOptions)
+    private val bookCosts = Workflow.newActivityStub(CancelBikeOrderActivities.BookCosts::class.java, activityOptions)
 
     private var returnClarified = false
 

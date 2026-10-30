@@ -1,8 +1,8 @@
 package io.miragon.blueprint.adapter.inbound.temporal
 
-import io.miragon.blueprint.adapter.process.Activities
 import io.miragon.blueprint.adapter.process.BIKE_LEASING_TASK_QUEUE
 import io.miragon.blueprint.adapter.process.BIKE_UNAVAILABLE_FAILURE
+import io.miragon.blueprint.adapter.process.BikeLeasingActivities
 import io.miragon.blueprint.application.port.inbound.OrderBikeUseCase
 import io.miragon.blueprint.domain.bike.BikeId
 import io.miragon.blueprint.domain.bike.BikeUnavailableException
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component
 @ActivityImpl(taskQueues = [BIKE_LEASING_TASK_QUEUE])
 class OrderBikeActivity(
     private val useCase: OrderBikeUseCase,
-) : Activities.OrderBike {
+) : BikeLeasingActivities.OrderBike {
 
     override fun orderBike(applicationId: String, bikeId: String): String =
         try {

@@ -1,0 +1,19 @@
+"$schema" = "https://conductor.build/schemas/settings.repo.schema.json"
+
+[scripts]
+run_mode = "nonconcurrent"
+
+# Tear down the local Temporal stack when a workspace is archived.
+archive = "docker compose -f stack/docker-compose.yml down -v || true"
+
+[scripts.run.infra]
+command = "docker compose -f stack/docker-compose.yml up"
+
+[scripts.run.backend-kotlin]
+command = "cd kotlin-gradle && ./gradlew :service:app:bootRun"
+
+[scripts.run.test-kotlin]
+command = "cd kotlin-gradle && ./gradlew build"
+
+[scripts.run.smoke]
+command = "cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r --exclude-tags=demo-data"

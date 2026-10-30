@@ -1,0 +1,29 @@
+meta {
+  name: The bike has been handed over
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/bike-leasing/{{applicationId}}
+  body: none
+  auth: none
+}
+
+script:pre-request {
+  const id = bru.getVar("applicationId");
+  await pollApp(`/api/bike-leasing/${id}`, (b, s) => s === 200 && b && b.status === "HANDED_OVER");
+}
+
+assert {
+  res.status: eq 200
+  res.body.status: eq HANDED_OVER
+}
+
+docs {
+  Reporting the handover flips the read model to HANDED_OVER immediately, so that is
+  the deterministic state we assert here. The process then waits out the 14-day
+  withdrawal period on a timer before it reaches ACTIVE ("leasing active"). A running
+  Temporal server cannot fast-forward timers, so that final HANDED_OVER -> ACTIVE
+  transition is covered by the process test rather than here.
+}

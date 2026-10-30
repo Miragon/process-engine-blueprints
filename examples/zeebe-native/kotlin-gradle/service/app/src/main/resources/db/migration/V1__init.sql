@@ -1,6 +1,6 @@
 -- Baseline schema for the bike-leasing application.
 -- Matches the JPA entities in adapter/outbound/db so Hibernate `ddl-auto: validate` passes.
--- Flyway owns these read-model tables; Zeebe runs as an external Camunda 8 cluster and keeps no tables here.
+-- Flyway owns these read-model tables; the process engine runs externally and keeps no tables here.
 
 CREATE TABLE bike_portfolio (
     bike_id VARCHAR(255) NOT NULL,

@@ -1,0 +1,14 @@
+.claude/logs/
+.claude/settings.local.json
+**/bin/
+**/target/
+.gradle
+**/build/
+!kotlin-gradle/gradle/wrapper/gradle-wrapper.jar
+.kotlin/
+.idea
+*.iml
+.DS_Store
+.vscode
+.context
+node_modules/

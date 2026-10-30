@@ -56,6 +56,10 @@ green (`dependabot-automerge.yml`); a red Dependabot pull request is handed to `
 per example. When a change has to differ in one example, move the file out of its rule with a reason in the pull
 request. `node scripts/check-drift.mjs --propose` prints what is shared right now, as a starting point.
 
+`temporal-native` is the example without BPMN. It shares the core of `zeebe-native` through its own rule, so a
+change to `domain/`, `application/`, the migration or the contract of `zeebe-native` goes there too, and that core
+stays free of engine names. It has no `package.json`, so `_blueprint.yml` skips Node and bpmnlint for it.
+
 ## Starters
 
 Nothing is published or released. `npx --allow-git=root github:<owner>/process-engine-blueprints` installs the root package from

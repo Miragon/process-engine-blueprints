@@ -8,9 +8,8 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 /**
- * Final step of the cancellation path (serviceTask_sendCancellationConfirmation →
- * endEvent_applicationCancelled): confirm to the customer AND move the application to CANCELLED, so
- * the read model reflects the terminal state (symmetric with the reject path). Without this the
+ * Final step of the cancellation path: confirm to the customer AND move the application to CANCELLED,
+ * so the read model reflects the terminal state (symmetric with the reject path). Without this the
  * process would end while the REST/UI status still read ORDERED.
  */
 @Service

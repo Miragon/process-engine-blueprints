@@ -1,0 +1,12 @@
+name: temporal-native
+engine: temporal
+integration: native
+topology: remote
+summary: Temporal workflows in code, the same flow without BPMN (beta).
+stack: Postgres plus the Temporal dev server with its Web UI
+experimental: true
+variants:
+  kotlin-gradle:
+    path: kotlin-gradle
+missingVariants:
+  java-maven: The beta compares Temporal with the BPMN engines on the recommended stack; a Java variant waits for the outcome.

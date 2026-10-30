@@ -20,6 +20,6 @@ class OpenApiConfigurationTest {
         assertThat(info.getTitle()).isEqualTo("MiraVelo Bike-Leasing API");
         assertThat(info.getVersion()).isEqualTo("1.0");
         assertThat(info.getDescription())
-            .isEqualTo("Customer-portal and back-office endpoints for the MiraVelo bike-leasing process, backed by Camunda 8 / Zeebe.");
+            .isEqualTo("Customer-portal and back-office endpoints for the MiraVelo bike-leasing process.");
     }
 }

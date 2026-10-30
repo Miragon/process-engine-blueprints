@@ -104,11 +104,23 @@
       ]
     },
     {
+      "name": "temporal-native",
+      "engine": "temporal",
+      "engineLabel": "Temporal",
+      "integration": "native",
+      "integrationLabel": "Engine cluster · workers",
+      "topology": "remote",
+      "summary": "Temporal workflows in code, the same flow without BPMN (beta).",
+      "variants": [
+        "kotlin-gradle"
+      ]
+    },
+    {
       "name": "zeebe-native",
       "engine": "zeebe",
       "engineLabel": "Camunda 8 (Zeebe)",
       "integration": "native",
-      "integrationLabel": "Zeebe cluster · job workers",
+      "integrationLabel": "Engine cluster · workers",
       "topology": "remote",
       "summary": "Camunda 8 / Zeebe broker, service tasks as Spring job workers.",
       "variants": [

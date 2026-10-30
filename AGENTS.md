@@ -5,7 +5,7 @@ example's own `AGENTS.md` is the authority: `examples/<example>/AGENTS.md`.
 
 ## What this is
 
-Ten self-contained examples of the same MiraVelo bike-leasing process under `examples/<engine>-<integration>/`,
+Eleven self-contained examples of the same MiraVelo bike-leasing process under `examples/<engine>-<integration>/`,
 each with a Kotlin/Gradle and/or a Java/Maven variant. Nothing is shared at build or run time; the duplication is
 deliberate ([ADR-0001](docs/adr/0001-one-repository-with-self-contained-examples.md)).
 

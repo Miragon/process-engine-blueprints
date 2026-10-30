@@ -198,6 +198,18 @@ jobs:
     uses: ./.github/workflows/_blueprint.yml
     with:
       example: operaton-remote
+  temporal-native--pre-merge-kotlin-gradle:
+    name: temporal-native · Pre-Merge Checks · Kotlin/Gradle
+    needs: changes
+    if: contains(fromJSON(needs.changes.outputs.examples), 'temporal-native')
+    uses: ./.github/workflows/temporal-native.pre-merge-kotlin-gradle.yml
+  temporal-native--blueprint:
+    name: temporal-native · Blueprint checks
+    needs: changes
+    if: contains(fromJSON(needs.changes.outputs.examples), 'temporal-native')
+    uses: ./.github/workflows/_blueprint.yml
+    with:
+      example: temporal-native
   zeebe-native--pre-merge-java-maven:
     name: zeebe-native · Pre-Merge Checks · Java/Maven
     needs: changes
@@ -261,6 +273,8 @@ jobs:
       - operaton-remote--pre-merge-java-maven
       - operaton-remote--pre-merge-kotlin-gradle
       - operaton-remote--blueprint
+      - temporal-native--pre-merge-kotlin-gradle
+      - temporal-native--blueprint
       - zeebe-native--pre-merge-java-maven
       - zeebe-native--pre-merge-kotlin-gradle
       - zeebe-native--blueprint

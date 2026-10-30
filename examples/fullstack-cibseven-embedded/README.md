@@ -54,7 +54,7 @@ The full dev loop (verification, containers, Playwright, contract regeneration) 
 
 ## Contributing
 
-Contributions welcome: see [CONTRIBUTING.md](CONTRIBUTING.md) and use [Conventional Commits](https://www.conventionalcommits.org).
+Bug reports and feature ideas are welcome as issues: see [CONTRIBUTING.md](CONTRIBUTING.md) and use [Conventional Commits](https://www.conventionalcommits.org).
 
 ## License
 

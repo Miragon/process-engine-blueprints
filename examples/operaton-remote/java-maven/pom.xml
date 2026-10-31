@@ -33,8 +33,8 @@
 
         <!-- Third-party versions not managed by the Spring Boot BOM -->
         <operaton.version>2.2.0</operaton.version>
-        <springdoc.version>3.1.1</springdoc.version>
-        <bpmn-to-code.version>6.6.1</bpmn-to-code.version>
+        <springdoc.version>3.2.0</springdoc.version>
+        <bpmn-to-code.version>7.0.1</bpmn-to-code.version>
         <archunit.version>1.5.1</archunit.version>
         <postgresql.version>42.7.14</postgresql.version>
         <h2.version>2.5.252</h2.version>

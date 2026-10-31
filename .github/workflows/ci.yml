@@ -15,6 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       examples: ${{ steps.select.outputs.examples }}
+      variants: ${{ steps.select.outputs.variants }}
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -28,14 +29,14 @@ jobs:
           cache-dependency-path: package-lock.json
       - name: Install the maintainer tooling
         run: npm ci
-      - name: Select examples by the changed paths
+      - name: Select examples and variants by the changed paths
         id: select
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |-
-          examples=$(node scripts/changed-examples.mjs "$BASE_SHA" HEAD)
-          echo "Selected: $examples"
-          echo "examples=$examples" >> "$GITHUB_OUTPUT"
+          selection=$(node scripts/changed-examples.mjs "$BASE_SHA" HEAD)
+          echo "$selection"
+          echo "$selection" >> "$GITHUB_OUTPUT"
   generated:
     name: Generated files and cross-example drift
     runs-on: ubuntu-latest
@@ -75,12 +76,12 @@ jobs:
   cibseven-embedded--pre-merge-java-maven:
     name: cibseven-embedded · Pre-Merge Checks · Java/Maven
     needs: changes
-    if: contains(fromJSON(needs.changes.outputs.examples), 'cibseven-embedded')
+    if: contains(fromJSON(needs.changes.outputs.variants), 'cibseven-embedded/java-maven')
     uses: ./.github/workflows/cibseven-embedded.pre-merge-java-maven.yml
   cibseven-embedded--pre-merge-kotlin-gradle:
     name: cibseven-embedded · Pre-Merge Checks · Kotlin/Gradle
     needs: changes
-    if: contains(fromJSON(needs.changes.outputs.examples), 'cibseven-embedded')
+    if: contains(fromJSON(needs.changes.outputs.variants), 'cibseven-embedded/kotlin-gradle')
     uses: ./.github/workflows/cibseven-embedded.pre-merge-kotlin-gradle.yml
   cibseven-embedded--blueprint:
     name: cibseven-embedded · Blueprint checks
@@ -92,12 +93,12 @@ jobs:
   cibseven-process-engine-api--pre-merge-java-maven:
     name: cibseven-process-engine-api · Pre-Merge Checks · Java/Maven
     needs: changes
-    if: contains(fromJSON(needs.changes.outputs.examples), 'cibseven-process-engine-api')
+    if: contains(fromJSON(needs.changes.outputs.variants), 'cibseven-process-engine-api/java-maven')
     uses: ./.github/workflows/cibseven-process-engine-api.pre-merge-java-maven.yml
   cibseven-process-engine-api--pre-merge-kotlin-gradle:
     name: cibseven-process-engine-api · Pre-Merge Checks · Kotlin/Gradle
     needs: changes
-    if: contains(fromJSON(needs.changes.outputs.examples), 'cibseven-process-engine-api')
+    if: contains(fromJSON(needs.changes.outputs.variants), 'cibseven-process-engine-api/kotlin-gradle')
     uses: ./.github/workflows/cibseven-process-engine-api.pre-merge-kotlin-gradle.yml
   cibseven-process-engine-api--blueprint:
     name: cibseven-process-engine-api · Blueprint checks
@@ -109,12 +110,12 @@ jobs:
   cibseven-remote--pre-merge-java-maven:
     name: cibseven-remote · Pre-Merge Checks · Java/Maven
     needs: changes
-    if: contains(fromJSON(needs.changes.outputs.examples), 'cibseven-remote')
+    if: contains(fromJSON(needs.changes.outputs.variants), 'cibseven-remote/java-maven')
     uses: ./.github/workflows/cibseven-remote.pre-merge-java-maven.yml
   cibseven-remote--pre-merge-kotlin-gradle:
     name: cibseven-remote · Pre-Merge Checks · Kotlin/Gradle
     needs: changes
-    if: contains(fromJSON(needs.changes.outputs.examples), 'cibseven-remote')
+    if: contains(fromJSON(needs.changes.outputs.variants), 'cibseven-remote/kotlin-gradle')
     uses: ./.github/workflows/cibseven-remote.pre-merge-kotlin-gradle.yml
   cibseven-remote--blueprint:
     name: cibseven-remote · Blueprint checks
@@ -126,12 +127,12 @@ jobs:
   fluxnova-embedded--pre-merge-java-maven:
     name: fluxnova-embedded · Pre-Merge Checks · Java/Maven
     needs: changes
-    if: contains(fromJSON(needs.changes.outputs.examples), 'fluxnova-embedded')
+    if: contains(fromJSON(needs.changes.outputs.variants), 'fluxnova-embedded/java-maven')
     uses: ./.github/workflows/fluxnova-embedded.pre-merge-java-maven.yml
   fluxnova-embedded--pre-merge-kotlin-gradle:
     name: fluxnova-embedded · Pre-Merge Checks · Kotlin/Gradle
     needs: changes
-    if: contains(fromJSON(needs.changes.outputs.examples), 'fluxnova-embedded')
+    if: contains(fromJSON(needs.changes.outputs.variants), 'fluxnova-embedded/kotlin-gradle')
     uses: ./.github/workflows/fluxnova-embedded.pre-merge-kotlin-gradle.yml
   fluxnova-embedded--blueprint:
     name: fluxnova-embedded · Blueprint checks
@@ -143,7 +144,7 @@ jobs:
   fullstack-cibseven-embedded--pre-merge:
     name: fullstack-cibseven-embedded · Pre-Merge Checks
     needs: changes
-    if: contains(fromJSON(needs.changes.outputs.examples), 'fullstack-cibseven-embedded')
+    if: contains(fromJSON(needs.changes.outputs.variants), 'fullstack-cibseven-embedded/kotlin-gradle')
     uses: ./.github/workflows/fullstack-cibseven-embedded.pre-merge.yml
   fullstack-cibseven-embedded--blueprint:
     name: fullstack-cibseven-embedded · Blueprint checks
@@ -155,12 +156,12 @@ jobs:
   operaton-embedded--pre-merge-java-maven:
     name: operaton-embedded · Pre-Merge Checks · Java/Maven
     needs: changes
-    if: contains(fromJSON(needs.changes.outputs.examples), 'operaton-embedded')
+    if: contains(fromJSON(needs.changes.outputs.variants), 'operaton-embedded/java-maven')
     uses: ./.github/workflows/operaton-embedded.pre-merge-java-maven.yml
   operaton-embedded--pre-merge-kotlin-gradle:
     name: operaton-embedded · Pre-Merge Checks · Kotlin/Gradle
     needs: changes
-    if: contains(fromJSON(needs.changes.outputs.examples), 'operaton-embedded')
+    if: contains(fromJSON(needs.changes.outputs.variants), 'operaton-embedded/kotlin-gradle')
     uses: ./.github/workflows/operaton-embedded.pre-merge-kotlin-gradle.yml
   operaton-embedded--blueprint:
     name: operaton-embedded · Blueprint checks
@@ -172,7 +173,7 @@ jobs:
   operaton-process-engine-api--pre-merge:
     name: operaton-process-engine-api · Pre-Merge Checks
     needs: changes
-    if: contains(fromJSON(needs.changes.outputs.examples), 'operaton-process-engine-api')
+    if: contains(fromJSON(needs.changes.outputs.variants), 'operaton-process-engine-api/java-maven')
     uses: ./.github/workflows/operaton-process-engine-api.pre-merge.yml
   operaton-process-engine-api--blueprint:
     name: operaton-process-engine-api · Blueprint checks
@@ -184,12 +185,12 @@ jobs:
   operaton-remote--pre-merge-java-maven:
     name: operaton-remote · Pre-Merge Checks · Java/Maven
     needs: changes
-    if: contains(fromJSON(needs.changes.outputs.examples), 'operaton-remote')
+    if: contains(fromJSON(needs.changes.outputs.variants), 'operaton-remote/java-maven')
     uses: ./.github/workflows/operaton-remote.pre-merge-java-maven.yml
   operaton-remote--pre-merge-kotlin-gradle:
     name: operaton-remote · Pre-Merge Checks · Kotlin/Gradle
     needs: changes
-    if: contains(fromJSON(needs.changes.outputs.examples), 'operaton-remote')
+    if: contains(fromJSON(needs.changes.outputs.variants), 'operaton-remote/kotlin-gradle')
     uses: ./.github/workflows/operaton-remote.pre-merge-kotlin-gradle.yml
   operaton-remote--blueprint:
     name: operaton-remote · Blueprint checks
@@ -201,7 +202,7 @@ jobs:
   temporal-native--pre-merge-kotlin-gradle:
     name: temporal-native · Pre-Merge Checks · Kotlin/Gradle
     needs: changes
-    if: contains(fromJSON(needs.changes.outputs.examples), 'temporal-native')
+    if: contains(fromJSON(needs.changes.outputs.variants), 'temporal-native/kotlin-gradle')
     uses: ./.github/workflows/temporal-native.pre-merge-kotlin-gradle.yml
   temporal-native--blueprint:
     name: temporal-native · Blueprint checks
@@ -213,12 +214,12 @@ jobs:
   zeebe-native--pre-merge-java-maven:
     name: zeebe-native · Pre-Merge Checks · Java/Maven
     needs: changes
-    if: contains(fromJSON(needs.changes.outputs.examples), 'zeebe-native')
+    if: contains(fromJSON(needs.changes.outputs.variants), 'zeebe-native/java-maven')
     uses: ./.github/workflows/zeebe-native.pre-merge-java-maven.yml
   zeebe-native--pre-merge-kotlin-gradle:
     name: zeebe-native · Pre-Merge Checks · Kotlin/Gradle
     needs: changes
-    if: contains(fromJSON(needs.changes.outputs.examples), 'zeebe-native')
+    if: contains(fromJSON(needs.changes.outputs.variants), 'zeebe-native/kotlin-gradle')
     uses: ./.github/workflows/zeebe-native.pre-merge-kotlin-gradle.yml
   zeebe-native--blueprint:
     name: zeebe-native · Blueprint checks
@@ -230,12 +231,12 @@ jobs:
   zeebe-vanillabp--pre-merge-java-maven:
     name: zeebe-vanillabp · Pre-Merge Checks · Java/Maven
     needs: changes
-    if: contains(fromJSON(needs.changes.outputs.examples), 'zeebe-vanillabp')
+    if: contains(fromJSON(needs.changes.outputs.variants), 'zeebe-vanillabp/java-maven')
     uses: ./.github/workflows/zeebe-vanillabp.pre-merge-java-maven.yml
   zeebe-vanillabp--pre-merge-kotlin-gradle:
     name: zeebe-vanillabp · Pre-Merge Checks · Kotlin/Gradle
     needs: changes
-    if: contains(fromJSON(needs.changes.outputs.examples), 'zeebe-vanillabp')
+    if: contains(fromJSON(needs.changes.outputs.variants), 'zeebe-vanillabp/kotlin-gradle')
     uses: ./.github/workflows/zeebe-vanillabp.pre-merge-kotlin-gradle.yml
   zeebe-vanillabp--blueprint:
     name: zeebe-vanillabp · Blueprint checks

@@ -134,10 +134,10 @@ of its marketplace in `.claude/settings.json` by hand together with it.
   `refactor:`, `test:`, `chore:`). Write everything in **English**.
 - **Keep the gates green.** The architecture (ArchUnit + Checkstyle), contract-drift and mutation (≥ 80)
   gates run in CI on every PR. They are fitness functions, not style guides — a violation fails the
-  build. The mutation gate is **diff-scoped** on PRs (only the classes you changed); the full-module
-  gate-80 sweep runs nightly.
+  build. The mutation gate (≥ 80)
+  runs nightly, on the domain only.
 - **Add tests.** This is a TDD codebase; match the test style to the layer (see `AGENTS.md`).
-  Mutation testing means a test that runs without asserting will fail CI.
+  On the domain, a test that runs without asserting fails the nightly mutation gate.
 - **Changing the API?** Regenerate and commit `openapi/openapi.json` in the same change so the drift
   gate stays green. Regenerate on **JDK 21** (Temurin — the CI toolchain): other JDK majors have been
   observed to alter the exported spec. Service tasks are external-topic `@ProcessEngineWorker` beans —

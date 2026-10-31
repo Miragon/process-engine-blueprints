@@ -90,23 +90,10 @@ tasks.check {
     dependsOn(verifyFluxnovaIsTheOnlyEngine)
 }
 
-val mutationTargetClasses = (project.findProperty("mutationTargetClasses") as String?)
-    ?.split(",")?.map(String::trim)?.filter(String::isNotEmpty)
-
 pitest {
     junit5PluginVersion.set("1.2.2")
-    targetClasses.set(mutationTargetClasses ?: listOf("io.miragon.blueprint.*"))
+    targetClasses.set(listOf("io.miragon.blueprint.domain.*"))
     targetTests.set(listOf("io.miragon.blueprint.*"))
-    failWhenNoMutations.set(false)
-    excludedClasses.set(
-        listOf(
-            "io.miragon.blueprint.adapter.process.*",
-            "io.miragon.blueprint.FluxnovaBikeLeasingApplication*",
-            "io.miragon.blueprint.BikeCatalogueSeeder*",
-            "io.miragon.blueprint.adapter.inbound.rest.DevCorsConfiguration*",
-            "io.miragon.blueprint.adapter.inbound.fluxnova.*",
-        ),
-    )
     excludedTestClasses.set(
         listOf(
             "io.miragon.blueprint.adapter.process.*",

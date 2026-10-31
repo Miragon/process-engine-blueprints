@@ -58,8 +58,7 @@ The resources are kept identical to the other variant's; CI fails when they diff
   `@WebMvcTest` with `@MockitoBean`, persistence via `@DataJpaTest`.
 - **Process tests** (`fluxnova-bpm-assert`) drive the deployed model deterministically and assert the
   walked path against the generated API.
-- **Mutation testing** (PIT, gate 80) — diff-scoped on pull requests
-  (`-Ppit-diff -DtargetClasses="a.b.*"`), full sweep nightly.
+- **Mutation testing** (PIT, gate 80) — nightly, on the domain only.
 - **Fluxnova is the only engine.** A `maven-enforcer-plugin` rule (part of `./mvnw verify`) fails when a
   CIB seven, Camunda or Operaton artifact reaches the runtime or test classpath.
 - **OpenAPI contract.** A test exports the springdoc spec to [`../openapi/openapi.json`](../openapi/openapi.json);

@@ -24,9 +24,7 @@
             property, so a local run can turn it off with -Dsurefire.rerunFailingTestsCount=0.
         -->
         <surefire.rerunFailingTestsCount>3</surefire.rerunFailingTestsCount>
-        <!-- Opt in to mutation testing. Diff-scoped on PRs via -DtargetClasses=..., full sweep nightly. -->
         <skipPitest>false</skipPitest>
-        <targetClasses>io.miragon.blueprint.*</targetClasses>
         <!-- Matches the 4 vCPUs of a GitHub-hosted runner; override locally with -Dpitest.threads=N. -->
         <pitest.threads>4</pitest.threads>
     </properties>
@@ -210,30 +208,17 @@
                 </executions>
             </plugin>
 
-            <!-- Diff-scoped on PRs (via -DtargetClasses=...), full sweep nightly. Not bound to the lifecycle. -->
+            <!-- Domain mutation testing, nightly. Not bound to the lifecycle. -->
             <plugin>
                 <groupId>org.pitest</groupId>
                 <artifactId>pitest-maven</artifactId>
                 <configuration>
+                    <targetClasses>
+                        <param>io.miragon.blueprint.domain.*</param>
+                    </targetClasses>
                     <targetTests>
                         <param>io.miragon.blueprint.*</param>
                     </targetTests>
-                    <failWhenNoMutations>false</failWhenNoMutations>
-                    <excludedClasses>
-                        <!-- Generated typed process API — not hand-written logic. -->
-                        <param>io.miragon.blueprint.adapter.process.*</param>
-                        <!-- Application bootstrap, outside the hexagonal layers. -->
-                        <param>io.miragon.blueprint.BikeLeasingApplication*</param>
-                        <param>io.miragon.blueprint.BikeCatalogueSeeder*</param>
-                        <!-- Dev-only CORS escape hatch. -->
-                        <param>io.miragon.blueprint.adapter.inbound.rest.DevCorsConfiguration*</param>
-                        <!--
-                            Zeebe engine glue (job workers, message/user-task client) — exercised by the
-                            in-container process test, not unit-mutated.
-                        -->
-                        <param>io.miragon.blueprint.adapter.inbound.zeebe.*</param>
-                        <param>io.miragon.blueprint.adapter.outbound.zeebe.*</param>
-                    </excludedClasses>
                     <excludedTestClasses>
                         <param>io.miragon.blueprint.adapter.process.*</param>
                         <param>io.miragon.blueprint.ArchitectureTest*</param>

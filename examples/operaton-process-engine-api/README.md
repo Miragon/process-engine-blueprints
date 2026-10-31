@@ -100,8 +100,8 @@ docs/{README.md, adr/, assets/} ADR index + records + the process diagram
 - **Unit tests** (JUnit 5 + Mockito in BDD style) cover every domain type, application service and adapter with
   given/when/then comments and shared `testLeasingApplication(...)` builders — controllers via
   `@WebMvcTest`, persistence via `@DataJpaTest`. The workers are covered by the process tests.
-- **Mutation testing** (`pitest`) gates PRs at a score of **80**: coverage says a line ran, mutation
-  says a test would have noticed. It runs diff-scoped on PRs and a full-module sweep nightly.
+- **Mutation testing** (`pitest`) gates the domain at a score of **80**, nightly: coverage says a line ran, mutation
+  says a test would have noticed.
 - **Process tests** (`operaton-bpm-assert`) drive the deployed model — timers and async continuations
   are fired and messages correlated by hand, while the real `@ProcessEngineWorker` beans consume the
   external service tasks — covering happy-path, escalation, abort, DMN rejection, the

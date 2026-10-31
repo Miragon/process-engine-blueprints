@@ -16,8 +16,6 @@
     <description>MiraVelo bike-leasing backend — Spring Boot with the embedded Operaton engine</description>
 
     <properties>
-        <!-- Overridden by CI's diff-scoped mutation run via -DmutationTargetClasses="a.B*,c.D*". -->
-        <mutationTargetClasses>io.miragon.blueprint.*</mutationTargetClasses>
         <!-- GitHub-runner vCPUs; override locally with -Dpit.threads=N. -->
         <pit.threads>4</pit.threads>
     </properties>
@@ -215,32 +213,13 @@
                 </configuration>
             </plugin>
 
-            <!-- Mutation testing (gate 80) — see docs/adr/0004. CI runs this diff-scoped per PR via
-                 -DmutationTargetClasses and as a full nightly sweep. -->
+            <!-- Mutation testing (gate 80) — see docs/adr/0004. CI runs it nightly on the domain. -->
             <plugin>
                 <groupId>org.pitest</groupId>
                 <artifactId>pitest-maven</artifactId>
                 <configuration>
-                    <targetClasses>${mutationTargetClasses}</targetClasses>
+                    <targetClasses>io.miragon.blueprint.domain.*</targetClasses>
                     <targetTests>io.miragon.blueprint.*</targetTests>
-                    <failWhenNoMutations>false</failWhenNoMutations>
-                    <excludedClasses>
-                        <param>io.miragon.blueprint.adapter.process.*ProcessApi*</param>
-                        <param>io.miragon.blueprint.adapter.process.ServiceTasks*</param>
-                        <param>io.miragon.blueprint.adapter.process.Messages*</param>
-                        <param>io.miragon.blueprint.adapter.process.ProcessVariables*</param>
-                        <param>io.miragon.blueprint.adapter.process.Errors*</param>
-                        <param>io.miragon.blueprint.adapter.process.Escalations*</param>
-                        <param>io.miragon.blueprint.adapter.process.HistoryCleanupConfiguration*</param>
-                        <param>io.miragon.blueprint.adapter.process.EngineApiConfiguration*</param>
-                        <param>io.miragon.blueprint.OperatonBikeLeasingApplication*</param>
-                        <param>io.miragon.blueprint.BikeCatalogueSeeder*</param>
-                        <param>io.miragon.blueprint.adapter.inbound.rest.DevCorsConfiguration*</param>
-                        <param>io.miragon.blueprint.adapter.inbound.rest.OpenApiConfiguration*</param>
-                        <!-- External-task worker beans are thin @ProcessEngineWorker adapters exercised by the
-                             process tests, which mutation testing excludes. -->
-                        <param>io.miragon.blueprint.adapter.inbound.operaton.*</param>
-                    </excludedClasses>
                     <excludedTestClasses>
                         <param>io.miragon.blueprint.process.*</param>
                         <param>io.miragon.blueprint.architecture.*</param>

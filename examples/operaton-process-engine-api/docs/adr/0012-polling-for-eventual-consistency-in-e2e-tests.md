@@ -67,9 +67,11 @@ never by sleeping a guessed duration.
 - The Bruno script sandbox exposes **no global `fetch`**; `require('axios')` works and is what the
   helpers use. Helpers are attached to `globalThis` in the collection script so request-level scripts
   can call them.
-- Message commands correlate by the global `correlationKey` (the application id). A command sent before
-  the wait state is open surfaces the engine's `MismatchingMessageCorrelationException` as a `409`, so
-  gating on the read-model precondition (rather than exact timing) is what keeps the `202` valid.
+- Message commands correlate by the global `correlationKey` (the application id). The engine does not buffer messages: a command sent before the
+  wait state is open surfaces `MismatchingMessageCorrelationException` as a `409`. The read model is not
+  enough, because it runs ahead of the token: `contractId` and `ORDERED` are written before the
+  `asyncAfter` continuation moves the token into the catch event. `sign-contract`, `report-handover` and `withdraw` therefore also wait for the open subscription
+  (`pollMessageSubscription`, `GET /engine-rest/execution?businessKey=…&messageEventSubscriptionName=…`).
   `clarify-alternative` completes a user task resolved from the delivery pool, hence gating on the
   inbox listing the item.
 - **Deferred, not adopted:** a test-only endpoint exposing the engine's last-processed job/command

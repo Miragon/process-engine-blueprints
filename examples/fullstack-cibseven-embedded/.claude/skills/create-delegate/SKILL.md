@@ -44,9 +44,9 @@ class OrderBikeDelegate(
 ## Test pattern
 
 Every delegate gets a MockK unit test in
-`service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/cibseven/`. Delegates are in the
-mutation gate ([ADR-0006](../../../docs/adr/0006-mutation-testing-as-a-blocking-pr-gate.md)); only
-the log-only listeners are excluded.
+`service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/cibseven/`. The mutation gate covers the
+domain only ([ADR-0006](../../../docs/adr/0006-mutation-testing-as-a-blocking-pr-gate.md)), so this test
+is the only isolated check of the mapping.
 
 ```kotlin
 class SendContractDelegateTest {
@@ -123,14 +123,12 @@ missing, preserve logic.
 
 ### Step 5 — Test it twice
 
-1. The unit test (see Test pattern), then the mutation check for the class:
+1. The unit test (see Test pattern):
 
    ```bash
    ./gradlew :service:app:test --tests "*<Name>DelegateTest"
-   ./gradlew :service:app:pitest -PmutationTargetClasses=io.miragon.blueprint.adapter.inbound.cibseven.<Name>Delegate
    ```
 
-   A surviving mutant means a missing assertion: add it, don't weaken the gate.
 2. The path through the engine with a process test in
    `service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/`.
 

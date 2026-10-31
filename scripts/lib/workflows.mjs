@@ -28,6 +28,9 @@ export function reusableWorkflow(example, workflow) {
   doc.set('name', `${example.name} · ${doc.get('name')}`);
   doc.set('on', doc.createNode({ workflow_call: {} }));
   doc.delete('concurrency');
+  if (workflow.kind === 'pre-merge') {
+    doc.deleteIn(['jobs', 'backend']);
+  }
   const workingDirectory = doc.getIn(['defaults', 'run', 'working-directory']) ?? '.';
   doc.setIn(['defaults', 'run', 'working-directory'], prefixed(exampleRoot, workingDirectory));
   moveAfter(doc, 'defaults', 'on');
@@ -105,6 +108,11 @@ function withVersionComments(text) {
   return text.replace(/^(\s*-?\s*uses: )(\S+)$/gm, (line, prefix, action) => (actionPins[action] ? `${prefix}${action} # ${actionPins[action]}` : line));
 }
 
+function variantOf(example, workflow) {
+  const variants = Object.keys(example.variants);
+  return variants.find((variant) => workflow.file.includes(variant)) ?? variants[0];
+}
+
 function jobId(example, workflow) {
   return `${example.name}--${workflow.file.replace(/\.yml$/, '')}`.replaceAll('.', '-');
 }
@@ -123,19 +131,18 @@ const setupNode = {
 export function ciWorkflow(examples) {
   const exampleJobs = {};
   for (const example of examples) {
-    const runsWhenSelected = `contains(fromJSON(needs.changes.outputs.examples), '${example.name}')`;
     for (const workflow of exampleWorkflows(example).filter((candidate) => callerOf(candidate) === 'ci')) {
       exampleJobs[jobId(example, workflow)] = {
         name: `${example.name} · ${workflow.source.name}`,
         needs: 'changes',
-        if: runsWhenSelected,
+        if: `contains(fromJSON(needs.changes.outputs.variants), '${example.name}/${variantOf(example, workflow)}')`,
         uses: `./.github/workflows/${workflow.generatedFile}`,
       };
     }
     exampleJobs[`${example.name}--blueprint`] = {
       name: `${example.name} · Blueprint checks`,
       needs: 'changes',
-      if: runsWhenSelected,
+      if: `contains(fromJSON(needs.changes.outputs.examples), '${example.name}')`,
       uses: './.github/workflows/_blueprint.yml',
       with: { example: example.name },
     };
@@ -150,16 +157,16 @@ export function ciWorkflow(examples) {
       changes: {
         name: 'Select the examples to check',
         'runs-on': 'ubuntu-latest',
-        outputs: { examples: '${{ steps.select.outputs.examples }}' },
+        outputs: { examples: '${{ steps.select.outputs.examples }}', variants: '${{ steps.select.outputs.variants }}' },
         steps: [
           { ...checkout, with: { 'fetch-depth': 0 } },
           setupNode,
           { name: 'Install the maintainer tooling', run: 'npm ci' },
           {
-            name: 'Select examples by the changed paths',
+            name: 'Select examples and variants by the changed paths',
             id: 'select',
             env: { BASE_SHA: '${{ github.event.pull_request.base.sha }}' },
-            run: 'examples=$(node scripts/changed-examples.mjs "$BASE_SHA" HEAD)\necho "Selected: $examples"\necho "examples=$examples" >> "$GITHUB_OUTPUT"',
+            run: 'selection=$(node scripts/changed-examples.mjs "$BASE_SHA" HEAD)\necho "$selection"\necho "$selection" >> "$GITHUB_OUTPUT"',
           },
         ],
       },
@@ -209,6 +216,13 @@ export function nightlyWorkflow(examples) {
         uses: `./.github/workflows/${workflow.generatedFile}`,
       };
     }
+    exampleJobs[`${example.name}--blueprint`] = {
+      name: `${example.name} · Blueprint checks`,
+      needs: 'changes',
+      if: `contains(fromJSON(needs.changes.outputs.examples), '${example.name}')`,
+      uses: './.github/workflows/_blueprint.yml',
+      with: { example: example.name },
+    };
   }
   return {
     name: 'Nightly',
@@ -228,13 +242,13 @@ export function nightlyWorkflow(examples) {
             id: 'select',
             run: [
               'if [[ "${{ github.event_name }}" == "workflow_dispatch" || "$(date -u +%u)" == "7" ]]; then',
-              '  examples=$(node scripts/changed-examples.mjs --all)',
+              '  selection=$(node scripts/changed-examples.mjs --all)',
               'else',
               '  since=$(git rev-list -n1 --before="25 hours ago" HEAD || true)',
-              '  examples=$(node scripts/changed-examples.mjs "${since:-}" HEAD)',
+              '  selection=$(node scripts/changed-examples.mjs "${since:-}" HEAD --shared-tooling-selects-all)',
               'fi',
-              'echo "Selected: $examples"',
-              'echo "examples=$examples" >> "$GITHUB_OUTPUT"',
+              'echo "$selection"',
+              'echo "$selection" >> "$GITHUB_OUTPUT"',
             ].join('\n'),
           },
         ],

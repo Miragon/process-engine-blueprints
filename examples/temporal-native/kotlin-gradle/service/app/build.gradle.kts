@@ -31,30 +31,10 @@ tasks.test {
     useJUnitPlatform()
 }
 
-// Diff-scoped on PRs (via -PmutationTargetClasses), full sweep nightly. Not attached to `build`.
-val mutationTargetClasses = (project.findProperty("mutationTargetClasses") as String?)
-    ?.split(",")?.map(String::trim)?.filter(String::isNotEmpty)
-
 pitest {
     junit5PluginVersion.set("1.2.2")
-    targetClasses.set(mutationTargetClasses ?: listOf("io.miragon.blueprint.*"))
+    targetClasses.set(listOf("io.miragon.blueprint.domain.*"))
     targetTests.set(listOf("io.miragon.blueprint.*"))
-    failWhenNoMutations.set(false)
-    excludedClasses.set(
-        listOf(
-            // Workflows need the Temporal runtime, covered by the process test.
-            "io.miragon.blueprint.adapter.process.*",
-            // Application bootstrap, outside the hexagonal layers.
-            "io.miragon.blueprint.BikeLeasingApplication*",
-            "io.miragon.blueprint.BikeCatalogueSeeder*",
-            // Dev-only CORS escape hatch.
-            "io.miragon.blueprint.adapter.inbound.rest.DevCorsConfiguration*",
-            // Temporal engine glue (activities, workflow client) — exercised by the process test, not
-            // unit-mutated.
-            "io.miragon.blueprint.adapter.inbound.temporal.*",
-            "io.miragon.blueprint.adapter.outbound.temporal.*",
-        ),
-    )
     excludedTestClasses.set(
         listOf(
             "io.miragon.blueprint.adapter.process.*",

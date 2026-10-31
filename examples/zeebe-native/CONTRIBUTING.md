@@ -1,7 +1,7 @@
 # Contributing
 
-Thanks for your interest in the Camunda 8 / Zeebe bike-leasing blueprint! Contributions of all kinds
-are welcome — bug reports, feature ideas, docs, and code.
+Thanks for your interest in the Camunda 8 / Zeebe bike-leasing blueprint! Bug reports and feature ideas
+are welcome as issues; we do not accept external pull requests.
 
 ## Getting started
 
@@ -158,10 +158,10 @@ bumps those versions but not the refs: bump each ref by hand together with its v
   <!-- /variant:blueprint -->
 - **Keep the gates green.** The architecture, contract-drift and mutation (≥ 80)
   gates run in CI on every PR. They are fitness functions, not style guides — a violation fails the
-  build. The mutation gate is **diff-scoped** on PRs (only the classes you changed); the full-module
-  gate-80 sweep runs nightly.
+  build. The mutation gate (≥ 80)
+  runs nightly, on the domain only.
 - **Add tests.** This is a TDD codebase; match the test style to the layer (see `AGENTS.md`).
-  Mutation testing means a test that runs without asserting will fail CI.
+  On the domain, a test that runs without asserting fails the nightly mutation gate.
 - **Changing the API?** Re-export the spec (the `OpenApiSpecExportTest`, which every full build runs)
   so the committed `openapi/openapi.json` contract stays in sync — it is **drift-gated in CI**.
 - **Changing the process?** Edit the `.bpmn` model under `service/app/src/main/resources/bpmn`,

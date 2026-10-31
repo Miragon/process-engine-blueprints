@@ -1,7 +1,7 @@
 # Contributing
 
-Thanks for your interest in the CIB seven bike-leasing blueprint! Contributions of all kinds are
-welcome — bug reports, feature ideas, docs, and code.
+Thanks for your interest in the CIB seven bike-leasing blueprint! Bug reports and feature ideas
+are welcome as issues; we do not accept external pull requests.
 
 ## Getting started
 
@@ -156,12 +156,11 @@ of its marketplace in `.claude/settings.json` by hand together with it.
   be byte-identical — copy your change over; the `Blueprint Checks` workflow fails otherwise. See
   [ADR-0013](docs/adr/0013-two-stack-variants-side-by-side-on-main.md).
   <!-- /variant:blueprint -->
-- **Keep the gates green.** The architecture, contract-drift and mutation (≥ 80) gates run in CI on
-  every PR. They are fitness functions, not style guides — a violation fails the
-  build. The mutation gate is **diff-scoped** on PRs (only the classes you changed); the full-module
-  gate-80 sweep runs nightly.
+- **Keep the gates green.** The architecture and contract-drift gates run in CI on every PR. They are fitness functions, not style guides — a violation fails the
+  build. The mutation gate (≥ 80)
+  runs nightly, on the domain only.
 - **Add tests.** This is a TDD codebase; match the test style to the layer (see `AGENTS.md`).
-  Mutation testing means a test that runs without asserting will fail CI.
+  On the domain, a test that runs without asserting fails the nightly mutation gate.
 - **Changing the API?** Regenerate and commit `openapi/openapi.json` in the same change so the drift
   gate stays green. Service tasks are external-topic `@ProcessEngineWorker` beans — never introduce an
   embedded delegate.

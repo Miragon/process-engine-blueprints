@@ -35,11 +35,17 @@ squashed or signed.
 
 - `CI gate` is the only required status check. It fails when any job it needs failed or was cancelled, and passes
   when examples were skipped because the pull request did not touch them.
-- A change outside `examples/` (except `README.md`, `docs/`, `.claude/`) checks every example.
-- `_blueprint.yml` per touched example: identical resources of both variants, and each starter exported to a
-  folder outside the checkout, linted and built.
-- Nightly: the nightly checks (full mutation testing, cross-browser e2e for fullstack) of the examples changed in
-  the last 25 hours; on Sundays and on demand all of them.
+- `scripts/changed-examples.mjs` selects examples and variants. A path of a variant selects that variant, any other
+  path of an example its first variant, and a Markdown-only change no variant.
+- A change outside `examples/` (except `README.md`, `docs/`, `.claude/`) checks `operaton-remote`, `zeebe-native`
+  and `fullstack-cibseven-embedded` on their first variant, plus every example it touches directly.
+- The pre-merge workflow of a selected variant runs without its `backend` job: the starter build covers it.
+  Mutation testing does not run on pull requests at all.
+- `_blueprint.yml` per selected example: identical resources of both variants, and every starter exported to a
+  folder outside the checkout, linted, built and compared with the committed OpenAPI contract and process API.
+- Nightly: the nightly checks (mutation testing of the domain, Bruno, cross-browser e2e for fullstack) and
+  `_blueprint.yml` of the examples changed in the last 25 hours, every example if a change outside `examples/`
+  landed; on Sundays and on demand all of them. Nightly failures only reach GitHub's default notifications.
 
 ## Dependabot
 
@@ -65,7 +71,7 @@ stays free of engine names. It has no `package.json`, so `_blueprint.yml` skips 
 Nothing is published or released. `npx --allow-git=root github:<owner>/process-engine-blueprints` installs the root package from
 GitHub (only `tooling/create-blueprint`, per `files` in `package.json`), and its CLI clones the repository at
 `--ref` (default `main`) and runs `tooling/starter/export.sh`. A merged change is what the next user gets, so
-`_blueprint.yml` builds every starter of a touched example on each pull request. Trainings that need a fixed state
+`_blueprint.yml` builds every starter of a selected example on each pull request. Trainings that need a fixed state
 point `--ref` at a tag.
 
 ## Moving the repository

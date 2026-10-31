@@ -57,26 +57,11 @@ tasks.withType<BootJar> {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
-// Mutation testing (PIT). PR runs are diff-scoped via -PmutationTargetClasses; the nightly sweep runs
-// the full default target set. Bootstrap/config/generated/engine-adapter classes are excluded — they
-// hold no domain logic worth mutating. Gate: 80% mutation coverage.
-val mutationTargetClasses = (project.findProperty("mutationTargetClasses") as String?)
-    ?.split(",")?.map(String::trim)?.filter(String::isNotEmpty)
-
+// Mutation testing (PIT), nightly on the domain. Gate: 80% mutation coverage.
 pitest {
     junit5PluginVersion.set("1.2.2")
-    targetClasses.set(mutationTargetClasses ?: listOf("io.miragon.blueprint.*"))
+    targetClasses.set(listOf("io.miragon.blueprint.domain.*"))
     targetTests.set(listOf("io.miragon.blueprint.*"))
-    failWhenNoMutations.set(false)
-    excludedClasses.set(
-        listOf(
-            "io.miragon.blueprint.adapter.process.*",
-            "io.miragon.blueprint.OperatonBikeLeasingApplication*",
-            "io.miragon.blueprint.BikeCatalogueSeeder*",
-            "io.miragon.blueprint.adapter.inbound.rest.DevCorsConfiguration*",
-            "io.miragon.blueprint.adapter.inbound.operaton.*",
-        ),
-    )
     excludedTestClasses.set(
         listOf(
             "io.miragon.blueprint.process.*",

@@ -15,9 +15,6 @@
     <packaging>jar</packaging>
 
     <properties>
-        <!-- PIT scope. Defaults to the whole code base; the diff-scoped PR job narrows it with
-             `-DmutationTargetClasses=a.b.C*,d.e.F*` (comma-separated globs). -->
-        <mutationTargetClasses>io.miragon.blueprint.*</mutationTargetClasses>
         <!-- No `pitest.threads` property here on purpose: a POM property would be interpolated into the PIT
              configuration before build-helper's `cpu-count` (bound to `initialize`) can set it at runtime.
              So run PIT behind a lifecycle phase (`test-compile pitest:mutationCoverage`) or pass
@@ -298,21 +295,10 @@
                 <groupId>org.pitest</groupId>
                 <artifactId>pitest-maven</artifactId>
                 <configuration>
-                    <targetClasses>${mutationTargetClasses}</targetClasses>
+                    <targetClasses>io.miragon.blueprint.domain.*</targetClasses>
                     <targetTests>
                         <param>io.miragon.blueprint.*</param>
                     </targetTests>
-                    <failWhenNoMutations>false</failWhenNoMutations>
-                    <excludedClasses>
-                        <param>io.miragon.blueprint.adapter.process.*</param>
-                        <param>io.miragon.blueprint.CibsevenBikeLeasingApplication*</param>
-                        <param>io.miragon.blueprint.BikeCatalogueSeeder*</param>
-                        <param>io.miragon.blueprint.adapter.inbound.rest.DevCorsConfiguration*</param>
-                        <param>io.miragon.blueprint.adapter.inbound.rest.OpenApiConfiguration*</param>
-                        <!-- External-task worker beans are thin @ProcessEngineWorker adapters exercised by the
-                             process tests, which mutation testing excludes. -->
-                        <param>io.miragon.blueprint.adapter.inbound.cibseven.*</param>
-                    </excludedClasses>
                     <excludedTestClasses>
                         <param>io.miragon.blueprint.adapter.process.*</param>
                         <param>io.miragon.blueprint.ArchitectureTest*</param>

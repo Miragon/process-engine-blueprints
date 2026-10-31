@@ -85,7 +85,6 @@ The resources are kept identical to the other variant's; CI fails when they diff
   asserted as a compile-checked `ProcessPath`.
 - **Model validation** (`bpmn-to-code-testing`) checks the models at build time, including a custom rule
   that every service task is an external task with a topic.
-- **Mutation testing** (PIT, gate 80) grades assertion strength — diff-scoped on pull requests, full
-  sweep nightly.
+- **Mutation testing** (PIT, gate 80) grades assertion strength — nightly, on the domain only.
 - **OpenAPI contract.** A test exports the springdoc spec to [`../openapi/openapi.json`](../openapi/openapi.json);
   CI fails on drift.

@@ -26,7 +26,7 @@ OpenAPI contract, linting) are meant to enable. A template pinned to yesterday's
 misrepresent both the capabilities and the starting point we actually recommend.
 
 Mechanics that make this safe rather than reckless: dependency updates are automated (Dependabot), every
-version is exact-pinned, and each bump runs the full gate set (build, mutation ≥ 80, contract drift,
+version is exact-pinned, and each bump runs the full gate set (build, contract drift,
 architecture), so updates can be taken continuously instead of in a scary big-bang. Bleeding-edge
 workarounds are documented at the point of use — notably the `jackson-datatype-jsr310` exclusion in
 `service/app/build.gradle.kts`.

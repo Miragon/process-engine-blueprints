@@ -41,7 +41,7 @@
         <!-- BPMN-to-code: generates the typed process API from the *.bpmn models; testing = model validation -->
         <bpmn-to-code.version>7.0.1</bpmn-to-code.version>
         <!-- OpenAPI: springdoc generates the worker's contract; the generator builds the engine client -->
-        <springdoc.version>3.2.0</springdoc.version>
+        <springdoc.version>3.1.1</springdoc.version>
         <openapi-generator.version>7.26.0</openapi-generator.version>
         <!-- Architecture (bytecode) and source-structure rules -->
         <archunit.version>1.5.1</archunit.version>

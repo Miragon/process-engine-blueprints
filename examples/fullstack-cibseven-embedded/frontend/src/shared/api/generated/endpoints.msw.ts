@@ -14,14 +14,18 @@ import {
   http
 } from 'msw';
 import type {
+  HttpResponseResolver,
+  PathParams,
   RequestHandlerOptions
 } from 'msw';
 
 import type {
+  AlternativeDecisionInput,
   BikeDto,
   LeasingApplicationCreatedDto,
   LeasingApplicationDto,
   LeasingApplicationPageDto,
+  LeasingRequestInput,
   PendingClarificationDto
 } from './model';
 
@@ -37,8 +41,8 @@ export const getListBikesResponseMock = (): BikeDto[] => (Array.from({ length: f
 export const getGetLeasingApplicationResponseMock = (overrideResponse: Partial<Extract<LeasingApplicationDto, object>> = {}): LeasingApplicationDto => ({applicationId: faker.string.alpha({length: {min: 10, max: 20}}), customerName: faker.string.alpha({length: {min: 10, max: 20}}), email: faker.string.alpha({length: {min: 10, max: 20}}), age: faker.number.int(), monthlyNetIncome: faker.number.float({fractionDigits: 2}), bikeId: faker.string.alpha({length: {min: 10, max: 20}}), bikeModel: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]), status: faker.string.alpha({length: {min: 10, max: 20}}), orderId: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]), contractId: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), null]), createdAt: faker.date.past().toISOString().slice(0, 19) + 'Z', ...overrideResponse})
 
 
-export const getListLeasingApplicationsMockHandler = (overrideResponse?: LeasingApplicationPageDto | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<LeasingApplicationPageDto> | LeasingApplicationPageDto), options?: RequestHandlerOptions) => {
-  return http.get('*/api/bike-leasing', async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+export const getListLeasingApplicationsMockHandler = (overrideResponse?: LeasingApplicationPageDto | ((info: Parameters<HttpResponseResolver>[0]) => Promise<LeasingApplicationPageDto> | LeasingApplicationPageDto), options?: RequestHandlerOptions) => {
+  return http.get('*/api/bike-leasing', async (info: Parameters<HttpResponseResolver>[0]) => {
 
 
     return HttpResponse.json(overrideResponse !== undefined
@@ -49,8 +53,8 @@ export const getListLeasingApplicationsMockHandler = (overrideResponse?: Leasing
   }, options)
 }
 
-export const getSubmitLeasingRequestMockHandler = (overrideResponse?: LeasingApplicationCreatedDto | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<LeasingApplicationCreatedDto> | LeasingApplicationCreatedDto), options?: RequestHandlerOptions) => {
-  return http.post('*/api/bike-leasing', async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
+export const getSubmitLeasingRequestMockHandler = (overrideResponse?: LeasingApplicationCreatedDto | ((info: Parameters<HttpResponseResolver<PathParams, LeasingRequestInput>>[0]) => Promise<LeasingApplicationCreatedDto> | LeasingApplicationCreatedDto), options?: RequestHandlerOptions) => {
+  return http.post<PathParams, LeasingRequestInput>('*/api/bike-leasing', async (info: Parameters<HttpResponseResolver<PathParams, LeasingRequestInput>>[0]) => {
 
 
     return HttpResponse.json(overrideResponse !== undefined
@@ -61,8 +65,8 @@ export const getSubmitLeasingRequestMockHandler = (overrideResponse?: LeasingApp
   }, options)
 }
 
-export const getWithdrawApplicationMockHandler = (overrideResponse?: unknown | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<unknown> | unknown), options?: RequestHandlerOptions) => {
-  return http.post('*/api/bike-leasing/:applicationId/withdraw', async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
+export const getWithdrawApplicationMockHandler = (overrideResponse?: unknown | ((info: Parameters<HttpResponseResolver<{ applicationId: string }>>[0]) => Promise<unknown> | unknown), options?: RequestHandlerOptions) => {
+  return http.post<{ applicationId: string }>('*/api/bike-leasing/:applicationId/withdraw', async (info: Parameters<HttpResponseResolver<{ applicationId: string }>>[0]) => {
   if (typeof overrideResponse === 'function') {await overrideResponse(info); }
 
     return new HttpResponse(null,
@@ -71,8 +75,8 @@ export const getWithdrawApplicationMockHandler = (overrideResponse?: unknown | (
   }, options)
 }
 
-export const getSignContractMockHandler = (overrideResponse?: unknown | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<unknown> | unknown), options?: RequestHandlerOptions) => {
-  return http.post('*/api/bike-leasing/:applicationId/sign-contract', async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
+export const getSignContractMockHandler = (overrideResponse?: unknown | ((info: Parameters<HttpResponseResolver<{ applicationId: string }>>[0]) => Promise<unknown> | unknown), options?: RequestHandlerOptions) => {
+  return http.post<{ applicationId: string }>('*/api/bike-leasing/:applicationId/sign-contract', async (info: Parameters<HttpResponseResolver<{ applicationId: string }>>[0]) => {
   if (typeof overrideResponse === 'function') {await overrideResponse(info); }
 
     return new HttpResponse(null,
@@ -81,8 +85,8 @@ export const getSignContractMockHandler = (overrideResponse?: unknown | ((info: 
   }, options)
 }
 
-export const getReportHandoverMockHandler = (overrideResponse?: unknown | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<unknown> | unknown), options?: RequestHandlerOptions) => {
-  return http.post('*/api/bike-leasing/:applicationId/report-handover', async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
+export const getReportHandoverMockHandler = (overrideResponse?: unknown | ((info: Parameters<HttpResponseResolver<{ applicationId: string }>>[0]) => Promise<unknown> | unknown), options?: RequestHandlerOptions) => {
+  return http.post<{ applicationId: string }>('*/api/bike-leasing/:applicationId/report-handover', async (info: Parameters<HttpResponseResolver<{ applicationId: string }>>[0]) => {
   if (typeof overrideResponse === 'function') {await overrideResponse(info); }
 
     return new HttpResponse(null,
@@ -91,8 +95,8 @@ export const getReportHandoverMockHandler = (overrideResponse?: unknown | ((info
   }, options)
 }
 
-export const getSelectAlternativeMockHandler = (overrideResponse?: unknown | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Promise<unknown> | unknown), options?: RequestHandlerOptions) => {
-  return http.post('*/api/bike-leasing/:applicationId/clarify-alternative', async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
+export const getSelectAlternativeMockHandler = (overrideResponse?: unknown | ((info: Parameters<HttpResponseResolver<{ applicationId: string }, AlternativeDecisionInput>>[0]) => Promise<unknown> | unknown), options?: RequestHandlerOptions) => {
+  return http.post<{ applicationId: string }, AlternativeDecisionInput>('*/api/bike-leasing/:applicationId/clarify-alternative', async (info: Parameters<HttpResponseResolver<{ applicationId: string }, AlternativeDecisionInput>>[0]) => {
   if (typeof overrideResponse === 'function') {await overrideResponse(info); }
 
     return new HttpResponse(null,
@@ -101,8 +105,8 @@ export const getSelectAlternativeMockHandler = (overrideResponse?: unknown | ((i
   }, options)
 }
 
-export const getListPendingClarificationsMockHandler = (overrideResponse?: PendingClarificationDto[] | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<PendingClarificationDto[]> | PendingClarificationDto[]), options?: RequestHandlerOptions) => {
-  return http.get('*/api/tasks/clarify-alternative', async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+export const getListPendingClarificationsMockHandler = (overrideResponse?: PendingClarificationDto[] | ((info: Parameters<HttpResponseResolver>[0]) => Promise<PendingClarificationDto[]> | PendingClarificationDto[]), options?: RequestHandlerOptions) => {
+  return http.get('*/api/tasks/clarify-alternative', async (info: Parameters<HttpResponseResolver>[0]) => {
 
 
     return HttpResponse.json(overrideResponse !== undefined
@@ -113,8 +117,8 @@ export const getListPendingClarificationsMockHandler = (overrideResponse?: Pendi
   }, options)
 }
 
-export const getListBikesMockHandler = (overrideResponse?: BikeDto[] | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<BikeDto[]> | BikeDto[]), options?: RequestHandlerOptions) => {
-  return http.get('*/api/bikes', async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+export const getListBikesMockHandler = (overrideResponse?: BikeDto[] | ((info: Parameters<HttpResponseResolver>[0]) => Promise<BikeDto[]> | BikeDto[]), options?: RequestHandlerOptions) => {
+  return http.get('*/api/bikes', async (info: Parameters<HttpResponseResolver>[0]) => {
 
 
     return HttpResponse.json(overrideResponse !== undefined
@@ -125,8 +129,8 @@ export const getListBikesMockHandler = (overrideResponse?: BikeDto[] | ((info: P
   }, options)
 }
 
-export const getGetLeasingApplicationMockHandler = (overrideResponse?: LeasingApplicationDto | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Promise<LeasingApplicationDto> | LeasingApplicationDto), options?: RequestHandlerOptions) => {
-  return http.get('*/api/bike-leasing/:applicationId', async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+export const getGetLeasingApplicationMockHandler = (overrideResponse?: LeasingApplicationDto | ((info: Parameters<HttpResponseResolver<{ applicationId: string }>>[0]) => Promise<LeasingApplicationDto> | LeasingApplicationDto), options?: RequestHandlerOptions) => {
+  return http.get<{ applicationId: string }>('*/api/bike-leasing/:applicationId', async (info: Parameters<HttpResponseResolver<{ applicationId: string }>>[0]) => {
 
 
     return HttpResponse.json(overrideResponse !== undefined

@@ -176,8 +176,8 @@ in the Cockpit to analyze and retry. A ready-to-run Bruno collection lives in `b
 
 ## Contributing
 
-Contributions are welcome. Please open an issue to discuss substantial changes first, keep the
-architecture tests green (`./mvnw verify`), and use
+Bug reports and feature ideas are welcome as issues; we do not accept external pull requests.
+Team changes keep the architecture tests green (`./mvnw verify`), and use
 [Conventional Commits](https://www.conventionalcommits.org) for commit messages and PR titles.
 
 ## License

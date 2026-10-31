@@ -1,7 +1,7 @@
 # Contributing
 
-Thanks for your interest in the Operaton bike-leasing blueprint! Contributions of all kinds are
-welcome — bug reports, feature ideas, docs, and code.
+Thanks for your interest in the Operaton bike-leasing blueprint! Bug reports and feature ideas
+are welcome as issues; we do not accept external pull requests.
 
 ## Getting started
 

@@ -5,7 +5,7 @@ description: Add a new example to this monorepo, or import an existing standalon
 
 # Add an example
 
-1. **Name it** `<engine>-<integration>` (engine: `cibseven`, `operaton`, `fluxnova`, `zeebe`; integration:
+1. **Name it** `<engine>-<integration>` (engine: `cibseven`, `operaton`, `fluxnova`, `zeebe`, `temporal`; integration:
    `embedded`, `remote`, `process-engine-api`, `native`, `vanillabp`, or a new one the user names).
 2. **Bring the files.**
    - Importing a repository keeps its history:
@@ -16,7 +16,9 @@ description: Add a new example to this monorepo, or import an existing standalon
    - A new example starts as a copy of the closest existing one.
 3. **Shape it like the others:** variants in `kotlin-gradle/` and `java-maven/`, its own
    `.github/workflows/pre-merge*.yml` and `nightly*.yml`, `.github/dependabot.yml`, `package.json` with
-   `lint:bpmn`, `stack/`, `bruno/`, `openapi/`, and `scripts/create-starter.sh` when it has two variants.
+   `lint:bpmn`, `stack/`, `bruno/`, `openapi/`, and `scripts/create-starter.sh` when it has two variants. An
+   example without BPMN models leaves out `package.json` and the bpmnlint tooling: `_blueprint.yml` skips
+   Node and the lint step when there is no `package-lock.json`.
 4. **Describe it** in `examples/<name>/blueprint.yaml` (copy one): `engine`, `integration`, `topology`
    (`embedded` or `remote`), `summary`, `stack`, `variants` with their paths, `identicalResources`, and
    `missingVariants` with a reason when it has only one. New engine or integration values also need a label in

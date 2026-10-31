@@ -67,6 +67,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Set up Node
+        if: hashFiles(format('examples/{0}/package-lock.json', inputs.example)) != ''
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '22'
@@ -88,6 +89,7 @@ jobs:
         run: tooling/starter/export.sh "${{ inputs.example }}" "${{ matrix.variant }}" ../starter
 
       - name: Lint BPMN (bpmnlint)
+        if: hashFiles(format('examples/{0}/package-lock.json', inputs.example)) != ''
         run: |
           npm ci
           npm run lint:bpmn

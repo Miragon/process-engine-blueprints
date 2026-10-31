@@ -2,7 +2,7 @@
   "openapi" : "3.1.0",
   "info" : {
     "title" : "MiraVelo Bike-Leasing API",
-    "description" : "Customer-portal and back-office endpoints for the MiraVelo bike-leasing process, backed by Camunda 8 / Zeebe.",
+    "description" : "Customer-portal and back-office endpoints for the MiraVelo bike-leasing process.",
     "version" : "1.0"
   },
   "paths" : {

@@ -1,0 +1,34 @@
+# Use this only in dev environments. It's not intended for production usage.
+services:
+
+  postgres:
+    image: postgres:18.6
+    container_name: bikeleasing-postgres
+    ports:
+      - 5432:5432
+    restart: always
+    environment:
+      POSTGRES_DB: bikeleasing
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+
+  # In-memory dev server with the Web UI: its state is gone with the container.
+  temporal:
+    image: temporalio/temporal:1.9.1
+    container_name: bikeleasing-temporal
+    command:
+      - server
+      - start-dev
+      - --ip
+      - 0.0.0.0
+      - --search-attribute
+      - ClarificationWaitingSince=Datetime
+    ports:
+      - 7233:7233
+      - 8233:8233
+    restart: always
+    healthcheck:
+      test: [ "CMD", "temporal", "operator", "cluster", "health" ]
+      interval: 2s
+      retries: 30
+      start_period: 5s

@@ -4,7 +4,7 @@
 [scripts]
 run_mode = "nonconcurrent"
 setup = "npm ci\nnpm run hooks:install\n"
-archive = "(cd examples/cibseven-embedded && docker compose -f stack/docker-compose.yml down -v || true)\n(cd examples/cibseven-process-engine-api && docker compose -f stack/docker-compose.yml down -v || true)\n(cd examples/cibseven-remote && docker compose -f stack/docker-compose.yml down -v || true)\n(cd examples/fluxnova-embedded && docker compose -f stack/docker-compose.yml down -v || true)\n(cd examples/fullstack-cibseven-embedded && docker compose -f stack/docker-compose.yml down -v || true)\n(cd examples/operaton-embedded && docker compose -f stack/docker-compose.yml down -v || true)\n(cd examples/operaton-process-engine-api && docker compose -f stack/docker-compose.yml down -v || true)\n(cd examples/operaton-remote && docker compose -f stack/docker-compose.yml down -v || true)\n(cd examples/zeebe-native && docker compose -f stack/docker-compose.yml down -v || true)\n(cd examples/zeebe-vanillabp && docker compose -f stack/docker-compose.yml down -v || true)\n"
+archive = "(cd examples/cibseven-embedded && docker compose -f stack/docker-compose.yml down -v || true)\n(cd examples/cibseven-process-engine-api && docker compose -f stack/docker-compose.yml down -v || true)\n(cd examples/cibseven-remote && docker compose -f stack/docker-compose.yml down -v || true)\n(cd examples/fluxnova-embedded && docker compose -f stack/docker-compose.yml down -v || true)\n(cd examples/fullstack-cibseven-embedded && docker compose -f stack/docker-compose.yml down -v || true)\n(cd examples/operaton-embedded && docker compose -f stack/docker-compose.yml down -v || true)\n(cd examples/operaton-process-engine-api && docker compose -f stack/docker-compose.yml down -v || true)\n(cd examples/operaton-remote && docker compose -f stack/docker-compose.yml down -v || true)\n(cd examples/temporal-native && docker compose -f stack/docker-compose.yml down -v || true)\n(cd examples/zeebe-native && docker compose -f stack/docker-compose.yml down -v || true)\n(cd examples/zeebe-vanillabp && docker compose -f stack/docker-compose.yml down -v || true)\n"
 
 [scripts.run."cibseven-embedded:setup"]
 command = "cd examples/cibseven-embedded && npm ci"
@@ -191,6 +191,18 @@ command = "cd examples/operaton-remote && cd java-maven && ./mvnw verify"
 
 [scripts.run."operaton-remote:smoke"]
 command = "cd examples/operaton-remote && cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r --exclude-tags=demo-data"
+
+[scripts.run."temporal-native:infra"]
+command = "cd examples/temporal-native && docker compose -f stack/docker-compose.yml up"
+
+[scripts.run."temporal-native:backend-kotlin"]
+command = "cd examples/temporal-native && cd kotlin-gradle && ./gradlew :service:app:bootRun"
+
+[scripts.run."temporal-native:test-kotlin"]
+command = "cd examples/temporal-native && cd kotlin-gradle && ./gradlew build"
+
+[scripts.run."temporal-native:smoke"]
+command = "cd examples/temporal-native && cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r --exclude-tags=demo-data"
 
 [scripts.run."zeebe-native:setup"]
 command = "cd examples/zeebe-native && "

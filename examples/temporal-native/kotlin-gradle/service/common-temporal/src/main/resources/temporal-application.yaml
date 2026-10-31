@@ -1,0 +1,5 @@
+spring:
+  temporal:
+    namespace: default
+    connection:
+      target: ${TEMPORAL_ADDRESS:localhost:7233}

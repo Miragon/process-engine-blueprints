@@ -13,10 +13,10 @@ identical:
       - operaton-embedded
       - operaton-process-engine-api
       - operaton-remote
+      - temporal-native
       - zeebe-native
       - zeebe-vanillabp
     files:
-      - .claude/hooks/lint-bpmn.sh
       - .npmrc
       - CLAUDE.md
       - LICENSE
@@ -26,6 +26,20 @@ identical:
       - bruno/00-demo-data/05-rejected/01-submit.bru
       - bruno/00-demo-data/07-withdrawn-return-open/01-submit.bru
       - bruno/01-happy-path/01-submit.bru
+  - name: all BPMN examples
+    examples:
+      - cibseven-embedded
+      - cibseven-process-engine-api
+      - cibseven-remote
+      - fluxnova-embedded
+      - fullstack-cibseven-embedded
+      - operaton-embedded
+      - operaton-process-engine-api
+      - operaton-remote
+      - zeebe-native
+      - zeebe-vanillabp
+    files:
+      - .claude/hooks/lint-bpmn.sh
   - name: cibseven-embedded + cibseven-process-engine-api + cibseven-remote + fluxnova-embedded + operaton-embedded + operaton-process-engine-api + operaton-remote + zeebe-native + zeebe-vanillabp
     examples:
       - cibseven-embedded
@@ -547,3 +561,140 @@ identical:
       - operaton-process-engine-api
     files:
       - .pulse-cli.json
+  # temporal-native keeps the core of zeebe-native, so only the adapters around the engine differ. Files
+  # listed here are pinned to zeebe-native, which the rules above pin to the other examples.
+  - name: temporal-native + zeebe-native
+    examples:
+      - temporal-native
+      - zeebe-native
+    files:
+      - .claude/skills/create-adr/SKILL.md
+      - .github/CODEOWNERS
+      - bruno/00-demo-data/01-awaiting-signature/02-assert-received.bru
+      - bruno/00-demo-data/02-awaiting-handover/02-sign-contract.bru
+      - bruno/00-demo-data/02-awaiting-handover/03-assert-ordered.bru
+      - bruno/00-demo-data/03-in-withdrawal-period/02-sign-contract.bru
+      - bruno/00-demo-data/03-in-withdrawal-period/03-report-handover.bru
+      - bruno/00-demo-data/03-in-withdrawal-period/04-assert-handed-over.bru
+      - bruno/00-demo-data/05-rejected/02-assert-rejected.bru
+      - bruno/00-demo-data/06-alternative-in-inbox/01-submit.bru
+      - bruno/00-demo-data/06-alternative-in-inbox/02-sign-contract.bru
+      - bruno/00-demo-data/06-alternative-in-inbox/03-assert-in-inbox.bru
+      - bruno/00-demo-data/07-withdrawn-return-open/02-sign-contract.bru
+      - bruno/00-demo-data/07-withdrawn-return-open/03-withdraw.bru
+      - bruno/00-demo-data/07-withdrawn-return-open/04-assert-withdrawn.bru
+      - bruno/01-happy-path/02-get-application.bru
+      - bruno/01-happy-path/03-sign-contract.bru
+      - bruno/01-happy-path/04-report-handover.bru
+      - bruno/03-abort/01-submit.bru
+      - bruno/03-abort/02-sign-contract.bru
+      - bruno/03-abort/03-withdraw.bru
+      - bruno/04-not-solvent/01-submit.bru
+      - bruno/04-not-solvent/02-assert-rejected.bru
+      - bruno/05-bike-unavailable/01-submit.bru
+      - bruno/05-bike-unavailable/02-sign-contract.bru
+      - bruno/05-bike-unavailable/04-report-handover.bru
+      - bruno/05-bike-unavailable/05-get-application.bru
+      - bruno/07-list-and-inbox/01-list-bikes.bru
+      - bruno/07-list-and-inbox/02-submit-out-of-stock.bru
+      - bruno/07-list-and-inbox/03-list-received.bru
+      - bruno/07-list-and-inbox/04-sign-contract.bru
+      - bruno/07-list-and-inbox/05-inbox-has-task.bru
+      - bruno/07-list-and-inbox/06-resolve-clarification.bru
+      - bruno/07-list-and-inbox/07-inbox-empty.bru
+      - bruno/08-alternative-declined/01-submit.bru
+      - bruno/08-alternative-declined/03-sign-contract.bru
+      - bruno/08-alternative-declined/04-decline-alternative.bru
+      - bruno/08-alternative-declined/09-assert-cancelled.bru
+      - bruno/09-invalid-request/01-submit-without-income.bru
+      - bruno/09-invalid-request/02-accept-alternative-without-bike.bru
+      - docs/adr/0000-adr-template.md
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/ActivateLeasingUseCase.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/BookCancellationCostsUseCase.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/CancelContractUseCase.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/CancelInsurancePolicyUseCase.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/GetLeasingApplicationQuery.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/GetPendingClarificationsQuery.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/IssueInsurancePolicyUseCase.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/ListBikesQuery.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/ListLeasingApplicationsQuery.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/OrderBikeUseCase.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/RejectApplicationUseCase.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/ReportHandoverUseCase.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/RequestOrderCancellationUseCase.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/SelectAlternativeUseCase.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/SendCancellationConfirmationUseCase.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/SendContractUseCase.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/SendSignatureReminderUseCase.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/SignContractUseCase.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/SubmitLeasingRequestUseCase.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/WithdrawApplicationUseCase.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/outbound/BikeDealerPort.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/outbound/BikePortfolioRepository.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/outbound/ContractPort.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/outbound/InsurancePort.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/outbound/LeasingApplicationRepository.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/outbound/LeasingProcess.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/outbound/NotificationPort.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/outbound/TaskInboxPort.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/ActivateLeasingService.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/BookCancellationCostsService.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/CancelContractService.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/CancelInsurancePolicyService.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/GetLeasingApplicationService.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/GetPendingClarificationsService.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/IssueInsurancePolicyService.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/ListBikesService.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/ListLeasingApplicationsService.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/OrderBikeService.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/RejectApplicationService.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/ReportHandoverService.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/RequestOrderCancellationService.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/SelectAlternativeService.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/SendCancellationConfirmationService.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/SendContractService.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/SendSignatureReminderService.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/SignContractService.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/SubmitLeasingRequestService.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/WithdrawApplicationService.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/domain/bike/Bike.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/domain/bike/BikeId.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/domain/bike/BikeUnavailableException.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/domain/bike/OrderId.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/domain/leasing/ApplicationId.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/domain/leasing/ContractId.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/domain/leasing/CustomerName.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/domain/leasing/Email.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/domain/leasing/LeasingApplication.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/domain/leasing/LeasingStatus.kt
+      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/domain/leasing/PendingClarification.kt
+      - kotlin-gradle/service/app/src/main/resources/db/migration/V1__init.sql
+      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/ActivateLeasingServiceTest.kt
+      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/BookCancellationCostsServiceTest.kt
+      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/CancelContractServiceTest.kt
+      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/CancelInsurancePolicyServiceTest.kt
+      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/GetLeasingApplicationServiceTest.kt
+      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/GetPendingClarificationsServiceTest.kt
+      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/IssueInsurancePolicyServiceTest.kt
+      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/ListBikesServiceTest.kt
+      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/ListLeasingApplicationsServiceTest.kt
+      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/OrderBikeServiceTest.kt
+      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/RejectApplicationServiceTest.kt
+      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/ReportHandoverServiceTest.kt
+      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/RequestOrderCancellationServiceTest.kt
+      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/SelectAlternativeServiceTest.kt
+      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/SendCancellationConfirmationServiceTest.kt
+      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/SendContractServiceTest.kt
+      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/SendSignatureReminderServiceTest.kt
+      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/SignContractServiceTest.kt
+      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/SubmitLeasingRequestServiceTest.kt
+      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/WithdrawApplicationServiceTest.kt
+      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/domain/bike/BikeIdTest.kt
+      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/domain/bike/OrderIdTest.kt
+      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/domain/leasing/ApplicationIdTest.kt
+      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/domain/leasing/ContractIdTest.kt
+      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/domain/leasing/CustomerNameTest.kt
+      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/domain/leasing/EmailTest.kt
+      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/domain/leasing/LeasingApplicationTest.kt
+      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/domain/leasing/TestObjectBuilder.kt
+      - openapi/openapi.json

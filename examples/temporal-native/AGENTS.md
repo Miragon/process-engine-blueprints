@@ -144,9 +144,8 @@ TDD. Match the test style to the layer:
 | `adapter.outbound.db` | Spring Data JPA slice tests |
 | process end-to-end | `BikeLeasingProcessTest` on the in-memory test server: real activities and process adapter, use cases mocked, one test per branch |
 
-**Mutation testing gates PRs at 80**: a test that executes without asserting will fail CI. The PR gate
-runs **diff-scoped** (only the classes the PR changed, still blocking); the **full-module** sweep runs
-nightly. The workflows and the Temporal adapters are excluded, like the engine glue in `zeebe-native`.
+**Mutation testing gates the domain at 80, nightly**: a test that executes without asserting will fail the nightly run. It mutates
+`io.miragon.blueprint.domain.*` only and does not block pull requests.
 See ADR-0004.
 
 ## Verify After Each Task (targeted, not a full build)

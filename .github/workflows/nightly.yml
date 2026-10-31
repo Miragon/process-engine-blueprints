@@ -29,13 +29,13 @@ jobs:
         id: select
         run: |-
           if [[ "${{ github.event_name }}" == "workflow_dispatch" || "$(date -u +%u)" == "7" ]]; then
-            examples=$(node scripts/changed-examples.mjs --all)
+            selection=$(node scripts/changed-examples.mjs --all)
           else
             since=$(git rev-list -n1 --before="25 hours ago" HEAD || true)
-            examples=$(node scripts/changed-examples.mjs "${since:-}" HEAD)
+            selection=$(node scripts/changed-examples.mjs "${since:-}" HEAD --shared-tooling-selects-all)
           fi
-          echo "Selected: $examples"
-          echo "examples=$examples" >> "$GITHUB_OUTPUT"
+          echo "$selection"
+          echo "$selection" >> "$GITHUB_OUTPUT"
   cibseven-embedded--nightly-java-maven:
     name: cibseven-embedded · Nightly Checks · Java/Maven
     needs: changes
@@ -46,6 +46,13 @@ jobs:
     needs: changes
     if: contains(fromJSON(needs.changes.outputs.examples), 'cibseven-embedded')
     uses: ./.github/workflows/cibseven-embedded.nightly-kotlin-gradle.yml
+  cibseven-embedded--blueprint:
+    name: cibseven-embedded · Blueprint checks
+    needs: changes
+    if: contains(fromJSON(needs.changes.outputs.examples), 'cibseven-embedded')
+    uses: ./.github/workflows/_blueprint.yml
+    with:
+      example: cibseven-embedded
   cibseven-process-engine-api--nightly-java-maven:
     name: cibseven-process-engine-api · Nightly Checks · Java/Maven
     needs: changes
@@ -56,6 +63,13 @@ jobs:
     needs: changes
     if: contains(fromJSON(needs.changes.outputs.examples), 'cibseven-process-engine-api')
     uses: ./.github/workflows/cibseven-process-engine-api.nightly-kotlin-gradle.yml
+  cibseven-process-engine-api--blueprint:
+    name: cibseven-process-engine-api · Blueprint checks
+    needs: changes
+    if: contains(fromJSON(needs.changes.outputs.examples), 'cibseven-process-engine-api')
+    uses: ./.github/workflows/_blueprint.yml
+    with:
+      example: cibseven-process-engine-api
   cibseven-remote--nightly-java-maven:
     name: cibseven-remote · Nightly Checks · Java/Maven
     needs: changes
@@ -66,6 +80,13 @@ jobs:
     needs: changes
     if: contains(fromJSON(needs.changes.outputs.examples), 'cibseven-remote')
     uses: ./.github/workflows/cibseven-remote.nightly-kotlin-gradle.yml
+  cibseven-remote--blueprint:
+    name: cibseven-remote · Blueprint checks
+    needs: changes
+    if: contains(fromJSON(needs.changes.outputs.examples), 'cibseven-remote')
+    uses: ./.github/workflows/_blueprint.yml
+    with:
+      example: cibseven-remote
   fluxnova-embedded--nightly-java-maven:
     name: fluxnova-embedded · Nightly Checks · Java/Maven
     needs: changes
@@ -76,11 +97,25 @@ jobs:
     needs: changes
     if: contains(fromJSON(needs.changes.outputs.examples), 'fluxnova-embedded')
     uses: ./.github/workflows/fluxnova-embedded.nightly-kotlin-gradle.yml
+  fluxnova-embedded--blueprint:
+    name: fluxnova-embedded · Blueprint checks
+    needs: changes
+    if: contains(fromJSON(needs.changes.outputs.examples), 'fluxnova-embedded')
+    uses: ./.github/workflows/_blueprint.yml
+    with:
+      example: fluxnova-embedded
   fullstack-cibseven-embedded--nightly:
     name: fullstack-cibseven-embedded · Nightly Checks
     needs: changes
     if: contains(fromJSON(needs.changes.outputs.examples), 'fullstack-cibseven-embedded')
     uses: ./.github/workflows/fullstack-cibseven-embedded.nightly.yml
+  fullstack-cibseven-embedded--blueprint:
+    name: fullstack-cibseven-embedded · Blueprint checks
+    needs: changes
+    if: contains(fromJSON(needs.changes.outputs.examples), 'fullstack-cibseven-embedded')
+    uses: ./.github/workflows/_blueprint.yml
+    with:
+      example: fullstack-cibseven-embedded
   operaton-embedded--nightly-java-maven:
     name: operaton-embedded · Nightly Checks · Java/Maven
     needs: changes
@@ -91,11 +126,25 @@ jobs:
     needs: changes
     if: contains(fromJSON(needs.changes.outputs.examples), 'operaton-embedded')
     uses: ./.github/workflows/operaton-embedded.nightly-kotlin-gradle.yml
+  operaton-embedded--blueprint:
+    name: operaton-embedded · Blueprint checks
+    needs: changes
+    if: contains(fromJSON(needs.changes.outputs.examples), 'operaton-embedded')
+    uses: ./.github/workflows/_blueprint.yml
+    with:
+      example: operaton-embedded
   operaton-process-engine-api--nightly:
     name: operaton-process-engine-api · Nightly Checks
     needs: changes
     if: contains(fromJSON(needs.changes.outputs.examples), 'operaton-process-engine-api')
     uses: ./.github/workflows/operaton-process-engine-api.nightly.yml
+  operaton-process-engine-api--blueprint:
+    name: operaton-process-engine-api · Blueprint checks
+    needs: changes
+    if: contains(fromJSON(needs.changes.outputs.examples), 'operaton-process-engine-api')
+    uses: ./.github/workflows/_blueprint.yml
+    with:
+      example: operaton-process-engine-api
   operaton-remote--nightly-java-maven:
     name: operaton-remote · Nightly Checks · Java/Maven
     needs: changes
@@ -106,11 +155,25 @@ jobs:
     needs: changes
     if: contains(fromJSON(needs.changes.outputs.examples), 'operaton-remote')
     uses: ./.github/workflows/operaton-remote.nightly-kotlin-gradle.yml
+  operaton-remote--blueprint:
+    name: operaton-remote · Blueprint checks
+    needs: changes
+    if: contains(fromJSON(needs.changes.outputs.examples), 'operaton-remote')
+    uses: ./.github/workflows/_blueprint.yml
+    with:
+      example: operaton-remote
   temporal-native--nightly-kotlin-gradle:
     name: temporal-native · Nightly Checks · Kotlin/Gradle
     needs: changes
     if: contains(fromJSON(needs.changes.outputs.examples), 'temporal-native')
     uses: ./.github/workflows/temporal-native.nightly-kotlin-gradle.yml
+  temporal-native--blueprint:
+    name: temporal-native · Blueprint checks
+    needs: changes
+    if: contains(fromJSON(needs.changes.outputs.examples), 'temporal-native')
+    uses: ./.github/workflows/_blueprint.yml
+    with:
+      example: temporal-native
   zeebe-native--nightly-java-maven:
     name: zeebe-native · Nightly Checks · Java/Maven
     needs: changes
@@ -121,6 +184,13 @@ jobs:
     needs: changes
     if: contains(fromJSON(needs.changes.outputs.examples), 'zeebe-native')
     uses: ./.github/workflows/zeebe-native.nightly-kotlin-gradle.yml
+  zeebe-native--blueprint:
+    name: zeebe-native · Blueprint checks
+    needs: changes
+    if: contains(fromJSON(needs.changes.outputs.examples), 'zeebe-native')
+    uses: ./.github/workflows/_blueprint.yml
+    with:
+      example: zeebe-native
   zeebe-vanillabp--nightly-java-maven:
     name: zeebe-vanillabp · Nightly Checks · Java/Maven
     needs: changes
@@ -131,3 +201,10 @@ jobs:
     needs: changes
     if: contains(fromJSON(needs.changes.outputs.examples), 'zeebe-vanillabp')
     uses: ./.github/workflows/zeebe-vanillabp.nightly-kotlin-gradle.yml
+  zeebe-vanillabp--blueprint:
+    name: zeebe-vanillabp · Blueprint checks
+    needs: changes
+    if: contains(fromJSON(needs.changes.outputs.examples), 'zeebe-vanillabp')
+    uses: ./.github/workflows/_blueprint.yml
+    with:
+      example: zeebe-vanillabp

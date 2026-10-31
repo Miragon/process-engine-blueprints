@@ -14,11 +14,10 @@ permissions:
 
 jobs:
   describe:
-    name: Read blueprint.yaml
+    name: Read blueprint.yaml, both variants ship identical resources
     runs-on: ubuntu-latest
     outputs:
       variants: ${{ steps.read.outputs.variants }}
-      identical-resources: ${{ steps.read.outputs.identical-resources }}
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -31,21 +30,11 @@ jobs:
           echo "variants=$(yq -o=json -I=0 '.variants | keys' "$BLUEPRINT")" >> "$GITHUB_OUTPUT"
           echo "identical-resources=$(yq -o=json -I=0 '.identicalResources // []' "$BLUEPRINT")" >> "$GITHUB_OUTPUT"
 
-  identical-resources:
-    name: Both variants ship identical resources
-    needs: describe
-    if: needs.describe.outputs.identical-resources != '[]'
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: examples/${{ inputs.example }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
       - name: Compare the resources of both variants
+        if: steps.read.outputs.identical-resources != '[]'
+        working-directory: examples/${{ inputs.example }}
         env:
-          RESOURCES: ${{ needs.describe.outputs.identical-resources }}
+          RESOURCES: ${{ steps.read.outputs.identical-resources }}
         run: |
           for resource in $(jq -r '.[]' <<< "$RESOURCES"); do
             diff -r "kotlin-gradle/$resource" "java-maven/$resource"
@@ -82,7 +71,7 @@ jobs:
 
       - name: Set up Gradle
         if: matrix.variant == 'kotlin-gradle'
-        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
+        uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
 
       - name: Export the starter next to the checkout, outside the monorepo
         working-directory: ${{ github.workspace }}
@@ -102,8 +91,10 @@ jobs:
             ./mvnw -B -ntp verify
           fi
 
-      - name: Verify the starter still produces the committed OpenAPI contract
-        run: git diff --exit-code -- openapi/openapi.json
+      - name: Verify the starter still produces the committed OpenAPI contract and process API
+        run: |
+          git add --intent-to-add -- service
+          git diff --exit-code -- openapi/openapi.json ':(glob)service/*/src/main/*/io/miragon/blueprint/adapter/process/**'
 
       - name: Verify no marker and no path of the blueprint layout is left
         run: |

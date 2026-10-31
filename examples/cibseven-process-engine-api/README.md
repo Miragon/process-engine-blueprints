@@ -65,7 +65,7 @@ Setup, ports, containers and tests are in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Contributing
 
-Contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
+Bug reports and feature ideas are welcome as issues — see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 

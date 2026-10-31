@@ -10,7 +10,8 @@ allowed-tools: Read, Glob, Grep, Bash(git *), Bash(gh pr view *), Bash(gh pr dif
 A review that only ticks boxes is worthless; one finding with a reproducible scenario beats ten
 style notes. The machine gates (architecture rules, contract drift, bpmnlint, mutation 80) run in
 CI; do not restate them, check what they cannot see. Do check that a gate
-actually ran: the mutation gate is diff-scoped and skips when no main class changed. Generic code
+actually ran: the mutation gate runs nightly on the domain, so a pull request never
+exercises it. Generic code
 review is what the built-in review tooling does; this skill adds what only this repo knows.
 
 The agents `review-process` and `review-vertical-slice` are loaded at session start. If one is not

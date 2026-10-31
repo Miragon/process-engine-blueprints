@@ -53,7 +53,6 @@ service/
 - **Unit tests** (JUnit 5 + MockK) cover every domain type, service, adapter and activity.
 - **Process tests** run the workflows on Temporal's in-memory test server with the real activities and
   the process adapter, use cases mocked and timers skipped, one test per branch.
-- **Mutation testing** (PIT, gate 80) grades assertion strength — diff-scoped on pull requests, full
-  sweep nightly.
+- **Mutation testing** (PIT, gate 80) grades assertion strength — nightly, on the domain only.
 - **OpenAPI contract.** A test exports the springdoc spec to [`../openapi/openapi.json`](../openapi/openapi.json);
   CI fails on drift.

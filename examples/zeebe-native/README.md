@@ -65,7 +65,7 @@ Setup, ports, containers and the PR workflow are in [`CONTRIBUTING.md`](CONTRIBU
 
 ## Contributing
 
-Contributions are welcome — see [`CONTRIBUTING.md`](CONTRIBUTING.md) and use [Conventional Commits](https://www.conventionalcommits.org).
+Bug reports and feature ideas are welcome as issues — see [`CONTRIBUTING.md`](CONTRIBUTING.md) and use [Conventional Commits](https://www.conventionalcommits.org).
 
 ## License
 

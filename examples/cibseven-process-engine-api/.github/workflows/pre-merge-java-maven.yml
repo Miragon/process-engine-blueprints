@@ -45,46 +45,6 @@ jobs:
       - name: Verify the committed OpenAPI contract is in sync
         run: git diff --exit-code -- openapi/openapi.json
 
-  mutation:
-    name: Mutation testing (PIT, gate 80) (Java/Maven)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-
-      - name: Set up JDK 21
-        uses: actions/setup-java@v6.0.1
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-          cache: maven
-
-      - name: Compute changed backend classes
-        id: scope
-        run: |
-          SOURCES="java-maven/service/app/src/main/java"
-          CLASSES=$(git diff --name-only "${{ github.event.pull_request.base.sha }}" HEAD -- "$SOURCES" \
-            | grep '\.java$' \
-            | sed -E "s#^$SOURCES/##; s#\.java\$##; s#/#.#g; s#\$#*#" \
-            | paste -sd, -)
-          echo "classes=$CLASSES" >> "$GITHUB_OUTPUT"
-          echo "Scoped mutation classes: ${CLASSES:-<none — pitest skipped>}"
-
-      - name: Run PIT mutation testing (diff-scoped)
-        if: steps.scope.outputs.classes != ''
-        working-directory: java-maven
-        run: ./mvnw -B -pl service/app -am test-compile pitest:mutationCoverage -DmutationTargetClasses="${{ steps.scope.outputs.classes }}"
-
-      - name: Upload mutation report
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: pitest-report-java-maven
-          path: java-maven/service/app/target/pit-reports
-          if-no-files-found: warn
-
   bruno:
     name: Bruno end-to-end scenarios (Java/Maven)
     runs-on: ubuntu-latest

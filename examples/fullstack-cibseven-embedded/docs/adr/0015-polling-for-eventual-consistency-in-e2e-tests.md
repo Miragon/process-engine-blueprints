@@ -68,8 +68,12 @@ never by sleeping a guessed duration.
 - The Bruno script sandbox exposes **no global `fetch`**; `require('axios')` works and is what the
   helpers use. Helpers are attached to `globalThis` in the collection script so request-level scripts
   can call them.
-- Message commands correlate by `businessKey`/`applicationId` once the matching subscription is open,
-  so gating on the read-model precondition (rather than exact timing) is sufficient.
+- Message commands correlate by `businessKey`/`applicationId` once the matching subscription is open.
+  The engine does not buffer messages: a command sent before the
+  wait state is open surfaces `MismatchingMessageCorrelationException` as a `409`. The read model is not
+  enough, because it runs ahead of the token: `contractId` and `ORDERED` are written before the
+  `asyncAfter` continuation moves the token into the catch event. `sign-contract`, `report-handover` and `withdraw` therefore also wait for the open subscription
+  (`pollMessageSubscription`, `GET /engine-rest/execution?businessKey=…&messageEventSubscriptionName=…`).
   `clarify-alternative` is a user-task-backed completion, so its precondition gates on the inbox
   (`/api/tasks/clarify-alternative`) listing the application.
 - Engine-query steps (finding the process instance, a timer job, or a user task) `pollEngine` the

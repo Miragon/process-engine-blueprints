@@ -26,7 +26,7 @@ contracts, linting) are meant to enable. A template pinned to yesterday's versio
 the capabilities and the starting point we actually recommend.
 
 Mechanics that make this safe rather than reckless: dependency updates are automated (Dependabot), every
-version is exact-pinned, and each bump runs the full gate set (build, mutation ≥ 80, contract drift), so updates can be taken continuously instead of in a scary big-bang. Bleeding-edge workarounds are
+version is exact-pinned, and each bump runs the full gate set (build, contract drift), so updates can be taken continuously instead of in a scary big-bang. Bleeding-edge workarounds are
 documented at the point of use.
 
 ## Consequences

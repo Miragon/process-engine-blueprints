@@ -24,7 +24,7 @@ copied from [`adr/0000-adr-template.md`](adr/0000-adr-template.md). Write a new 
 | [0003](adr/0003-feature-sliced-design-for-the-frontend.md) | Feature-Sliced Design for the frontend (and why `processes/` is banned). |
 | [0004](adr/0004-openapi-as-the-checked-in-contract.md) | OpenAPI as the checked-in, drift-gated contract between backend and frontend. |
 | [0005](adr/0005-frontend-stays-out-of-the-gradle-build.md) | The frontend stays out of the Gradle build (npm-only). |
-| [0006](adr/0006-mutation-testing-as-a-blocking-pr-gate.md) | Mutation testing as a blocking PR gate. |
+| [0006](adr/0006-mutation-testing-as-a-blocking-pr-gate.md) | Mutation testing as a nightly gate on the domain. |
 | [0007](adr/0007-agents-md-as-the-single-source.md) | `AGENTS.md` as the single source of agent instructions. |
 | [0008](adr/0008-fixed-ports-for-v1-portless-as-the-upgrade.md) | Fixed ports for v1, portless as the upgrade path. |
 | [0009](adr/0009-two-test-layers-bruno-and-playwright.md) | Two test layers: Bruno API scenarios and Playwright browser journeys. |

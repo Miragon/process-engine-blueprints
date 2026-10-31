@@ -27,7 +27,7 @@ the capabilities and the starting point we actually recommend.
 
 Mechanics that make this safe rather than reckless: dependency updates are automated (Dependabot), every
 version is exact-pinned in the `gradle/libs.versions.toml` catalog, and each bump runs the full gate set
-(build, architecture tests, mutation ≥ 80, contract drift), so updates can be taken continuously instead
+(build, architecture tests, contract drift), so updates can be taken continuously instead
 of in a scary big-bang. Bleeding-edge workarounds are documented at the point of use.
 
 ## Consequences

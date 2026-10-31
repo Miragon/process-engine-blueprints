@@ -25,6 +25,6 @@ public class OpenApiConfiguration {
                     .version("1.0")
                     .description(
                         "Customer-portal and back-office endpoints for the MiraVelo bike-leasing "
-                            + "process, backed by Camunda 8 / Zeebe."));
+                            + "process."));
     }
 }

@@ -5,13 +5,14 @@ const engines = {
   operaton: 'Operaton',
   fluxnova: 'Fluxnova',
   zeebe: 'Camunda 8 (Zeebe)',
+  temporal: 'Temporal',
 };
 
 const integrations = {
   embedded: 'embedded · JavaDelegates',
   'process-engine-api': 'embedded · process-engine-api',
   remote: 'remote engine host · external tasks',
-  native: 'Zeebe cluster · job workers',
+  native: 'Engine cluster · workers',
   vanillabp: 'Zeebe cluster · VanillaBP',
 };
 

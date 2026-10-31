@@ -1,7 +1,7 @@
 # Contributing
 
-Thanks for your interest in the fullstack bike-leasing blueprint! Contributions of all kinds are
-welcome — bug reports, feature ideas, docs, and code.
+Thanks for your interest in the fullstack bike-leasing blueprint! Bug reports and feature ideas
+are welcome as issues; we do not accept external pull requests.
 
 ## Getting started
 
@@ -141,10 +141,10 @@ hand in the same PR.
   `refactor:`, `test:`, `chore:`). Write everything in **English**.
 - **Keep the gates green.** The architecture (ArchUnit + Konsist), contract-drift, mutation (≥ 80)
   and FSD gates run in CI on every PR. They are fitness functions, not style guides — a violation
-  fails the build. The mutation gate is **diff-scoped** on PRs (only the classes you changed); the
-  full-module gate-80 sweep runs nightly.
+  fails the build. The mutation gate (≥ 80)
+  runs nightly, on the domain only.
 - **Add tests.** This is a TDD codebase; match the test style to the layer (see `AGENTS.md`).
-  Mutation testing means a test that runs without asserting will fail CI.
+  On the domain, a test that runs without asserting fails the nightly mutation gate.
 - **Changing the API or the process?** Use the `sync-api-client` / `automate-process` skills so the
   committed `openapi/openapi.json` contract and the generated code stay in sync.
 - **Changing the database schema?** Flyway owns it. Add a new forward-only migration

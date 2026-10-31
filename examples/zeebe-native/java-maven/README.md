@@ -75,8 +75,7 @@ The resources are kept identical to the other variant's; CI fails when they diff
   engine and assert the walked path against the generated API.
 - **Model validation** (`bpmn-to-code-testing`) checks the models structurally at build time for engine
   `ZEEBE`.
-- **Mutation testing** (PIT, gate 80) — diff-scoped on pull requests (`-DtargetClasses="a.b.*"`), full
-  sweep nightly.
+- **Mutation testing** (PIT, gate 80) — nightly, on the domain only.
 - **OpenAPI contract.** A test exports the springdoc spec to [`../openapi/openapi.json`](../openapi/openapi.json);
   CI fails on drift.
 

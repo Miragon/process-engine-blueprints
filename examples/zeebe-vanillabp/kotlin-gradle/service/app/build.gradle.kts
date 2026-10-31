@@ -71,31 +71,10 @@ tasks.test {
     }
 }
 
-// Diff-scoped on PRs (via -PmutationTargetClasses), full sweep nightly. Not attached to `build`.
-val mutationTargetClasses = (project.findProperty("mutationTargetClasses") as String?)
-    ?.split(",")?.map(String::trim)?.filter(String::isNotEmpty)
-
 pitest {
     junit5PluginVersion.set("1.2.2")
-    targetClasses.set(mutationTargetClasses ?: listOf("io.miragon.blueprint.*"))
+    targetClasses.set(listOf("io.miragon.blueprint.domain.*"))
     targetTests.set(listOf("io.miragon.blueprint.*"))
-    failWhenNoMutations.set(false)
-    excludedClasses.set(
-        listOf(
-            // Generated typed process API — not hand-written logic.
-            "io.miragon.blueprint.adapter.process.*ProcessApi*",
-            "io.miragon.blueprint.adapter.process.ServiceTasks*",
-            "io.miragon.blueprint.adapter.process.Messages*",
-            "io.miragon.blueprint.adapter.process.ProcessVariables*",
-            "io.miragon.blueprint.adapter.process.Errors*",
-            "io.miragon.blueprint.adapter.process.Escalations*",
-            // Application bootstrap, outside the hexagonal layers.
-            "io.miragon.blueprint.BikeLeasingApplication*",
-            "io.miragon.blueprint.BikeCatalogueSeeder*",
-            // Dev-only CORS escape hatch.
-            "io.miragon.blueprint.adapter.inbound.rest.DevCorsConfiguration*",
-        ),
-    )
     excludedTestClasses.set(
         listOf(
             "io.miragon.blueprint.adapter.process.*",

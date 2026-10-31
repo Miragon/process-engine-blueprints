@@ -36,6 +36,11 @@ multi-ecosystem-groups:
       interval: monthly
     labels:
       - dependencies
+  temporal-native-backend:
+    schedule:
+      interval: monthly
+    labels:
+      - dependencies
   zeebe-native-backend:
     schedule:
       interval: monthly
@@ -527,6 +532,20 @@ updates:
     ignore:
       - dependency-name: "@miragon/bpmn-cli"
       - dependency-name: "@miragon/pulse-cli"
+  - package-ecosystem: gradle
+    directory: /examples/temporal-native/kotlin-gradle
+    patterns:
+      - "*"
+    multi-ecosystem-group: temporal-native-backend
+    labels:
+      - example:temporal-native
+  - package-ecosystem: docker-compose
+    directory: /examples/temporal-native/stack
+    patterns:
+      - "*"
+    multi-ecosystem-group: temporal-native-backend
+    labels:
+      - example:temporal-native
   - package-ecosystem: gradle
     directory: /examples/zeebe-native/kotlin-gradle
     patterns:

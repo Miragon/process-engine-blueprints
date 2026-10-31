@@ -71,7 +71,6 @@ The resources are kept identical to the other variant's; CI fails when they diff
   engine: timers are advanced with `increaseTime`, messages go through the real adapter, and the walked
   path is asserted as a compile-checked `ProcessPath`.
 - **Model validation** (`bpmn-to-code-testing`) checks the models at build time for engine `ZEEBE`.
-- **Mutation testing** (PIT, gate 80) grades assertion strength — diff-scoped on pull requests, full
-  sweep nightly.
+- **Mutation testing** (PIT, gate 80) grades assertion strength — nightly, on the domain only.
 - **OpenAPI contract.** A test exports the springdoc spec to [`../openapi/openapi.json`](../openapi/openapi.json);
   CI fails on drift.

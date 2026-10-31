@@ -3,6 +3,7 @@
   "profiles": {
     "local": {
       "url": "http://localhost:8081/engine-rest",
+      "flavor": "operaton",
       "auth": { "type": "none" }
     }
   }

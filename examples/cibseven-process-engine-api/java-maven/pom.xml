@@ -46,11 +46,11 @@
         <process-engine-adapter-cib7.version>2026.09.1</process-engine-adapter-cib7.version>
 
         <!-- OpenAPI — 3.x = the Spring Boot 4 line; 3.1.0 is built against SB 4.1.0 -->
-        <springdoc.version>3.1.1</springdoc.version>
+        <springdoc.version>3.2.0</springdoc.version>
 
         <!-- BPMN-to-code (generates the typed process API from the *.bpmn models; testing = model
              validation). The Maven plugin, the runtime and the testing library share one version. -->
-        <bpmn-to-code.version>6.6.1</bpmn-to-code.version>
+        <bpmn-to-code.version>7.0.1</bpmn-to-code.version>
 
         <!-- Architecture tests: ArchUnit for the bytecode rules, Checkstyle for the two source rules
              bytecode cannot express — see docs/adr/0007 -->

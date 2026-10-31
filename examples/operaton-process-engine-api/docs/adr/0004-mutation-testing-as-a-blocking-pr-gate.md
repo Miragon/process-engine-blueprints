@@ -1,7 +1,8 @@
-# 0004 — Mutation testing as a blocking PR gate
+# 0004 — Mutation testing as a nightly gate on the domain
 
 - **Status:** Accepted
 - **Date:** 2026-08-20
+- **Amended:** 2026-10-31 — moved from a blocking PR gate to a nightly gate on the domain, to shrink the pre-merge pipeline.
 
 ## Context
 
@@ -14,21 +15,15 @@ that stalls merges.
 
 ## Decision
 
-We run **PIT (pitest)** as a **blocking gate** with `mutationThreshold = 80`, configured in
+We run **PIT (pitest)** as a **nightly gate** with `mutationThreshold = 80`, configured in
 `service/app/pom.xml` (`pitest-maven`) and run via
 `./mvnw -pl service/app test-compile pitest:mutationCoverage` (after a one-time
 `./mvnw -DskipTests install` so the sibling architecture-test module resolves).
 
-- **On PRs it runs diff-scoped.** `.github/workflows/pre-merge.yml` computes the backend `*.java` files
-  the PR changed (from `pull_request.base.sha`), maps them to `io.miragon.blueprint.<pkg>.<File>*`, and
-  passes them to pitest via `-DmutationTargetClasses`. It blocks the PR on the changed classes' score
-  but stays off the critical path, and is skipped when a PR touches no backend code.
-- **Nightly runs the full sweep.** `.github/workflows/nightly.yml` mutates the whole
-  `io.miragon.blueprint.*` module with no property override — the authoritative gate-80 run — and
-  uploads the HTML report as an artifact.
-- Both runs **exclude noise**: the generated `*ProcessApi`, the Spring bootstrap and
-  `BikeCatalogueSeeder`, and the `adapter.inbound.operaton.*` workers (thin glue exercised only by the
-  slow engine tests).
+- **It runs nightly, not on pull requests.** `.github/workflows/nightly*.yml` runs the gate and uploads
+  the HTML report as an artifact. A red run does not block a merge; it asks for a follow-up.
+- **It mutates the domain only** (`io.miragon.blueprint.domain.*`), the code that holds the rules.
+  Adapters are mapping and wiring, which the unit, process and Bruno layers already exercise.
 - The **kill-set** is the fast Mockito / `@WebMvcTest` / `@DataJpaTest` unit tests; the engine
   integration tests (`process.*`) and the ArchUnit tests (`architecture.*`) are excluded from
   the kill-set — they'd make every run slow and non-deterministic without adding mutation signal.
@@ -49,22 +44,14 @@ mutant is then *equivalent* to the original. Both are fixed by asserting **every
 ## Consequences
 
 - **Positive:** AI-generated tests are graded on whether they'd catch a real fault; weak assertions
-  surface as surviving mutants with per-mutant, inline feedback — at PR time, on the code the PR
-  changed.
-- **Negative / trade-offs:** mutation testing is slower than unit tests, hence the diff-scoped PR run
-  and the separate nightly full sweep. Gate-80 over a single changed class is stricter granularity than
-  over the module, so a PR touching only a small, hard-to-test class can dip below 80 (fix: assert
-  every field and both branches, or exclude the class).
+  surface as surviving mutants with per-mutant, inline feedback, in the nightly report.
+- **Negative / trade-offs:** a weak test reaches `main` and shows up the next night at the earliest, and
+  weak tests of adapters (an unasserted DTO field, one branch of a mapper) are no longer graded. The
+  domain is small, so one surviving mutant moves the score by several points. The threshold is capped
+  below 100 by unavoidable JVM noise.
 - **Neutral:** the threshold is deliberately conservative for the port; the gate-raise (90+) waits on
   the nightly sweeps, not on new tooling.
 
 ## Implementation notes
 
-- `service/app/pom.xml` defaults the `mutationTargetClasses` property to `io.miragon.blueprint.*` (the
-  full-module scope, used by the nightly sweep and local runs) and sets `failWhenNoMutations = false`
-  so a PR whose changed classes are all excluded/non-mutable doesn't fail the build.
-- **Engine parity across the port:** `pitest-maven` is pinned to **1.22.1** — the exact PIT engine the
-  Gradle plugin resolved before the port — plus `pitest-junit5-plugin` **1.2.2**, so pre- and post-port
-  mutation scores stay comparable.
-- Do **not** rename the `Mutation testing (PIT, gate 80)` job in `pre-merge.yml` — it is the
-  branch-protection required check.
+- The scope is set in the build file of the module that holds the domain (`targetClasses`).

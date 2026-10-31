@@ -38,7 +38,7 @@ merge cleanly. Without it nothing is moved and every path stays valid.
 
 - deletes the other variant's directory and its `pre-merge-*` and `nightly-*` workflows
 - strips the other variant's blocks from `README.md`, `AGENTS.md`, `CONTRIBUTING.md`, `.gitignore`,
-  `.github/dependabot.yml`, `.github/workflows/dependency-repair.yml` and `.conductor/settings.toml`
+  `.github/dependabot.yml` and `.conductor/settings.toml`
 - removes what only makes sense while both variants exist: the stack comparison in the README, the
   "change both variants" rule, the `Blueprint Checks` workflow, ADR-0013, this guide and the script itself
 - lists the lines that still mention the removed stack, for a manual look

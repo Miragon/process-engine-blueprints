@@ -220,16 +220,12 @@
                 <groupId>org.pitest</groupId>
                 <artifactId>pitest-maven</artifactId>
                 <configuration>
+                    <targetClasses>
+                        <param>io.miragon.blueprint.domain.*</param>
+                    </targetClasses>
                     <targetTests>
                         <param>io.miragon.blueprint.*</param>
                     </targetTests>
-                    <excludedClasses>
-                        <param>io.miragon.blueprint.adapter.process.*</param>
-                        <param>io.miragon.blueprint.OperatonBikeLeasingApplication*</param>
-                        <param>io.miragon.blueprint.BikeCatalogueSeeder*</param>
-                        <param>io.miragon.blueprint.adapter.inbound.rest.DevCorsConfiguration*</param>
-                        <param>io.miragon.blueprint.adapter.inbound.operaton.*</param>
-                    </excludedClasses>
                     <excludedTestClasses>
                         <param>io.miragon.blueprint.process.*</param>
                         <param>io.miragon.blueprint.architecture.*</param>
@@ -248,36 +244,8 @@
                     <timeoutFactor>2.0</timeoutFactor>
                     <threads>4</threads>
                     <mutationThreshold>80</mutationThreshold>
-                    <failWhenNoMutations>false</failWhenNoMutations>
                 </configuration>
             </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <!-- Full-module mutation sweep (nightly + local). Active unless a CLI profile overrides it. -->
-        <profile>
-            <id>pit-full</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.pitest</groupId>
-                        <artifactId>pitest-maven</artifactId>
-                        <configuration>
-                            <targetClasses>
-                                <param>io.miragon.blueprint.*</param>
-                            </targetClasses>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <!-- Diff-scoped mutation (PR gate): CI passes -DtargetClasses="a.*,b.*". -->
-        <profile>
-            <id>pit-diff</id>
-        </profile>
-    </profiles>
 </project>

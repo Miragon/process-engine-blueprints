@@ -5,9 +5,9 @@ import io.miragon.blueprint.domain.bike.BikeId
 import io.miragon.blueprint.domain.leasing.LeasingApplication
 
 /**
- * Outbound port that drives the BPMN engine: it starts a process instance, correlates the messages
- * that release the process's wait states, and completes the alternative-clarification user task from
- * the outside. Implemented by the Camunda 8 / Zeebe adapter.
+ * Outbound port that drives the process engine: it starts a process instance, correlates the messages
+ * that release the process's wait states, and completes the alternative-clarification step from the
+ * outside. Implemented by the engine adapter.
  */
 interface LeasingProcess {
     fun submitRequest(application: LeasingApplication)

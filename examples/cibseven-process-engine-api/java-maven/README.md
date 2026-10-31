@@ -67,8 +67,7 @@ The resources are kept identical to the other variant's; CI fails when they diff
   compile-checked `PathWalk`.
 - **Model validation** (`bpmn-to-code-testing`) checks the models at build time, including a custom rule
   that every service task is an external task with a topic.
-- **Mutation testing** (PIT, gate 80) — diff-scoped on pull requests
-  (`-DmutationTargetClasses="a.b.*"`), full sweep nightly.
+- **Mutation testing** (PIT, gate 80) — nightly, on the domain only.
 - **OpenAPI contract.** A test exports the springdoc spec to [`../openapi/openapi.json`](../openapi/openapi.json);
   CI fails on drift.
 - **Database and observability.** Flyway owns the schema and Hibernate only validates; Spring Boot

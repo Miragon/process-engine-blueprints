@@ -197,9 +197,9 @@ TDD. Match the test style to the layer:
 | `adapter.outbound.engine` (remote client) | `MockRestServiceServer` |
 | process end-to-end | CIB seven process tests (`cibseven-bpm-assert`, in-memory engine), paths asserted against the generated API |
 
-**Mutation testing gates PRs at 80**: a test that executes without asserting will fail CI. Coverage
-says a line ran; mutation says a test would have noticed. The PR gate runs **diff-scoped** (only the
-classes the PR changed, still blocking); the **full-module** gate-80 sweep runs nightly. See
+**Mutation testing gates the domain at 80, nightly**: a test that executes without asserting will fail the nightly run. Coverage
+says a line ran; mutation says a test would have noticed. It mutates `io.miragon.blueprint.domain.*` only and does not
+block pull requests. See
 [ADR-0004](docs/adr/0004-mutation-testing-as-a-blocking-pr-gate.md).
 
 ## Verify After Each Task (targeted, not a full build)

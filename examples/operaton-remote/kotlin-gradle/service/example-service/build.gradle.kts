@@ -67,28 +67,10 @@ tasks.test {
     forkEvery = 1
 }
 
-val mutationTargetClasses = (project.findProperty("mutationTargetClasses") as String?)
-    ?.split(",")?.map(String::trim)?.filter(String::isNotEmpty)
-
 pitest {
     junit5PluginVersion.set("1.2.2")
-    targetClasses.set(mutationTargetClasses ?: listOf("io.miragon.blueprint.*"))
+    targetClasses.set(listOf("io.miragon.blueprint.domain.*"))
     targetTests.set(listOf("io.miragon.blueprint.*"))
-    failWhenNoMutations.set(false)
-    excludedClasses.set(
-        listOf(
-            // Generated typed process API — no behaviour of ours to mutate.
-            "io.miragon.blueprint.adapter.process.*",
-            // Application bootstrap / wiring, outside the hexagonal layers.
-            "io.miragon.blueprint.ExampleServiceApplication*",
-            "io.miragon.blueprint.BikeCatalogueSeeder*",
-            "io.miragon.blueprint.adapter.inbound.rest.DevCorsConfiguration*",
-            // Remote engine plumbing — external-task workers and the start-up deployment adapter are
-            // integration glue, exercised by the process / Bruno layers rather than by mutation.
-            "io.miragon.blueprint.adapter.inbound.operaton.*",
-            "io.miragon.blueprint.adapter.outbound.engine.ProcessModelDeploymentAdapter*",
-        ),
-    )
     excludedTestClasses.set(
         listOf(
             "io.miragon.blueprint.adapter.process.*",

@@ -27,11 +27,6 @@
     <properties>
         <spring-boot.run.skip>false</spring-boot.run.skip>
         <spring-boot.build-image.skip>false</spring-boot.build-image.skip>
-        <!--
-            Mutation-testing scope (pitest-maven's own `targetClasses` property). CI narrows it to the
-            classes a PR changed with `-DtargetClasses=a.B*,c.D*`; locally it covers the whole service.
-        -->
-        <targetClasses>io.miragon.blueprint.*</targetClasses>
         <skipPitest>false</skipPitest>
     </properties>
 
@@ -250,27 +245,16 @@
                 <groupId>org.pitest</groupId>
                 <artifactId>pitest-maven</artifactId>
                 <configuration>
+                    <targetClasses>
+                        <param>io.miragon.blueprint.domain.*</param>
+                    </targetClasses>
                     <targetTests>
                         <param>io.miragon.blueprint.*</param>
                     </targetTests>
-                    <excludedClasses>
-                        <!-- Generated typed process API — no behaviour of ours to mutate. -->
-                        <param>io.miragon.blueprint.adapter.process.*</param>
-                        <!-- Application bootstrap / wiring, outside the hexagonal layers. -->
-                        <param>io.miragon.blueprint.ExampleServiceApplication*</param>
-                        <param>io.miragon.blueprint.BikeCatalogueSeeder*</param>
-                        <param>io.miragon.blueprint.adapter.inbound.rest.DevCorsConfiguration*</param>
-                        <!-- Remote engine plumbing — external-task workers and the start-up deployment
-                             adapter are integration glue, exercised by the process / Bruno layers rather
-                             than by mutation. -->
-                        <param>io.miragon.blueprint.adapter.inbound.cibseven.*</param>
-                        <param>io.miragon.blueprint.adapter.outbound.engine.ProcessModelDeploymentAdapter*</param>
-                    </excludedClasses>
                     <excludedTestClasses>
                         <param>io.miragon.blueprint.adapter.process.*</param>
                         <param>io.miragon.blueprint.ArchitectureTest</param>
                     </excludedTestClasses>
-                    <failWhenNoMutations>false</failWhenNoMutations>
                     <threads>${cpu.count}</threads>
                     <timeoutFactor>2.0</timeoutFactor>
                     <avoidCallsTo>

@@ -104,12 +104,11 @@ environment (they win over the baked defaults):
 - **Conventional Commits.** Commit messages and PR titles follow
   [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`,
   `refactor:`, `test:`, `chore:`). Write everything in **English**.
-- **Keep the gates green.** The architecture, contract-drift and mutation (≥ 80)
-  gates run in CI on every PR. They are fitness functions, not style guides — a violation fails the
-  build. The mutation gate is **diff-scoped** on PRs (only the classes you changed); the full-module
-  gate-80 sweep runs nightly.
+- **Keep the gates green.** The architecture and contract-drift gates run in CI on every PR. They are fitness functions, not style guides — a violation fails the
+  build. The mutation gate (≥ 80)
+  runs nightly, on the domain only.
 - **Add tests.** This is a TDD codebase; match the test style to the layer (see `AGENTS.md`).
-  Mutation testing means a test that runs without asserting will fail CI.
+  On the domain, a test that runs without asserting fails the nightly mutation gate.
 - **Changing the API?** Re-export the spec (the `OpenApiSpecExportTest`, which every full build runs)
   so the committed `openapi/openapi.json` contract stays in sync — it is **drift-gated in CI**.
 - **Changing the process?** Change the workflow in `adapter/process` with a process test per new

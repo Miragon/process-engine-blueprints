@@ -61,8 +61,7 @@ The resources are kept identical to the other variant's; CI fails when they diff
   compile-checked `ProcessPath`.
 - **Model validation** (`bpmn-to-code-testing`) checks the models at build time, including a custom rule
   that every service task uses a delegate expression.
-- **Mutation testing** (PIT, gate 80) grades assertion strength — diff-scoped on pull requests, full
-  sweep nightly.
+- **Mutation testing** (PIT, gate 80) grades assertion strength — nightly, on the domain only.
 - **Fluxnova is the only engine.** `verifyFluxnovaIsTheOnlyEngine` (part of `./gradlew build`) fails when a
   CIB seven, Camunda or Operaton artifact reaches the runtime or test classpath.
 - **OpenAPI contract.** A test exports the springdoc spec to [`../openapi/openapi.json`](../openapi/openapi.json);

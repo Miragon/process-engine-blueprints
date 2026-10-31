@@ -58,8 +58,7 @@ The resources are kept identical to the other variant's; CI fails when they diff
   `@WebMvcTest` with `@MockitoBean`, persistence via `@DataJpaTest`.
 - **Process tests** (`cibseven-bpm-assert`) drive the deployed model deterministically and assert the
   walked path against the generated API.
-- **Mutation testing** (PIT, gate 80) — diff-scoped on pull requests
-  (`-Ppit-diff -DtargetClasses="a.b.*"`), full sweep nightly.
+- **Mutation testing** (PIT, gate 80) — nightly, on the domain only.
 - **OpenAPI contract.** A test exports the springdoc spec to [`../openapi/openapi.json`](../openapi/openapi.json);
   CI fails on drift.
 

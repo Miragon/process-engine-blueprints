@@ -44,7 +44,7 @@ Copy the shape of the existing controllers instead of inventing one:
 - the success status with the **exact** port call, built from the domain value objects, then the
   strict check (`then(useCase).shouldHaveNoMoreInteractions()`);
 - each invalid input → 400, and the port is **not** called;
-- for a read, every DTO field in the body (a mapping no test reads survives the mutation gate) and
+- for a read, every DTO field in the body (nothing else notices a mapping no test reads) and
   the not-found case → 404.
 
 `GlobalExceptionConfigurationTest` covers the 409 mapping; the 400 is asserted in the controller

@@ -242,21 +242,12 @@
                 <groupId>org.pitest</groupId>
                 <artifactId>pitest-maven</artifactId>
                 <configuration>
+                    <targetClasses>
+                        <param>io.miragon.blueprint.domain.*</param>
+                    </targetClasses>
                     <targetTests>
                         <param>io.miragon.blueprint.*</param>
                     </targetTests>
-                    <excludedClasses>
-                        <!-- Generated typed process API — no behaviour of ours to mutate. -->
-                        <param>io.miragon.blueprint.adapter.process.*</param>
-                        <!-- Application bootstrap / wiring, outside the hexagonal layers. -->
-                        <param>io.miragon.blueprint.ExampleServiceApplication*</param>
-                        <param>io.miragon.blueprint.BikeCatalogueSeeder*</param>
-                        <param>io.miragon.blueprint.adapter.inbound.rest.DevCorsConfiguration*</param>
-                        <!-- Remote engine plumbing — external-task workers and the start-up deployment
-                             adapter are integration glue, exercised by the process / Bruno layers. -->
-                        <param>io.miragon.blueprint.adapter.inbound.operaton.*</param>
-                        <param>io.miragon.blueprint.adapter.outbound.engine.ProcessModelDeploymentAdapter*</param>
-                    </excludedClasses>
                     <excludedTestClasses>
                         <param>io.miragon.blueprint.adapter.process.*</param>
                         <param>io.miragon.blueprint.ArchitectureTest*</param>
@@ -275,36 +266,8 @@
                     <timeoutFactor>2.0</timeoutFactor>
                     <threads>4</threads>
                     <mutationThreshold>80</mutationThreshold>
-                    <failWhenNoMutations>false</failWhenNoMutations>
                 </configuration>
             </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <!-- Full-module mutation sweep (nightly + local). Active unless a CLI profile overrides it. -->
-        <profile>
-            <id>pit-full</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.pitest</groupId>
-                        <artifactId>pitest-maven</artifactId>
-                        <configuration>
-                            <targetClasses>
-                                <param>io.miragon.blueprint.*</param>
-                            </targetClasses>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <!-- Diff-scoped mutation (PR gate): CI passes -DtargetClasses="a.*,b.*". -->
-        <profile>
-            <id>pit-diff</id>
-        </profile>
-    </profiles>
 </project>

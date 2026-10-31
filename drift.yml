@@ -316,8 +316,6 @@ identical:
       - zeebe-native
       - zeebe-vanillabp
     files:
-      - bruno/06-incident-demo/03-sign-contract.bru
-      - bruno/07-list-and-inbox/04-sign-contract.bru
       - bruno/07-list-and-inbox/05-inbox-has-task.bru
       - bruno/07-list-and-inbox/07-inbox-empty.bru
   - name: cibseven-embedded + cibseven-process-engine-api
@@ -511,9 +509,11 @@ identical:
       - bruno/05-bike-unavailable/02-sign-contract.bru
       - bruno/05-bike-unavailable/04-report-handover.bru
       - bruno/06-incident-demo/02-get-instance.bru
+      - bruno/06-incident-demo/03-sign-contract.bru
       - bruno/06-incident-demo/04-assert-incident.bru
       - bruno/06-incident-demo/05-reset-job-retries.bru
       - bruno/06-incident-demo/06-resolve-incident.bru
+      - bruno/07-list-and-inbox/04-sign-contract.bru
       - bruno/08-alternative-declined/01-submit.bru
       - bruno/08-alternative-declined/02-get-instance.bru
       - bruno/08-alternative-declined/03-sign-contract.bru

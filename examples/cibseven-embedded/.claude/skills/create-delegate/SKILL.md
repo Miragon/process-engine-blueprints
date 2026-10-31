@@ -156,7 +156,7 @@ Mockito's `mock()` is lenient; the strictness comes from `verifyNoMoreInteractio
 **2. A process test** for the path through the engine in the test tree's `adapter/process/` (see
 `BikeLeasingProcessTest`): it walks the path the element sits on and verifies the port call there.
 The unit test proves the mapping, the process test proves the wiring (bean name, variables, boundary
-events). Delegates are not in the mutation gate yet (`excludedClasses` of the pitest config), so the
+events). Delegates are outside the mutation gate, which covers the domain only, so the
 unit test is the only isolated check of the mapping.
 
 ## Instructions

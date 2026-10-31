@@ -61,8 +61,7 @@ The resources are kept identical to the other variant's; CI fails when they diff
   compile-checked `ProcessPath`.
 - **Model validation** (`bpmn-to-code-testing`) checks the models at build time, including a custom rule
   that every service task uses a delegate expression.
-- **Mutation testing** (PIT, gate 80) grades assertion strength — diff-scoped on pull requests, full
-  sweep nightly.
+- **Mutation testing** (PIT, gate 80) grades assertion strength — nightly, on the domain only.
 - **OpenAPI contract.** A test exports the springdoc spec to [`../openapi/openapi.json`](../openapi/openapi.json);
   CI fails on drift. The API answers errors as **RFC-7807 problem details**.
 - **Operations.** Actuator probes and Prometheus metrics at `/actuator/*`; **Flyway** owns the schema and

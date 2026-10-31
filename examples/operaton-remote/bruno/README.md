@@ -33,7 +33,8 @@ npx --yes @usebruno/cli@4.0.0 run 00-demo-data --env local -r
 The suite polls for eventual consistency instead of sleeping (see
 [ADR-0012](../docs/adr/0012-polling-for-eventual-consistency-in-e2e-tests.md)): the worker and the
 engine commit independently, so a status in the worker's read model can be visible before the engine
-has reached the matching wait state. The shared `pollApp` / `pollEngine` helpers live in
+has reached the matching wait state. The shared `pollApp` / `pollEngine` / `pollMessageSubscription`
+helpers live in
 `collection.bru`; budgets are env-driven (`pollTimeoutMs` / `pollIntervalMs`). **Pin the CLI to
 `@usebruno/cli@4.0.0`** — the script sandbox's capabilities can shift between majors.
 

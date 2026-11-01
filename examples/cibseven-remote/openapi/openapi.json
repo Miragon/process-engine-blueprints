@@ -15,7 +15,7 @@
           "in" : "query",
           "required" : false,
           "schema" : {
-            "type" : [ "string", "null" ]
+            "type" : "string"
           }
         }, {
           "name" : "page",

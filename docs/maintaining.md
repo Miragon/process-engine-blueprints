@@ -52,7 +52,8 @@ squashed or signed.
 One entry per example, build tool and ecosystem; groups and multi-ecosystem groups are prefixed with the example
 and pull requests are labelled `example:<name>`, so an update of one example never waits for another. GitHub
 Actions are bumped once for the root and all examples. Patch and minor updates are auto-merged once `CI gate` is
-green (`dependabot-automerge.yml`); a red Dependabot pull request is handed to `dependency-repair.yml` (needs the
+green (`dependabot-automerge.yml`), majors only when they touch nothing but workflow files, after a seven-day
+cooldown; a red Dependabot pull request is handed to `dependency-repair.yml` (needs the
 `claude-maintenance` environment and `CLAUDE_CODE_OAUTH_TOKEN`).
 
 ## Drift between examples

@@ -55,6 +55,7 @@ function githubActionsUpdate() {
     'package-ecosystem': 'github-actions',
     directories: ['/', '/examples/*'],
     schedule: monthly,
+    cooldown: { 'semver-major-days': 7 },
     labels: ['dependencies'],
     'commit-message': { prefix: 'build', include: 'scope' },
     groups: {

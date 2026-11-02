@@ -77,6 +77,8 @@ updates:
       - /examples/*
     schedule:
       interval: monthly
+    cooldown:
+      semver-major-days: 7
     labels:
       - dependencies
     commit-message:

@@ -249,9 +249,9 @@
     <bpmn:endEvent id="endEvent_prospectReminded" name="Prospect reminded">
       <bpmn:incoming>flow_mailToProspectReminded</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:association id="Association_0reycrf" associationDirection="One" sourceRef="event_compensateInsurance" targetRef="serviceTask_cancelPolicy" />
-    <bpmn:association id="Association_1q9i1wm" associationDirection="One" sourceRef="event_compensateContract" targetRef="serviceTask_cancelContract" />
-    <bpmn:association id="Association_185chbk" associationDirection="One" sourceRef="event_compensateOrder" targetRef="callActivity_cancelBikeOrder" />
+    <bpmn:association id="association_compensateInsurance" associationDirection="One" sourceRef="event_compensateInsurance" targetRef="serviceTask_cancelPolicy" />
+    <bpmn:association id="association_compensateContract" associationDirection="One" sourceRef="event_compensateContract" targetRef="serviceTask_cancelContract" />
+    <bpmn:association id="association_compensateOrder" associationDirection="One" sourceRef="event_compensateOrder" targetRef="callActivity_cancelBikeOrder" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="bikeLeasingProcess">
@@ -608,17 +608,17 @@
         <di:waypoint x="1870" y="400" />
         <di:waypoint x="1922" y="400" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Association_0reycrf_di" bpmnElement="Association_0reycrf">
+      <bpmndi:BPMNEdge id="association_compensateInsurance_di" bpmnElement="association_compensateInsurance">
         <di:waypoint x="1340" y="72" />
         <di:waypoint x="1340" y="60" />
         <di:waypoint x="1420" y="60" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Association_1q9i1wm_di" bpmnElement="Association_1q9i1wm">
+      <bpmndi:BPMNEdge id="association_compensateContract_di" bpmnElement="association_compensateContract">
         <di:waypoint x="880" y="140" />
         <di:waypoint x="880" y="60" />
         <di:waypoint x="950" y="60" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Association_185chbk_di" bpmnElement="Association_185chbk">
+      <bpmndi:BPMNEdge id="association_compensateOrder_di" bpmnElement="association_compensateOrder">
         <di:waypoint x="1305" y="308" />
         <di:waypoint x="1305" y="360" />
       </bpmndi:BPMNEdge>

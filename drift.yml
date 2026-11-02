@@ -1,6 +1,7 @@
 # Files the examples deliberately carry as identical copies. CI fails when a copy drifts; change every
 # example of a rule together, or move the file out of the rule. Build files, wrappers, lockfiles, stacks and
-# workflows are left out on purpose: Dependabot bumps them per example.
+# workflows are left out on purpose: Dependabot bumps them per example. `dependabot-automerge.yml` is the
+# exception: its only action is bumped in one group across all examples.
 # Refresh the proposal with `node scripts/check-drift.mjs --propose`.
 identical:
   - name: all examples
@@ -17,6 +18,7 @@ identical:
       - zeebe-native
       - zeebe-vanillabp
     files:
+      - .github/workflows/dependabot-automerge.yml
       - .npmrc
       - CLAUDE.md
       - LICENSE

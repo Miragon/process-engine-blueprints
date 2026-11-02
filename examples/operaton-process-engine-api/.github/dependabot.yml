@@ -55,6 +55,8 @@ updates:
   # GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
+    cooldown:
+      semver-major-days: 7
     schedule:
       interval: "monthly"
     labels:

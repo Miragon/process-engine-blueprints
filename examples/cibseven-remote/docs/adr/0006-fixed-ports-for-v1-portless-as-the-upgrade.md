@@ -3,6 +3,8 @@
 - **Status:** Accepted
 - **Date:** 2026-08-18
 
+> **Note (2026-11-04):** We no longer use Conductor and have switched to Orca. The `.conductor/settings.toml` mentioned below has been removed; the fixed ports still apply.
+
 ## Context
 
 This repo is developed with [Conductor](https://conductor.build), which runs each task in its own git

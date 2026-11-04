@@ -48,7 +48,7 @@ cd java-maven && ./mvnw -DskipTests install && ./mvnw -pl service/app spring-boo
 | Actuator (health · liveness/readiness · prometheus) | 8080/actuator |
 | EnterpriseGlue The Bridge (additional UI) | 8081 (admin@enterpriseglue.com/adminadmin) |
 
-Under Conductor the ports are fixed and the workspace runs `nonconcurrent` (see
+The ports are fixed (see
 [ADR-0006](docs/adr/0006-fixed-ports-for-v1-portless-as-the-upgrade.md)).
 
 To use The Bridge, register the engine under **Platform Settings → Engines** with base URL

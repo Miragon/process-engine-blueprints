@@ -20,7 +20,7 @@ over REST, and the CIB seven webapps (Cockpit / Tasklist) handle any human-in-th
   PR.** Changes that only concern one language's idioms stay on that side. See
   [ADR-0013](docs/adr/0013-two-stack-variants-side-by-side-on-main.md). The OpenAPI contract below is
   drift-gated against **both** variants.
-  Stack-specific content in shared files (docs, Dependabot, Conductor settings) is wrapped in
+  Stack-specific content in shared files (docs, Dependabot) is wrapped in
   `variant:<name>` markers so `scripts/create-starter.sh` can strip it — see
   [docs/starter.md](docs/starter.md).
   <!-- /variant:blueprint -->
@@ -101,7 +101,7 @@ cd java-maven && ./mvnw -DskipTests install && ./mvnw -pl service/app spring-boo
 ```
 <!-- /variant:java-maven -->
 
-### Ports (one source of truth — keep README, this file and `.conductor/settings.toml` in sync)
+### Ports (one source of truth — keep README and this file in sync)
 
 | What | Port |
 |---|---|
@@ -112,7 +112,7 @@ cd java-maven && ./mvnw -DskipTests install && ./mvnw -pl service/app spring-boo
 | OpenAPI spec · Swagger UI | 8081/v3/api-docs · 8081/swagger-ui.html |
 | Actuator (health/liveness/readiness · prometheus) | 8081/actuator |
 
-Under Conductor the ports are fixed and the workspace runs `nonconcurrent`
+The ports are fixed
 (see [ADR-0006](docs/adr/0006-fixed-ports-for-v1-portless-as-the-upgrade.md)).
 
 ## Build Commands

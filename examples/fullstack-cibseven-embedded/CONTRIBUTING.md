@@ -37,8 +37,7 @@ npm --prefix frontend run dev                       # UI on :5173 (proxies /api 
 | Vite dev server | 5173 |
 
 Vite proxies `/api`, `/v3/api-docs`, `/engine-rest`, `/camunda` and `/webapp` to `:8080`, so the browser sees one
-origin and no CORS code runs on the production path. Under Conductor the ports are fixed and the
-workspace runs `nonconcurrent` (see [ADR-0008](docs/adr/0008-fixed-ports-for-v1-portless-as-the-upgrade.md)).
+origin and no CORS code runs on the production path. The ports are fixed (see [ADR-0008](docs/adr/0008-fixed-ports-for-v1-portless-as-the-upgrade.md)).
 
 ### Manual smoke test
 

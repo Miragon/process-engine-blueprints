@@ -9,7 +9,6 @@
 | `.github/workflows/<example>.<file>.yml` | `examples/<example>/.github/workflows/{pre-merge,nightly}*.yml` |
 | `.github/workflows/ci.yml`, `nightly.yml` | the examples and their workflows |
 | `.github/dependabot.yml` | `examples/*/.github/dependabot.yml` |
-| `.conductor/settings.toml` | `examples/*/.conductor/settings.toml` (targets prefixed `<example>:`) |
 | `tooling/create-blueprint/catalog.json` | `examples/*/blueprint.yaml` and the root `package.json` |
 | `README.md` (badges, quick start, examples table) | `examples/*/blueprint.yaml` and the root `package.json` |
 

@@ -14,8 +14,8 @@ deliberate ([ADR-0001](docs/adr/0001-one-repository-with-self-contained-examples
 - **Work inside one example by opening its folder.** Its README, `AGENTS.md`, `.claude/` skills and hooks assume
   the folder is the project root.
 - **Never hand-edit generated files.** `.github/workflows/ci.yml`, `nightly.yml`, `<example>.*.yml`,
-  `.github/dependabot.yml`, `.conductor/settings.toml`, `tooling/create-blueprint/catalog.json` and the generated
-  blocks in `README.md` come from `npm run generate`. Change the source (an example's workflows, `dependabot.yml`, `.conductor/settings.toml` or
+  `.github/dependabot.yml`, `tooling/create-blueprint/catalog.json` and the generated
+  blocks in `README.md` come from `npm run generate`. Change the source (an example's workflows, `dependabot.yml` or
   `blueprint.yaml`) and regenerate in the same commit.
 - **Keep the copies in step.** `drift.yml` lists files that must stay identical across examples. A change to one
   of them goes to every example of the rule (skill `fan-out-change`), or the file leaves the rule with a reason.

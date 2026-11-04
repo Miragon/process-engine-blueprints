@@ -4,7 +4,7 @@
    how to build and test it.
 2. At the root, once: `npm ci && npm run hooks:install` (generator, drift check, and the pre-commit hook that
    lints staged BPMN models with the example's own bpmnlint).
-3. Changed an example's workflows, `dependabot.yml`, `.conductor/settings.toml` or `blueprint.yaml`? Run
+3. Changed an example's workflows, `dependabot.yml` or `blueprint.yaml`? Run
    `npm run generate` and commit the result with it.
 4. Changed a file that `drift.yml` lists? Carry the change to the other examples of the rule, or take the file out
    of the rule and say why.

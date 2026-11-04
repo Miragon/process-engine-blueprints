@@ -50,7 +50,7 @@ cd java-maven && ./mvnw -pl service/example-service -am spring-boot:run   # work
 | Worker REST · OpenAPI spec · Swagger UI | 8082/api · 8082/v3/api-docs · 8082/swagger-ui.html |
 | Worker actuator (health · liveness/readiness · prometheus) | 8082/actuator |
 
-Under Conductor the ports are fixed and the workspace runs `nonconcurrent` (see
+The ports are fixed (see
 [ADR-0006](docs/adr/0006-fixed-ports-for-v1-portless-as-the-upgrade.md)).
 
 ### Manual smoke test

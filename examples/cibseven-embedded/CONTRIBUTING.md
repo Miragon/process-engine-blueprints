@@ -48,7 +48,7 @@ cd java-maven && ./mvnw -DskipTests install && ./mvnw -pl service/app spring-boo
 | OpenAPI spec · Swagger UI | 8081/v3/api-docs · 8081/swagger-ui.html |
 | Actuator (health · liveness/readiness · prometheus) | 8081/actuator |
 
-Under Conductor the ports are fixed and the workspace runs `nonconcurrent` (see
+The ports are fixed (see
 [ADR-0006](docs/adr/0006-fixed-ports-for-v1-portless-as-the-upgrade.md)).
 
 ### Smoke test

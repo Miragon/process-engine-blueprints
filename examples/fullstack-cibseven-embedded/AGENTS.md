@@ -37,7 +37,7 @@ docker compose -f stack/docker-compose.yml up -d   # Postgres
 npm --prefix frontend run dev                       # UI on :5173 (proxies /api to :8080)
 ```
 
-### Ports (one source of truth — keep README, this file, `.conductor/settings.toml`, `playwright.config.ts` in sync)
+### Ports (one source of truth — keep README, this file, `playwright.config.ts` in sync)
 
 | What | Port |
 |---|---|

@@ -77,7 +77,7 @@ docker compose -f stack/docker-compose.yml up -d
 cd kotlin-gradle && ./gradlew :service:app:bootRun
 ```
 
-### Ports (one source of truth — keep README, this file, `.conductor/settings.toml` in sync)
+### Ports (one source of truth — keep README and this file in sync)
 
 | What | Port |
 |---|---|

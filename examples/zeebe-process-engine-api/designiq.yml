@@ -1,0 +1,7 @@
+# designIQ reads its models from this one folder.
+# variant:kotlin-gradle
+models: kotlin-gradle/service/app/src/main/resources/bpmn
+# /variant:kotlin-gradle
+# variant:java-maven
+models: java-maven/service/app/src/main/resources/bpmn
+# /variant:java-maven

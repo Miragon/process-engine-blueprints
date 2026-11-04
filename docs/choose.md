@@ -9,6 +9,8 @@ you can compare them line by line. Four questions get you to one.
   Tasklist): continue with question 2.
 - **Camunda 8 / Zeebe** (a broker, job workers, Operate and Tasklist as separate apps):
   - [`zeebe-native`](../examples/zeebe-native/README.md) uses the Camunda Spring SDK directly.
+  - [`zeebe-process-engine-api`](../examples/zeebe-process-engine-api/README.md) goes through the bpm-crafters
+    process-engine-api, which keeps your code portable between engines.
   - [`zeebe-vanillabp`](../examples/zeebe-vanillabp/README.md) goes through VanillaBP, an engine-neutral
     abstraction.
 

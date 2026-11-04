@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { repoRoot, variantsOf } from './examples.mjs';
-import { engines, integrations } from './readme.mjs';
+import { engines, integrationLabel } from './readme.mjs';
 
 export function repositorySlug() {
   const { repository } = JSON.parse(readFileSync(join(repoRoot, 'package.json'), 'utf8'));
@@ -16,7 +16,7 @@ export function starterCatalog(examples) {
       engine: example.engine,
       engineLabel: engines[example.engine],
       integration: example.integration,
-      integrationLabel: integrations[example.integration],
+      integrationLabel: integrationLabel(example),
       topology: example.topology,
       summary: example.summary,
       variants: variantsOf(example).map(({ variant }) => variant),

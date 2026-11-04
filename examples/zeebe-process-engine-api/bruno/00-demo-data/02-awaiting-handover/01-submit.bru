@@ -1,0 +1,34 @@
+meta {
+  name: Submit leasing request
+  type: http
+  seq: 1
+  tags: [
+    demo-data
+  ]
+}
+
+post {
+  url: {{baseUrl}}/api/bike-leasing
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "customerName": "Hugo Ordered",
+    "email": "hugo@example.com",
+    "age": 42,
+    "monthlyNetIncome": 3500.0,
+    "bikeId": "BIKE-800",
+    "bikeModel": "Carbon Road 800"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.applicationId: isDefined
+}
+
+vars:post-response {
+  applicationId: res.body.applicationId
+}

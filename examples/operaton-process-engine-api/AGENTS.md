@@ -31,7 +31,7 @@ On a **fresh clone** (or after changing `common-architecture-tests`), run `./mvn
 install` once first — module-scoped commands resolve the arch-tests jar from the local Maven
 repository.
 
-### Ports (one source of truth — keep README, this file and `.conductor/settings.toml` in sync)
+### Ports (one source of truth — keep README and this file in sync)
 
 | What | Port |
 |---|---|

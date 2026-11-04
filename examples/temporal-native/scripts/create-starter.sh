@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Turns a checkout of this example into a plain Spring Boot project, in place: the build moves from
-# kotlin-gradle/ to the repo root and the paths in the workflows, Dependabot, Conductor settings and
+# kotlin-gradle/ to the repo root and the paths in the workflows, Dependabot and
 # docs follow. Nothing is committed; review the result with `git status`.
 #
 #   scripts/create-starter.sh kotlin-gradle --flat

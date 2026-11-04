@@ -70,7 +70,7 @@ starts from another state of the examples than `main`, `--list` shows the exampl
 
 ## Working on an example
 
-Open the example's folder, not the repository root. Its README, `AGENTS.md`, skills and Conductor targets treat
+Open the example's folder, not the repository root. Its README, `AGENTS.md` and skills treat
 that folder as the project.
 
 ```bash

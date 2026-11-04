@@ -38,7 +38,7 @@ merge cleanly. Without it nothing is moved and every path stays valid.
 
 - deletes the other variant's directory and its `pre-merge-*` and `nightly-*` workflows
 - strips the other variant's blocks from `README.md`, `AGENTS.md`, `CONTRIBUTING.md`, `.gitignore`,
-  `.github/dependabot.yml` and `.conductor/settings.toml`
+  and `.github/dependabot.yml`
 - removes what only makes sense while both variants exist: the stack comparison in the README, the
   "change both variants" rule, the `Blueprint Checks` workflow, ADR-0013, this guide and the script itself
 - lists the lines that still mention the removed stack, for a manual look
@@ -46,7 +46,7 @@ merge cleanly. Without it nothing is moved and every path stays valid.
 With `--flat` it additionally
 
 - moves the build (wrapper, build files, `service/`) to the repo root and removes the directory prefix
-  from the workflows, Dependabot, the Conductor settings and the docs
+  from the workflows, Dependabot and the docs
 - appends the variant's README to the root README
 
 It works in place, commits nothing and refuses to run on a working tree with uncommitted changes, so

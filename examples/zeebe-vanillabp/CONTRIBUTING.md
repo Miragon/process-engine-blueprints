@@ -50,8 +50,7 @@ cd java-maven && ./mvnw -DskipTests install && ./mvnw -pl service/app spring-boo
 | Actuator (health · liveness/readiness · prometheus) | 8081/actuator |
 
 The backend serves its `/api` surface on a single origin, so no CORS code runs on the production path
-(a dev-only escape hatch exists under the `dev` profile). Under Conductor the ports are fixed and the
-workspace runs `nonconcurrent` (see [ADR-0006](docs/adr/0006-fixed-ports-for-v1-portless-as-the-upgrade.md)).
+(a dev-only escape hatch exists under the `dev` profile). The ports are fixed (see [ADR-0006](docs/adr/0006-fixed-ports-for-v1-portless-as-the-upgrade.md)).
 
 ### Manual smoke test
 

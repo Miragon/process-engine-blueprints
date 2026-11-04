@@ -717,7 +717,6 @@ identical:
       - .claude/skills/create-rest-controller/SKILL.md
       - .claude/skills/implement-issue/SKILL.md
       - .claude/skills/review-change/SKILL.md
-      - .conductor/settings.toml
       - bruno/03-abort/05-complete-clarify-return.bru
       - bruno/05-bike-unavailable/03-clarify-alternative.bru
       - bruno/10-alternative-via-tasklist/01-submit.bru

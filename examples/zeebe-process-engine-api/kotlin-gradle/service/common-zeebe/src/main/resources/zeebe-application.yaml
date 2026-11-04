@@ -6,7 +6,7 @@ camunda:
     grpc-address: http://localhost:26500
     enabled: true
     # A message that finds no subscription is dropped after this time. The process-engine-api has no
-    # per-message TTL, so the client default sets it (10s, as zeebe-native publishes its messages).
+    # per-message TTL, so the client default sets it.
     message-time-to-live: PT10S
     auth:
       method: none

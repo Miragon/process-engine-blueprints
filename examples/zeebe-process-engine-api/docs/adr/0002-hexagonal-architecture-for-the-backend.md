@@ -21,7 +21,7 @@ We structure `service/app` as a **hexagon (ports & adapters)** under `io.miragon
   operation. `application/port/outbound` — **`*Repository` / `*Port` / `*Process`** interfaces.
 - `application/service` — one `*Service` implementing exactly one inbound port; it may not call another
   service or any inbound port.
-- `adapter/inbound/{rest,zeebe}` — driving adapters (REST controllers, Zeebe `@JobWorker` handlers).
+- `adapter/inbound/{rest,zeebe}` — driving adapters (REST controllers, `@ProcessEngineWorker` handlers).
 - `adapter/outbound/{db,zeebe,dealer,notification,contract,insurance}` — driven adapters.
 - `adapter/process` — the **generated** `*ProcessApi` and shared constants (bpmn-to-code); a technical seam that
   fits neither side of the split.

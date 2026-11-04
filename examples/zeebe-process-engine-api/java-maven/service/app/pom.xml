@@ -13,7 +13,7 @@
 
     <artifactId>app</artifactId>
     <name>app</name>
-    <description>MiraVelo bike-leasing service: hexagonal Spring Boot backend driven by Zeebe job workers.</description>
+    <description>MiraVelo bike-leasing service: hexagonal Spring Boot backend, driven through the process-engine-api.</description>
 
     <properties>
         <!-- The executable module: opt in to the Spring Boot run / image goals the root skips. -->

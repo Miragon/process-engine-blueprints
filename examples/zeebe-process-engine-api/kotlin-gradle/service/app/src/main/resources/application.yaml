@@ -40,8 +40,7 @@ dev:
           service-tasks:
             delivery-strategy: subscription
             worker-id: leasing-worker
-            # Failed jobs count down to an incident: applies to every service task (docs/adr/0014).
-            retries: 3
+            # The backoff of a failed job, on every service task; its retries come from the job (docs/adr/0014).
             retry-timeout-in-seconds: 10
           user-tasks:
             delivery-strategy: scheduled

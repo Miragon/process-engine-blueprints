@@ -16,9 +16,9 @@ import org.springframework.stereotype.Component
  * Orders the bike from the dealer and returns the placed order as the process variable `orderId`. An
  * out-of-stock bike is no failure: it is reported as the BPMN error `bikeUnavailable`, which the error
  * boundary event on the service task catches, and leaving the task this way registers no order
- * compensation. Any other exception reaches the worker library, which fails the job through the adapter:
- * `service-tasks.retries` and `retry-timeout-in-seconds` in `application.yaml` give the retry countdown
- * with a 10s backoff, and at 0 retries Zeebe raises an incident on `serviceTask_orderBike`. It powers the
+ * compensation. Any other exception reaches the worker library, which fails the job with one fewer retry
+ * (`retries="3"` on the BPMN task definition) and the backoff of `retry-timeout-in-seconds` in
+ * `application.yaml`; at 0 retries Zeebe raises an incident on `serviceTask_orderBike`. It powers the
  * reproducible incident demo (bike id `BIKE-FAIL`, see the `06-incident-demo` Bruno collection); the
  * poison-id logic itself lives in the simulated dealer, which throws.
  */

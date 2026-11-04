@@ -7,7 +7,7 @@ are welcome as issues; we do not accept external pull requests.
 
 ```bash
 git clone <this repository> process-engine-blueprints
-cd process-engine-blueprints/examples/zeebe-native
+cd process-engine-blueprints/examples/zeebe-process-engine-api
 npm ci && npm run hooks:install   # bpmnlint, bpmn-cli + git hooks
 ```
 
@@ -71,7 +71,7 @@ The dev loop above runs the backend from source. To run it as an OCI image inste
 Cloud Native Buildpacks integration, no Dockerfile to maintain — build the image and run it against the
 local stack. The rationale is in [ADR-0011](docs/adr/0011-build-and-deployment-approach.md).
 
-Build the backend OCI image; it produces `miravelo/zeebe-example:1.0-SNAPSHOT`:
+Build the backend OCI image; it produces `miravelo/zeebe-process-engine-api-example:1.0-SNAPSHOT`:
 
 <!-- variant:kotlin-gradle -->
 ```bash
@@ -91,7 +91,7 @@ docker compose -f stack/docker-compose.yml up -d
 docker run --rm --network host \
   -e SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/bikeleasing \
   -e SPRING_DATASOURCE_USERNAME=admin -e SPRING_DATASOURCE_PASSWORD=admin \
-  miravelo/zeebe-example:1.0-SNAPSHOT
+  miravelo/zeebe-process-engine-api-example:1.0-SNAPSHOT
 ```
 
 **Podman:** the image build needs a Docker-API socket. Expose podman's, then build the image as above:

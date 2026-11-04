@@ -23,7 +23,7 @@ We produce an **OCI image for the backend with Spring's `bootBuildImage`** (buil
 and keep `stack/docker-compose.yml` as the local Camunda 8 dev stack.
 
 - **Backend image** — `./gradlew :service:app:bootBuildImage` builds
-  `miravelo/zeebe-example:<version>` (`bootBuildImage.imageName` in `service/app/build.gradle.kts`, JVM
+  `miravelo/zeebe-process-engine-api-example:<version>` (`bootBuildImage.imageName` in `service/app/build.gradle.kts`, JVM
   pinned via `BP_JVM_VERSION=21`). Buildpacks give a layered, non-root image with no Dockerfile to
   maintain. A hand-written Dockerfile would only be justified if we needed control buildpacks can't
   give; we don't.

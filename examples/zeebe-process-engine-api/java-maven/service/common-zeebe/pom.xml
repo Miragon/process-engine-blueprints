@@ -13,7 +13,7 @@
 
     <artifactId>common-zeebe</artifactId>
     <name>common-zeebe</name>
-    <description>Zeebe client wiring, BPMN/DMN/form auto-deployment and the ProcessEngineApi facade.</description>
+    <description>Zeebe client wiring and BPMN/DMN/form auto-deployment.</description>
 
     <dependencies>
         <dependency>

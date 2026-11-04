@@ -4,7 +4,7 @@
 [scripts]
 run_mode = "nonconcurrent"
 setup = "npm ci\nnpm run hooks:install\n"
-archive = "(cd examples/cibseven-embedded && docker compose -f stack/docker-compose.yml down -v || true)\n(cd examples/cibseven-process-engine-api && docker compose -f stack/docker-compose.yml down -v || true)\n(cd examples/cibseven-remote && docker compose -f stack/docker-compose.yml down -v || true)\n(cd examples/fluxnova-embedded && docker compose -f stack/docker-compose.yml down -v || true)\n(cd examples/fullstack-cibseven-embedded && docker compose -f stack/docker-compose.yml down -v || true)\n(cd examples/operaton-embedded && docker compose -f stack/docker-compose.yml down -v || true)\n(cd examples/operaton-process-engine-api && docker compose -f stack/docker-compose.yml down -v || true)\n(cd examples/operaton-remote && docker compose -f stack/docker-compose.yml down -v || true)\n(cd examples/temporal-native && docker compose -f stack/docker-compose.yml down -v || true)\n(cd examples/zeebe-native && docker compose -f stack/docker-compose.yml down -v || true)\n(cd examples/zeebe-vanillabp && docker compose -f stack/docker-compose.yml down -v || true)\n"
+archive = "(cd examples/cibseven-embedded && docker compose -f stack/docker-compose.yml down -v || true)\n(cd examples/cibseven-process-engine-api && docker compose -f stack/docker-compose.yml down -v || true)\n(cd examples/cibseven-remote && docker compose -f stack/docker-compose.yml down -v || true)\n(cd examples/fluxnova-embedded && docker compose -f stack/docker-compose.yml down -v || true)\n(cd examples/fullstack-cibseven-embedded && docker compose -f stack/docker-compose.yml down -v || true)\n(cd examples/operaton-embedded && docker compose -f stack/docker-compose.yml down -v || true)\n(cd examples/operaton-process-engine-api && docker compose -f stack/docker-compose.yml down -v || true)\n(cd examples/operaton-remote && docker compose -f stack/docker-compose.yml down -v || true)\n(cd examples/temporal-native && docker compose -f stack/docker-compose.yml down -v || true)\n(cd examples/zeebe-native && docker compose -f stack/docker-compose.yml down -v || true)\n(cd examples/zeebe-process-engine-api && docker compose -f stack/docker-compose.yml down -v || true)\n(cd examples/zeebe-vanillabp && docker compose -f stack/docker-compose.yml down -v || true)\n"
 
 [scripts.run."cibseven-embedded:setup"]
 command = "cd examples/cibseven-embedded && npm ci"
@@ -225,6 +225,28 @@ command = "cd examples/zeebe-native && cd java-maven && ./mvnw verify"
 
 [scripts.run."zeebe-native:smoke"]
 command = "cd examples/zeebe-native && cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r --exclude-tags=demo-data"
+
+[scripts.run."zeebe-process-engine-api:setup"]
+command = "cd examples/zeebe-process-engine-api && "
+icon = "download"
+
+[scripts.run."zeebe-process-engine-api:infra"]
+command = "cd examples/zeebe-process-engine-api && docker compose -f stack/docker-compose.yml up"
+
+[scripts.run."zeebe-process-engine-api:backend-kotlin"]
+command = "cd examples/zeebe-process-engine-api && cd kotlin-gradle && ./gradlew :service:app:bootRun"
+
+[scripts.run."zeebe-process-engine-api:test-kotlin"]
+command = "cd examples/zeebe-process-engine-api && cd kotlin-gradle && ./gradlew build"
+
+[scripts.run."zeebe-process-engine-api:backend-java"]
+command = "cd examples/zeebe-process-engine-api && cd java-maven && ./mvnw -pl service/app -am spring-boot:run"
+
+[scripts.run."zeebe-process-engine-api:test-java"]
+command = "cd examples/zeebe-process-engine-api && cd java-maven && ./mvnw verify"
+
+[scripts.run."zeebe-process-engine-api:smoke"]
+command = "cd examples/zeebe-process-engine-api && cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r --exclude-tags=demo-data"
 
 [scripts.run."zeebe-vanillabp:setup"]
 command = "cd examples/zeebe-vanillabp && "

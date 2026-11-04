@@ -1,5 +1,5 @@
 {
-  "name": "zeebe-example-tooling",
+  "name": "zeebe-process-engine-api-example-tooling",
   "version": "1.0.0",
   "private": true,
   "description": "Dev tooling for the Zeebe bike-leasing blueprint: BPMN linting (bpmnlint) and git hook installation. Run from the repo root via `npm run <script>`.",

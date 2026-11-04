@@ -6,10 +6,16 @@ imports it.
 ## Project Overview
 
 A headless **MiraVelo bike-leasing** example: the same BPMN process the sibling engine blueprints
-implement, on Camunda 8 / Zeebe, with an enforced hexagonal architecture and a REST API — no frontend.
+implement, on Camunda 8 / Zeebe through the bpm-crafters **process-engine-api**, with an enforced
+hexagonal architecture and a REST API — no frontend.
 
-- **Backend** — Spring Boot 4, hexagonal, Camunda 8 / Zeebe 8.10 engine driven by **job workers**
-  (`@JobWorker`). Package root `io.miragon.blueprint`.
+- **Backend** — Spring Boot 4, hexagonal, Camunda 8 / Zeebe 8.10 engine. Package root
+  `io.miragon.blueprint`.
+- **Process-engine-api, not the Camunda client** — BPMN service tasks are `@ProcessEngineWorker` beans in
+  `adapter/inbound/zeebe`; the engine is driven (start / correlate / complete) through
+  `dev.bpmcrafters.processengineapi` in `adapter/outbound/zeebe`. There is no `@JobWorker` and no
+  `CamundaClient` in the app module, and `ArchitectureTest` fails on any `io.camunda..` dependency. See
+  [ADR-0014](docs/adr/0014-process-engine-api-on-camunda-8.md).
   <!-- variant:blueprint -->
 - **Two equivalent variants on `main`** — `kotlin-gradle/` (Kotlin, **the recommended stack**) and
   `java-maven/` (Java 21, for teams bound to it and for trainings). Each is self-contained and
@@ -41,15 +47,17 @@ The service:
 ```
 service/
   common-architecture-tests/   reusable architecture rule suite
-  common-zeebe/                Zeebe glue: ProcessEngineApi, BPMN auto-deploy, connection config
-  common-zeebe-test/           camunda-process-test helpers
+  common-zeebe/                Zeebe glue: BPMN auto-deploy, connection config
+  # variant:kotlin-gradle
+  common-zeebe-test/           camunda-process-test assertions
+  # /variant:kotlin-gradle
   app/                         the Camunda 8 bike-leasing service (hexagonal)
     adapter/inbound/rest        domain REST controllers + OpenAPI / CORS / problem-details config
-    adapter/inbound/zeebe       @JobWorker handlers for the BPMN service tasks
-    adapter/outbound/zeebe      drives the engine (ProcessEngineApi / CamundaClient) + task inbox
+    adapter/inbound/zeebe       @ProcessEngineWorker handlers for the BPMN service tasks
+    adapter/outbound/zeebe      drives the engine through the process-engine-api + task inbox
     adapter/outbound/db         JPA persistence (leasing applications + bike portfolio)
     adapter/outbound/…          simulated dealer / contract / insurance / notification adapters
-    adapter/process             generated *ProcessApi + shared constants (bpmn-to-code)
+    adapter/process             generated *ProcessApi + shared constants (bpmn-to-code) + the task pool
     application/{port,service}  use-case ports and their services
     domain/{leasing,bike}       pure domain model
     resources/{bpmn,dmn,forms}  the process models and Camunda Forms
@@ -176,7 +184,7 @@ TDD. Match the test style to the layer:
 | application service | unit tests with mocked ports |
 | `adapter.inbound.rest` | `@WebMvcTest` with the use case mocked |
 | `adapter.outbound.db` | Spring Data JPA slice tests |
-| process end-to-end | Camunda 8 process tests (`@CamundaSpringProcessTest`, in-container Zeebe), paths asserted against the generated API |
+| process end-to-end | Camunda 8 process tests (`@CamundaSpringProcessTest`, in-container Zeebe), paths asserted against the generated API. The test client exists only inside a test method, so a process test opens the job workers itself with `SubscribingServiceTaskDelivery.subscribe()` in `@BeforeEach` |
 
 **Mutation testing gates the domain at 80, nightly**: a test that executes without asserting
 will fail
@@ -221,7 +229,8 @@ repo uses:
   <!-- /variant:blueprint -->
 - **bpmn-to-code** (skills `bpmn-to-code:*`) for the glue around the generated process API:
   `create-worker` and `test-worker` for a job worker, `create-process-adapter` for a start, message or
-  user task completion, `test-process` for a process path.
+  user task completion, `test-process` for a process path. Their templates may use the Camunda client:
+  here a worker is a `@ProcessEngineWorker` and a process adapter uses the process-engine-api.
 - **bpmnlint-rules** (skills `bpmnlint-rules:*`, the plugin of `@miragon/bpmnlint-plugin-rules`) to
   check a model after an edit: `verify-model-visually` (bpmnlint plus a look at the rendered image),
   `fix-model-layout`, and the style-guide skills.

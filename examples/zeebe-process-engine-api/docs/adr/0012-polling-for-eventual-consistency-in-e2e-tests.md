@@ -6,7 +6,7 @@
 ## Context
 
 Every write endpoint in this API is **asynchronous**. A command controller hands a message or a
-task-completion to Zeebe and returns **`202 Accepted`** immediately (`ProcessEngineApi` only waits for
+task-completion to Zeebe and returns **`202 Accepted`** immediately (the process-engine-api only waits for
 the publish ack, not for correlation). The observable effect lands some unbounded time later: the
 process reaches its next wait state, a job worker runs and writes the read model
 (`leasing_application`), and the Camunda v2 **search APIs read from Elasticsearch**, which indexes with

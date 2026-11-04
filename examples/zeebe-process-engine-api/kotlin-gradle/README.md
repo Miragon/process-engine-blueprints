@@ -1,7 +1,7 @@
 # Kotlin + Gradle variant
 
 The bike-leasing service in **Kotlin 2.4**, built with **Gradle** and a `libs.versions.toml` version
-catalog, on Spring Boot 4 and Camunda 8.10 (Zeebe, self-managed).
+catalog, on Spring Boot 4 and Camunda 8.10 (Zeebe, self-managed), through the process-engine-api.
 
 <!-- variant:blueprint -->
 > [!TIP]
@@ -32,12 +32,12 @@ Docker daemon but not the dev stack.
 ```
 service/
   common-architecture-tests/   reusable ArchUnit + Konsist rule suite (src/main)
-  common-zeebe/                Zeebe glue: ProcessEngineApi, BPMN auto-deploy, connection config
-  common-zeebe-test/           camunda-process-test helpers (assertions, test engine wiring)
+  common-zeebe/                Zeebe glue: BPMN auto-deploy, connection config
+  common-zeebe-test/           camunda-process-test assertions
   app/                         the service, package root io.miragon.blueprint
     adapter/inbound/rest        REST controllers + OpenAPI / CORS / problem-details config
-    adapter/inbound/zeebe       @JobWorker handlers for the BPMN service tasks
-    adapter/outbound/zeebe      drives the engine (ProcessEngineApi / CamundaClient) + task inbox
+    adapter/inbound/zeebe       @ProcessEngineWorker handlers for the BPMN service tasks
+    adapter/outbound/zeebe      drives the engine through the process-engine-api + task inbox
     adapter/outbound/db         JPA persistence (leasing applications + bike portfolio)
     adapter/outbound/…          simulated dealer / contract / insurance / notification adapters
     adapter/process             generated *ProcessApi + shared constants (bpmn-to-code)
@@ -57,13 +57,14 @@ The resources are kept identical to the other variant's; CI fails when they diff
   testable and the engine replaceable. `common-architecture-tests` enforces it with **ArchUnit**
   (bytecode: layering, dependency direction, naming) and **Konsist** (source: one declaration per file,
   no wildcard imports); a service opts in with `class ArchitectureTest : ServiceArchitectureTest(...)`.
-- **Reusable Zeebe glue.** `common-zeebe` contributes the `CamundaClient` connection (self-managed, auth
-  off for local dev), a small `ProcessEngineApi` (start instance / publish message) and classpath
-  auto-deployment of every `.bpmn`, `.dmn` and `.form` on startup.
-- **Job workers, not delegates.** Each BPMN service task is a Spring `@JobWorker` in
-  `adapter/inbound/zeebe`. Workers hold no business logic — they call use cases; `orderBike` raises
-  the `bikeUnavailable` BPMN error through the job client when the dealer has no bike, so the error
-  boundary event catches it.
+- **Reusable Zeebe glue.** `common-zeebe` contributes the connection (self-managed, auth off for local
+  dev) and classpath auto-deployment of every `.bpmn`, `.dmn` and `.form` on startup.
+- **The process-engine-api, not the Camunda client.** Each BPMN service task is a `@ProcessEngineWorker`
+  in `adapter/inbound/zeebe`. Workers hold no business logic — they call use cases; `orderBike` throws
+  `BpmnErrorOccurred` with `bikeUnavailable` when the dealer has no bike, so the error boundary event
+  catches it. `adapter/outbound/zeebe` starts, correlates and completes through the API's interfaces.
+- **A task pool instead of a task search.** The adapter polls the open user tasks into a `UserTaskSupport`
+  pool. The inbox and the completion both read it, so they see the same tasks, a moment after the engine.
 - **No business key.** Zeebe has none, so the leasing `applicationId` travels as a process variable and
   is the message correlation key on every catch event.
 - **Generated process API.** The `bpmn-to-code` Gradle plugin turns each `.bpmn` into a typed,
@@ -73,7 +74,7 @@ The resources are kept identical to the other variant's; CI fails when they diff
 - **Unit tests** (JUnit 5 + MockK) cover every domain type, service, adapter and worker — controllers
   via `@WebMvcTest`, persistence via `@DataJpaTest`.
 - **Process tests** (`camunda-process-test`) drive the deployed model on a real in-container Camunda 8
-  engine: workers register themselves, timers are advanced with `increaseTime`, and the walked path is
+  engine: the workers run for real, timers are advanced with `increaseTime`, and the walked path is
   asserted as a compile-checked `ProcessPath`.
 - **Model validation** (`bpmn-to-code-testing`) checks the models structurally at build time for engine
   `ZEEBE`.

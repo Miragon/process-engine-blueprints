@@ -5,12 +5,12 @@ and kept equivalent. A project built on it needs only one. `scripts/create-start
 one and everything that exists only for it.
 
 The [quick start in the repository README](../../../README.md#quick-start) creates the starter with
-`npx`: pick `--example zeebe-native` and `--lang kotlin` (our recommendation for a modern stack) or
+`npx`: pick `--example zeebe-process-engine-api` and `--lang kotlin` (our recommendation for a modern stack) or
 `--lang java`. It renames the package and the project and starts a fresh git history. From a checkout
 of the monorepo, the same starter, without the renaming:
 
 ```bash
-tooling/starter/export.sh zeebe-native kotlin-gradle ../my-service
+tooling/starter/export.sh zeebe-process-engine-api kotlin-gradle ../my-service
 ```
 
 Both run the script below on a copy of this example. On a standalone copy of the example you can
@@ -55,7 +55,7 @@ delete it by hand.
 
 ## What is left to you
 
-- Rename the project: `rootProject.name` / `artifactId`, the image name `miravelo/zeebe-example`,
+- Rename the project: `rootProject.name` / `artifactId`, the image name `miravelo/zeebe-process-engine-api-example`,
   the package `io.miragon.blueprint` and the repository URL in `CONTRIBUTING.md`.
 - Update `CODEOWNERS`, and in the repository settings the required status checks, which are named after
   the jobs of the remaining `pre-merge-*` workflow.

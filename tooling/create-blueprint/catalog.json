@@ -129,6 +129,19 @@
       ]
     },
     {
+      "name": "zeebe-process-engine-api",
+      "engine": "zeebe",
+      "engineLabel": "Camunda 8 (Zeebe)",
+      "integration": "process-engine-api",
+      "integrationLabel": "Zeebe cluster · process-engine-api",
+      "topology": "remote",
+      "summary": "Camunda 8 / Zeebe broker, wired through the bpm-crafters process-engine-api.",
+      "variants": [
+        "kotlin-gradle",
+        "java-maven"
+      ]
+    },
+    {
       "name": "zeebe-vanillabp",
       "engine": "zeebe",
       "engineLabel": "Camunda 8 (Zeebe)",

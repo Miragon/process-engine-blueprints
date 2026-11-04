@@ -1,10 +1,9 @@
-name: zeebe-native
+name: zeebe-process-engine-api
 engine: zeebe
-integration: native
+integration: process-engine-api
 topology: remote
-summary: Camunda 8 / Zeebe broker, service tasks as Spring job workers.
+summary: Camunda 8 / Zeebe broker, wired through the bpm-crafters process-engine-api.
 stack: Postgres plus a Camunda 8 cluster (Zeebe, Operate, Tasklist, Elasticsearch)
-source: miragon-blueprints/zeebe-example
 variants:
   kotlin-gradle:
     path: kotlin-gradle
@@ -12,3 +11,4 @@ variants:
     path: java-maven
 identicalResources:
   - service/app/src/main/resources
+  - service/common-zeebe/src/main/resources

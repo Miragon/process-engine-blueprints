@@ -27,7 +27,7 @@ package `io.miragon.blueprint` under `service/app/src/main/` and `service/app/sr
 4. **Inbound port**: `application/port/inbound/`, the `*UseCase`/`*Query` the service implements.
 5. **Entry point**: a one-endpoint `@RestController` in `adapter/inbound/rest/` injecting that port,
    with `@Operation(operationId = …)` and a `@WebMvcTest`; or, for an engine-driven hop, a
-   `@JobWorker` in `adapter/inbound/zeebe/` with its unit test. Note which.
+   `@ProcessEngineWorker` in `adapter/inbound/zeebe/` with its unit test. Note which.
 6. **Process adapter and test**: the method in `adapter/outbound/zeebe/` that starts it, publishes
    its message or completes it, and a process test in the test tree's `adapter/process/` that walks
    the path.

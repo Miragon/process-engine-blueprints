@@ -125,6 +125,25 @@ class LeasingProcessAdapterTest {
     }
 
     @Test
+    fun `completeAlternativeClarification keeps the interrupt and fails unchecked when the wait is interrupted`() {
+        // given: no task in the pool yet and an interrupted caller
+        every { userTaskSupport.getAllTasks() } returns emptyList()
+        Thread.currentThread().interrupt()
+        try {
+            // when / then: the wait aborts at once with an unchecked exception, which rolls back the use case
+            assertThatThrownBy { underTest.completeAlternativeClarification(id, alternativeFound = true, bikeId = null) }
+                .isExactlyInstanceOf(IllegalStateException::class.java)
+                .hasCauseInstanceOf(InterruptedException::class.java)
+            // and: the interrupt flag stays visible to the caller
+            assertThat(Thread.currentThread().isInterrupted).isTrue()
+        } finally {
+            Thread.interrupted()
+        }
+        verify(exactly = 1) { userTaskSupport.getAllTasks() }
+        verify(exactly = 0) { userTaskCompletionApi.completeTask(any()) }
+    }
+
+    @Test
     fun `correlateContractSigned publishes the message with the application id as correlation key`() {
         assertCorrelation(Messages.MIRAVELO_CONTRACT_SIGNED.value) { underTest.correlateContractSigned(id) }
     }

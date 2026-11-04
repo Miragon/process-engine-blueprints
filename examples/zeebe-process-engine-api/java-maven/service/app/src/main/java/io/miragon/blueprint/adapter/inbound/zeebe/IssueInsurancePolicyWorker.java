@@ -1,7 +1,7 @@
 package io.miragon.blueprint.adapter.inbound.zeebe;
 
-import io.camunda.client.annotation.JobWorker;
-import io.camunda.client.annotation.Variable;
+import dev.bpmcrafters.processengine.worker.ProcessEngineWorker;
+import dev.bpmcrafters.processengine.worker.Variable;
 import io.miragon.blueprint.adapter.process.ServiceTasks;
 import io.miragon.blueprint.application.port.inbound.IssueInsurancePolicyUseCase;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
@@ -16,7 +16,7 @@ public class IssueInsurancePolicyWorker {
         this.useCase = useCase;
     }
 
-    @JobWorker(type = ServiceTasks.MIRAVELO_ISSUE_INSURANCE_POLICY)
+    @ProcessEngineWorker(topic = ServiceTasks.MIRAVELO_ISSUE_INSURANCE_POLICY)
     public void handle(@Variable String applicationId) {
         useCase.issuePolicy(ApplicationId.of(applicationId));
     }

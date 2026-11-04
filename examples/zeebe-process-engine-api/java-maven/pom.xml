@@ -18,16 +18,15 @@
     </parent>
 
     <groupId>io.miragon.blueprint</groupId>
-    <artifactId>zeebe-example</artifactId>
+    <artifactId>zeebe-process-engine-api-example</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>zeebe-example</name>
-    <description>MiraVelo bike-leasing blueprint on Camunda 8 / Zeebe — hexagonal Spring Boot backend.</description>
+    <name>zeebe-process-engine-api-example</name>
+    <description>MiraVelo bike-leasing blueprint on Camunda 8 / Zeebe through the process-engine-api — hexagonal Spring Boot backend.</description>
 
     <modules>
         <module>service/common-zeebe</module>
-        <module>service/common-zeebe-test</module>
         <module>service/common-architecture-tests</module>
         <module>service/app</module>
     </modules>
@@ -37,6 +36,11 @@
 
         <!-- Camunda 8 / Zeebe -->
         <camunda.version>8.10.7</camunda.version>
+
+        <!-- process-engine-api (bpm-crafters) — the abstraction layer used to talk to the engine -->
+        <process-engine-api.version>1.7</process-engine-api.version>
+        <process-engine-worker.version>0.8.5</process-engine-worker.version>
+        <process-engine-adapter-c8.version>2026.09.1</process-engine-adapter-c8.version>
 
         <!-- BPMN-to-code (typed process API generation, runtime and model validation) -->
         <bpmn-to-code.version>7.0.1</bpmn-to-code.version>
@@ -78,16 +82,28 @@
             </dependency>
             <dependency>
                 <groupId>io.miragon.blueprint</groupId>
-                <artifactId>common-zeebe-test</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.miragon.blueprint</groupId>
                 <artifactId>common-architecture-tests</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <!-- Camunda 8 / Zeebe -->
+            <!-- process-engine-api (bpm-crafters) -->
+            <dependency>
+                <groupId>dev.bpm-crafters.process-engine-api</groupId>
+                <artifactId>process-engine-api</artifactId>
+                <version>${process-engine-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>dev.bpm-crafters.process-engine-worker</groupId>
+                <artifactId>process-engine-worker-spring-boot-starter</artifactId>
+                <version>${process-engine-worker.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>dev.bpm-crafters.process-engine-adapters</groupId>
+                <artifactId>process-engine-adapter-camunda-platform-c8-spring-boot-starter</artifactId>
+                <version>${process-engine-adapter-c8.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>io.camunda</groupId>
                 <artifactId>camunda-spring-boot-starter</artifactId>

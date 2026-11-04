@@ -101,7 +101,14 @@ class LeasingProcessAdapter(
                         .getOrDefault(false)
                 }
                 ?.let { return it.taskId }
-            Thread.sleep(TASK_LOOKUP_INTERVAL_MS)
+            try {
+                Thread.sleep(TASK_LOOKUP_INTERVAL_MS)
+            } catch (e: InterruptedException) {
+                // Keep the interrupt visible and fail with an unchecked exception, which also rolls back the
+                // surrounding @Transactional use case; Spring's default rule would commit a checked one.
+                Thread.currentThread().interrupt()
+                throw IllegalStateException("Interrupted while waiting for the clarify-alternative task", e)
+            }
         }
         throw NoSuchElementException(
             "No active '${FlowNodes.UserTaskClarifyAlternative.id.value}' task for application $applicationId",

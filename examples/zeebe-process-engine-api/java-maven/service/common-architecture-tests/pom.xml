@@ -6,7 +6,7 @@
 
     <parent>
         <groupId>io.miragon.blueprint</groupId>
-        <artifactId>zeebe-example</artifactId>
+        <artifactId>zeebe-process-engine-api-example</artifactId>
         <version>1.0-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>

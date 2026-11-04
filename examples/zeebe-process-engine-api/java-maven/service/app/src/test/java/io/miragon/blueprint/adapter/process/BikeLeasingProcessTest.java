@@ -8,6 +8,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import dev.bpmcrafters.processengineapi.adapter.c8.task.delivery.SubscribingServiceTaskDelivery;
 import io.camunda.client.CamundaClient;
 import io.camunda.client.api.search.response.ProcessInstance;
 import io.camunda.client.api.search.response.UserTask;
@@ -17,6 +18,7 @@ import io.camunda.process.test.api.CamundaSpringProcessTest;
 import io.camunda.process.test.api.assertions.ProcessInstanceSelector;
 import io.camunda.process.test.api.assertions.ProcessInstanceSelectors;
 import io.miragon.blueprint.adapter.outbound.zeebe.LeasingProcessAdapter;
+import io.miragon.blueprint.adapter.outbound.zeebe.TaskInboxAdapter;
 import io.miragon.blueprint.adapter.process.BikeLeasingProcessProcessApi.FlowNodes;
 import io.miragon.blueprint.application.port.inbound.ActivateLeasingUseCase;
 import io.miragon.blueprint.application.port.inbound.BookCancellationCostsUseCase;
@@ -29,6 +31,7 @@ import io.miragon.blueprint.application.port.inbound.RequestOrderCancellationUse
 import io.miragon.blueprint.application.port.inbound.SendCancellationConfirmationUseCase;
 import io.miragon.blueprint.application.port.inbound.SendContractUseCase;
 import io.miragon.blueprint.application.port.inbound.SendSignatureReminderUseCase;
+import io.miragon.blueprint.application.port.outbound.TaskInboxPort;
 import io.miragon.blueprint.domain.bike.BikeId;
 import io.miragon.blueprint.domain.bike.BikeUnavailableException;
 import io.miragon.blueprint.domain.bike.OrderId;
@@ -37,7 +40,6 @@ import io.miragon.blueprint.domain.leasing.CustomerName;
 import io.miragon.blueprint.domain.leasing.Email;
 import io.miragon.blueprint.domain.leasing.LeasingApplication;
 import io.miragon.bpmn.runtime.path.PathWalk;
-import io.miragon.common.test.config.TestProcessEngineConfiguration;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -50,14 +52,13 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /**
  * Process test for the MiraVelo Bike-Leasing process on a real (in-container) Camunda 8 engine.
- * {@code @CamundaSpringProcessTest} starts the engine, the workers auto-register from their {@code @JobWorker}
- * annotations, and the use cases are mocked so we assert the <em>process</em> behaviour. Because Zeebe drives
+ * {@code @CamundaSpringProcessTest} starts the engine, the adapter opens the job workers for the
+ * {@code @ProcessEngineWorker} beans, and the use cases are mocked so we assert the <em>process</em> behaviour. Because Zeebe drives
  * itself asynchronously, {@code CamundaAssert} (which polls until a timeout) doubles as the synchronisation
  * mechanism: asserting a wait-state element has completed is how we wait for it. Timers are advanced
  * with {@code processTestContext.increaseTime}, messages are published through the real process adapter, and
@@ -66,7 +67,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @CamundaSpringProcessTest
 @ActiveProfiles("test")
-@Import(TestProcessEngineConfiguration.class)
 class BikeLeasingProcessTest {
 
     @Autowired
@@ -77,6 +77,12 @@ class BikeLeasingProcessTest {
 
     @Autowired
     private LeasingProcessAdapter process;
+
+    @Autowired
+    private TaskInboxAdapter inbox;
+
+    @Autowired
+    private SubscribingServiceTaskDelivery serviceTaskDelivery;
 
     @MockitoBean
     private RejectApplicationUseCase rejectApplicationUseCase;
@@ -113,6 +119,9 @@ class BikeLeasingProcessTest {
 
     @BeforeEach
     void setUp() {
+        // The test client exists only inside a test method, so the adapter's own subscribe on
+        // ApplicationStartedEvent cannot open the job workers here: every test opens them itself.
+        serviceTaskDelivery.subscribe();
         when(orderBikeUseCase.orderBike(any(), any())).thenReturn(new OrderId("ORDER-1"));
     }
 
@@ -355,6 +364,53 @@ class BikeLeasingProcessTest {
     }
 
     private record Submission(ApplicationId id, long instanceKey) {
+    }
+
+    @Test
+    @DisplayName("bike unavailable - the inbox lists the case and the process adapter completes its task")
+    void bikeUnavailableTheInboxListsTheCaseAndTheProcessAdapterCompletesItsTask() {
+        Submission submission = submitUntilBikeUnavailable();
+        ApplicationId id = submission.id();
+        ProcessInstanceSelector instance = ProcessInstanceSelectors.byKey(submission.instanceKey());
+
+        // the adapter's scheduled delivery brings the task into the pool
+        Awaitility.await()
+            .atMost(Duration.ofSeconds(30))
+            .pollInterval(Duration.ofMillis(200))
+            .untilAsserted(() -> assertThat(openClarifications()).contains(id));
+
+        process.completeAlternativeClarification(id, true, new BikeId("BIKE-ALT"));
+
+        CamundaAssert.assertThatProcessInstance(instance)
+            .hasVariable(FlowNodes.UserTaskClarifyAlternative.Variables.BIKE_ID.getValue(), "BIKE-ALT");
+        CamundaAssert.assertThatProcessInstance(instance).hasCompletedElement(FlowNodes.ServiceTaskOrderBike.ELEMENT_ID, 1);
+        verify(orderBikeUseCase).orderBike(id, new BikeId("BIKE-ALT"));
+
+        // and the task leaves the pool again, so the case disappears from the inbox
+        Awaitility.await()
+            .atMost(Duration.ofSeconds(30))
+            .pollInterval(Duration.ofMillis(200))
+            .untilAsserted(() -> assertThat(openClarifications()).doesNotContain(id));
+    }
+
+    @Test
+    @DisplayName("dealer outage - the order counts down its retries and raises an incident")
+    void dealerOutageTheOrderCountsDownItsRetriesAndRaisesAnIncident() {
+        when(orderBikeUseCase.orderBike(any(), any())).thenThrow(new IllegalStateException("dealer down"));
+
+        ApplicationId id = submit(35, 3500.0);
+        long instanceKey = awaitProcessInstance();
+        ProcessInstanceSelector instance = ProcessInstanceSelectors.byKey(instanceKey);
+
+        CamundaAssert.assertThatProcessInstance(instance).hasCompletedElements(FlowNodes.ServiceTaskSendContract.ELEMENT_ID);
+        process.correlateContractSigned(id);
+
+        CamundaAssert.assertThatProcessInstance(instance).hasActiveIncidents();
+        verify(orderBikeUseCase, times(3)).orderBike(id, new BikeId("BIKE-TEST"));
+    }
+
+    private List<ApplicationId> openClarifications() {
+        return inbox.findOpenClarifications().stream().map(TaskInboxPort.OpenClarification::applicationId).toList();
     }
 
     /** Drives a signed, insured application to the clarify-alternative task: the dealer has no bike. */

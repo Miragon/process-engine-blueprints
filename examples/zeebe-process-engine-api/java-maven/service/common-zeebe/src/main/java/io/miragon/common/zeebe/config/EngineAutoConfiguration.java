@@ -1,9 +1,6 @@
 package io.miragon.common.zeebe.config;
 
-import io.camunda.client.CamundaClient;
 import io.camunda.client.annotation.Deployment;
-import io.miragon.common.zeebe.engine.ProcessEngineApi;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
@@ -17,9 +14,4 @@ import org.springframework.context.annotation.Import;
 )
 @Import(ZeebeEnvironmentConfiguration.class)
 public class EngineAutoConfiguration {
-
-    @Bean
-    public ProcessEngineApi processEngineApi(CamundaClient camundaClient) {
-        return new ProcessEngineApi(camundaClient);
-    }
 }

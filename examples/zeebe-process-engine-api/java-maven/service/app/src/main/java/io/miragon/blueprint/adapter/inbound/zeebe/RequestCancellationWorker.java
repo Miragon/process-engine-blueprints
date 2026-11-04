@@ -1,7 +1,7 @@
 package io.miragon.blueprint.adapter.inbound.zeebe;
 
-import io.camunda.client.annotation.JobWorker;
-import io.camunda.client.annotation.Variable;
+import dev.bpmcrafters.processengine.worker.ProcessEngineWorker;
+import dev.bpmcrafters.processengine.worker.Variable;
 import io.miragon.blueprint.adapter.process.CancelBikeOrderProcessApi.FlowNodes;
 import io.miragon.blueprint.adapter.process.ServiceTasks;
 import io.miragon.blueprint.application.port.inbound.RequestOrderCancellationUseCase;
@@ -19,7 +19,7 @@ public class RequestCancellationWorker {
     }
 
     // `orderId` is handed to the cancelBikeOrder sub-process by the calling activity.
-    @JobWorker(type = ServiceTasks.MIRAVELO_REQUEST_CANCELLATION)
+    @ProcessEngineWorker(topic = ServiceTasks.MIRAVELO_REQUEST_CANCELLATION)
     public Map<String, Object> handle(@Variable String orderId) {
         boolean cancellationPossible = useCase.requestCancellation(new OrderId(orderId));
         return Map.of(FlowNodes.ServiceTaskRequestCancellation.Variables.CANCELLATION_POSSIBLE.getValue(), cancellationPossible);

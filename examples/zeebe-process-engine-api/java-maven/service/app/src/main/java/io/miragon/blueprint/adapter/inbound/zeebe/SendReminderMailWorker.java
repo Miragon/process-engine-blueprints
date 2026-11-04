@@ -1,7 +1,7 @@
 package io.miragon.blueprint.adapter.inbound.zeebe;
 
-import io.camunda.client.annotation.JobWorker;
-import io.camunda.client.annotation.Variable;
+import dev.bpmcrafters.processengine.worker.ProcessEngineWorker;
+import dev.bpmcrafters.processengine.worker.Variable;
 import io.miragon.blueprint.adapter.process.ServiceTasks;
 import io.miragon.blueprint.application.port.inbound.SendSignatureReminderUseCase;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
@@ -16,7 +16,7 @@ public class SendReminderMailWorker {
         this.useCase = useCase;
     }
 
-    @JobWorker(type = ServiceTasks.MIRAVELO_SEND_REMINDER_MAIL)
+    @ProcessEngineWorker(topic = ServiceTasks.MIRAVELO_SEND_REMINDER_MAIL)
     public void handle(@Variable String applicationId) {
         useCase.sendSignatureReminder(ApplicationId.of(applicationId));
     }

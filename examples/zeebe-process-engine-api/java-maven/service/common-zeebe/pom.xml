@@ -6,7 +6,7 @@
 
     <parent>
         <groupId>io.miragon.blueprint</groupId>
-        <artifactId>zeebe-example</artifactId>
+        <artifactId>zeebe-process-engine-api-example</artifactId>
         <version>1.0-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
@@ -19,17 +19,6 @@
         <dependency>
             <groupId>io.camunda</groupId>
             <artifactId>camunda-spring-boot-starter</artifactId>
-        </dependency>
-        <!-- Exposed to consumers: the ProcessEngineApi speaks the typed ProcessId/MessageName/VariableName. -->
-        <dependency>
-            <groupId>io.miragon</groupId>
-            <artifactId>bpmn-to-code-runtime</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

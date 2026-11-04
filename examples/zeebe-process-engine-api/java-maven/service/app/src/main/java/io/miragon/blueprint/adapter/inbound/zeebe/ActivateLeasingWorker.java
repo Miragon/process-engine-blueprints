@@ -1,7 +1,7 @@
 package io.miragon.blueprint.adapter.inbound.zeebe;
 
-import io.camunda.client.annotation.JobWorker;
-import io.camunda.client.annotation.Variable;
+import dev.bpmcrafters.processengine.worker.ProcessEngineWorker;
+import dev.bpmcrafters.processengine.worker.Variable;
 import io.miragon.blueprint.adapter.process.ServiceTasks;
 import io.miragon.blueprint.application.port.inbound.ActivateLeasingUseCase;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
@@ -23,7 +23,7 @@ public class ActivateLeasingWorker {
         this.useCase = useCase;
     }
 
-    @JobWorker(type = ServiceTasks.MIRAVELO_ACTIVATE_LEASING)
+    @ProcessEngineWorker(topic = ServiceTasks.MIRAVELO_ACTIVATE_LEASING)
     public void handle(@Variable String applicationId) {
         useCase.activate(ApplicationId.of(applicationId));
     }

@@ -1,125 +1,151 @@
 package io.miragon.blueprint.adapter.outbound.zeebe;
 
-import io.camunda.client.CamundaClient;
-import io.camunda.client.api.search.enums.UserTaskState;
-import io.camunda.client.api.search.response.UserTask;
-import io.camunda.client.api.search.response.Variable;
+import dev.bpmcrafters.processengineapi.correlation.CorrelateMessageCmd;
+import dev.bpmcrafters.processengineapi.correlation.Correlation;
+import dev.bpmcrafters.processengineapi.correlation.CorrelationApi;
+import dev.bpmcrafters.processengineapi.process.StartProcessApi;
+import dev.bpmcrafters.processengineapi.process.StartProcessByMessageCmd;
+import dev.bpmcrafters.processengineapi.task.CompleteTaskCmd;
+import dev.bpmcrafters.processengineapi.task.TaskInformation;
+import dev.bpmcrafters.processengineapi.task.UserTaskCompletionApi;
+import dev.bpmcrafters.processengineapi.task.support.UserTaskSupport;
 import io.miragon.blueprint.adapter.process.BikeLeasingProcessProcessApi.FlowNodes;
 import io.miragon.blueprint.adapter.process.Messages;
 import io.miragon.blueprint.application.port.outbound.LeasingProcess;
 import io.miragon.blueprint.domain.bike.BikeId;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
 import io.miragon.blueprint.domain.leasing.LeasingApplication;
-import io.miragon.bpmn.runtime.VariableName;
-import io.miragon.common.zeebe.engine.ProcessEngineApi;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Optional;
 import org.springframework.stereotype.Component;
 
 /**
- * Drives the Camunda 8 / Zeebe engine. Zeebe has no business key, so the application id travels as a
- * process variable and is declared as the message subscription correlation key on every catch event;
- * messages are published with that id as their correlation key, and the user task is looked up by its
- * element id plus the instance's {@code applicationId} variable. The variable and element names come from
- * the typed process API generated from {@code bike-leasing.bpmn}.
+ * Drives the Camunda 8 / Zeebe engine through the process-engine-api. Zeebe has no business key, so the
+ * application id travels as a process variable and is declared as the message subscription correlation
+ * key on every catch event; messages are published with that id as their correlation key. The variable
+ * and element names come from the typed process API generated from {@code bike-leasing.bpmn}.
+ *
+ * <p>The {@code clarifyAlternative} user task is looked up in the {@link UserTaskSupport} pool (fed by the
+ * adapter's user-task delivery) and then completed via the {@link UserTaskCompletionApi} — the
+ * process-engine-api has no server-side task query, so completion always goes through a resolved task id.
  */
 @Component
 public class LeasingProcessAdapter implements LeasingProcess {
 
-    private final ProcessEngineApi engineApi;
+    private static final int TASK_LOOKUP_ATTEMPTS = 50;
+    private static final long TASK_LOOKUP_INTERVAL_MS = 200L;
 
-    private final CamundaClient camundaClient;
+    private final StartProcessApi startProcessApi;
+    private final CorrelationApi correlationApi;
+    private final UserTaskSupport userTaskSupport;
+    private final UserTaskCompletionApi userTaskCompletionApi;
 
-    public LeasingProcessAdapter(ProcessEngineApi engineApi, CamundaClient camundaClient) {
-        this.engineApi = engineApi;
-        this.camundaClient = camundaClient;
+    public LeasingProcessAdapter(
+            StartProcessApi startProcessApi,
+            CorrelationApi correlationApi,
+            UserTaskSupport userTaskSupport,
+            UserTaskCompletionApi userTaskCompletionApi) {
+        this.startProcessApi = startProcessApi;
+        this.correlationApi = correlationApi;
+        this.userTaskSupport = userTaskSupport;
+        this.userTaskCompletionApi = userTaskCompletionApi;
     }
 
     @Override
     public void submitRequest(LeasingApplication application) {
-        Map<VariableName, Object> variables = new LinkedHashMap<>();
-        variables.put(FlowNodes.StartEventLeasingRequestReceived.Variables.APPLICATION_ID, application.id().value().toString());
-        variables.put(FlowNodes.StartEventLeasingRequestReceived.Variables.BIKE_ID, application.bikeId().value());
-        variables.put(FlowNodes.StartEventLeasingRequestReceived.Variables.MONTHLY_NET_INCOME, application.monthlyNetIncome());
-        variables.put(FlowNodes.StartEventLeasingRequestReceived.Variables.AGE, application.age());
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put(
+                FlowNodes.StartEventLeasingRequestReceived.Variables.APPLICATION_ID.getValue(),
+                application.id().value().toString());
+        payload.put(FlowNodes.StartEventLeasingRequestReceived.Variables.BIKE_ID.getValue(), application.bikeId().value());
+        payload.put(
+                FlowNodes.StartEventLeasingRequestReceived.Variables.MONTHLY_NET_INCOME.getValue(),
+                application.monthlyNetIncome());
+        payload.put(FlowNodes.StartEventLeasingRequestReceived.Variables.AGE.getValue(), application.age());
         // Publishing the leasing-request message starts a new instance via the message start event.
-        engineApi.sendMessage(Messages.MIRAVELO_LEASING_REQUEST_RECEIVED, application.id().value().toString(), variables);
+        startProcessApi.startProcess(
+                new StartProcessByMessageCmd(Messages.MIRAVELO_LEASING_REQUEST_RECEIVED.getValue(), payload))
+                .join();
     }
 
     @Override
     public void correlateContractSigned(ApplicationId id) {
-        engineApi.sendMessage(Messages.MIRAVELO_CONTRACT_SIGNED, id.value().toString());
+        correlate(Messages.MIRAVELO_CONTRACT_SIGNED.getValue(), id);
     }
 
     @Override
     public void correlateHandoverReported(ApplicationId id) {
-        engineApi.sendMessage(Messages.MIRAVELO_HANDOVER_REPORTED, id.value().toString());
+        correlate(Messages.MIRAVELO_HANDOVER_REPORTED.getValue(), id);
     }
 
     @Override
     public void correlateApplicationWithdrawn(ApplicationId id) {
-        engineApi.sendMessage(Messages.MIRAVELO_APPLICATION_WITHDRAWN, id.value().toString());
+        correlate(Messages.MIRAVELO_APPLICATION_WITHDRAWN.getValue(), id);
+    }
+
+    private void correlate(String messageName, ApplicationId id) {
+        correlationApi.correlateMessage(
+                new CorrelateMessageCmd(
+                        messageName,
+                        Map.of(),
+                        Correlation.withKey(id.value().toString()),
+                        Map.of()))
+                .join();
     }
 
     /**
-     * Completes the {@code Clarify alternative with customer} user task via the Camunda client — the same
+     * Completes the {@code Clarify alternative with customer} user task via the process-engine-api — the same
      * task a human could complete through its deployed Camunda Form in the Tasklist.
      */
     @Override
     public void completeAlternativeClarification(ApplicationId id, boolean alternativeFound, BikeId bikeId) {
-        long userTaskKey = findActiveClarifyAlternativeTask(id);
+        String taskId = awaitClarifyAlternativeTaskId(id);
         Map<String, Object> variables = new LinkedHashMap<>();
         variables.put(FlowNodes.UserTaskClarifyAlternative.Variables.ALTERNATIVE_FOUND.getValue(), alternativeFound);
         if (bikeId != null) {
             variables.put(FlowNodes.UserTaskClarifyAlternative.Variables.BIKE_ID.getValue(), bikeId.value());
         }
-        camundaClient.newCompleteUserTaskCommand(userTaskKey).variables(variables).send().join();
+        userTaskCompletionApi.completeTask(new CompleteTaskCmd(taskId, variables)).join();
     }
 
-    private long findActiveClarifyAlternativeTask(ApplicationId id) {
-        // Match by reading each open task's applicationId variable rather than filtering the search by
-        // process-instance variables: on an Elasticsearch-backed cluster that variable filter is not
-        // reliably in sync with the task index (the task is searchable before the filter matches), so
-        // it would spuriously find nothing. The per-task variable read is the same path the task inbox
-        // uses and stays consistent with the task's own visibility.
-        List<UserTask> openTasks = camundaClient.newUserTaskSearchRequest()
-            .filter(filter -> {
-                filter.state(UserTaskState.CREATED);
-                filter.elementId(FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID);
-            })
-            .send()
-            .join()
-            .items();
+    /**
+     * Resolves the open {@code clarifyAlternative} task id for {@code id} from the {@link UserTaskSupport}
+     * pool, waiting briefly for the adapter's user-task delivery to hand it over. Fails with
+     * {@link NoSuchElementException}, which the REST advice maps to a 409: the token is not at this task.
+     */
+    private String awaitClarifyAlternativeTaskId(ApplicationId id) {
         String applicationId = id.value().toString();
-        return openTasks.stream()
-            .filter(task -> readApplicationId(task.getUserTaskKey()).filter(applicationId::equals).isPresent())
-            .findFirst()
-            .map(UserTask::getUserTaskKey)
-            .orElseThrow(() -> new NoSuchElementException(
-                "No active '" + FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID + "' task for application " + id.value()));
-    }
-
-    /** Zeebe returns variable values as JSON, so a string comes back quoted — strip the quotes. */
-    private Optional<String> readApplicationId(long userTaskKey) {
-        String applicationIdVariable = FlowNodes.StartEventLeasingRequestReceived.Variables.APPLICATION_ID.getValue();
-        return camundaClient.newUserTaskVariableSearchRequest(userTaskKey)
-            .send()
-            .join()
-            .items()
-            .stream()
-            .filter(variable -> applicationIdVariable.equals(variable.getName()))
-            .findFirst()
-            .map(Variable::getValue)
-            .map(LeasingProcessAdapter::removeSurroundingQuotes);
-    }
-
-    private static String removeSurroundingQuotes(String value) {
-        if (value.length() >= 2 && value.startsWith("\"") && value.endsWith("\"")) {
-            return value.substring(1, value.length() - 1);
+        String applicationIdKey = FlowNodes.StartEventLeasingRequestReceived.Variables.APPLICATION_ID.getValue();
+        for (int attempt = 0; attempt < TASK_LOOKUP_ATTEMPTS; attempt++) {
+            Optional<TaskInformation> task = userTaskSupport.getAllTasks().stream()
+                    .filter(it -> hasApplicationId(it, applicationIdKey, applicationId))
+                    .findFirst();
+            if (task.isPresent()) {
+                return task.get().getTaskId();
+            }
+            try {
+                Thread.sleep(TASK_LOOKUP_INTERVAL_MS);
+            } catch (InterruptedException e) {
+                // Keep the interrupt visible and fail with an unchecked exception, which also rolls back the
+                // surrounding @Transactional use case; Spring's default rule would commit a checked one.
+                Thread.currentThread().interrupt();
+                throw new IllegalStateException("Interrupted while waiting for the clarify-alternative task", e);
+            }
         }
-        return value;
+        throw new NoSuchElementException(
+                "No active '" + FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID + "' task for application "
+                        + applicationId);
+    }
+
+    /** Whether the pooled task's payload carries the application id; a failing payload lookup is no match. */
+    private boolean hasApplicationId(TaskInformation task, String applicationIdKey, String applicationId) {
+        try {
+            return Objects.equals(userTaskSupport.getPayload(task.getTaskId()).get(applicationIdKey), applicationId);
+        } catch (RuntimeException e) {
+            return false;
+        }
     }
 }

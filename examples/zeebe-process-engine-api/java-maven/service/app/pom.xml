@@ -6,7 +6,7 @@
 
     <parent>
         <groupId>io.miragon.blueprint</groupId>
-        <artifactId>zeebe-example</artifactId>
+        <artifactId>zeebe-process-engine-api-example</artifactId>
         <version>1.0-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
@@ -65,6 +65,31 @@
         <dependency>
             <groupId>io.camunda</groupId>
             <artifactId>camunda-spring-boot-starter</artifactId>
+        </dependency>
+        <!-- process-engine-api: the abstraction used to drive the engine (start/correlate/complete) and to
+             consume the service tasks with @ProcessEngineWorker beans. -->
+        <dependency>
+            <groupId>dev.bpm-crafters.process-engine-api</groupId>
+            <artifactId>process-engine-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>dev.bpm-crafters.process-engine-worker</groupId>
+            <artifactId>process-engine-worker-spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>dev.bpm-crafters.process-engine-adapters</groupId>
+            <artifactId>process-engine-adapter-camunda-platform-c8-spring-boot-starter</artifactId>
+        </dependency>
+        <!-- The worker library converts variables with a Jackson 2 ObjectMapper, which Spring Boot 4 only
+             provides through this module. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-jackson2</artifactId>
+        </dependency>
+        <!-- The adapter reads task variables with a Kotlin-aware Jackson 2 mapper. -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-kotlin</artifactId>
         </dependency>
         <dependency>
             <groupId>io.miragon.blueprint</groupId>
@@ -139,11 +164,6 @@
         </dependency>
         <dependency>
             <groupId>io.miragon.blueprint</groupId>
-            <artifactId>common-zeebe-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.miragon.blueprint</groupId>
             <artifactId>common-architecture-tests</artifactId>
             <scope>test</scope>
         </dependency>
@@ -188,7 +208,7 @@
                         `./mvnw -pl service/app -am spring-boot:build-image -DskipTests`.
                     -->
                     <image>
-                        <name>miravelo/zeebe-example:${project.version}</name>
+                        <name>miravelo/zeebe-process-engine-api-example:${project.version}</name>
                         <env>
                             <!-- Pin the JVM the buildpack installs to the version the code targets. -->
                             <BP_JVM_VERSION>21</BP_JVM_VERSION>

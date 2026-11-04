@@ -1,7 +1,7 @@
 package io.miragon.blueprint.adapter.inbound.zeebe
 
-import io.camunda.client.annotation.JobWorker
-import io.camunda.client.annotation.Variable
+import dev.bpmcrafters.processengine.worker.ProcessEngineWorker
+import dev.bpmcrafters.processengine.worker.Variable
 import io.miragon.blueprint.adapter.process.ServiceTasks
 import io.miragon.blueprint.application.port.inbound.CancelContractUseCase
 import io.miragon.blueprint.domain.leasing.ApplicationId
@@ -12,7 +12,7 @@ class CancelContractWorker(
     private val useCase: CancelContractUseCase,
 ) {
 
-    @JobWorker(type = ServiceTasks.MIRAVELO_CANCEL_CONTRACT)
+    @ProcessEngineWorker(topic = ServiceTasks.MIRAVELO_CANCEL_CONTRACT)
     fun handle(@Variable applicationId: String) {
         useCase.cancelContract(ApplicationId.of(applicationId))
     }

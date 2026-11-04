@@ -5,7 +5,7 @@ pluginManagement {
     }
 }
 
-rootProject.name = "zeebe-example"
+rootProject.name = "zeebe-process-engine-api-example"
 
 include("service:app")
 include("service:common-architecture-tests")

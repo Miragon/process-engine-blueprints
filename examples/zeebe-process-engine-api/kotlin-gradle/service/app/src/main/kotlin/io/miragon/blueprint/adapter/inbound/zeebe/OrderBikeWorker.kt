@@ -1,9 +1,8 @@
 package io.miragon.blueprint.adapter.inbound.zeebe
 
-import io.camunda.client.annotation.JobWorker
-import io.camunda.client.annotation.Variable
-import io.camunda.client.api.response.ActivatedJob
-import io.camunda.client.api.worker.JobClient
+import dev.bpmcrafters.processengine.worker.BpmnErrorOccurred
+import dev.bpmcrafters.processengine.worker.ProcessEngineWorker
+import dev.bpmcrafters.processengine.worker.Variable
 import io.miragon.blueprint.adapter.process.BikeLeasingProcessProcessApi.FlowNodes
 import io.miragon.blueprint.adapter.process.Errors
 import io.miragon.blueprint.adapter.process.ServiceTasks
@@ -12,50 +11,29 @@ import io.miragon.blueprint.domain.bike.BikeId
 import io.miragon.blueprint.domain.bike.BikeUnavailableException
 import io.miragon.blueprint.domain.leasing.ApplicationId
 import org.springframework.stereotype.Component
-import java.time.Duration
 
 /**
- * Orders the bike from the dealer. The task is deployed as its own retryable job (`retries="3"` on the
- * BPMN task definition), so on failure we do not just let the job die: we fail it with a fixed 10s
- * backoff and a decremented retry count. This is the Zeebe equivalent of Camunda 7's
- * `R3/PT10S` retry cycle — the countdown is visible in Operate and, once the retries hit 0, Zeebe
- * automatically raises an incident on `serviceTask_orderBike`. It powers the reproducible incident
- * demo (bike id `BIKE-FAIL`, see the `06-incident-demo` Bruno collection); the poison-id logic itself
- * lives in the simulated dealer, which throws. An out-of-stock bike is no failure: it is signalled to
- * the process as the BPMN error `bikeUnavailable`, which the error boundary event on the service task
- * catches. `autoComplete` is off so we own the complete/throw/fail decision explicitly.
+ * Orders the bike from the dealer and returns the placed order as the process variable `orderId`. An
+ * out-of-stock bike is no failure: it is reported as the BPMN error `bikeUnavailable`, which the error
+ * boundary event on the service task catches, and leaving the task this way registers no order
+ * compensation. Any other exception reaches the worker library, which fails the job through the adapter:
+ * `service-tasks.retries` and `retry-timeout-in-seconds` in `application.yaml` give the retry countdown
+ * with a 10s backoff, and at 0 retries Zeebe raises an incident on `serviceTask_orderBike`. It powers the
+ * reproducible incident demo (bike id `BIKE-FAIL`, see the `06-incident-demo` Bruno collection); the
+ * poison-id logic itself lives in the simulated dealer, which throws.
  */
 @Component
 class OrderBikeWorker(
     private val useCase: OrderBikeUseCase,
 ) {
 
-    private val retryBackoff: Duration = Duration.ofSeconds(10)
-
-    @JobWorker(type = ServiceTasks.MIRAVELO_ORDER_BIKE, autoComplete = [false])
-    fun handle(client: JobClient, job: ActivatedJob, @Variable applicationId: String, @Variable bikeId: String) {
-        try {
-            val orderId = useCase.orderBike(ApplicationId.of(applicationId), BikeId(bikeId))
-            client.newCompleteCommand(job)
-                .variables(mapOf(FlowNodes.ServiceTaskOrderBike.Variables.ORDER_ID.value to orderId.value))
-                .send()
-                .join()
+    @ProcessEngineWorker(topic = ServiceTasks.MIRAVELO_ORDER_BIKE)
+    fun handle(@Variable applicationId: String, @Variable bikeId: String): Map<String, Any> {
+        val orderId = try {
+            useCase.orderBike(ApplicationId.of(applicationId), BikeId(bikeId))
         } catch (e: BikeUnavailableException) {
-            // Leaving the task through the error boundary event registers no order compensation.
-            client.newThrowErrorCommand(job)
-                .errorCode(Errors.BIKE_UNAVAILABLE.code)
-                .errorMessage(e.message)
-                .send()
-                .join()
-        } catch (e: RuntimeException) {
-            // Incident demo: the dealer "outage" throws. Fail the job with one fewer retry and a 10s
-            // backoff so the retries count down visibly; at 0 retries Zeebe raises the incident.
-            client.newFailCommand(job)
-                .retries(job.retries - 1)
-                .retryBackoff(retryBackoff)
-                .errorMessage(e.message)
-                .send()
-                .join()
+            throw BpmnErrorOccurred(e.message.orEmpty(), Errors.BIKE_UNAVAILABLE.code, emptyMap())
         }
+        return mapOf(FlowNodes.ServiceTaskOrderBike.Variables.ORDER_ID.value to orderId.value)
     }
 }

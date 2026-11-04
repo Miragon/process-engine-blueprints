@@ -1,54 +1,43 @@
 package io.miragon.blueprint.adapter.outbound.zeebe
 
-import io.camunda.client.CamundaClient
-import io.camunda.client.api.search.enums.UserTaskState
+import dev.bpmcrafters.processengineapi.task.TaskInformation
+import dev.bpmcrafters.processengineapi.task.support.UserTaskSupport
 import io.miragon.blueprint.adapter.process.BikeLeasingProcessProcessApi.FlowNodes
 import io.miragon.blueprint.application.port.outbound.TaskInboxPort
 import io.miragon.blueprint.domain.leasing.ApplicationId
 import org.springframework.stereotype.Component
 
 /**
- * Reads the open `Clarify alternative with customer` tasks from Zeebe's task list and translates them
- * into the domain's business key. Zeebe has no business key, so the application id travels as a process
- * variable: for each open task we read its `applicationId` variable and its creation date. It never
- * leaks an engine task id upward — the inbox lists cases, and cases are resolved through the domain,
- * correlated by id.
+ * Lists the open `Clarify alternative with customer` tasks from the [UserTaskSupport] pool and translates
+ * them into the domain's business key. Zeebe has no business key, so the application id travels as a
+ * process variable delivered with the task. It never leaks an engine task id upward — the inbox lists
+ * cases, and cases are resolved through the domain, correlated by id.
+ *
+ * The pool is fed by the adapter's scheduled user-task delivery, so it lags the engine by the polling
+ * interval plus the secondary storage's delay. A task that left the pool in the meantime is skipped.
  */
 @Component
 class TaskInboxAdapter(
-    private val camundaClient: CamundaClient,
+    private val userTaskSupport: UserTaskSupport,
 ) : TaskInboxPort {
 
     private val applicationIdVariable = FlowNodes.StartEventLeasingRequestReceived.Variables.APPLICATION_ID.value
 
-    override fun findOpenClarifications(): List<TaskInboxPort.OpenClarification> {
-        val openTasks = camundaClient.newUserTaskSearchRequest()
-            .filter { filter ->
-                filter.state(UserTaskState.CREATED)
-                filter.elementId(FlowNodes.UserTaskClarifyAlternative.id.value)
-            }
-            .send()
-            .join()
-            .items()
-        return openTasks.mapNotNull { task ->
-            val applicationId = readApplicationId(task.userTaskKey) ?: return@mapNotNull null
+    override fun findOpenClarifications(): List<TaskInboxPort.OpenClarification> =
+        userTaskSupport.getAllTasks().mapNotNull { task ->
+            val applicationId = readApplicationId(task) ?: return@mapNotNull null
+            val creationDate = task.getMetaValueAsOffsetDate(CREATION_DATE) ?: return@mapNotNull null
             TaskInboxPort.OpenClarification(
                 applicationId = ApplicationId.of(applicationId),
-                waitingSince = task.creationDate.toLocalDateTime(),
+                waitingSince = creationDate.toLocalDateTime(),
             )
         }
-    }
 
-    /**
-     * Reads the instance's `applicationId` from the task's scope. Zeebe returns variable values as
-     * JSON, so a string comes back quoted — strip the quotes to recover the raw id.
-     */
-    private fun readApplicationId(userTaskKey: Long): String? =
-        camundaClient.newUserTaskVariableSearchRequest(userTaskKey)
-            .send()
-            .join()
-            .items()
-            .firstOrNull { it.name == applicationIdVariable }
-            ?.value
-            ?.removeSurrounding("\"")
+    private fun readApplicationId(task: TaskInformation): String? =
+        runCatching { userTaskSupport.getPayload(task.taskId)[applicationIdVariable] as? String }.getOrNull()
+
+    private companion object {
+        /** Set by the adapter's `SCHEDULED` delivery only, see `docs/adr/0014`. */
+        const val CREATION_DATE = "creationDate"
+    }
 }

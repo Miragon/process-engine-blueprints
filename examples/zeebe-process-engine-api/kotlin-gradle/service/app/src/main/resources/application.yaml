@@ -23,7 +23,29 @@ spring:
 
 # The Zeebe connection (self-managed, gRPC 26500 / REST 8080, auth none) and the BPMN/DMN/form
 # auto-deployment are contributed by the common-zeebe module (zeebe-application.yaml +
-# EngineAutoConfiguration). Nothing engine-specific needs to live here.
+# EngineAutoConfiguration).
+
+# process-engine-api (bpm-crafters): runs the Camunda 8 adapter, which opens job workers for the
+# @ProcessEngineWorker beans and polls the user tasks for the UserTaskSupport pool. The worker library's
+# own deployment stays off: it covers BPMN and DMN only, and the models reference deployed forms.
+dev:
+  bpm-crafters:
+    process-api:
+      worker:
+        deployment:
+          enabled: false
+      adapter:
+        c8:
+          enabled: true
+          service-tasks:
+            delivery-strategy: subscription
+            worker-id: leasing-worker
+            # Failed jobs count down to an incident: applies to every service task (docs/adr/0014).
+            retries: 3
+            retry-timeout-in-seconds: 10
+          user-tasks:
+            delivery-strategy: scheduled
+            schedule-delivery-fixed-rate-in-seconds: 1
 
 # A minimal, deploy/ops-ready surface. Everything else stays disabled.
 management:

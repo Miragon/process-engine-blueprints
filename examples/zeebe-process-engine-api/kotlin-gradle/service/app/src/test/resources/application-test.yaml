@@ -16,3 +16,12 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
+
+# The retry countdown of a failed job would outlast the process test's assertion timeout at its 10s.
+dev:
+  bpm-crafters:
+    process-api:
+      adapter:
+        c8:
+          service-tasks:
+            retry-timeout-in-seconds: 1

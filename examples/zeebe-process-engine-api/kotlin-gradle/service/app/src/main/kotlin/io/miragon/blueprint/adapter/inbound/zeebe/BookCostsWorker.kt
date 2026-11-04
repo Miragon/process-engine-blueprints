@@ -1,7 +1,7 @@
 package io.miragon.blueprint.adapter.inbound.zeebe
 
-import io.camunda.client.annotation.JobWorker
-import io.camunda.client.annotation.Variable
+import dev.bpmcrafters.processengine.worker.ProcessEngineWorker
+import dev.bpmcrafters.processengine.worker.Variable
 import io.miragon.blueprint.adapter.process.ServiceTasks
 import io.miragon.blueprint.application.port.inbound.BookCancellationCostsUseCase
 import io.miragon.blueprint.domain.bike.OrderId
@@ -12,7 +12,7 @@ class BookCostsWorker(
     private val useCase: BookCancellationCostsUseCase,
 ) {
 
-    @JobWorker(type = ServiceTasks.MIRAVELO_BOOK_COSTS)
+    @ProcessEngineWorker(topic = ServiceTasks.MIRAVELO_BOOK_COSTS)
     fun handle(@Variable orderId: String) {
         useCase.bookCosts(OrderId(orderId))
     }

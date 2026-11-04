@@ -23,6 +23,9 @@ springBoot {
 dependencies {
     implementation(libs.bundles.defaultService)
     implementation(libs.bundles.database)
+    // process-engine-api: the abstraction used to drive the engine (start/correlate/complete) and to
+    // consume the service tasks with @ProcessEngineWorker beans.
+    implementation(libs.bundles.processEngineApi)
     implementation(project(":service:common-zeebe"))
     implementation(libs.bpmnToCodeRuntime)
     implementation(libs.springdoc)
@@ -86,7 +89,7 @@ tasks.withType<BootJar> {
 // maintain (layered, non-root by default). See docs/adr and the "Run it in containers" section of
 // CONTRIBUTING.md. Build with `./gradlew :service:app:bootBuildImage`.
 tasks.named<BootBuildImage>("bootBuildImage") {
-    imageName.set("miravelo/zeebe-example:${project.version}")
+    imageName.set("miravelo/zeebe-process-engine-api-example:${project.version}")
     // Pin the JVM the buildpack installs to the version the code targets.
     environment.set(mapOf("BP_JVM_VERSION" to "21"))
 }

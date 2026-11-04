@@ -4,6 +4,9 @@ spring_dependency_version = "1.1.7"
 kotlin_version = "2.4.21"
 kotlin_logging_version = "3.0.5"
 zeebe_version = "8.10.7"
+process_engine_api_version = "1.7"
+process_engine_worker_version = "0.8.5"
+process_engine_adapter_c8_version = "2026.09.1"
 bpmn_to_code_version = "7.0.1"
 bpmn_to_code_testing_version = "7.0.1"
 archunit_version = "1.5.1"
@@ -39,6 +42,14 @@ prometheus = { module = "io.micrometer:micrometer-registry-prometheus" }   # ver
 # Camunda 8 / Zeebe
 zeebeSdk = { module = "io.camunda:camunda-spring-boot-starter", version.ref = "zeebe_version" }
 
+# process-engine-api (bpm-crafters) — the abstraction layer used to talk to the engine
+# (start/correlate/complete via APIs, and @ProcessEngineWorker beans for the service tasks)
+process-engine-api = { module = "dev.bpm-crafters.process-engine-api:process-engine-api", version.ref = "process_engine_api_version" }
+process-engine-worker = { module = "dev.bpm-crafters.process-engine-worker:process-engine-worker-spring-boot-starter", version.ref = "process_engine_worker_version" }
+process-engine-adapter-c8 = { module = "dev.bpm-crafters.process-engine-adapters:process-engine-adapter-camunda-platform-c8-spring-boot-starter", version.ref = "process_engine_adapter_c8_version" }
+# The worker library converts variables with a Jackson 2 ObjectMapper, which Spring Boot 4 only provides through this module.
+spring-boot-jackson2 = { module = "org.springframework.boot:spring-boot-jackson2", version.ref = "spring_version" }
+
 # BPMN-to-code (generates the typed process API from the *.bpmn models; testing = model validation)
 bpmnToCodeRuntime = { module = "io.miragon:bpmn-to-code-runtime", version.ref = "bpmn_to_code_version" }
 bpmnToCodeTesting = { module = "io.miragon:bpmn-to-code-testing", version.ref = "bpmn_to_code_testing_version" }
@@ -63,6 +74,7 @@ junitPlatformLauncher = { module = "org.junit.platform:junit-platform-launcher",
 [bundles]
 defaultService = ["kotlin-reflect", "kotlin_logging", "jackson-kotlin", "devtools", "web", "zeebeSdk", "actuator", "prometheus"]
 database = ["jpa", "postgres", "flyway", "flyway-postgres"]
+processEngineApi = ["process-engine-api", "process-engine-adapter-c8", "process-engine-worker", "spring-boot-jackson2"]
 test = ["spring_test", "spring_webTest", "spring_dataJpaTest", "mockito", "mockk", "spring_mockk", "kotlin_mockito", "testcontainers"]
 archunit = ["archunit"]
 konsist = ["konsist"]

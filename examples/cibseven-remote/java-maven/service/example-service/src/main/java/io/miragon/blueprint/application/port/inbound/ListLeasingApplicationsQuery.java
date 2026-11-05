@@ -6,7 +6,6 @@ import io.miragon.blueprint.domain.leasing.CustomerName;
 import io.miragon.blueprint.domain.leasing.LeasingStatus;
 import java.time.LocalDateTime;
 import java.util.List;
-import org.jspecify.annotations.Nullable;
 
 /**
  * Reads a page of leasing applications for the customer-portal list, optionally filtered by status.
@@ -14,23 +13,21 @@ import org.jspecify.annotations.Nullable;
  * into the application layer.
  */
 public interface ListLeasingApplicationsQuery {
+
     Page list(Filter filter);
 
-    record Filter(
-            @Nullable LeasingStatus status,
-            int page,
-            int size
-    ) {
+    /** {@code status} may be {@code null} to list applications of every status. */
+    record Filter(LeasingStatus status, int page, int size) {
     }
 
+    /** {@code bikeModel} may be {@code null} when the bike is not in the portfolio. */
     record Item(
             ApplicationId applicationId,
             CustomerName customerName,
             BikeId bikeId,
-            @Nullable String bikeModel,
+            String bikeModel,
             LeasingStatus status,
-            LocalDateTime createdAt
-    ) {
+            LocalDateTime createdAt) {
     }
 
     record Page(
@@ -38,7 +35,6 @@ public interface ListLeasingApplicationsQuery {
             int page,
             int size,
             long totalElements,
-            int totalPages
-    ) {
+            int totalPages) {
     }
 }

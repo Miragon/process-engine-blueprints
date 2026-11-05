@@ -107,7 +107,7 @@ the nightly run. Coverage says a line ran; mutation says a test would have notic
 ## Verify After Each Task (targeted, not a full build)
 
 - Backend service/controller: `./mvnw -pl service/app -am test "-Dtest=*<Name>Test" -Dsurefire.failIfNoSpecifiedTests=false`
-- Architecture only: `./mvnw -pl service/app -am test "-Dtest=io.miragon.blueprint.architecture.*"`
+- Architecture only: `./mvnw -pl service/app -am test -Dtest="ArchitectureTest" -Dsurefire.failIfNoSpecifiedTests=false`
 - Contract changed: regenerate the spec, then `git diff --exit-code openapi/openapi.json`
 
 ## Agent Tooling

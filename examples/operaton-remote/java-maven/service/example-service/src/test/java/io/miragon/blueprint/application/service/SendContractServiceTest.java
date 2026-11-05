@@ -4,7 +4,6 @@ import static io.miragon.blueprint.domain.leasing.TestObjectBuilder.testLeasingA
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -34,7 +33,6 @@ class SendContractServiceTest {
         when(repository.findById(application.id())).thenReturn(Optional.of(application));
         when(contract.issueContract(application.id())).thenReturn(new ContractId("CONTRACT-1"));
         when(repository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
-        doNothing().when(notification).send(any(), any());
 
         // when: the contract is sent
         underTest.sendContract(application.id());
@@ -42,7 +40,7 @@ class SendContractServiceTest {
         // then: the contract is issued, its id is stored on the application and the customer is asked to sign
         verify(repository).findById(application.id());
         verify(contract).issueContract(application.id());
-        verify(repository).save(argThat(app -> app.contractId().equals(new ContractId("CONTRACT-1"))));
+        verify(repository).save(argThat(app -> new ContractId("CONTRACT-1").equals(app.contractId())));
         verify(notification).send(any(), eq(application));
         verifyNoMoreInteractions(repository, contract, notification);
     }

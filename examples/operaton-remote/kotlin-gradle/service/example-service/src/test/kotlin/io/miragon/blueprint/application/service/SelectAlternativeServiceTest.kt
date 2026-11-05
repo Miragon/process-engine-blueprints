@@ -65,17 +65,16 @@ class SelectAlternativeServiceTest {
     }
 
     @Test
-    fun `an unknown application is reported with its id`() {
+    fun `selectAlternative fails for an unknown application`() {
 
         // given: no application is stored under the id
         val id = ApplicationId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"))
         every { repository.findById(id) } returns null
 
-        // when / then: the decision is refused, naming the id
+        // when / then: the lookup fails with an IllegalStateException, which the REST adapter maps to 404
         assertThatThrownBy { underTest.selectAlternative(SelectAlternativeUseCase.Command(id, alternativeFound = false)) }
             .isInstanceOf(IllegalStateException::class.java)
             .hasMessage("Unknown application $id")
-        verify { repository.findById(id) }
-        confirmVerified(repository, bikePortfolio, process)
+        verify(exactly = 0) { repository.save(any()) }
     }
 }

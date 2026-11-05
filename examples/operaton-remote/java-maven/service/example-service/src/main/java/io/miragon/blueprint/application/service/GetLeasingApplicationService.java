@@ -5,7 +5,7 @@ import io.miragon.blueprint.application.port.outbound.BikePortfolioRepository;
 import io.miragon.blueprint.application.port.outbound.LeasingApplicationRepository;
 import io.miragon.blueprint.domain.bike.Bike;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
-import io.miragon.blueprint.domain.leasing.LeasingApplication;
+import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,18 +16,18 @@ public class GetLeasingApplicationService implements GetLeasingApplicationQuery 
     private final LeasingApplicationRepository repository;
     private final BikePortfolioRepository bikePortfolio;
 
-    public GetLeasingApplicationService(LeasingApplicationRepository repository, BikePortfolioRepository bikePortfolio) {
+    public GetLeasingApplicationService(
+            LeasingApplicationRepository repository,
+            BikePortfolioRepository bikePortfolio) {
         this.repository = repository;
         this.bikePortfolio = bikePortfolio;
     }
 
     @Override
-    public GetLeasingApplicationQuery.Result byId(ApplicationId id) {
-        LeasingApplication application = repository.findById(id).orElse(null);
-        if (application == null) {
-            return null;
-        }
-        Bike bike = bikePortfolio.findByBikeId(application.bikeId()).orElse(null);
-        return new GetLeasingApplicationQuery.Result(application, bike != null ? bike.model() : null);
+    public Optional<GetLeasingApplicationQuery.Result> byId(ApplicationId id) {
+        return repository.findById(id)
+                .map(application -> new GetLeasingApplicationQuery.Result(
+                        application,
+                        bikePortfolio.findByBikeId(application.bikeId()).map(Bike::model).orElse(null)));
     }
 }

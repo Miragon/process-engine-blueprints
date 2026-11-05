@@ -11,9 +11,9 @@ get {
 }
 
 script:pre-request {
-  const pid = bru.getVar("processInstanceId");
-  await pollEngine(`/incident?processInstanceId=${pid}&incidentType=failedJob`,
-    (b, s) => s === 200 && Array.isArray(b) && b.length >= 1,
+  await pollEngine("/incident?processInstanceId=" + bru.getVar("processInstanceId")
+    + "&incidentType=failedJob",
+    (b) => Array.isArray(b) && b.length >= 1,
     { timeoutMs: 60000 });
 }
 

@@ -1,8 +1,6 @@
 package io.miragon.blueprint.adapter.inbound.rest;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -36,18 +34,19 @@ class SelectAlternativeControllerTest {
         String pathVar = "123e4567-e89b-12d3-a456-426614174000";
         String body = """
                 {"alternativeFound":true,"bikeId":"BIKE-ALT","bikeModel":"Aero Road 700"}""";
-        doNothing().when(useCase).selectAlternative(any());
 
         // when: the request is performed
-        MvcResult response = mockMvc.perform(post("/api/bike-leasing/{applicationId}/clarify-alternative", pathVar)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
+        MvcResult response = mockMvc.perform(
+                        post("/api/bike-leasing/{applicationId}/clarify-alternative", pathVar)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(body))
                 .andReturn();
 
         // then: the use case is invoked with the mapped command and the response is 202 Accepted
         assertThat(response.getResponse().getStatus()).isEqualTo(202);
         verify(useCase).selectAlternative(
-                new SelectAlternativeUseCase.Command(ApplicationId.of(pathVar), true, new BikeId("BIKE-ALT"), "Aero Road 700"));
+                new SelectAlternativeUseCase.Command(
+                        ApplicationId.of(pathVar), true, new BikeId("BIKE-ALT"), "Aero Road 700"));
         verifyNoMoreInteractions(useCase);
     }
 
@@ -59,12 +58,12 @@ class SelectAlternativeControllerTest {
         String pathVar = "123e4567-e89b-12d3-a456-426614174000";
         String body = """
                 {"alternativeFound":false}""";
-        doNothing().when(useCase).selectAlternative(any());
 
         // when: the request is performed
-        MvcResult response = mockMvc.perform(post("/api/bike-leasing/{applicationId}/clarify-alternative", pathVar)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
+        MvcResult response = mockMvc.perform(
+                        post("/api/bike-leasing/{applicationId}/clarify-alternative", pathVar)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(body))
                 .andReturn();
 
         // then: the use case is invoked with a command carrying no alternative bike and the response is 202
@@ -84,9 +83,10 @@ class SelectAlternativeControllerTest {
                 {"alternativeFound":true}""";
 
         // when: the request is performed
-        MvcResult response = mockMvc.perform(post("/api/bike-leasing/{applicationId}/clarify-alternative", pathVar)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
+        MvcResult response = mockMvc.perform(
+                        post("/api/bike-leasing/{applicationId}/clarify-alternative", pathVar)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(body))
                 .andReturn();
 
         // then: the request is refused before the use case is reached

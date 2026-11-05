@@ -14,6 +14,7 @@ class SendContractService(
 
     override fun sendContract(application: LeasingApplication): LeasingApplication {
         if (application.contractId != null) return application
+        // Issue the contract in the contract system and record its id on the application.
         val contractId = contract.issueContract(application.id)
         notification.send("Please review and sign your leasing contract", application)
         return application.withContract(contractId)

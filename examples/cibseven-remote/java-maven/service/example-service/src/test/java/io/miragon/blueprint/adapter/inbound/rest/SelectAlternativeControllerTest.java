@@ -16,9 +16,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import tools.jackson.databind.json.JsonMapper;
-import java.util.Map;
 
 @WebMvcTest(SelectAlternativeController.class)
 class SelectAlternativeControllerTest {
@@ -29,22 +26,21 @@ class SelectAlternativeControllerTest {
     @MockitoBean
     private SelectAlternativeUseCase useCase;
 
-    private final JsonMapper mapper = new JsonMapper();
-
     @Test
     @DisplayName("client clarifies an alternative bike")
     void clientClarifiesAnAlternativeBike() throws Exception {
 
         // given: a decision body and the application-id path variable
         String pathVar = "123e4567-e89b-12d3-a456-426614174000";
-        Map<String, Object> body = Map.of("alternativeFound", true, "bikeId", "BIKE-ALT", "bikeModel", "Aero Road 700");
-        MockHttpServletRequestBuilder operation =
-                post("/api/bike-leasing/{applicationId}/clarify-alternative", pathVar)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(body));
+        String body = """
+                {"alternativeFound":true,"bikeId":"BIKE-ALT","bikeModel":"Aero Road 700"}""";
 
         // when: the request is performed
-        MvcResult response = mockMvc.perform(operation).andReturn();
+        MvcResult response = mockMvc.perform(
+                        post("/api/bike-leasing/{applicationId}/clarify-alternative", pathVar)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(body))
+                .andReturn();
 
         // then: the use case is invoked with the mapped command and the response is 202 Accepted
         assertThat(response.getResponse().getStatus()).isEqualTo(202);
@@ -60,14 +56,15 @@ class SelectAlternativeControllerTest {
 
         // given: a decision body with no alternative and no bike details
         String pathVar = "123e4567-e89b-12d3-a456-426614174000";
-        Map<String, Object> body = Map.of("alternativeFound", false);
-        MockHttpServletRequestBuilder operation =
-                post("/api/bike-leasing/{applicationId}/clarify-alternative", pathVar)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(body));
+        String body = """
+                {"alternativeFound":false}""";
 
         // when: the request is performed
-        MvcResult response = mockMvc.perform(operation).andReturn();
+        MvcResult response = mockMvc.perform(
+                        post("/api/bike-leasing/{applicationId}/clarify-alternative", pathVar)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(body))
+                .andReturn();
 
         // then: the use case is invoked with a command carrying no alternative bike and the response is 202
         assertThat(response.getResponse().getStatus()).isEqualTo(202);
@@ -82,14 +79,15 @@ class SelectAlternativeControllerTest {
 
         // given: a decision body that accepts an alternative but names no bike
         String pathVar = "123e4567-e89b-12d3-a456-426614174000";
-        Map<String, Object> body = Map.of("alternativeFound", true);
-        MockHttpServletRequestBuilder operation =
-                post("/api/bike-leasing/{applicationId}/clarify-alternative", pathVar)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(body));
+        String body = """
+                {"alternativeFound":true}""";
 
         // when: the request is performed
-        MvcResult response = mockMvc.perform(operation).andReturn();
+        MvcResult response = mockMvc.perform(
+                        post("/api/bike-leasing/{applicationId}/clarify-alternative", pathVar)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(body))
+                .andReturn();
 
         // then: the request is refused before the use case is reached
         assertThat(response.getResponse().getStatus()).isEqualTo(400);

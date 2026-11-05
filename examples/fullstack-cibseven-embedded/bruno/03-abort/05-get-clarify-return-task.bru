@@ -11,9 +11,8 @@ get {
 }
 
 script:pre-request {
-  const id = bru.getVar('applicationId');
-  await pollEngine(
-    '/task?processInstanceBusinessKey=' + id + '&taskDefinitionKey=userTask_clarifyReturn',
+  await pollEngine("/task?processInstanceBusinessKey=" + bru.getVar("applicationId")
+    + "&taskDefinitionKey=userTask_clarifyReturn",
     (b) => Array.isArray(b) && b.length >= 1);
 }
 

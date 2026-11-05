@@ -1,24 +1,26 @@
 package io.miragon.blueprint.adapter.inbound.rest;
 
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.miragon.blueprint.application.port.inbound.ListLeasingApplicationsQuery;
 import io.miragon.blueprint.domain.leasing.LeasingStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.jspecify.annotations.Nullable;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
- * {@code GET /api/bike-leasing?status=&page=&size=} — the customer-portal list. A separate controller from
- * the paging query keeps to the "one inbound port per controller" rule the architecture tests enforce.
+ * {@code GET /api/bike-leasing?status=&page=&size=} — the customer-portal list. A separate controller
+ * from the paging query keeps to the "one inbound port per controller" rule the architecture tests
+ * enforce.
  */
 @RestController
 @RequestMapping("/api/bike-leasing")
@@ -33,10 +35,9 @@ public class ListLeasingApplicationsController {
     @Operation(operationId = "listLeasingApplications")
     @GetMapping
     public LeasingApplicationPageDto list(
-            @RequestParam(required = false) @Nullable String status,
+            @RequestParam(required = false) String status,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size
-    ) {
+            @RequestParam(defaultValue = "20") int size) {
         ListLeasingApplicationsQuery.Filter filter = new ListLeasingApplicationsQuery.Filter(
                 status != null ? parseStatus(status) : null,
                 page,
@@ -44,14 +45,14 @@ public class ListLeasingApplicationsController {
         return toDto(query.list(filter));
     }
 
-    private static LeasingStatus parseStatus(String raw) {
+    private LeasingStatus parseStatus(String raw) {
         try {
             return LeasingStatus.valueOf(raw.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
-            String expected = Arrays.stream(LeasingStatus.values())
-                    .map(LeasingStatus::name)
-                    .collect(Collectors.joining(", "));
-            throw new IllegalArgumentException("unknown status '" + raw + "'; expected one of " + expected, e);
+            throw new IllegalArgumentException(
+                    "unknown status '" + raw + "'; expected one of "
+                            + Arrays.stream(LeasingStatus.values()).map(Enum::name).collect(Collectors.joining(", ")),
+                    e);
         }
     }
 
@@ -74,26 +75,23 @@ public class ListLeasingApplicationsController {
                 item.createdAt());
     }
 
-    @Schema(requiredProperties = {"items", "page", "size", "totalElements", "totalPages"})
     public record LeasingApplicationPageDto(
-            List<LeasingApplicationSummaryDto> items,
-            int page,
-            int size,
-            long totalElements,
-            int totalPages
-    ) {
+            @Schema(requiredMode = REQUIRED) List<LeasingApplicationSummaryDto> items,
+            @Schema(requiredMode = REQUIRED) int page,
+            @Schema(requiredMode = REQUIRED) int size,
+            @Schema(requiredMode = REQUIRED) long totalElements,
+            @Schema(requiredMode = REQUIRED) int totalPages) {
     }
 
-    @Schema(requiredProperties = {"applicationId", "customerName", "bikeId", "status", "createdAt"})
     public record LeasingApplicationSummaryDto(
-            String applicationId,
-            String customerName,
-            String bikeId,
-            @Schema(nullable = true) @Nullable String bikeModel,
-            String status,
+            @Schema(requiredMode = REQUIRED) String applicationId,
+            @Schema(requiredMode = REQUIRED) String customerName,
+            @Schema(requiredMode = REQUIRED) String bikeId,
+            @Schema(nullable = true) String bikeModel,
+            @Schema(requiredMode = REQUIRED) String status,
             // ISO-8601 string — see the note in GetLeasingApplicationController.LeasingApplicationDto.
+            @Schema(requiredMode = REQUIRED)
             @JsonFormat(shape = JsonFormat.Shape.STRING)
-            LocalDateTime createdAt
-    ) {
+            LocalDateTime createdAt) {
     }
 }

@@ -1,6 +1,5 @@
 package io.miragon.blueprint.application.service;
 
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -16,14 +15,10 @@ class BookCancellationCostsServiceTest {
 
     @Test
     void bookCostsDelegatesTheCostBookingToTheDealer() {
-
         // given: a placed order
         OrderId orderId = new OrderId("ORDER-900");
-        doNothing().when(bikeDealer).bookCancellationCosts(orderId);
-
         // when: the costs are booked
         underTest.bookCosts(orderId);
-
         // then: the dealer out-port books the cancellation costs
         verify(bikeDealer).bookCancellationCosts(orderId);
         verifyNoMoreInteractions(bikeDealer);

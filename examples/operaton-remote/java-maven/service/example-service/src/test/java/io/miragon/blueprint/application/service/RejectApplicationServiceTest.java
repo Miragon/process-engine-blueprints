@@ -4,7 +4,6 @@ import static io.miragon.blueprint.domain.leasing.TestObjectBuilder.testLeasingA
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -29,7 +28,6 @@ class RejectApplicationServiceTest {
         // given: an application in the repository
         LeasingApplication application = testLeasingApplication().build();
         when(repository.findById(application.id())).thenReturn(Optional.of(application));
-        doNothing().when(notification).send(any(), eq(application));
         when(repository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
         // when: the application is rejected

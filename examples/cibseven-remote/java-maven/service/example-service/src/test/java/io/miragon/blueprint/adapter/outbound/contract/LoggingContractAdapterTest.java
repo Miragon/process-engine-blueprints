@@ -16,8 +16,8 @@ class LoggingContractAdapterTest {
     @DisplayName("issueContract mints a fresh contract id")
     void issueContractMintsAFreshContractId() {
         // given: an application / when: a contract is issued twice
-        ContractId first = underTest.issueContract(testLeasingApplication().id());
-        ContractId second = underTest.issueContract(testLeasingApplication().id());
+        ContractId first = underTest.issueContract(testLeasingApplication().build().id());
+        ContractId second = underTest.issueContract(testLeasingApplication().build().id());
         // then: each issue gets its own reference
         assertThat(first.value()).startsWith("CONTRACT-");
         assertThat(first).isNotEqualTo(second);

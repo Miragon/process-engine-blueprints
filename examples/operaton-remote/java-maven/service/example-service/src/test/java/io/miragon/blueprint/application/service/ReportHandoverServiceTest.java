@@ -3,7 +3,6 @@ package io.miragon.blueprint.application.service;
 import static io.miragon.blueprint.domain.leasing.TestObjectBuilder.testLeasingApplication;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -32,7 +31,6 @@ class ReportHandoverServiceTest {
         // given: an ordered application
         ApplicationId id = new ApplicationId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
         LeasingApplication application = testLeasingApplication().id(id).status(LeasingStatus.ORDERED).build();
-        doNothing().when(process).correlateHandoverReported(id);
         when(repository.findById(id)).thenReturn(Optional.of(application));
         when(repository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 

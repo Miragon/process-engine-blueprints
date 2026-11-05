@@ -31,9 +31,8 @@ public class SelectAlternativeService implements SelectAlternativeUseCase {
         repository.findById(command.applicationId())
                 .orElseThrow(() -> new IllegalStateException("Unknown application " + command.applicationId()));
         BikeId alternativeBike = command.bikeId();
-        String bikeModel = command.bikeModel();
-        if (command.alternativeFound() && alternativeBike != null && bikeModel != null) {
-            bikePortfolio.save(new Bike(alternativeBike, bikeModel));
+        if (command.alternativeFound() && alternativeBike != null && command.bikeModel() != null) {
+            bikePortfolio.save(new Bike(alternativeBike, command.bikeModel()));
         }
         process.completeAlternativeClarification(
                 command.applicationId(),

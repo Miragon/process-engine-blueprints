@@ -7,11 +7,10 @@ import io.miragon.blueprint.application.port.outbound.LeasingProcess;
 import io.miragon.blueprint.domain.bike.Bike;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
 import io.miragon.blueprint.domain.leasing.LeasingApplication;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.Clock;
 import java.time.LocalDateTime;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
@@ -26,8 +25,7 @@ public class SubmitLeasingRequestService implements SubmitLeasingRequestUseCase 
             LeasingApplicationRepository repository,
             BikePortfolioRepository bikePortfolio,
             LeasingProcess process,
-            Clock clock
-    ) {
+            Clock clock) {
         this.repository = repository;
         this.bikePortfolio = bikePortfolio;
         this.process = process;
@@ -35,19 +33,17 @@ public class SubmitLeasingRequestService implements SubmitLeasingRequestUseCase 
     }
 
     @Override
-    public ApplicationId submit(SubmitLeasingRequestUseCase.Command command) {
+    public ApplicationId submit(Command command) {
         // The bike's model is kept in the portfolio; the application only references the bike by id.
         bikePortfolio.save(new Bike(command.bikeId(), command.bikeModel()));
-        LeasingApplication application =
-                LeasingApplication.receive(
-                        ApplicationId.newId(),
-                        command.customerName(),
-                        command.email(),
-                        command.age(),
-                        command.monthlyNetIncome(),
-                        command.bikeId(),
-                        LocalDateTime.now(clock)
-                );
+        LeasingApplication application = LeasingApplication.receive(
+                ApplicationId.newId(),
+                command.customerName(),
+                command.email(),
+                command.age(),
+                command.monthlyNetIncome(),
+                command.bikeId(),
+                LocalDateTime.now(clock));
         repository.save(application);
         process.submitRequest(application);
         return application.id();

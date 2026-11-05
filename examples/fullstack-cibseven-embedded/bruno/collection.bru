@@ -31,14 +31,14 @@ script:pre-request {
     }
   };
 
-  // GET {{baseUrl}}{path} (the application read model) until predicate(data, status) holds.
+  // GET {{baseUrl}}{path} until predicate(data, status) holds (the domain read model).
   globalThis.pollApp = function (path, predicate, opts) {
     return globalThis.pollUntil(
       { method: 'get', url: bru.getEnvVar('baseUrl') + path },
       predicate, opts);
   };
 
-  // GET {{engineRest}}{path} (a CIB seven / Camunda 7 engine query) until predicate holds.
+  // GET {{engineRest}}{path} until predicate(data, status) holds (the CIB seven engine REST API).
   globalThis.pollEngine = function (path, predicate, opts) {
     return globalThis.pollUntil(
       { method: 'get', url: bru.getEnvVar('engineRest') + path },

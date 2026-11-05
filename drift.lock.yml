@@ -24,8 +24,27 @@
     - bruno/00-demo-data/05-rejected/01-submit.bru
     - bruno/00-demo-data/07-withdrawn-return-open/01-submit.bru
     - bruno/01-happy-path/01-submit.bru
+    - bruno/07-list-and-inbox/01-list-bikes.bru
+    - bruno/07-list-and-inbox/02-submit-out-of-stock.bru
+    - bruno/07-list-and-inbox/03-list-received.bru
+    - bruno/09-invalid-request/01-submit-without-income.bru
     - docs/adr/0000-adr-template.md
     - docs/adr/0001-record-architecture-decisions.md
+- examples:
+    - cibseven-embedded
+    - cibseven-process-engine-api
+    - cibseven-remote
+    - fluxnova-embedded
+    - fullstack-cibseven-embedded
+    - operaton-embedded
+    - operaton-process-engine-api
+    - operaton-remote
+    - temporal-native
+    - zeebe-native
+    - zeebe-process-engine-api
+  files:
+    - bruno/07-list-and-inbox/06-resolve-clarification.bru
+    - bruno/09-invalid-request/02-accept-alternative-without-bike.bru
 - examples:
     - cibseven-embedded
     - cibseven-process-engine-api
@@ -70,10 +89,6 @@
     - zeebe-vanillabp
   files:
     - .claude/skills/create-adr/SKILL.md
-    - bruno/07-list-and-inbox/01-list-bikes.bru
-    - bruno/07-list-and-inbox/02-submit-out-of-stock.bru
-    - bruno/07-list-and-inbox/03-list-received.bru
-    - bruno/09-invalid-request/01-submit-without-income.bru
 - examples:
     - cibseven-embedded
     - cibseven-process-engine-api
@@ -87,20 +102,6 @@
     - zeebe-vanillabp
   files:
     - kotlin-gradle/service/common-architecture-tests/src/main/kotlin/io/miragon/common/architecture/KotlinSourceGuidelinesTest.kt
-- examples:
-    - cibseven-embedded
-    - cibseven-process-engine-api
-    - cibseven-remote
-    - fluxnova-embedded
-    - operaton-embedded
-    - operaton-process-engine-api
-    - operaton-remote
-    - temporal-native
-    - zeebe-native
-    - zeebe-process-engine-api
-  files:
-    - bruno/07-list-and-inbox/06-resolve-clarification.bru
-    - bruno/09-invalid-request/02-accept-alternative-without-bike.bru
 - examples:
     - cibseven-embedded
     - cibseven-process-engine-api
@@ -287,6 +288,12 @@
     - bruno/05-bike-unavailable/01-submit.bru
     - bruno/05-bike-unavailable/02-get-instance.bru
     - bruno/05-bike-unavailable/07-fire-withdrawal-timer.bru
+    - bruno/08-alternative-declined/02-get-instance.bru
+    - bruno/08-alternative-declined/06-assert-contract-compensated.bru
+    - bruno/08-alternative-declined/07-assert-no-order-cancellation.bru
+    - bruno/08-alternative-declined/08-assert-no-incident.bru
+    - bruno/08-alternative-declined/09-get-application.bru
+    - bruno/10-alternative-via-tasklist/01-submit.bru
     - bruno/bruno.json
 - examples:
     - cibseven-embedded
@@ -318,6 +325,17 @@
     - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/SendSignatureReminderService.kt
     - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/rest/SelectAlternativeControllerTest.kt
     - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/CancelContractServiceTest.kt
+- examples:
+    - cibseven-embedded
+    - cibseven-process-engine-api
+    - fluxnova-embedded
+    - fullstack-cibseven-embedded
+    - operaton-embedded
+    - temporal-native
+    - zeebe-native
+    - zeebe-vanillabp
+  files:
+    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/ArchitectureTest.kt
 - examples:
     - cibseven-embedded
     - cibseven-process-engine-api
@@ -430,6 +448,7 @@
     - zeebe-process-engine-api
     - zeebe-vanillabp
   files:
+    - docs/adr/0004-mutation-testing-as-a-blocking-pr-gate.md
     - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/BikeCatalogueSeeder.kt
     - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/rest/DevCorsConfiguration.kt
     - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/rest/ReportHandoverController.kt
@@ -472,12 +491,16 @@
     - operaton-remote
   files:
     - bruno/06-incident-demo/02-get-instance.bru
-    - bruno/08-alternative-declined/02-get-instance.bru
-    - bruno/08-alternative-declined/06-assert-contract-compensated.bru
-    - bruno/08-alternative-declined/07-assert-no-order-cancellation.bru
-    - bruno/08-alternative-declined/08-assert-no-incident.bru
-    - bruno/08-alternative-declined/09-get-application.bru
-    - bruno/10-alternative-via-tasklist/01-submit.bru
+- examples:
+    - cibseven-embedded
+    - cibseven-process-engine-api
+    - cibseven-remote
+    - fullstack-cibseven-embedded
+    - operaton-embedded
+    - operaton-process-engine-api
+    - operaton-remote
+  files:
+    - bruno/10-alternative-via-tasklist/04-complete-clarify-alternative.bru
 - examples:
     - cibseven-embedded
     - cibseven-process-engine-api
@@ -489,16 +512,6 @@
   files:
     - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/process/ProcessVariables.kt
     - kotlin-gradle/service/common-architecture-tests/src/main/kotlin/io/miragon/common/architecture/HexagonalArchitectureTest.kt
-- examples:
-    - cibseven-embedded
-    - cibseven-process-engine-api
-    - fluxnova-embedded
-    - fullstack-cibseven-embedded
-    - temporal-native
-    - zeebe-native
-    - zeebe-vanillabp
-  files:
-    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/ArchitectureTest.kt
 - examples:
     - cibseven-embedded
     - cibseven-process-engine-api
@@ -536,6 +549,16 @@
     - cibseven-process-engine-api
     - fluxnova-embedded
     - operaton-embedded
+    - operaton-process-engine-api
+    - zeebe-native
+    - zeebe-vanillabp
+  files:
+    - java-maven/service/app/src/test/java/io/miragon/blueprint/ArchitectureTest.java
+- examples:
+    - cibseven-embedded
+    - cibseven-process-engine-api
+    - fluxnova-embedded
+    - operaton-embedded
     - temporal-native
     - zeebe-native
     - zeebe-process-engine-api
@@ -556,16 +579,6 @@
 - examples:
     - cibseven-embedded
     - cibseven-process-engine-api
-    - fluxnova-embedded
-    - temporal-native
-    - zeebe-native
-    - zeebe-process-engine-api
-    - zeebe-vanillabp
-  files:
-    - docs/adr/0004-mutation-testing-as-a-blocking-pr-gate.md
-- examples:
-    - cibseven-embedded
-    - cibseven-process-engine-api
     - cibseven-remote
     - fluxnova-embedded
     - operaton-embedded
@@ -575,21 +588,21 @@
 - examples:
     - cibseven-embedded
     - cibseven-process-engine-api
-    - cibseven-remote
-    - operaton-embedded
-    - operaton-process-engine-api
-    - operaton-remote
-  files:
-    - bruno/10-alternative-via-tasklist/04-complete-clarify-alternative.bru
-- examples:
-    - cibseven-embedded
-    - cibseven-process-engine-api
     - fluxnova-embedded
     - operaton-embedded
     - zeebe-native
     - zeebe-process-engine-api
   files:
     - .claude/skills/create-persistence-adapter/SKILL.md
+- examples:
+    - cibseven-embedded
+    - cibseven-remote
+    - fluxnova-embedded
+    - fullstack-cibseven-embedded
+    - operaton-embedded
+    - operaton-remote
+  files:
+    - bruno/08-alternative-declined/01-submit.bru
 - examples:
     - cibseven-embedded
     - fluxnova-embedded
@@ -613,8 +626,11 @@
     - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/domain/leasing/LeasingApplication.kt
     - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/{engine}BikeLeasingApplication.kt
     - kotlin-gradle/service/app/src/main/resources/db/migration/V1__init.sql
+    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/rest/ActuatorEndpointsTest.kt
     - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/rest/GetLeasingApplicationControllerTest.kt
     - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/rest/GlobalExceptionConfigurationTest.kt
+    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/ProcessPathAssertions.kt
+    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/TimerUtils.kt
     - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/RequestOrderCancellationServiceTest.kt
 - examples:
     - cibseven-embedded
@@ -638,30 +654,6 @@
     - zeebe-vanillabp
   files:
     - java-maven/service/app/src/main/java/io/miragon/blueprint/application/port/inbound/SubmitLeasingRequestUseCase.java
-- examples:
-    - cibseven-embedded
-    - cibseven-process-engine-api
-    - fluxnova-embedded
-    - zeebe-native
-    - zeebe-vanillabp
-  files:
-    - java-maven/service/app/src/test/java/io/miragon/blueprint/ArchitectureTest.java
-- examples:
-    - cibseven-embedded
-    - cibseven-remote
-    - fluxnova-embedded
-    - operaton-embedded
-    - operaton-remote
-  files:
-    - bruno/08-alternative-declined/01-submit.bru
-- examples:
-    - cibseven-embedded
-    - fluxnova-embedded
-    - fullstack-cibseven-embedded
-    - operaton-embedded
-    - zeebe-vanillabp
-  files:
-    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/WithdrawApplicationServiceTest.kt
 - examples:
     - cibseven-embedded
     - fluxnova-embedded
@@ -726,11 +718,8 @@
     - fullstack-cibseven-embedded
   files:
     - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/outbound/{engine}/TaskInboxAdapter.kt
-    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/rest/ActuatorEndpointsTest.kt
     - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/outbound/{engine}/TaskInboxAdapterTest.kt
     - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/ProcessInstanceUtils.kt
-    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/ProcessPathAssertions.kt
-    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/TimerUtils.kt
 - examples:
     - cibseven-embedded
     - cibseven-process-engine-api
@@ -739,6 +728,9 @@
   files:
     - .claude/skills/create-rest-controller/SKILL.md
     - docs/adr/0009-actuator-probes-and-prometheus-metrics.md
+    - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/rest/ActuatorEndpointsTest.java
+    - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/rest/OpenApiSpecExportTest.java
+    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/rest/OpenApiSpecExportTest.kt
 - examples:
     - cibseven-embedded
     - cibseven-process-engine-api
@@ -769,6 +761,20 @@
   files:
     - .claude/skills/automate-process/references/visual-check.md
     - bruno/00-demo-data/07-withdrawn-return-open/04-withdraw.bru
+    - bruno/01-happy-path/06-get-withdrawal-timer.bru
+    - bruno/02-escalation/03-get-signature-deadline-timer.bru
+    - bruno/03-abort/05-get-clarify-return-task.bru
+    - bruno/03-abort/07-assert-cancelled.bru
+    - bruno/04-not-solvent/02-assert-rejected.bru
+    - bruno/05-bike-unavailable/04-clarify-alternative.bru
+    - bruno/05-bike-unavailable/06-get-withdrawal-timer.bru
+    - bruno/05-bike-unavailable/08-assert-leasing-active.bru
+    - bruno/07-list-and-inbox/04-sign-contract.bru
+    - bruno/08-alternative-declined/03-sign-contract.bru
+    - bruno/08-alternative-declined/04-decline-alternative.bru
+    - bruno/08-alternative-declined/05-assert-contract-cancelled.bru
+    - bruno/10-alternative-via-tasklist/03-get-clarify-alternative-task.bru
+    - bruno/collection.bru
     - docs/assets/bike-leasing.png
     - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/{engine}/ActivateLeasingDelegate.kt
     - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/{engine}/BaseDelegate.kt
@@ -789,6 +795,10 @@
     - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/process/CancelBikeOrderProcessApi.kt
     - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/process/Messages.kt
     - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/process/ServiceTasks.kt
+    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/BikeUnavailableTransactionTest.kt
+    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/JobExecutionUtils.kt
+    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/model/BikeLeasingModelValidationTest.kt
+    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/model/ServiceTaskDelegateExpressionRule.kt
     - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/ActivateLeasingServiceTest.kt
     - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/OrderBikeServiceTest.kt
     - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/RejectApplicationServiceTest.kt
@@ -796,6 +806,7 @@
     - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/SendCancellationConfirmationServiceTest.kt
     - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/SendContractServiceTest.kt
     - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/SendSignatureReminderServiceTest.kt
+    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/WithdrawApplicationServiceTest.kt
     - kotlin-gradle/service/common-architecture-tests/src/main/kotlin/io/miragon/common/architecture/NamingConventionArchitectureTest.kt
 - examples:
     - cibseven-embedded
@@ -804,9 +815,14 @@
     - zeebe-vanillabp
   files:
     - java-maven/service/app/src/main/java/io/miragon/blueprint/application/port/inbound/GetLeasingApplicationQuery.java
+    - java-maven/service/app/src/main/java/io/miragon/blueprint/application/port/inbound/ListLeasingApplicationsQuery.java
+    - java-maven/service/app/src/main/java/io/miragon/blueprint/application/port/outbound/LeasingApplicationRepository.java
     - java-maven/service/app/src/main/java/io/miragon/blueprint/application/service/GetLeasingApplicationService.java
+    - java-maven/service/app/src/main/java/io/miragon/blueprint/application/service/GetPendingClarificationsService.java
+    - java-maven/service/app/src/main/java/io/miragon/blueprint/application/service/SubmitLeasingRequestService.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/BookCancellationCostsServiceTest.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/CancelInsurancePolicyServiceTest.java
+    - java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/GetLeasingApplicationServiceTest.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/IssueInsurancePolicyServiceTest.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/SignContractServiceTest.java
 - examples:
@@ -883,6 +899,7 @@
     - bruno/05-bike-unavailable/01-submit.bru
     - bruno/05-bike-unavailable/02-sign-contract.bru
     - bruno/05-bike-unavailable/04-report-handover.bru
+    - bruno/05-bike-unavailable/05-get-application.bru
     - bruno/07-list-and-inbox/04-sign-contract.bru
     - bruno/08-alternative-declined/01-submit.bru
     - bruno/08-alternative-declined/03-sign-contract.bru
@@ -898,17 +915,11 @@
     - kotlin-gradle/service/app/src/main/resources/db/migration/V1__init.sql
     - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/rest/GetLeasingApplicationControllerTest.kt
     - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/rest/GlobalExceptionConfigurationTest.kt
+    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/ReportHandoverServiceTest.kt
     - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/RequestOrderCancellationServiceTest.kt
+    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/WithdrawApplicationServiceTest.kt
     - kotlin-gradle/service/common-architecture-tests/src/main/kotlin/io/miragon/common/architecture/BasicCodingGuidelinesTest.kt
     - openapi/openapi.json
-- examples:
-    - cibseven-embedded
-    - cibseven-process-engine-api
-    - fluxnova-embedded
-  files:
-    - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/rest/ActuatorEndpointsTest.java
-    - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/rest/OpenApiSpecExportTest.java
-    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/rest/OpenApiSpecExportTest.kt
 - examples:
     - cibseven-embedded
     - cibseven-process-engine-api
@@ -927,26 +938,33 @@
     - fluxnova-embedded
     - fullstack-cibseven-embedded
   files:
+    - bruno/01-happy-path/04-sign-contract.bru
+    - bruno/01-happy-path/05-report-handover.bru
     - bruno/01-happy-path/08-assert-leasing-active.bru
+    - bruno/02-escalation/05-assert-rejected.bru
+    - bruno/03-abort/03-sign-contract.bru
+    - bruno/03-abort/04-withdraw.bru
+    - bruno/05-bike-unavailable/03-sign-contract.bru
+    - bruno/05-bike-unavailable/05-report-handover.bru
     - bruno/05-bike-unavailable/09-get-application.bru
+    - bruno/07-list-and-inbox/05-inbox-has-task.bru
+    - bruno/07-list-and-inbox/07-inbox-empty.bru
+    - bruno/10-alternative-via-tasklist/02-sign-contract.bru
+    - bruno/10-alternative-via-tasklist/05-assert-alternative-ordered.bru
     - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/outbound/{engine}/LeasingProcessAdapterTest.kt
     - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/BikeLeasingProcessTest.kt
-    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/BikeUnavailableTransactionTest.kt
-    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/JobExecutionUtils.kt
-    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/model/BikeLeasingModelValidationTest.kt
-    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/model/ServiceTaskDelegateExpressionRule.kt
 - examples:
     - cibseven-embedded
     - fluxnova-embedded
     - operaton-embedded
   files:
     - .claude/README.md
+    - .claude/agents/review-process.md
+    - .claude/agents/review-vertical-slice.md
     - .claude/skills/implement-issue/SKILL.md
     - .claude/skills/review-change/SKILL.md
+    - bruno/06-incident-demo/04-assert-incident.bru
     - bruno/06-incident-demo/05-get-failed-job.bru
-    - bruno/08-alternative-declined/03-sign-contract.bru
-    - bruno/08-alternative-declined/04-decline-alternative.bru
-    - bruno/08-alternative-declined/05-assert-contract-cancelled.bru
     - docs/adr/0002-hexagonal-architecture-for-the-backend.md
     - java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/inbound/{engine}/ActivateLeasingDelegate.java
     - java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/inbound/{engine}/BaseDelegate.java
@@ -967,17 +985,20 @@
     - java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/process/CancelBikeOrderProcessApi.java
     - java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/process/Messages.java
     - java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/process/ServiceTasks.java
-    - java-maven/service/app/src/main/java/io/miragon/blueprint/application/port/inbound/ListLeasingApplicationsQuery.java
-    - java-maven/service/app/src/main/java/io/miragon/blueprint/application/port/outbound/LeasingApplicationRepository.java
     - java-maven/service/app/src/main/java/io/miragon/blueprint/application/port/outbound/LeasingProcess.java
-    - java-maven/service/app/src/main/java/io/miragon/blueprint/application/service/GetPendingClarificationsService.java
-    - java-maven/service/app/src/main/java/io/miragon/blueprint/application/service/SubmitLeasingRequestService.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/rest/GetLeasingApplicationControllerTest.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/rest/SelectAlternativeControllerTest.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/outbound/{engine}/LeasingProcessAdapterTest.java
+    - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/BikeLeasingProcessTest.java
+    - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/BikeUnavailableTransactionTest.java
+    - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/JobExecutionUtils.java
+    - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/ProcessInstanceUtils.java
+    - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/ProcessPathAssertions.java
+    - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/TimerUtils.java
+    - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/model/BikeLeasingModelValidationTest.java
+    - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/model/ServiceTaskDelegateExpressionRule.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/ActivateLeasingServiceTest.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/CancelContractServiceTest.java
-    - java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/GetLeasingApplicationServiceTest.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/OrderBikeServiceTest.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/RejectApplicationServiceTest.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/ReportHandoverServiceTest.java
@@ -990,9 +1011,17 @@
     - java-maven/service/common-architecture-tests/src/main/java/io/miragon/common/architecture/NamingConventionArchitectureTest.java
 - examples:
     - cibseven-embedded
+    - fluxnova-embedded
+    - zeebe-vanillabp
+  files:
+    - java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/ListBikesServiceTest.java
+    - java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/ListLeasingApplicationsServiceTest.java
+- examples:
+    - cibseven-embedded
     - fullstack-cibseven-embedded
     - operaton-embedded
   files:
+    - bruno/03-abort/06-complete-clarify-return.bru
     - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/outbound/{engine}/LeasingProcessAdapter.kt
 - examples:
     - cibseven-process-engine-api
@@ -1017,7 +1046,6 @@
     - zeebe-native
     - zeebe-process-engine-api
   files:
-    - bruno/05-bike-unavailable/05-get-application.bru
     - bruno/08-alternative-declined/04-decline-alternative.bru
     - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/SelectAlternativeUseCase.kt
     - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/outbound/LeasingProcess.kt
@@ -1026,12 +1054,10 @@
     - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/ActivateLeasingServiceTest.kt
     - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/OrderBikeServiceTest.kt
     - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/RejectApplicationServiceTest.kt
-    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/ReportHandoverServiceTest.kt
     - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/SelectAlternativeServiceTest.kt
     - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/SendCancellationConfirmationServiceTest.kt
     - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/SendContractServiceTest.kt
     - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/SendSignatureReminderServiceTest.kt
-    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/WithdrawApplicationServiceTest.kt
 - examples:
     - zeebe-native
     - zeebe-process-engine-api
@@ -1060,6 +1086,7 @@
     - docs/adr/0008-track-the-latest-major-versions.md
     - docs/adr/0009-actuator-probes-and-prometheus-metrics.md
     - docs/adr/0010-flyway-for-database-migrations.md
+    - java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/inbound/rest/GetLeasingApplicationController.java
     - java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/inbound/rest/GetPendingClarificationsController.java
     - java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/inbound/rest/GlobalExceptionConfiguration.java
     - java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/inbound/rest/ListLeasingApplicationsController.java
@@ -1069,6 +1096,10 @@
     - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/rest/GetLeasingApplicationControllerTest.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/rest/GlobalExceptionConfigurationTest.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/rest/OpenApiConfigurationTest.java
+    - java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/ReportHandoverServiceTest.java
+    - java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/RequestOrderCancellationServiceTest.java
+    - java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/SubmitLeasingRequestServiceTest.java
+    - java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/WithdrawApplicationServiceTest.java
     - java-maven/service/common-zeebe/src/main/resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports
     - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/process/ServiceTasks.kt
     - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/model/BikeLeasingModelValidationTest.kt
@@ -1085,46 +1116,11 @@
     - cibseven-embedded
     - fluxnova-embedded
   files:
-    - .claude/agents/review-process.md
-    - .claude/agents/review-vertical-slice.md
-    - bruno/01-happy-path/04-sign-contract.bru
-    - bruno/01-happy-path/05-report-handover.bru
-    - bruno/01-happy-path/06-get-withdrawal-timer.bru
-    - bruno/02-escalation/03-get-signature-deadline-timer.bru
-    - bruno/02-escalation/05-assert-rejected.bru
-    - bruno/03-abort/03-sign-contract.bru
-    - bruno/03-abort/04-withdraw.bru
-    - bruno/03-abort/05-get-clarify-return-task.bru
-    - bruno/03-abort/07-assert-cancelled.bru
-    - bruno/04-not-solvent/02-assert-rejected.bru
-    - bruno/05-bike-unavailable/03-sign-contract.bru
-    - bruno/05-bike-unavailable/04-clarify-alternative.bru
-    - bruno/05-bike-unavailable/05-report-handover.bru
-    - bruno/05-bike-unavailable/06-get-withdrawal-timer.bru
-    - bruno/05-bike-unavailable/08-assert-leasing-active.bru
     - bruno/06-incident-demo/03-sign-contract.bru
-    - bruno/06-incident-demo/04-assert-incident.bru
-    - bruno/07-list-and-inbox/04-sign-contract.bru
-    - bruno/07-list-and-inbox/05-inbox-has-task.bru
-    - bruno/07-list-and-inbox/07-inbox-empty.bru
-    - bruno/10-alternative-via-tasklist/02-sign-contract.bru
-    - bruno/10-alternative-via-tasklist/03-get-clarify-alternative-task.bru
-    - bruno/10-alternative-via-tasklist/05-assert-alternative-ordered.bru
-    - bruno/collection.bru
     - docs/adr/0012-polling-for-eventual-consistency-in-e2e-tests.md
     - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/rest/SubmitLeasingRequestControllerTest.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/outbound/{engine}/TaskInboxAdapterTest.java
-    - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/BikeLeasingProcessTest.java
-    - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/BikeUnavailableTransactionTest.java
-    - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/JobExecutionUtils.java
-    - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/ProcessInstanceUtils.java
-    - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/ProcessPathAssertions.java
-    - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/TimerUtils.java
-    - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/model/BikeLeasingModelValidationTest.java
-    - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/model/ServiceTaskDelegateExpressionRule.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/GetPendingClarificationsServiceTest.java
-    - java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/ListBikesServiceTest.java
-    - java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/ListLeasingApplicationsServiceTest.java
     - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/rest/SubmitLeasingRequestControllerTest.kt
 - examples:
     - cibseven-embedded
@@ -1137,7 +1133,6 @@
     - operaton-embedded
   files:
     - blueprint.yaml
-    - bruno/03-abort/06-complete-clarify-return.bru
     - bruno/06-incident-demo/06-retry-job.bru
     - java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/inbound/rest/SelectAlternativeController.java
     - java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/outbound/{engine}/LeasingProcessAdapter.java
@@ -1258,19 +1253,28 @@
     - docs/adr/0011-build-and-deployment-approach.md
     - java-maven/run/engine-service.run.xml
     - java-maven/run/example-service.run.xml
+    - java-maven/service/common-architecture-tests/src/main/java/io/miragon/common/architecture/HexagonalArchitectureTest.java
     - java-maven/service/engine-service/src/main/java/io/miragon/blueprint/config/HistoryCleanupConfiguration.java
     - java-maven/service/engine-service/src/main/java/io/miragon/blueprint/listener/BikeOrderAuditListener.java
     - java-maven/service/engine-service/src/main/java/io/miragon/blueprint/listener/ClarifyAlternativeTaskListener.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/BikeCatalogueSeeder.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/adapter/inbound/rest/DevCorsConfiguration.java
+    - java-maven/service/example-service/src/main/java/io/miragon/blueprint/adapter/inbound/rest/GetLeasingApplicationController.java
+    - java-maven/service/example-service/src/main/java/io/miragon/blueprint/adapter/inbound/rest/GetPendingClarificationsController.java
+    - java-maven/service/example-service/src/main/java/io/miragon/blueprint/adapter/inbound/rest/GlobalExceptionConfiguration.java
+    - java-maven/service/example-service/src/main/java/io/miragon/blueprint/adapter/inbound/rest/ListBikesController.java
+    - java-maven/service/example-service/src/main/java/io/miragon/blueprint/adapter/inbound/rest/ListLeasingApplicationsController.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/adapter/inbound/rest/OpenApiConfiguration.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/adapter/inbound/rest/ReportHandoverController.java
+    - java-maven/service/example-service/src/main/java/io/miragon/blueprint/adapter/inbound/rest/SelectAlternativeController.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/adapter/inbound/rest/SignContractController.java
+    - java-maven/service/example-service/src/main/java/io/miragon/blueprint/adapter/inbound/rest/SubmitLeasingRequestController.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/adapter/inbound/rest/WithdrawApplicationController.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/adapter/outbound/contract/LoggingContractAdapter.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/adapter/outbound/db/BikeEntity.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/adapter/outbound/db/BikePortfolioJpaRepository.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/adapter/outbound/db/BikePortfolioPersistenceAdapter.java
+    - java-maven/service/example-service/src/main/java/io/miragon/blueprint/adapter/outbound/db/LeasingApplicationEntity.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/adapter/outbound/db/LeasingApplicationEntityMapper.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/adapter/outbound/db/LeasingApplicationJpaRepository.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/adapter/outbound/db/LeasingApplicationPersistenceAdapter.java
@@ -1288,13 +1292,16 @@
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/port/inbound/BookCancellationCostsUseCase.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/port/inbound/CancelContractUseCase.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/port/inbound/CancelInsurancePolicyUseCase.java
+    - java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/port/inbound/GetLeasingApplicationQuery.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/port/inbound/GetPendingClarificationsQuery.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/port/inbound/IssueInsurancePolicyUseCase.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/port/inbound/ListBikesQuery.java
+    - java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/port/inbound/ListLeasingApplicationsQuery.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/port/inbound/OrderBikeUseCase.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/port/inbound/RejectApplicationUseCase.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/port/inbound/ReportHandoverUseCase.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/port/inbound/RequestOrderCancellationUseCase.java
+    - java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/port/inbound/SelectAlternativeUseCase.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/port/inbound/SendCancellationConfirmationUseCase.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/port/inbound/SendContractUseCase.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/port/inbound/SendSignatureReminderUseCase.java
@@ -1305,13 +1312,19 @@
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/port/outbound/BikePortfolioRepository.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/port/outbound/ContractPort.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/port/outbound/InsurancePort.java
+    - java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/port/outbound/LeasingApplicationRepository.java
+    - java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/port/outbound/LeasingProcess.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/port/outbound/NotificationPort.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/port/outbound/TaskInboxPort.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/service/ActivateLeasingService.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/service/BookCancellationCostsService.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/service/CancelContractService.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/service/CancelInsurancePolicyService.java
+    - java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/service/GetLeasingApplicationService.java
+    - java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/service/GetPendingClarificationsService.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/service/IssueInsurancePolicyService.java
+    - java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/service/ListBikesService.java
+    - java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/service/ListLeasingApplicationsService.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/service/OrderBikeService.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/service/RejectApplicationService.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/service/ReportHandoverService.java
@@ -1321,6 +1334,7 @@
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/service/SendContractService.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/service/SendSignatureReminderService.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/service/SignContractService.java
+    - java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/service/SubmitLeasingRequestService.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/service/WithdrawApplicationService.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/domain/bike/Bike.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/domain/bike/BikeId.java
@@ -1330,30 +1344,63 @@
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/domain/leasing/ContractId.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/domain/leasing/CustomerName.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/domain/leasing/Email.java
+    - java-maven/service/example-service/src/main/java/io/miragon/blueprint/domain/leasing/LeasingApplication.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/domain/leasing/LeasingStatus.java
+    - java-maven/service/example-service/src/main/java/io/miragon/blueprint/domain/leasing/PendingClarification.java
     - java-maven/service/example-service/src/main/resources/bpmn/bike-leasing.bpmn
     - java-maven/service/example-service/src/main/resources/bpmn/cancel-bike-order.bpmn
     - java-maven/service/example-service/src/main/resources/db/migration/V1__init.sql
     - java-maven/service/example-service/src/main/resources/dmn/check-credit-rating.dmn
     - java-maven/service/example-service/src/main/resources/forms/clarify-alternative.form
     - java-maven/service/example-service/src/main/resources/forms/clarify-return.form
+    - java-maven/service/example-service/src/test/java/io/miragon/blueprint/ArchitectureTest.java
     - java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/inbound/rest/ActuatorEndpointsTest.java
+    - java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/inbound/rest/GetLeasingApplicationControllerTest.java
     - java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/inbound/rest/GetPendingClarificationsControllerTest.java
     - java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/inbound/rest/GlobalExceptionConfigurationTest.java
     - java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/inbound/rest/ListBikesControllerTest.java
     - java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/inbound/rest/ListLeasingApplicationsControllerTest.java
     - java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/inbound/rest/OpenApiSpecExportTest.java
     - java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/inbound/rest/ReportHandoverControllerTest.java
+    - java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/inbound/rest/SelectAlternativeControllerTest.java
     - java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/inbound/rest/SignContractControllerTest.java
+    - java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/inbound/rest/SubmitLeasingRequestControllerTest.java
     - java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/inbound/rest/WithdrawApplicationControllerTest.java
+    - java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/outbound/contract/LoggingContractAdapterTest.java
     - java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/outbound/db/BikePortfolioPersistenceAdapterTest.java
+    - java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/outbound/db/LeasingApplicationEntityMapperTest.java
+    - java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/outbound/db/LeasingApplicationPersistenceAdapterTest.java
     - java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/outbound/dealer/BikeDealerAdapterTest.java
+    - java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/outbound/insurance/LoggingInsuranceAdapterTest.java
+    - java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/outbound/notification/LoggingNotificationAdapterTest.java
+    - java-maven/service/example-service/src/test/java/io/miragon/blueprint/application/service/ActivateLeasingServiceTest.java
+    - java-maven/service/example-service/src/test/java/io/miragon/blueprint/application/service/BookCancellationCostsServiceTest.java
+    - java-maven/service/example-service/src/test/java/io/miragon/blueprint/application/service/CancelContractServiceTest.java
+    - java-maven/service/example-service/src/test/java/io/miragon/blueprint/application/service/CancelInsurancePolicyServiceTest.java
+    - java-maven/service/example-service/src/test/java/io/miragon/blueprint/application/service/GetLeasingApplicationServiceTest.java
+    - java-maven/service/example-service/src/test/java/io/miragon/blueprint/application/service/GetPendingClarificationsServiceTest.java
+    - java-maven/service/example-service/src/test/java/io/miragon/blueprint/application/service/IssueInsurancePolicyServiceTest.java
+    - java-maven/service/example-service/src/test/java/io/miragon/blueprint/application/service/ListBikesServiceTest.java
+    - java-maven/service/example-service/src/test/java/io/miragon/blueprint/application/service/ListLeasingApplicationsServiceTest.java
+    - java-maven/service/example-service/src/test/java/io/miragon/blueprint/application/service/OrderBikeServiceTest.java
+    - java-maven/service/example-service/src/test/java/io/miragon/blueprint/application/service/RejectApplicationServiceTest.java
+    - java-maven/service/example-service/src/test/java/io/miragon/blueprint/application/service/ReportHandoverServiceTest.java
+    - java-maven/service/example-service/src/test/java/io/miragon/blueprint/application/service/RequestOrderCancellationServiceTest.java
+    - java-maven/service/example-service/src/test/java/io/miragon/blueprint/application/service/SelectAlternativeServiceTest.java
+    - java-maven/service/example-service/src/test/java/io/miragon/blueprint/application/service/SendCancellationConfirmationServiceTest.java
+    - java-maven/service/example-service/src/test/java/io/miragon/blueprint/application/service/SendContractServiceTest.java
+    - java-maven/service/example-service/src/test/java/io/miragon/blueprint/application/service/SendSignatureReminderServiceTest.java
+    - java-maven/service/example-service/src/test/java/io/miragon/blueprint/application/service/SignContractServiceTest.java
+    - java-maven/service/example-service/src/test/java/io/miragon/blueprint/application/service/SubmitLeasingRequestServiceTest.java
+    - java-maven/service/example-service/src/test/java/io/miragon/blueprint/application/service/WithdrawApplicationServiceTest.java
     - java-maven/service/example-service/src/test/java/io/miragon/blueprint/domain/bike/BikeIdTest.java
     - java-maven/service/example-service/src/test/java/io/miragon/blueprint/domain/bike/OrderIdTest.java
     - java-maven/service/example-service/src/test/java/io/miragon/blueprint/domain/leasing/ApplicationIdTest.java
     - java-maven/service/example-service/src/test/java/io/miragon/blueprint/domain/leasing/ContractIdTest.java
     - java-maven/service/example-service/src/test/java/io/miragon/blueprint/domain/leasing/CustomerNameTest.java
     - java-maven/service/example-service/src/test/java/io/miragon/blueprint/domain/leasing/EmailTest.java
+    - java-maven/service/example-service/src/test/java/io/miragon/blueprint/domain/leasing/LeasingApplicationTest.java
+    - java-maven/service/example-service/src/test/java/io/miragon/blueprint/domain/leasing/TestObjectBuilder.java
     - java-maven/service/example-service/src/test/resources/application-test.yaml
     - java-maven/service/example-service/src/test/resources/sql/leasing-application.sql
     - kotlin-gradle/run/engine-service.run.xml
@@ -1482,6 +1529,7 @@
     - kotlin-gradle/service/example-service/src/test/kotlin/io/miragon/blueprint/adapter/inbound/rest/ReportHandoverControllerTest.kt
     - kotlin-gradle/service/example-service/src/test/kotlin/io/miragon/blueprint/adapter/inbound/rest/SelectAlternativeControllerTest.kt
     - kotlin-gradle/service/example-service/src/test/kotlin/io/miragon/blueprint/adapter/inbound/rest/SignContractControllerTest.kt
+    - kotlin-gradle/service/example-service/src/test/kotlin/io/miragon/blueprint/adapter/inbound/rest/SubmitLeasingRequestControllerTest.kt
     - kotlin-gradle/service/example-service/src/test/kotlin/io/miragon/blueprint/adapter/inbound/rest/WithdrawApplicationControllerTest.kt
     - kotlin-gradle/service/example-service/src/test/kotlin/io/miragon/blueprint/adapter/inbound/{engine}/OrderBikeWorkerTest.kt
     - kotlin-gradle/service/example-service/src/test/kotlin/io/miragon/blueprint/adapter/outbound/contract/LoggingContractAdapterTest.kt
@@ -1506,6 +1554,7 @@
     - kotlin-gradle/service/example-service/src/test/kotlin/io/miragon/blueprint/application/service/RejectApplicationServiceTest.kt
     - kotlin-gradle/service/example-service/src/test/kotlin/io/miragon/blueprint/application/service/ReportHandoverServiceTest.kt
     - kotlin-gradle/service/example-service/src/test/kotlin/io/miragon/blueprint/application/service/RequestOrderCancellationServiceTest.kt
+    - kotlin-gradle/service/example-service/src/test/kotlin/io/miragon/blueprint/application/service/SelectAlternativeServiceTest.kt
     - kotlin-gradle/service/example-service/src/test/kotlin/io/miragon/blueprint/application/service/SendCancellationConfirmationServiceTest.kt
     - kotlin-gradle/service/example-service/src/test/kotlin/io/miragon/blueprint/application/service/SendContractServiceTest.kt
     - kotlin-gradle/service/example-service/src/test/kotlin/io/miragon/blueprint/application/service/SendSignatureReminderServiceTest.kt
@@ -1528,6 +1577,7 @@
     - fluxnova-embedded
     - operaton-embedded
   files:
+    - .claude/skills/create-delegate/SKILL.md
     - docs/adr/0010-flyway-for-database-migrations.md
     - openapi/openapi.json
 - examples:
@@ -1535,11 +1585,6 @@
     - operaton-process-engine-api
   files:
     - designiq.yml
-- examples:
-    - operaton-embedded
-    - operaton-process-engine-api
-  files:
-    - java-maven/service/app/src/test/java/io/miragon/blueprint/architecture/ArchitectureTest.java
 - examples:
     - operaton-process-engine-api
     - temporal-native
@@ -1565,7 +1610,6 @@
     - bruno/README.md
     - docs/adr/0013-two-stack-variants-side-by-side-on-main.md
     - java-maven/service/app/src/main/java/io/miragon/blueprint/BikeLeasingApplication.java
-    - java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/inbound/rest/GetLeasingApplicationController.java
     - java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/inbound/rest/SelectAlternativeController.java
     - java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/process/BikeLeasingProcessProcessApi.java
     - java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/process/CancelBikeOrderProcessApi.java
@@ -1608,15 +1652,11 @@
     - java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/ListLeasingApplicationsServiceTest.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/OrderBikeServiceTest.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/RejectApplicationServiceTest.java
-    - java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/ReportHandoverServiceTest.java
-    - java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/RequestOrderCancellationServiceTest.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/SelectAlternativeServiceTest.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/SendCancellationConfirmationServiceTest.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/SendContractServiceTest.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/SendSignatureReminderServiceTest.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/SignContractServiceTest.java
-    - java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/SubmitLeasingRequestServiceTest.java
-    - java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/WithdrawApplicationServiceTest.java
     - java-maven/service/common-architecture-tests/src/main/java/io/miragon/common/architecture/NamingConventionArchitectureTest.java
     - java-maven/service/common-zeebe/src/main/java/io/miragon/common/zeebe/config/ZeebeEnvironmentConfiguration.java
     - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/rest/SelectAlternativeController.kt

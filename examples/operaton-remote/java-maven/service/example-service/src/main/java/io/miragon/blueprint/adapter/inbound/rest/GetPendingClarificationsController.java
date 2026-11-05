@@ -52,7 +52,7 @@ public class GetPendingClarificationsController {
             @Schema(requiredMode = REQUIRED) String customerName,
             @Schema(requiredMode = REQUIRED) String requestedBikeId,
             @Schema(nullable = true) String requestedBikeModel,
-            // Serialised as an ISO-8601 string so the JSON carries a stable, machine-parseable timestamp.
+            // ISO-8601 string — see the note in GetLeasingApplicationController.LeasingApplicationDto.
             @Schema(requiredMode = REQUIRED)
             @JsonFormat(shape = JsonFormat.Shape.STRING)
             LocalDateTime waitingSince) {

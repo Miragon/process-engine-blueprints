@@ -42,7 +42,7 @@ to the other, then regenerate, wire and test **both**.
   never raw strings. `adapter/process` is generated: never edit it (except
   `HistoryCleanupConfiguration`).
 - **Engine limits:** a service task is a delegate by expression (`#{beanName}`, enforced by
-  `process/model/ServiceTaskDelegateExpressionRule`); asynchronous continuations
+  `adapter/process/model/ServiceTaskDelegateExpressionRule`); asynchronous continuations
   (`asyncBefore` and `asyncAfter` on most service tasks, `asyncBefore` alone on
   `serviceTask_orderBike`) are where retries and incidents happen; a compensation handler
   (`isForCompensation`) only runs for an activity that completed.
@@ -84,10 +84,11 @@ to the other, then regenerate, wire and test **both**.
    (skill `create-persistence-adapter`).
 5. **Process tests.** Derive the scenarios from the model's paths: every new outgoing flow of a
    gateway, every boundary event, every event subprocess path gets a test in the test tree's
-   `process/` that asserts the walked path as a typed path from the generated API (see
-   `BikeLeasingProcessTest`). A gateway's branch label must match its condition.
-   The job executor is off in tests: `process/util/JobExecutionUtils` fires async continuations,
-   `TimerUtils` fires a timer job directly. Run the `io.miragon.blueprint.process` tests (`AGENTS.md` →
+   `adapter/process/` that asserts the walked path through `ProcessPathAssertions`, a typed path from
+   the generated API (see `BikeLeasingProcessTest`). A gateway's branch label must match its
+   condition.
+   The job executor is off in tests: `JobExecutionUtils` fires async continuations, `TimerUtils`
+   fires a timer job directly. Run the `io.miragon.blueprint.adapter.process` tests (`AGENTS.md` →
    Verify After Each Task).
 6. **Bruno.** A path visible over REST gets a numbered scenario folder in `bruno/`. The `.bru` files
    name element ids as strings: a renamed id is updated there too.

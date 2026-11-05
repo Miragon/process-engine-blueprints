@@ -11,9 +11,9 @@ get {
 }
 
 script:pre-request {
-  const pid = bru.getVar("processInstanceId");
-  await pollEngine(`/job?processInstanceId=${pid}&activityId=event_signatureDeadline&timers=true`,
-    (b, s) => s === 200 && Array.isArray(b) && b.length >= 1);
+  await pollEngine("/job?processInstanceId=" + bru.getVar("processInstanceId")
+    + "&activityId=event_signatureDeadline&timers=true",
+    (b) => Array.isArray(b) && b.length >= 1);
 }
 
 assert {

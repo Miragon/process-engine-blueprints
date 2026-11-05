@@ -30,7 +30,6 @@ public abstract class HexagonalArchitectureTest {
     private static final String[] DOMAIN_ALLOWED_PACKAGES = {
             "..domain..",
             "java..",
-            "org.jspecify..",
             "", // allows the usage of primitive types
     };
 
@@ -39,7 +38,6 @@ public abstract class HexagonalArchitectureTest {
             "..domain..",
             "..application..",
             "java..",
-            "org.jspecify..",
             "org.springframework..",
             "org.slf4j..",
             "com.fasterxml.jackson..",

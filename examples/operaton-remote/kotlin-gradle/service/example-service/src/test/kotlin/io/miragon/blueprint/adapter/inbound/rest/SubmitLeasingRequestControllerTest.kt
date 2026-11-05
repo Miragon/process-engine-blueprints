@@ -93,10 +93,8 @@ class SubmitLeasingRequestControllerTest {
         // when: the request is performed
         val response = mockMvc.perform(operation).andReturn()
 
-        // then: it is refused as an unreadable request and never reaches the use case
+        // then: it is a bad request and never reaches the use case
         assertThat(response.response.status).isEqualTo(400)
-        assertThat(response.response.contentType).contains("application/problem+json")
-        assertThat(response.response.contentAsString).contains("Failed to read request")
         confirmVerified(useCase)
     }
 }

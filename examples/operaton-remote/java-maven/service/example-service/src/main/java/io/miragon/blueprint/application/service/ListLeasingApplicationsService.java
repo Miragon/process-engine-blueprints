@@ -6,8 +6,8 @@ import io.miragon.blueprint.application.port.outbound.LeasingApplicationReposito
 import io.miragon.blueprint.domain.bike.Bike;
 import io.miragon.blueprint.domain.bike.BikeId;
 import io.miragon.blueprint.domain.leasing.LeasingApplication;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,7 +18,9 @@ public class ListLeasingApplicationsService implements ListLeasingApplicationsQu
     private final LeasingApplicationRepository repository;
     private final BikePortfolioRepository bikePortfolio;
 
-    public ListLeasingApplicationsService(LeasingApplicationRepository repository, BikePortfolioRepository bikePortfolio) {
+    public ListLeasingApplicationsService(
+            LeasingApplicationRepository repository,
+            BikePortfolioRepository bikePortfolio) {
         this.repository = repository;
         this.bikePortfolio = bikePortfolio;
     }
@@ -31,10 +33,11 @@ public class ListLeasingApplicationsService implements ListLeasingApplicationsQu
                         filter.page(),
                         filter.size()));
         // Resolve every bike model in one batch query rather than one per row.
-        Map<BikeId, String> models = bikePortfolio
-                .findAllByIds(page.items().stream().map(LeasingApplication::bikeId).toList())
-                .stream()
-                .collect(Collectors.toMap(Bike::bikeId, Bike::model, (existing, replacement) -> replacement));
+        Map<BikeId, String> models = new HashMap<>();
+        for (Bike bike : bikePortfolio.findAllByIds(
+                page.items().stream().map(LeasingApplication::bikeId).toList())) {
+            models.put(bike.bikeId(), bike.model());
+        }
         return new ListLeasingApplicationsQuery.Page(
                 page.items().stream()
                         .map(application -> new ListLeasingApplicationsQuery.Item(

@@ -1,8 +1,8 @@
 package io.miragon.blueprint.application.service;
 
 import static io.miragon.blueprint.domain.leasing.TestObjectBuilder.testLeasingApplication;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -13,10 +13,9 @@ import io.miragon.blueprint.application.port.outbound.LeasingApplicationReposito
 import io.miragon.blueprint.application.port.outbound.NotificationPort;
 import io.miragon.blueprint.domain.leasing.LeasingApplication;
 import io.miragon.blueprint.domain.leasing.LeasingStatus;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
 import java.util.Optional;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 class SendCancellationConfirmationServiceTest {
 
@@ -26,21 +25,22 @@ class SendCancellationConfirmationServiceTest {
             new SendCancellationConfirmationService(repository, notification);
 
     @Test
-    @DisplayName("sendCancellationConfirmation loads the application and confirms the cancellation")
-    void sendCancellationConfirmationLoadsTheApplicationAndConfirmsTheCancellation() {
+    void sendCancellationConfirmationConfirmsToTheCustomerAndMarksTheApplicationCancelled() {
 
         // given: an application in the repository
-        LeasingApplication application = testLeasingApplication();
+        LeasingApplication application = testLeasingApplication().build();
         when(repository.findById(application.id())).thenReturn(Optional.of(application));
-        when(repository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(repository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
         // when: the cancellation confirmation is sent
         underTest.sendCancellationConfirmation(application.id());
 
-        // then: the application is loaded, the customer is informed, and the status is persisted
+        // then: the customer is informed and the application is moved to CANCELLED
         verify(repository).findById(application.id());
         verify(notification).send(any(), eq(application));
-        verify(repository).save(argThat(it -> it.status() == LeasingStatus.CANCELLED));
+        ArgumentCaptor<LeasingApplication> saved = ArgumentCaptor.forClass(LeasingApplication.class);
+        verify(repository).save(saved.capture());
+        assertThat(saved.getValue().status()).isEqualTo(LeasingStatus.CANCELLED);
         verifyNoMoreInteractions(repository, notification);
     }
 }

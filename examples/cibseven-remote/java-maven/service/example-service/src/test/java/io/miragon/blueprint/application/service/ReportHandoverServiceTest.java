@@ -1,6 +1,6 @@
 package io.miragon.blueprint.application.service;
 
-import static io.miragon.blueprint.domain.leasing.TestObjectBuilder.aLeasingApplication;
+import static io.miragon.blueprint.domain.leasing.TestObjectBuilder.testLeasingApplication;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doThrow;
@@ -15,11 +15,9 @@ import io.miragon.blueprint.application.port.outbound.LeasingProcess;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
 import io.miragon.blueprint.domain.leasing.LeasingApplication;
 import io.miragon.blueprint.domain.leasing.LeasingStatus;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
 import java.util.Optional;
 import java.util.UUID;
+import org.junit.jupiter.api.Test;
 
 class ReportHandoverServiceTest {
 
@@ -28,14 +26,13 @@ class ReportHandoverServiceTest {
     private final ReportHandoverService underTest = new ReportHandoverService(process, repository);
 
     @Test
-    @DisplayName("reportHandover correlates the message and persists the HANDED_OVER status")
     void reportHandoverCorrelatesTheMessageAndPersistsTheHandedOverStatus() {
 
         // given: an ordered application
         ApplicationId id = new ApplicationId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
-        LeasingApplication application = aLeasingApplication().id(id).status(LeasingStatus.ORDERED).build();
+        LeasingApplication application = testLeasingApplication().id(id).status(LeasingStatus.ORDERED).build();
         when(repository.findById(id)).thenReturn(Optional.of(application));
-        when(repository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(repository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
         // when: the handover is reported
         underTest.reportHandover(id);
@@ -43,12 +40,11 @@ class ReportHandoverServiceTest {
         // then: the message is correlated and the application is persisted with HANDED_OVER
         verify(process).correlateHandoverReported(id);
         verify(repository).findById(id);
-        verify(repository).save(argThat(it -> it.status() == LeasingStatus.HANDED_OVER));
+        verify(repository).save(argThat(app -> app.status() == LeasingStatus.HANDED_OVER));
         verifyNoMoreInteractions(process, repository);
     }
 
     @Test
-    @DisplayName("reportHandover does not persist when correlation fails")
     void reportHandoverDoesNotPersistWhenCorrelationFails() {
 
         // given: a correlation that throws

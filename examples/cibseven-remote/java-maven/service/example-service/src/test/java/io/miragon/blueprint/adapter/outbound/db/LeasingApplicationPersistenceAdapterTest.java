@@ -1,6 +1,6 @@
 package io.miragon.blueprint.adapter.outbound.db;
 
-import static io.miragon.blueprint.domain.leasing.TestObjectBuilder.aLeasingApplication;
+import static io.miragon.blueprint.domain.leasing.TestObjectBuilder.testLeasingApplication;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.miragon.blueprint.application.port.outbound.LeasingApplicationRepository;
@@ -37,7 +37,7 @@ class LeasingApplicationPersistenceAdapterTest {
     void savesAndReloadsAnApplication() {
 
         // given: a leasing application
-        LeasingApplication application = aLeasingApplication().id(id).build();
+        LeasingApplication application = testLeasingApplication().id(id).build();
 
         // when: it is saved and re-read from a cleared persistence context
         LeasingApplication saved = underTest.save(application);
@@ -68,7 +68,7 @@ class LeasingApplicationPersistenceAdapterTest {
         assertThat(underTest.findById(id))
                 .get()
                 .usingRecursiveComparison()
-                .isEqualTo(aLeasingApplication().id(id).build());
+                .isEqualTo(testLeasingApplication().id(id).build());
     }
 
     @Test
@@ -76,15 +76,15 @@ class LeasingApplicationPersistenceAdapterTest {
     void findAllReturnsAPageOrderedByCreationDateNewestFirst() {
 
         // given: three applications created on different days
-        LeasingApplication older = aLeasingApplication()
+        LeasingApplication older = testLeasingApplication()
                 .id(new ApplicationId(UUID.randomUUID()))
                 .createdAt(LocalDateTime.of(2026, 1, 1, 8, 0))
                 .build();
-        LeasingApplication newer = aLeasingApplication()
+        LeasingApplication newer = testLeasingApplication()
                 .id(new ApplicationId(UUID.randomUUID()))
                 .createdAt(LocalDateTime.of(2026, 3, 1, 8, 0))
                 .build();
-        LeasingApplication newest = aLeasingApplication()
+        LeasingApplication newest = testLeasingApplication()
                 .id(new ApplicationId(UUID.randomUUID()))
                 .createdAt(LocalDateTime.of(2026, 6, 1, 8, 0))
                 .build();
@@ -109,15 +109,15 @@ class LeasingApplicationPersistenceAdapterTest {
     void findAllFiltersByStatusAndPaginates() {
 
         // given: two RECEIVED and one ACTIVE application
-        underTest.save(aLeasingApplication()
+        underTest.save(testLeasingApplication()
                 .id(new ApplicationId(UUID.randomUUID()))
                 .status(LeasingStatus.RECEIVED)
                 .build());
-        underTest.save(aLeasingApplication()
+        underTest.save(testLeasingApplication()
                 .id(new ApplicationId(UUID.randomUUID()))
                 .status(LeasingStatus.RECEIVED)
                 .build());
-        underTest.save(aLeasingApplication()
+        underTest.save(testLeasingApplication()
                 .id(new ApplicationId(UUID.randomUUID()))
                 .status(LeasingStatus.ACTIVE)
                 .build());

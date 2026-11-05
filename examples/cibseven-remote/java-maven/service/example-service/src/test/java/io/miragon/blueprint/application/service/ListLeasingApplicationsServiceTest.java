@@ -1,5 +1,6 @@
 package io.miragon.blueprint.application.service;
 
+import static io.miragon.blueprint.domain.leasing.TestObjectBuilder.testLeasingApplication;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -15,30 +16,23 @@ import io.miragon.blueprint.domain.bike.Bike;
 import io.miragon.blueprint.domain.bike.BikeId;
 import io.miragon.blueprint.domain.leasing.LeasingApplication;
 import io.miragon.blueprint.domain.leasing.LeasingStatus;
-import io.miragon.blueprint.domain.leasing.TestObjectBuilder;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
 import java.util.List;
+import org.junit.jupiter.api.Test;
 
 class ListLeasingApplicationsServiceTest {
 
     private final LeasingApplicationRepository repository = mock(LeasingApplicationRepository.class);
     private final BikePortfolioRepository bikePortfolio = mock(BikePortfolioRepository.class);
-    private final ListLeasingApplicationsService underTest = new ListLeasingApplicationsService(repository, bikePortfolio);
+    private final ListLeasingApplicationsService underTest =
+            new ListLeasingApplicationsService(repository, bikePortfolio);
 
     @Test
-    @DisplayName("maps a page of applications and resolves each bike model in one batch query")
     void mapsAPageOfApplicationsAndResolvesEachBikeModelInOneBatchQuery() {
         // given: a page with two applications on different bikes
-        LeasingApplication a = TestObjectBuilder.aLeasingApplication()
-                .bikeId(new BikeId("BIKE-900"))
-                .status(LeasingStatus.RECEIVED)
-                .build();
-        LeasingApplication b = TestObjectBuilder.aLeasingApplication()
-                .bikeId(new BikeId("BIKE-800"))
-                .status(LeasingStatus.ACTIVE)
-                .build();
+        LeasingApplication a =
+                testLeasingApplication().bikeId(new BikeId("BIKE-900")).status(LeasingStatus.RECEIVED).build();
+        LeasingApplication b =
+                testLeasingApplication().bikeId(new BikeId("BIKE-800")).status(LeasingStatus.ACTIVE).build();
         when(repository.findAll(any()))
                 .thenReturn(new LeasingApplicationRepository.Page(List.of(a, b), 0, 20, 2, 1));
         when(bikePortfolio.findAllByIds(any()))
@@ -61,7 +55,6 @@ class ListLeasingApplicationsServiceTest {
     }
 
     @Test
-    @DisplayName("passes the status filter through to the repository criteria")
     void passesTheStatusFilterThroughToTheRepositoryCriteria() {
         // given: a repository that records the criteria it was asked for
         when(repository.findAll(any()))
@@ -73,16 +66,14 @@ class ListLeasingApplicationsServiceTest {
 
         // then: the exact criteria reach the outbound port
         verify(repository).findAll(new LeasingApplicationRepository.Criteria(LeasingStatus.ACTIVE, 1, 5));
-        verifyNoMoreInteractions(repository);
+        verify(bikePortfolio).findAllByIds(List.of());
+        verifyNoMoreInteractions(repository, bikePortfolio);
     }
 
     @Test
-    @DisplayName("leaves the model null when the bike is not in the portfolio")
     void leavesTheModelNullWhenTheBikeIsNotInThePortfolio() {
         // given: an application whose bike is missing from the portfolio
-        LeasingApplication orphan = TestObjectBuilder.aLeasingApplication()
-                .bikeId(new BikeId("BIKE-GONE"))
-                .build();
+        LeasingApplication orphan = testLeasingApplication().bikeId(new BikeId("BIKE-GONE")).build();
         when(repository.findAll(any()))
                 .thenReturn(new LeasingApplicationRepository.Page(List.of(orphan), 0, 20, 1, 1));
         when(bikePortfolio.findAllByIds(any())).thenReturn(List.of());

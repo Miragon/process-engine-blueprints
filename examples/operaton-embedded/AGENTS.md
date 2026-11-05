@@ -114,7 +114,7 @@ the engine in it under Platform Settings → Engines with base URL
 | Backend (arch + unit + process + model validation + spec export) | `./gradlew build` |
 | Mutation testing (gate 80) | `./gradlew :service:app:pitest` |
 | Regenerate the typed BPMN process API (after editing a `.bpmn`) | `./gradlew generateBpmnModels` |
-| Regenerate the OpenAPI contract | `./gradlew :service:app:test --tests "io.miragon.blueprint.openapi.OpenApiSpecExportTest"` |
+| Regenerate the OpenAPI contract | `./gradlew :service:app:test --tests "io.miragon.blueprint.adapter.inbound.rest.OpenApiSpecExportTest"` |
 | Backend OCI image (`miravelo/app`) | `./gradlew :service:app:bootBuildImage` |
 <!-- /variant:kotlin-gradle -->
 
@@ -169,7 +169,7 @@ rules:
   the walked path against these nodes instead of hand-maintained element-id lists.
   <!-- variant:kotlin-gradle -->
 - The Kotlin process tests express that path as a compile-checked `ProcessPath`
-  (`process/util/ProcessPathAssertions.kt`).
+  (`adapter/process/ProcessPathAssertions.kt`).
   <!-- /variant:kotlin-gradle -->
 - `bpmnlint` runs on staged `.bpmn` via the pre-commit hook (install: `npm run hooks:install`).
 
@@ -199,7 +199,7 @@ Verify the variant you touched — which, for a change in behaviour, is both.
 In `kotlin-gradle/`:
 
 - Backend service/controller: `./gradlew :service:app:test --tests "*<Name>Test"`
-- Architecture only: `./gradlew :service:app:test --tests "io.miragon.blueprint.architecture.*"`
+- Architecture only: `./gradlew :service:app:test --tests "io.miragon.blueprint.ArchitectureTest*"`
   <!-- /variant:kotlin-gradle -->
 
 <!-- variant:java-maven -->

@@ -159,7 +159,7 @@ class OrderBikeDelegateTest {
 Mockito's `mock()` is lenient; the strictness comes from `verifyNoMoreInteractions`.
 <!-- /variant:java-maven -->
 
-**2. A process test** for the path through the engine in the test tree's `process/` (see
+**2. A process test** for the path through the engine in the test tree's `adapter/process/` (see
 `BikeLeasingProcessTest`): it walks the path the element sits on and verifies the port call there.
 The unit test proves the mapping, the process test proves the wiring (bean name, variables, boundary
 events). Delegates are outside the mutation gate, which covers the domain only, so the
@@ -176,7 +176,7 @@ unit test is the only isolated check of the mapping.
 4. **Write the unit test first**, then the delegate; for an existing class add only what is missing.
 5. **Add or extend the process test** for the path.
 6. **Run** both (`AGENTS.md` → Verify After Each Task): the unit test by name, then the
-   `io.miragon.blueprint.process` tests.
+   `io.miragon.blueprint.adapter.process` tests.
 <!-- variant:blueprint -->
 7. **Both variants:** the same delegate and the same tests in `kotlin-gradle/` and `java-maven/`.
 <!-- /variant:blueprint -->

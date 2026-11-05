@@ -2,7 +2,6 @@ package io.miragon.blueprint.domain.leasing;
 
 import io.miragon.blueprint.domain.bike.BikeId;
 import java.time.LocalDateTime;
-import org.jspecify.annotations.Nullable;
 
 /**
  * A leasing application parked on the {@code Clarify alternative with customer} user task because the
@@ -17,6 +16,6 @@ public record PendingClarification(
         ApplicationId applicationId,
         CustomerName customerName,
         BikeId requestedBikeId,
-        @Nullable String requestedBikeModel,
+        String requestedBikeModel,
         LocalDateTime waitingSince) {
 }

@@ -8,9 +8,9 @@ import io.miragon.blueprint.domain.bike.Bike;
 import io.miragon.blueprint.domain.bike.BikeId;
 import io.miragon.blueprint.domain.leasing.LeasingApplication;
 import io.miragon.blueprint.domain.leasing.PendingClarification;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,21 +40,18 @@ public class GetPendingClarificationsService implements GetPendingClarifications
                         .map(application -> Map.entry(task, application))
                         .stream())
                 .toList();
-        Map<BikeId, String> models = bikePortfolio
-                .findAllByIds(cases.stream().map(entry -> entry.getValue().bikeId()).toList())
-                .stream()
-                .collect(Collectors.toMap(Bike::bikeId, Bike::model, (existing, replacement) -> replacement));
+        Map<BikeId, String> models = new HashMap<>();
+        for (Bike bike : bikePortfolio.findAllByIds(
+                cases.stream().map(c -> c.getValue().bikeId()).toList())) {
+            models.put(bike.bikeId(), bike.model());
+        }
         return cases.stream()
-                .map(entry -> {
-                    TaskInboxPort.OpenClarification task = entry.getKey();
-                    LeasingApplication application = entry.getValue();
-                    return new PendingClarification(
-                            application.id(),
-                            application.customerName(),
-                            application.bikeId(),
-                            models.get(application.bikeId()),
-                            task.waitingSince());
-                })
+                .map(c -> new PendingClarification(
+                        c.getValue().id(),
+                        c.getValue().customerName(),
+                        c.getValue().bikeId(),
+                        models.get(c.getValue().bikeId()),
+                        c.getKey().waitingSince()))
                 .toList();
     }
 }

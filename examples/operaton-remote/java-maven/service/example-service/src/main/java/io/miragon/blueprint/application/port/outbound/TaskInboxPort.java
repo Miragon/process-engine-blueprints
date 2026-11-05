@@ -11,11 +11,9 @@ import java.util.List;
  * correlates by business key — so the UI never needs, and can never misuse, a raw task id.
  */
 public interface TaskInboxPort {
+
     List<OpenClarification> findOpenClarifications();
 
-    record OpenClarification(
-            ApplicationId applicationId,
-            LocalDateTime waitingSince
-    ) {
+    record OpenClarification(ApplicationId applicationId, LocalDateTime waitingSince) {
     }
 }

@@ -217,7 +217,7 @@
                     <targetTests>io.miragon.blueprint.*</targetTests>
                     <excludedTestClasses>
                         <param>io.miragon.blueprint.process.*</param>
-                        <param>io.miragon.blueprint.architecture.*</param>
+                        <param>io.miragon.blueprint.ArchitectureTest*</param>
                     </excludedTestClasses>
                     <threads>${pit.threads}</threads>
                     <timeoutFactor>2.0</timeoutFactor>

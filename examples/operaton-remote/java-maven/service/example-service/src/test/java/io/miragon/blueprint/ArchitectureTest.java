@@ -3,8 +3,8 @@ package io.miragon.blueprint;
 import io.miragon.common.architecture.ServiceArchitectureTest;
 
 /**
- * Runs the reusable ArchUnit + Konsist suite against this service's base package.
- * The rules live in the {@code :service:common-architecture-tests} module.
+ * Runs the reusable ArchUnit suite against this service's base package.
+ * The rules live in the {@code common-architecture-tests} module.
  */
 class ArchitectureTest extends ServiceArchitectureTest {
 

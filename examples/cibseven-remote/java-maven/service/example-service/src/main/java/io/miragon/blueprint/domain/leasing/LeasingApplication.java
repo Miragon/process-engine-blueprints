@@ -3,7 +3,6 @@ package io.miragon.blueprint.domain.leasing;
 import io.miragon.blueprint.domain.bike.BikeId;
 import io.miragon.blueprint.domain.bike.OrderId;
 import java.time.LocalDateTime;
-import org.jspecify.annotations.Nullable;
 
 /**
  * Aggregate root of the bike-leasing domain. All state transitions return a copy, so an instance is
@@ -20,8 +19,8 @@ public record LeasingApplication(
         BikeId bikeId,
         LeasingStatus status,
         LocalDateTime createdAt,
-        @Nullable OrderId orderId,
-        @Nullable ContractId contractId) {
+        OrderId orderId,
+        ContractId contractId) {
 
     /** Records the contract the contract system issued for this application. */
     public LeasingApplication withContract(ContractId contractId) {

@@ -3,7 +3,6 @@ package io.miragon.blueprint.application.service;
 import static io.miragon.blueprint.domain.leasing.TestObjectBuilder.testLeasingApplication;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -28,7 +27,6 @@ class SendSignatureReminderServiceTest {
         // given: an application in the repository
         LeasingApplication application = testLeasingApplication().build();
         when(repository.findById(application.id())).thenReturn(Optional.of(application));
-        doNothing().when(notification).send(any(), eq(application));
 
         // when: the signature reminder is sent
         underTest.sendSignatureReminder(application.id());

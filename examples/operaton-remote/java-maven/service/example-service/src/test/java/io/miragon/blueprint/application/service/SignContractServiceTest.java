@@ -1,6 +1,5 @@
 package io.miragon.blueprint.application.service;
 
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -20,7 +19,6 @@ class SignContractServiceTest {
 
         // given: an application id
         ApplicationId id = new ApplicationId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
-        doNothing().when(process).correlateContractSigned(id);
 
         // when: the contract is signed
         underTest.signContract(id);

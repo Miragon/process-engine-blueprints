@@ -34,25 +34,26 @@ class GetLeasingApplicationServiceTest {
                 .thenReturn(Optional.of(new Bike(application.bikeId(), "Gravel Explorer 900")));
 
         // when: the application is queried by id
-        GetLeasingApplicationQuery.Result result = underTest.byId(application.id());
+        Optional<GetLeasingApplicationQuery.Result> result = underTest.byId(application.id());
 
         // then: the application and the resolved bike model are returned
-        assertThat(result.application()).isEqualTo(application);
-        assertThat(result.bikeModel()).isEqualTo("Gravel Explorer 900");
+        assertThat(result).isPresent();
+        assertThat(result.get().application()).isEqualTo(application);
+        assertThat(result.get().bikeModel()).isEqualTo("Gravel Explorer 900");
         verify(repository).findById(application.id());
         verify(bikePortfolio).findByBikeId(application.bikeId());
         verifyNoMoreInteractions(repository, bikePortfolio);
     }
 
     @Test
-    void byIdReturnsNullWhenTheApplicationDoesNotExist() {
+    void byIdReturnsEmptyWhenTheApplicationDoesNotExist() {
 
         // given: an unknown application id
         ApplicationId id = new ApplicationId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
         when(repository.findById(id)).thenReturn(Optional.empty());
 
-        // when / then: the query returns null and the portfolio is never consulted
-        assertThat(underTest.byId(id)).isNull();
+        // when / then: the query returns empty and the portfolio is never consulted
+        assertThat(underTest.byId(id)).isEmpty();
         verify(repository).findById(id);
         verifyNoMoreInteractions(repository, bikePortfolio);
     }

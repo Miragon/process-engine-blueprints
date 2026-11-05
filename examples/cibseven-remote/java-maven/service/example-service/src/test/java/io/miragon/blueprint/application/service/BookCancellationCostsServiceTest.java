@@ -6,7 +6,6 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import io.miragon.blueprint.application.port.outbound.BikeDealerPort;
 import io.miragon.blueprint.domain.bike.OrderId;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class BookCancellationCostsServiceTest {
@@ -15,15 +14,11 @@ class BookCancellationCostsServiceTest {
     private final BookCancellationCostsService underTest = new BookCancellationCostsService(bikeDealer);
 
     @Test
-    @DisplayName("bookCosts delegates the cost booking to the dealer")
     void bookCostsDelegatesTheCostBookingToTheDealer() {
-
         // given: a placed order
         OrderId orderId = new OrderId("ORDER-900");
-
         // when: the costs are booked
         underTest.bookCosts(orderId);
-
         // then: the dealer out-port books the cancellation costs
         verify(bikeDealer).bookCancellationCosts(orderId);
         verifyNoMoreInteractions(bikeDealer);

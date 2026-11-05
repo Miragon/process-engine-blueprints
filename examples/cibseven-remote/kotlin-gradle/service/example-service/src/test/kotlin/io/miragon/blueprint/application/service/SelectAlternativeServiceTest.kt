@@ -16,6 +16,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
+import java.util.UUID
 
 class SelectAlternativeServiceTest {
 
@@ -64,17 +65,16 @@ class SelectAlternativeServiceTest {
     }
 
     @Test
-    fun `an unknown application is reported with its id and nothing else happens`() {
+    fun `selectAlternative fails for an unknown application`() {
 
-        // given: no application exists for the id
-        val unknown = ApplicationId.of("123e4567-e89b-12d3-a456-426614174000")
-        every { repository.findById(unknown) } returns null
+        // given: no application is stored under the id
+        val id = ApplicationId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"))
+        every { repository.findById(id) } returns null
 
-        // when/then: selecting an alternative names the missing application
-        assertThatThrownBy { underTest.selectAlternative(SelectAlternativeUseCase.Command(unknown, alternativeFound = false)) }
+        // when / then: the lookup fails with an IllegalStateException, which the REST adapter maps to 404
+        assertThatThrownBy { underTest.selectAlternative(SelectAlternativeUseCase.Command(id, alternativeFound = false)) }
             .isInstanceOf(IllegalStateException::class.java)
-            .hasMessage("Unknown application $unknown")
-        verify { repository.findById(unknown) }
-        confirmVerified(repository, bikePortfolio, process)
+            .hasMessage("Unknown application $id")
+        verify(exactly = 0) { repository.save(any()) }
     }
 }

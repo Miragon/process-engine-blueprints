@@ -9,7 +9,6 @@ import io.miragon.blueprint.domain.leasing.LeasingApplication;
  * the outside. Implemented by the VanillaBP adapter.
  */
 public interface LeasingProcess {
-
     void submitRequest(LeasingApplication application);
 
     void correlateContractSigned(ApplicationId id);

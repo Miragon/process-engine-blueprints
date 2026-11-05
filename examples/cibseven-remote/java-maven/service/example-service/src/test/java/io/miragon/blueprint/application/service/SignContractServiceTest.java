@@ -6,10 +6,8 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import io.miragon.blueprint.application.port.outbound.LeasingProcess;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
 import java.util.UUID;
+import org.junit.jupiter.api.Test;
 
 class SignContractServiceTest {
 
@@ -17,7 +15,6 @@ class SignContractServiceTest {
     private final SignContractService underTest = new SignContractService(process);
 
     @Test
-    @DisplayName("signContract correlates the contract-signed message")
     void signContractCorrelatesTheContractSignedMessage() {
 
         // given: an application id

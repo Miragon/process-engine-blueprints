@@ -18,14 +18,17 @@ import org.cibseven.bpm.engine.ProcessEngine;
 import org.cibseven.bpm.engine.delegate.ExecutionListener;
 import org.cibseven.bpm.engine.delegate.TaskListener;
 import org.cibseven.bpm.engine.externaltask.ExternalTask;
-import org.cibseven.bpm.engine.impl.cfg.StandaloneInMemProcessEngineConfiguration;
 import org.cibseven.bpm.engine.runtime.ProcessInstance;
+import org.cibseven.bpm.engine.test.Deployment;
 import org.cibseven.bpm.engine.test.mock.MockExpressionManager;
 import org.cibseven.bpm.engine.test.mock.Mocks;
+import org.cibseven.community.process_test_coverage.engine.platform7.ProcessCoverageInMemProcessEngineConfiguration;
+import org.cibseven.community.process_test_coverage.junit5.platform7.ProcessEngineCoverageExtension;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.util.Map;
 import java.util.UUID;
@@ -33,8 +36,8 @@ import java.util.UUID;
 /**
  * Process-model behaviour test for the {@code bike-leasing} model — it lives with the <b>process owner</b>
  * (this service), which also owns and deploys the model. Because the worker embeds no engine, the test
- * spins up a fresh <b>standalone in-memory engine</b> per test and deploys the model from this service's
- * own resources.
+ * runs a <b>standalone in-memory engine</b> that records process test coverage, and deploys the model
+ * from this service's own resources for each test.
  *
  * <p>The service tasks are <b>external tasks</b>, so the test completes each one explicitly by topic via
  * {@link ProcessDriveUtils#completeExternalTask(ProcessEngine, String, Map)} (supplying the output variables
@@ -42,6 +45,7 @@ import java.util.UUID;
  * verifies the <i>topology</i> — routing, gateways, compensation, the event sub-process, the DMN and the
  * timers — independent of what the workers actually do with each task.
  */
+@Deployment(resources = {"bpmn/bike-leasing.bpmn", "bpmn/cancel-bike-order.bpmn", "dmn/check-credit-rating.dmn"})
 class BikeLeasingProcessTest {
 
     private ProcessEngine engine;
@@ -58,6 +62,16 @@ class BikeLeasingProcessTest {
             ServiceTasks.BIKE_LEASING_REQUEST_CANCELLATION,
             Map.of(CancelBikeOrderProcessApi.FlowNodes.ServiceTaskRequestCancellation.Variables.CANCELLATION_POSSIBLE.getValue(), true));
 
+    @RegisterExtension
+    static final ProcessEngineCoverageExtension COVERAGE = ProcessEngineCoverageExtension.builder(coverageEngineConfiguration()).build();
+
+    private static ProcessCoverageInMemProcessEngineConfiguration coverageEngineConfiguration() {
+        ProcessCoverageInMemProcessEngineConfiguration configuration = new ProcessCoverageInMemProcessEngineConfiguration();
+        configuration.setJdbcUrl("jdbc:h2:mem:bikeleasing-process;DB_CLOSE_DELAY=1000");
+        configuration.setExpressionManager(new MockExpressionManager());
+        return configuration;
+    }
+
     @BeforeEach
     void setUp() {
         // The job executor stays off by default, so the test drives async continuations by hand.
@@ -67,10 +81,7 @@ class BikeLeasingProcessTest {
         // The standalone test engine has no Spring context, so a `MockExpressionManager` + `Mocks`
         // registers no-op stand-ins under those bean names, letting the topology test resolve (and thus
         // verify) the `delegateExpression`s without pulling in the engine module.
-        StandaloneInMemProcessEngineConfiguration configuration = new StandaloneInMemProcessEngineConfiguration();
-        configuration.setJdbcUrl("jdbc:h2:mem:bikeleasing-process-" + UUID.randomUUID() + ";DB_CLOSE_DELAY=1000");
-        configuration.setExpressionManager(new MockExpressionManager());
-        engine = configuration.buildProcessEngine();
+        engine = COVERAGE.getProcessEngine();
 
         Mocks.register("bikeOrderAuditListener", (ExecutionListener) execution -> {
             /* stand-in: real bean in engine-service */
@@ -79,20 +90,12 @@ class BikeLeasingProcessTest {
             /* stand-in: real bean in engine-service */
         });
 
-        // The process owner deploys its own model — here from this service's own resources on the classpath.
-        engine.getRepositoryService().createDeployment()
-                .addClasspathResource("bpmn/bike-leasing.bpmn")
-                .addClasspathResource("bpmn/cancel-bike-order.bpmn")
-                .addClasspathResource("dmn/check-credit-rating.dmn")
-                .deploy();
-
         init(engine);
     }
 
     @AfterEach
     void tearDown() {
         Mocks.reset();
-        engine.close();
     }
 
     @Test

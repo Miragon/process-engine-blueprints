@@ -54,6 +54,7 @@ tasks.named("classes") {
 
 tasks.test {
     useJUnitPlatform()
+    systemProperty("camunda.process-test.coverage.report-directory", "${layout.buildDirectory.get()}/reports/process-test-coverage")
     // In-memory Camunda process tests are mildly async; retry to keep CI stable.
     retry {
         maxRetries.set(3)

@@ -4,6 +4,7 @@ spring_dependency_version = "1.1.7"
 kotlin_version = "2.4.0"
 kotlin_logging_version = "3.0.5"
 fluxnova_version = "3.1.1"
+fluxnova_process_test_coverage_version = "2.0.0"
 bpmn_to_code_version = "7.0.1"
 bpmn_to_code_testing_version = "7.0.1"
 archunit_version = "1.5.1"
@@ -53,6 +54,7 @@ h2 = { module = "com.h2database:h2", version = "2.5.252" }
 # Process test — Fluxnova
 fluxnova-bpm-assert = { module = "org.finos.fluxnova.bpm:fluxnova-bpm-assert", version.ref = "fluxnova_version" }
 fluxnova-bpm-junit5 = { module = "org.finos.fluxnova.bpm:fluxnova-bpm-junit5", version.ref = "fluxnova_version" }
+fluxnova-process-test-coverage = { module = "org.finos.fluxnova.bpm.test:fluxnova-bpm-testing-process-coverage", version.ref = "fluxnova_process_test_coverage_version" }
 
 [bundles]
 defaultService = ["kotlin-reflect", "kotlin_logging", "jackson-kotlin", "devtools", "web", "actuator", "prometheus"]
@@ -61,7 +63,7 @@ fluxnova = ["fluxnova-webapp", "fluxnova-rest"]
 test = ["spring_test", "spring_web_test", "spring_data_jpa_test", "mockito", "mockk", "spring_mockk", "kotlin_mockito"]
 archunit = ["archunit"]
 konsist = ["konsist"]
-fluxnovaProcessTest = ["fluxnova-bpm-assert", "fluxnova-bpm-junit5", "h2"]
+fluxnovaProcessTest = ["fluxnova-bpm-assert", "fluxnova-bpm-junit5", "fluxnova-process-test-coverage", "h2"]
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin_version" }

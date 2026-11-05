@@ -12,21 +12,24 @@ import org.assertj.core.api.Assertions
 import org.cibseven.bpm.engine.ProcessEngine
 import org.cibseven.bpm.engine.delegate.ExecutionListener
 import org.cibseven.bpm.engine.delegate.TaskListener
-import org.cibseven.bpm.engine.impl.cfg.StandaloneInMemProcessEngineConfiguration
+import org.cibseven.bpm.engine.test.Deployment
 import org.cibseven.bpm.engine.test.assertions.bpmn.BpmnAwareTests.assertThat
 import org.cibseven.bpm.engine.test.assertions.bpmn.BpmnAwareTests.init
 import org.cibseven.bpm.engine.test.mock.MockExpressionManager
 import org.cibseven.bpm.engine.test.mock.Mocks
+import org.cibseven.community.process_test_coverage.engine.platform7.ProcessCoverageInMemProcessEngineConfiguration
+import org.cibseven.community.process_test_coverage.junit5.platform7.ProcessEngineCoverageExtension
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import java.util.UUID
 
 /**
  * Process-model behaviour test for the `bike-leasing` model — it lives with the **process owner**
  * (this service), which also owns and deploys the model. Because the worker embeds no engine, the test
- * spins up a fresh **standalone in-memory engine** per test and deploys the model from this service's
- * own resources.
+ * runs a **standalone in-memory engine** that records process test coverage, and deploys the model
+ * from this service's own resources for each test.
  *
  * The service tasks are **external tasks**, so the test completes each one explicitly by topic via
  * [completeExternalTask] (supplying the output variables a real worker would return); user tasks,
@@ -34,6 +37,7 @@ import java.util.UUID
  * gateways, compensation, the event sub-process, the DMN and the timers — independent of what the
  * workers actually do with each task.
  */
+@Deployment(resources = ["bpmn/bike-leasing.bpmn", "bpmn/cancel-bike-order.bpmn", "dmn/check-credit-rating.dmn"])
 class BikeLeasingProcessTest {
 
     private lateinit var engine: ProcessEngine
@@ -59,20 +63,10 @@ class BikeLeasingProcessTest {
         // The standalone test engine has no Spring context, so a `MockExpressionManager` + `Mocks`
         // registers no-op stand-ins under those bean names, letting the topology test resolve (and thus
         // verify) the `delegateExpression`s without pulling in the engine module.
-        engine = StandaloneInMemProcessEngineConfiguration().apply {
-            jdbcUrl = "jdbc:h2:mem:bikeleasing-process-${UUID.randomUUID()};DB_CLOSE_DELAY=1000"
-            expressionManager = MockExpressionManager()
-        }.buildProcessEngine()
+        engine = coverage.processEngine
 
         Mocks.register("bikeOrderAuditListener", ExecutionListener { /* stand-in: real bean in engine-service */ })
         Mocks.register("clarifyAlternativeTaskListener", TaskListener { /* stand-in: real bean in engine-service */ })
-
-        // The process owner deploys its own model — here from this service's own resources on the classpath.
-        engine.repositoryService.createDeployment()
-            .addClasspathResource("bpmn/bike-leasing.bpmn")
-            .addClasspathResource("bpmn/cancel-bike-order.bpmn")
-            .addClasspathResource("dmn/check-credit-rating.dmn")
-            .deploy()
 
         init(engine)
     }
@@ -80,7 +74,17 @@ class BikeLeasingProcessTest {
     @AfterEach
     fun tearDown() {
         Mocks.reset()
-        engine.close()
+    }
+
+    companion object {
+        @JvmField
+        @RegisterExtension
+        val coverage: ProcessEngineCoverageExtension = ProcessEngineCoverageExtension.builder(
+            ProcessCoverageInMemProcessEngineConfiguration().apply {
+                jdbcUrl = "jdbc:h2:mem:bikeleasing-process;DB_CLOSE_DELAY=1000"
+                expressionManager = MockExpressionManager()
+            },
+        ).build()
     }
 
     @Test

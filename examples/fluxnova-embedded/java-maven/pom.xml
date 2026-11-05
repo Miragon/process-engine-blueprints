@@ -30,6 +30,7 @@
 
         <!-- Third-party versions not managed by the Spring Boot BOM -->
         <fluxnova.version>3.1.1</fluxnova.version>
+        <fluxnova-process-test-coverage.version>2.0.0</fluxnova-process-test-coverage.version>
         <springdoc.version>3.2.0</springdoc.version>
         <bpmn-to-code.version>7.0.1</bpmn-to-code.version>
         <archunit.version>1.5.1</archunit.version>
@@ -65,6 +66,21 @@
                 <groupId>org.finos.fluxnova.bpm</groupId>
                 <artifactId>fluxnova-bpm-junit5</artifactId>
                 <version>${fluxnova.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.fluxnova.bpm.test</groupId>
+                <artifactId>fluxnova-bpm-testing-process-coverage</artifactId>
+                <version>${fluxnova-process-test-coverage.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.finos.fluxnova.bpm</groupId>
+                        <artifactId>fluxnova-engine</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.finos.fluxnova.bpm</groupId>
+                        <artifactId>fluxnova-engine-spring</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <!-- OpenAPI — springdoc (3.x = the Spring Boot 4 line) -->

@@ -30,6 +30,7 @@
 
         <!-- Third-party versions not managed by the Spring Boot BOM -->
         <cibseven.version>2.2.0</cibseven.version>
+        <cibseven-process-test-coverage.version>2.2.0</cibseven-process-test-coverage.version>
         <springdoc.version>3.2.0</springdoc.version>
         <bpmn-to-code.version>7.0.1</bpmn-to-code.version>
         <archunit.version>1.5.1</archunit.version>
@@ -65,6 +66,11 @@
                 <groupId>org.cibseven.bpm</groupId>
                 <artifactId>cibseven-bpm-junit5</artifactId>
                 <version>${cibseven.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.cibseven.community.process_test_coverage</groupId>
+                <artifactId>cibseven-process-test-coverage-spring-test-platform-7</artifactId>
+                <version>${cibseven-process-test-coverage.version}</version>
             </dependency>
 
             <!-- OpenAPI — springdoc (3.x = the Spring Boot 4 line) -->

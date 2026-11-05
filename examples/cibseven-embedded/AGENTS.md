@@ -226,6 +226,15 @@ TDD. Match the test style to the layer:
   clear before reading back.
 - Tests run against H2 with Flyway off; no Postgres needed.
 
+The process tests also write a **process test coverage** report per test class, with the CIB seven community extension Process Test Coverage: an HTML page per class that draws the paths the tests took on the model and gives the share of flow nodes and sequence flows they reached. No minimum is enforced.
+
+<!-- variant:kotlin-gradle -->
+Report folder: `service/app/build/reports/process-test-coverage/`
+<!-- /variant:kotlin-gradle -->
+<!-- variant:java-maven -->
+Report folder: `service/app/target/process-test-coverage/`
+<!-- /variant:java-maven -->
+
 **Mutation testing gates the domain at 80, nightly**: a test that executes without asserting
 will fail
 the nightly run. Coverage says a line ran; mutation says a test would have noticed. It mutates `io.miragon.blueprint.domain.*` only and does not block pull requests. See [ADR-0004](docs/adr/0004-mutation-testing-as-a-blocking-pr-gate.md).

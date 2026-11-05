@@ -65,6 +65,7 @@ tasks.test {
     // Isolate each test class in its own JVM so the standalone in-memory engine used by the process
     // tests never carries state between classes.
     forkEvery = 1
+    systemProperty("cibseven-process-test-coverage.target-dir-root", "${layout.buildDirectory.get()}/reports/process-test-coverage/")
 }
 
 pitest {

@@ -146,6 +146,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.cibseven.community.process_test_coverage</groupId>
+            <artifactId>cibseven-process-test-coverage-spring-test-platform-7</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <!-- `runtime`, not `test`: CIB seven's webclient (cibseven-webclient-core) already puts h2 on the
                  runtime classpath, and a direct test-scoped declaration would narrow it (in Maven the direct
                  scope wins) and drop it from the boot jar. -->

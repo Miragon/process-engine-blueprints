@@ -129,6 +129,16 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.cibseven.community.process_test_coverage</groupId>
+            <artifactId>cibseven-process-test-coverage-junit5-platform-7</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-reflect</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.cibseven.bpm</groupId>
             <artifactId>cibseven-engine</artifactId>
             <scope>test</scope>

@@ -56,6 +56,13 @@ class BikeLeasingProcessTest {
 
     @BeforeEach
     fun setUp() {
+        // The job executor stays off by default, so the test drives async continuations by hand.
+        // The model references two listeners by expression (`#{bikeOrderAuditListener}`,
+        // `#{clarifyAlternativeTaskListener}`) whose real beans live in the `engine-service` — listeners
+        // run inside the engine and have no external-task equivalent, so they cannot be worker beans.
+        // The standalone test engine has no Spring context, so a `MockExpressionManager` + `Mocks`
+        // registers no-op stand-ins under those bean names, letting the topology test resolve (and thus
+        // verify) the `delegateExpression`s without pulling in the engine module.
         engine = coverage.processEngine
 
         Mocks.register("bikeOrderAuditListener", ExecutionListener { /* stand-in: real bean in engine-service */ })
@@ -70,13 +77,6 @@ class BikeLeasingProcessTest {
     }
 
     companion object {
-        // The job executor stays off by default, so the test drives async continuations by hand.
-        // The model references two listeners by expression (`#{bikeOrderAuditListener}`,
-        // `#{clarifyAlternativeTaskListener}`) whose real beans live in the `engine-service` — listeners
-        // run inside the engine and have no external-task equivalent, so they cannot be worker beans.
-        // The standalone test engine has no Spring context, so a `MockExpressionManager` + `Mocks`
-        // registers no-op stand-ins under those bean names, letting the topology test resolve (and thus
-        // verify) the `delegateExpression`s without pulling in the engine module.
         @JvmField
         @RegisterExtension
         val coverage: ProcessEngineCoverageExtension = ProcessEngineCoverageExtension.builder(

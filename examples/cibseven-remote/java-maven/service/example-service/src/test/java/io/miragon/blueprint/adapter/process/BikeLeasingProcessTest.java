@@ -62,13 +62,6 @@ class BikeLeasingProcessTest {
             ServiceTasks.BIKE_LEASING_REQUEST_CANCELLATION,
             Map.of(CancelBikeOrderProcessApi.FlowNodes.ServiceTaskRequestCancellation.Variables.CANCELLATION_POSSIBLE.getValue(), true));
 
-    // The job executor stays off by default, so the test drives async continuations by hand.
-    // The model references two listeners by expression (`#{bikeOrderAuditListener}`,
-    // `#{clarifyAlternativeTaskListener}`) whose real beans live in the `engine-service` — listeners
-    // run inside the engine and have no external-task equivalent, so they cannot be worker beans.
-    // The standalone test engine has no Spring context, so a `MockExpressionManager` + `Mocks`
-    // registers no-op stand-ins under those bean names, letting the topology test resolve (and thus
-    // verify) the `delegateExpression`s without pulling in the engine module.
     @RegisterExtension
     static final ProcessEngineCoverageExtension COVERAGE = ProcessEngineCoverageExtension.builder(coverageEngineConfiguration()).build();
 
@@ -81,6 +74,13 @@ class BikeLeasingProcessTest {
 
     @BeforeEach
     void setUp() {
+        // The job executor stays off by default, so the test drives async continuations by hand.
+        // The model references two listeners by expression (`#{bikeOrderAuditListener}`,
+        // `#{clarifyAlternativeTaskListener}`) whose real beans live in the `engine-service` — listeners
+        // run inside the engine and have no external-task equivalent, so they cannot be worker beans.
+        // The standalone test engine has no Spring context, so a `MockExpressionManager` + `Mocks`
+        // registers no-op stand-ins under those bean names, letting the topology test resolve (and thus
+        // verify) the `delegateExpression`s without pulling in the engine module.
         engine = COVERAGE.getProcessEngine();
 
         Mocks.register("bikeOrderAuditListener", (ExecutionListener) execution -> {

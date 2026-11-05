@@ -194,6 +194,15 @@ TDD. Match the test style to the layer:
 | `adapter.outbound.db` | `@DataJpaTest` |
 | process end-to-end | Fluxnova process tests (`fluxnova-bpm-assert`), paths asserted via `ProcessPath` |
 
+The process tests also write a **process test coverage** report per test class, with Fluxnova's `fluxnova-bpm-testing-process-coverage`: an HTML page per class that draws the paths the tests took on the model and gives the share of flow nodes and sequence flows they reached. Open the folder after the build. No minimum is enforced.
+
+<!-- variant:kotlin-gradle -->
+- Kotlin/Gradle: `service/app/build/reports/process-test-coverage/`
+<!-- /variant:kotlin-gradle -->
+<!-- variant:java-maven -->
+- Java/Maven: `service/app/target/process-test-coverage/`
+<!-- /variant:java-maven -->
+
 **Mutation testing gates the domain at 80, nightly**: a test that executes without asserting
 will fail
 the nightly run. Coverage says a line ran; mutation says a test would have noticed. It mutates `io.miragon.blueprint.domain.*` only and does not block pull requests. See [ADR-0004](docs/adr/0004-mutation-testing-as-a-blocking-pr-gate.md).

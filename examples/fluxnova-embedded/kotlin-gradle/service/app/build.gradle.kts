@@ -56,6 +56,7 @@ tasks.named("classes") {
 tasks.test {
     useJUnitPlatform()
     forkEvery = 1
+    systemProperty("process-test-coverage.target-dir-root", "${layout.buildDirectory.get()}/reports/process-test-coverage/")
 }
 
 val foreignEngineGroups = listOf("org.cibseven", "org.camunda", "org.operaton")

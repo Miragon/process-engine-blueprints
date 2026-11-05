@@ -129,6 +129,8 @@ TDD. Match the test style to the layer:
 | process end-to-end | CIB seven process tests (JGiven), paths asserted via `ProcessPath` |
 | frontend slices | vitest + MSW (generated handlers) |
 
+The process tests also write a **process test coverage** report per test class, with the CIB seven community extension Process Test Coverage: an HTML page per class that draws the paths the tests took on the model and gives the share of flow nodes and sequence flows they reached. Open `service/app/build/reports/process-test-coverage/` after `./gradlew build`. No minimum is enforced.
+
 **Mutation testing gates the domain at 80, nightly** (`:service:app:pitest`): a test that executes without asserting
 will fail
 the nightly run. Coverage says a line ran; mutation says a test would have noticed. It mutates `io.miragon.blueprint.domain.*` only and does not block pull requests. See ADR-0006.

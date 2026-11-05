@@ -917,6 +917,12 @@
 - examples:
     - cibseven-embedded
     - cibseven-process-engine-api
+    - fullstack-cibseven-embedded
+  files:
+    - kotlin-gradle/service/app/src/test/resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports
+- examples:
+    - cibseven-embedded
+    - cibseven-process-engine-api
     - operaton-embedded
   files:
     - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/rest/OpenApiConfiguration.kt
@@ -1109,6 +1115,7 @@
     - cibseven-process-engine-api
   files:
     - docs/adr/0010-flyway-for-database-migrations.md
+    - java-maven/service/app/src/test/resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports
     - openapi/openapi.json
 - examples:
     - cibseven-embedded

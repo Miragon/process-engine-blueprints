@@ -787,6 +787,9 @@ differs:
       - ".pulse-cli.json"
       - "java-maven/.mvn/maven.config"
       - "java-maven/config/checkstyle/source-guidelines.xml"
+  - examples: [temporal-native]
+    files: [.gitignore]
+    reason: "Single-variant example whose starter script keeps no variant markers, so its .gitignore lists only the Kotlin/Gradle entries."
 languageOnly:
   - examples: [cibseven-embedded, cibseven-process-engine-api, cibseven-remote, fluxnova-embedded, operaton-embedded, operaton-remote, zeebe-native, zeebe-process-engine-api, zeebe-vanillabp]
     sources: [service/common-architecture-tests/src/main/io/miragon/common/architecture/KotlinSourceGuidelinesTest]

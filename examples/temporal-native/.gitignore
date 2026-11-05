@@ -1,16 +1,11 @@
 .claude/logs/
 .claude/settings.local.json
 **/bin/
-# variant:kotlin-gradle
+**/target/
 .gradle
 **/build/
 !kotlin-gradle/gradle/wrapper/gradle-wrapper.jar
 .kotlin/
-# /variant:kotlin-gradle
-# variant:java-maven
-**/target/
-# /variant:java-maven
-**/jgiven-reports/
 .idea
 *.iml
 .DS_Store

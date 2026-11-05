@@ -131,7 +131,6 @@
     - zeebe-process-engine-api
     - zeebe-vanillabp
   files:
-    - .gitignore
     - docs/adr/0007-two-architecture-test-tools-archunit-and-konsist.md
 - examples:
     - cibseven-embedded
@@ -146,6 +145,18 @@
     - zeebe-vanillabp
   files:
     - .github/CODEOWNERS
+- examples:
+    - cibseven-embedded
+    - cibseven-process-engine-api
+    - cibseven-remote
+    - fluxnova-embedded
+    - operaton-embedded
+    - operaton-remote
+    - zeebe-native
+    - zeebe-process-engine-api
+    - zeebe-vanillabp
+  files:
+    - .gitignore
 - examples:
     - cibseven-embedded
     - cibseven-process-engine-api

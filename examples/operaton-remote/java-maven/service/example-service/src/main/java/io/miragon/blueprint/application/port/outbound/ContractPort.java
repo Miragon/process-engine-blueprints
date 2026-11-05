@@ -9,6 +9,7 @@ import io.miragon.blueprint.domain.leasing.ContractId;
  * concern.) A real integration replaces the logging adapter without touching the application layer.
  */
 public interface ContractPort {
+
     ContractId issueContract(ApplicationId id);
 
     void revokeContract(ContractId contractId);

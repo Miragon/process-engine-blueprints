@@ -2,6 +2,7 @@ package io.miragon.blueprint.application.service;
 
 import io.miragon.blueprint.application.port.inbound.CancelContractUseCase;
 import io.miragon.blueprint.application.port.outbound.ContractPort;
+import io.miragon.blueprint.domain.leasing.ContractId;
 import io.miragon.blueprint.domain.leasing.LeasingApplication;
 import org.springframework.stereotype.Service;
 
@@ -16,9 +17,11 @@ public class CancelContractService implements CancelContractUseCase {
 
     @Override
     public void cancelContract(LeasingApplication application) {
-        if (application.contractId() == null) {
+        // Revoke the contract the contract system issued earlier (its id is recorded on the application).
+        ContractId contractId = application.contractId();
+        if (contractId == null) {
             throw new IllegalStateException("No contract issued for application " + application.id());
         }
-        contract.revokeContract(application.contractId());
+        contract.revokeContract(contractId);
     }
 }

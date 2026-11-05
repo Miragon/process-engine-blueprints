@@ -64,6 +64,17 @@ class TaskInboxAdapterTest {
     }
 
     @Test
+    void drops_a_task_whose_instance_carries_no_business_key() {
+        // given: an open task on an instance that was started without a business key
+        Task task = task("proc-1", new Date(0));
+        stubTaskQuery(List.of(task));
+        stubProcessInstanceQuery("proc-1", null);
+
+        // when / then: the task without an application is skipped
+        assertThat(underTest.findOpenClarifications()).isEmpty();
+    }
+
+    @Test
     void returns_nothing_and_skips_the_instance_query_when_no_task_is_open() {
         // given: no open tasks
         stubTaskQuery(List.of());

@@ -7,6 +7,7 @@ import io.camunda.process.test.api.CamundaProcessTestContext
 import io.camunda.process.test.api.CamundaSpringProcessTest
 import io.camunda.process.test.api.assertions.ProcessInstanceSelectors
 import io.miragon.blueprint.adapter.outbound.zeebe.LeasingProcessAdapter
+import io.miragon.blueprint.adapter.outbound.zeebe.TaskInboxAdapter
 import io.miragon.blueprint.adapter.process.BikeLeasingProcessProcessApi.FlowNodes
 import io.miragon.blueprint.application.port.inbound.ActivateLeasingUseCase
 import io.miragon.blueprint.application.port.inbound.BookCancellationCostsUseCase
@@ -74,6 +75,9 @@ class BikeLeasingProcessTest {
 
     @Autowired
     private lateinit var process: LeasingProcessAdapter
+
+    @Autowired
+    private lateinit var inbox: TaskInboxAdapter
 
     @MockkBean(relaxed = true)
     private lateinit var rejectApplicationUseCase: RejectApplicationUseCase
@@ -437,6 +441,51 @@ class BikeLeasingProcessTest {
             .hasCompletedElement(FlowNodes.CallActivityCancelBikeOrder.ELEMENT_ID, 1)
         assertThat(orderCancellationsOf(instanceKey)).isEqualTo(1)
         verify(exactly = 1) { requestOrderCancellationUseCase.requestCancellation(any()) }
+    }
+
+    @Test
+    fun `bike unavailable - the inbox lists the case and the process adapter completes its task`() {
+        val (id, instanceKey) = submitUntilBikeUnavailable()
+        val instance = ProcessInstanceSelectors.byKey(instanceKey)
+
+        // the open clarification task shows up in the inbox
+        Awaitility.await()
+            .atMost(Duration.ofSeconds(30))
+            .pollInterval(Duration.ofMillis(200))
+            .untilAsserted { assertThat(inbox.findOpenClarifications().map { it.applicationId }).contains(id) }
+
+        process.completeAlternativeClarification(id, alternativeFound = true, bikeId = BikeId("BIKE-ALT"))
+
+        CamundaAssert.assertThatProcessInstance(instance)
+            .hasVariable(FlowNodes.UserTaskClarifyAlternative.Variables.BIKE_ID.value, "BIKE-ALT")
+        CamundaAssert.assertThatProcessInstance(instance).hasCompletedElement(FlowNodes.ServiceTaskOrderBike.ELEMENT_ID, 1)
+        verify(exactly = 1) { orderBikeUseCase.orderBike(id, BikeId("BIKE-ALT")) }
+
+        // and the task is completed, so the case disappears from the inbox
+        Awaitility.await()
+            .atMost(Duration.ofSeconds(30))
+            .pollInterval(Duration.ofMillis(200))
+            .untilAsserted { assertThat(inbox.findOpenClarifications().map { it.applicationId }).doesNotContain(id) }
+    }
+
+    @Test
+    fun `dealer outage - the order counts down its retries and raises an incident`() {
+        every { orderBikeUseCase.orderBike(any(), any()) } throws IllegalStateException("dealer down")
+
+        val id = submit(age = 35, income = 3500.0)
+        val instanceKey = awaitProcessInstance()
+        val instance = ProcessInstanceSelectors.byKey(instanceKey)
+
+        CamundaAssert.assertThatProcessInstance(instance).hasCompletedElements(FlowNodes.ServiceTaskSendContract)
+        process.correlateContractSigned(id)
+
+        // the worker fails the job with a 10s backoff per retry, so the incident takes about 20s
+        Awaitility.await()
+            .atMost(Duration.ofSeconds(60))
+            .pollInSameThread()
+            .pollInterval(Duration.ofSeconds(1))
+            .untilAsserted { CamundaAssert.assertThatProcessInstance(instance).hasActiveIncidents() }
+        verify(exactly = 3) { orderBikeUseCase.orderBike(id, BikeId("BIKE-TEST")) }
     }
 
     /** Drives a signed, insured application to the clarify-alternative task: the dealer has no bike. */

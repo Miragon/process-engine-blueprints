@@ -75,6 +75,7 @@ class SelectAlternativeServiceTest {
         assertThatThrownBy { underTest.selectAlternative(SelectAlternativeUseCase.Command(id, alternativeFound = false)) }
             .isInstanceOf(IllegalStateException::class.java)
             .hasMessage("Unknown application $id")
-        verify(exactly = 0) { repository.save(any()) }
+        verify { repository.findById(id) }
+        confirmVerified(repository, bikePortfolio, process)
     }
 }

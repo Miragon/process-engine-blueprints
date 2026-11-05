@@ -12,7 +12,6 @@ import org.cibseven.rest.client.model.CompleteTaskDto;
 import org.cibseven.rest.client.model.CorrelationMessageDto;
 import org.cibseven.rest.client.model.TaskWithAttachmentAndCommentDto;
 import org.cibseven.rest.client.model.VariableValueDto;
-import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -90,11 +89,7 @@ public class RemoteLeasingProcessAdapter implements LeasingProcess {
      * task a human could complete through its deployed Camunda Form in the Tasklist.
      */
     @Override
-    public void completeAlternativeClarification(
-            ApplicationId id,
-            boolean alternativeFound,
-            @Nullable BikeId bikeId
-    ) {
+    public void completeAlternativeClarification(ApplicationId id, boolean alternativeFound, BikeId bikeId) {
         String taskId = findTaskId(id, FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID);
         Map<String, VariableValueDto> variables = new LinkedHashMap<>();
         variables.put(FlowNodes.UserTaskClarifyAlternative.Variables.ALTERNATIVE_FOUND.getValue(), typedVar(alternativeFound));
@@ -124,7 +119,7 @@ public class RemoteLeasingProcessAdapter implements LeasingProcess {
     }
 
     /** Wraps a Java value as the engine's typed process-variable payload ({@code { value, type }}). */
-    private VariableValueDto typedVar(@Nullable Object value) {
+    private VariableValueDto typedVar(Object value) {
         String type = switch (value) {
             case null -> "Null";
             case String s -> "String";

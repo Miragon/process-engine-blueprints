@@ -2,6 +2,7 @@ package io.miragon.blueprint.application.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import io.miragon.blueprint.application.port.inbound.ListBikesQuery;
@@ -32,13 +33,12 @@ class ListBikesServiceTest {
         List<ListBikesQuery.Item> result = underTest.all();
 
         // then: the portfolio's order is preserved and each item's availability comes from the dealer
-        assertThat(result.stream().map(item -> item.bikeId().value())).containsExactly("BIKE-900", "BIKE-OOS");
-        ListBikesQuery.Item inStock = result.stream()
-                .filter(item -> item.bikeId().value().equals("BIKE-900")).findFirst().orElseThrow();
-        ListBikesQuery.Item outOfStock = result.stream()
-                .filter(item -> item.bikeId().value().equals("BIKE-OOS")).findFirst().orElseThrow();
-        assertThat(inStock.available()).isTrue();
-        assertThat(outOfStock.available()).isFalse();
+        assertThat(result.stream().map(item -> item.bikeId().value()).toList())
+                .containsExactly("BIKE-900", "BIKE-OOS");
+        assertThat(result.stream().filter(item -> item.bikeId().value().equals("BIKE-900")).findFirst()
+                .orElseThrow().available()).isTrue();
+        assertThat(result.stream().filter(item -> item.bikeId().value().equals("BIKE-OOS")).findFirst()
+                .orElseThrow().available()).isFalse();
     }
 
     @Test
@@ -48,5 +48,6 @@ class ListBikesServiceTest {
 
         // when / then: nothing is listed and the dealer is never consulted
         assertThat(underTest.all()).isEmpty();
+        verifyNoInteractions(bikeDealer);
     }
 }

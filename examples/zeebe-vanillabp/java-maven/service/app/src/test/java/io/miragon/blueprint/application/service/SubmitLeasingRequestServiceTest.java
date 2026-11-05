@@ -23,6 +23,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class SubmitLeasingRequestServiceTest {
@@ -32,20 +33,21 @@ class SubmitLeasingRequestServiceTest {
     private final LeasingProcess process = mock(LeasingProcess.class);
     private final Clock clock = Clock.fixed(Instant.parse("2024-01-15T10:30:00Z"), ZoneOffset.UTC);
     private final SubmitLeasingRequestService underTest =
-            new SubmitLeasingRequestService(repository, bikePortfolio, process, clock);
+        new SubmitLeasingRequestService(repository, bikePortfolio, process, clock);
 
     @Test
+    @DisplayName("submit registers the bike, persists a received application and starts the process")
     void submitRegistersTheBikePersistsAReceivedApplicationAndStartsTheProcess() {
 
         // given: a leasing-request command and stubbed out-ports
         SubmitLeasingRequestUseCase.Command command =
-                new SubmitLeasingRequestUseCase.Command(
-                        new CustomerName("John Doe"),
-                        new Email("john.doe@test.com"),
-                        35,
-                        3500.0,
-                        new BikeId("BIKE-900"),
-                        "Gravel Explorer 900");
+            new SubmitLeasingRequestUseCase.Command(
+                new CustomerName("John Doe"),
+                new Email("john.doe@test.com"),
+                35,
+                3500.0,
+                new BikeId("BIKE-900"),
+                "Gravel Explorer 900");
         when(bikePortfolio.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
         when(repository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -54,27 +56,29 @@ class SubmitLeasingRequestServiceTest {
 
         // then: the bike is stored in the portfolio, a RECEIVED application referencing it is saved, and the process starts
         verify(bikePortfolio).save(new Bike(new BikeId("BIKE-900"), "Gravel Explorer 900"));
-        verify(repository).save(argThat(saved ->
-                saved.id().equals(id)
-                        && saved.status() == LeasingStatus.RECEIVED
-                        && saved.bikeId().equals(new BikeId("BIKE-900"))
-                        && saved.createdAt().equals(LocalDateTime.now(clock))));
-        verify(process).submitRequest(argThat(submitted -> submitted.id().equals(id)));
+        verify(repository).save(
+            argThat(it ->
+                it.id().equals(id)
+                    && it.status() == LeasingStatus.RECEIVED
+                    && it.bikeId().equals(new BikeId("BIKE-900"))
+                    && it.createdAt().equals(LocalDateTime.now(clock))));
+        verify(process).submitRequest(argThat(it -> it.id().equals(id)));
         verifyNoMoreInteractions(repository, bikePortfolio, process);
     }
 
     @Test
+    @DisplayName("submit rejects a request without income and starts no process")
     void submitRejectsARequestWithoutIncomeAndStartsNoProcess() {
 
         // given: a leasing-request command without any income
         SubmitLeasingRequestUseCase.Command command =
-                new SubmitLeasingRequestUseCase.Command(
-                        new CustomerName("John Doe"),
-                        new Email("john.doe@test.com"),
-                        35,
-                        0.0,
-                        new BikeId("BIKE-900"),
-                        "Gravel Explorer 900");
+            new SubmitLeasingRequestUseCase.Command(
+                new CustomerName("John Doe"),
+                new Email("john.doe@test.com"),
+                35,
+                0.0,
+                new BikeId("BIKE-900"),
+                "Gravel Explorer 900");
         when(bikePortfolio.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
         // when / then: the request is refused before anything is persisted or started

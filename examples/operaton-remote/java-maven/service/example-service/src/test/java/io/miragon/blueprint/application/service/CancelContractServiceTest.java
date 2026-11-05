@@ -2,8 +2,6 @@ package io.miragon.blueprint.application.service;
 
 import static io.miragon.blueprint.domain.leasing.TestObjectBuilder.testLeasingApplication;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -29,7 +27,6 @@ class CancelContractServiceTest {
         // given: an application that already carries an issued contract
         LeasingApplication application = testLeasingApplication().contractId(new ContractId("CONTRACT-1")).build();
         when(repository.findById(application.id())).thenReturn(Optional.of(application));
-        doNothing().when(contract).revokeContract(any());
 
         // when: the contract is cancelled as part of the compensation
         underTest.cancelContract(application.id());

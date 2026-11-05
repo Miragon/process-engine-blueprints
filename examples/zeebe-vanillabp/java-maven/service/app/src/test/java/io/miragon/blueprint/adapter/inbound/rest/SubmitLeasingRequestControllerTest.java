@@ -88,6 +88,27 @@ class SubmitLeasingRequestControllerTest {
         verifyNoInteractions(useCase);
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"customerName", "email", "bikeId", "bikeModel"})
+    void aRequestWithARequiredTextFieldSetToNullIsRejectedAsUnreadable(String nullField) throws Exception {
+
+        // given: an otherwise valid request that carries null for one required field
+        Map<String, Object> input = validInput();
+        input.put(nullField, null);
+
+        // when: the request is performed
+        MvcResult response = mockMvc
+                .perform(post("/api/bike-leasing")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(input)))
+                .andReturn();
+
+        // then: it is an unreadable request and never reaches the use case
+        assertThat(response.getResponse().getStatus()).isEqualTo(400);
+        assertThat(response.getResponse().getContentAsString()).contains("Failed to read request");
+        verifyNoInteractions(useCase);
+    }
+
     private static Map<String, Object> validInput() {
         Map<String, Object> input = new LinkedHashMap<>();
         input.put("customerName", "John Doe");

@@ -46,7 +46,7 @@ with a lowercase first letter). Report expressions with **no bean** and beans wi
 element. A delegate extends `BaseDelegate` and injects exactly one inbound port. A listener
 (`BikeOrderAuditListener`, `ClarifyAlternativeTaskListener`) implements `ExecutionListener` or
 `TaskListener` instead and only needs to resolve. The test
-`process/model/ServiceTaskDelegateExpressionRule` enforces the expression form.
+`adapter/process/model/ServiceTaskDelegateExpressionRule` enforces the expression form.
 
 ### 4. Error and escalation coverage
 For each `BpmnError` thrown in a delegate, confirm a boundary event with the same `errorCode` exists,
@@ -66,12 +66,12 @@ adapter; documented in the model), and `serviceTask_orderBike` fails on purpose 
 `BIKE-FAIL` to raise the incident of `bruno/06-incident-demo`.
 
 ### 6. Tests
-The process tests sit in the test tree under `process/`. Confirm they assert each walked path as a
-typed path from the generated API (`ProcessPath` / `PathWalk`, not hand-written element-id lists),
-and that every gateway outcome, boundary event (error, escalation, timer, compensation) and event
-subprocess has a path, in `bikeLeasingProcess` **and** in the called `cancelBikeOrder`. Async
-continuations are fired with `process/util/JobExecutionUtils`, timers with `TimerUtils`. Report a
-missing path per element.
+The process tests sit in the test tree under `adapter/process/`. Confirm they assert each walked path
+through `ProcessPathAssertions` (a typed path from the generated API, not hand-written element-id
+lists), and that every gateway outcome, boundary event (error, escalation, timer, compensation) and
+event subprocess has a path, in `bikeLeasingProcess` **and** in the called `cancelBikeOrder`. Async
+continuations are fired with `JobExecutionUtils`, timers with `TimerUtils`. Report a missing path per
+element.
 
 <!-- variant:blueprint -->
 ### Variant parity

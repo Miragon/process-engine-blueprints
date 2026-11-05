@@ -28,7 +28,6 @@ class ListLeasingApplicationsServiceTest {
 
     @Test
     void mapsAPageOfApplicationsAndResolvesEachBikeModelInOneBatchQuery() {
-
         // given: a page with two applications on different bikes
         LeasingApplication a =
                 testLeasingApplication().bikeId(new BikeId("BIKE-900")).status(LeasingStatus.RECEIVED).build();
@@ -51,14 +50,12 @@ class ListLeasingApplicationsServiceTest {
         assertThat(result.items()).hasSize(2);
         assertThat(result.items().get(0).bikeModel()).isEqualTo("Gravel Explorer 900");
         assertThat(result.items().get(1).bikeModel()).isEqualTo("Carbon Road 800");
-
         // and: exactly one batch lookup was issued for the bikes, not one per row
         verify(bikePortfolio, times(1)).findAllByIds(List.of(new BikeId("BIKE-900"), new BikeId("BIKE-800")));
     }
 
     @Test
     void passesTheStatusFilterThroughToTheRepositoryCriteria() {
-
         // given: a repository that records the criteria it was asked for
         when(repository.findAll(any()))
                 .thenReturn(new LeasingApplicationRepository.Page(List.of(), 1, 5, 0, 0));
@@ -69,12 +66,12 @@ class ListLeasingApplicationsServiceTest {
 
         // then: the exact criteria reach the outbound port
         verify(repository).findAll(new LeasingApplicationRepository.Criteria(LeasingStatus.ACTIVE, 1, 5));
-        verifyNoMoreInteractions(repository);
+        verify(bikePortfolio).findAllByIds(List.of());
+        verifyNoMoreInteractions(repository, bikePortfolio);
     }
 
     @Test
     void leavesTheModelNullWhenTheBikeIsNotInThePortfolio() {
-
         // given: an application whose bike is missing from the portfolio
         LeasingApplication orphan = testLeasingApplication().bikeId(new BikeId("BIKE-GONE")).build();
         when(repository.findAll(any()))

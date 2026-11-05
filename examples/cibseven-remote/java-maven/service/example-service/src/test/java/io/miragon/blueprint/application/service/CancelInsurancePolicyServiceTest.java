@@ -1,13 +1,12 @@
 package io.miragon.blueprint.application.service;
 
+import static io.miragon.blueprint.domain.leasing.TestObjectBuilder.testLeasingApplication;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import io.miragon.blueprint.application.port.outbound.InsurancePort;
 import io.miragon.blueprint.domain.leasing.LeasingApplication;
-import io.miragon.blueprint.domain.leasing.TestObjectBuilder;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class CancelInsurancePolicyServiceTest {
@@ -16,15 +15,11 @@ class CancelInsurancePolicyServiceTest {
     private final CancelInsurancePolicyService underTest = new CancelInsurancePolicyService(insurance);
 
     @Test
-    @DisplayName("cancelPolicy delegates the compensation to the insurer")
     void cancelPolicyDelegatesTheCompensationToTheInsurer() {
-
         // given: an application whose policy must be revoked
-        LeasingApplication application = TestObjectBuilder.testLeasingApplication();
-
+        LeasingApplication application = testLeasingApplication().build();
         // when: the policy is cancelled
         underTest.cancelPolicy(application.id());
-
         // then: the insurance out-port revokes the policy
         verify(insurance).cancelPolicy(application.id());
         verifyNoMoreInteractions(insurance);

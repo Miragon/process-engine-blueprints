@@ -13,9 +13,7 @@ public class SendSignatureReminderService implements SendSignatureReminderUseCas
     private final LeasingApplicationRepository repository;
     private final NotificationPort notification;
 
-    public SendSignatureReminderService(
-            LeasingApplicationRepository repository,
-            NotificationPort notification) {
+    public SendSignatureReminderService(LeasingApplicationRepository repository, NotificationPort notification) {
         this.repository = repository;
         this.notification = notification;
     }

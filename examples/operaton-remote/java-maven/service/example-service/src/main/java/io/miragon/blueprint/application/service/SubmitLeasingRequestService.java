@@ -33,18 +33,17 @@ public class SubmitLeasingRequestService implements SubmitLeasingRequestUseCase 
     }
 
     @Override
-    public ApplicationId submit(SubmitLeasingRequestUseCase.Command command) {
+    public ApplicationId submit(Command command) {
         // The bike's model is kept in the portfolio; the application only references the bike by id.
         bikePortfolio.save(new Bike(command.bikeId(), command.bikeModel()));
-        LeasingApplication application =
-                LeasingApplication.receive(
-                        ApplicationId.newId(),
-                        command.customerName(),
-                        command.email(),
-                        command.age(),
-                        command.monthlyNetIncome(),
-                        command.bikeId(),
-                        LocalDateTime.now(clock));
+        LeasingApplication application = LeasingApplication.receive(
+                ApplicationId.newId(),
+                command.customerName(),
+                command.email(),
+                command.age(),
+                command.monthlyNetIncome(),
+                command.bikeId(),
+                LocalDateTime.now(clock));
         repository.save(application);
         process.submitRequest(application);
         return application.id();

@@ -20,4 +20,9 @@ public interface LeasingProcess {
     void correlateApplicationWithdrawn(ApplicationId id);
 
     void completeAlternativeClarification(ApplicationId id, boolean alternativeFound, BikeId bikeId);
+
+    /** Convenience overload for the no-alternative case. */
+    default void completeAlternativeClarification(ApplicationId id, boolean alternativeFound) {
+        completeAlternativeClarification(id, alternativeFound, null);
+    }
 }

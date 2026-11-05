@@ -5,9 +5,9 @@ import io.miragon.blueprint.domain.leasing.LeasingApplication;
 import io.miragon.blueprint.domain.leasing.LeasingStatus;
 import java.util.List;
 import java.util.Optional;
-import org.jspecify.annotations.Nullable;
 
 public interface LeasingApplicationRepository {
+
     LeasingApplication save(LeasingApplication application);
 
     Optional<LeasingApplication> findById(ApplicationId id);
@@ -19,11 +19,8 @@ public interface LeasingApplicationRepository {
      */
     Page findAll(Criteria criteria);
 
-    record Criteria(
-            @Nullable LeasingStatus status,
-            int page,
-            int size
-    ) {
+    /** {@code status} may be {@code null} to list applications of every status. */
+    record Criteria(LeasingStatus status, int page, int size) {
     }
 
     record Page(
@@ -31,7 +28,6 @@ public interface LeasingApplicationRepository {
             int page,
             int size,
             long totalElements,
-            int totalPages
-    ) {
+            int totalPages) {
     }
 }

@@ -144,7 +144,9 @@ class RemoteLeasingProcessAdapterTest {
 
         // when / then: completing the clarification surfaces the missing task
         val error = runCatching { underTest.completeAlternativeClarification(application.id, alternativeFound = false) }
-        assertThat(error.exceptionOrNull()).isInstanceOf(IllegalStateException::class.java)
+        assertThat(error.exceptionOrNull())
+            .isInstanceOf(IllegalStateException::class.java)
+            .hasMessageContaining("No active task")
         server.verify()
     }
 

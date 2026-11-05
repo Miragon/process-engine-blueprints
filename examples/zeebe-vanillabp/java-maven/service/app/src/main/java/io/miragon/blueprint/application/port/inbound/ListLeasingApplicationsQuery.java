@@ -16,7 +16,7 @@ public interface ListLeasingApplicationsQuery {
 
     Page list(Filter filter);
 
-    /** {@code status} may be {@code null} to list applications in any status. */
+    /** {@code status} may be {@code null} to list applications of every status. */
     record Filter(LeasingStatus status, int page, int size) {
     }
 
@@ -30,6 +30,11 @@ public interface ListLeasingApplicationsQuery {
             LocalDateTime createdAt) {
     }
 
-    record Page(List<Item> items, int page, int size, long totalElements, int totalPages) {
+    record Page(
+            List<Item> items,
+            int page,
+            int size,
+            long totalElements,
+            int totalPages) {
     }
 }

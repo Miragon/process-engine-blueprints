@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
@@ -16,9 +17,11 @@ import io.miragon.blueprint.application.port.outbound.LeasingApplicationReposito
 import io.miragon.blueprint.domain.bike.BikeId;
 import io.miragon.blueprint.domain.bike.BikeUnavailableException;
 import io.miragon.blueprint.domain.bike.OrderId;
+import io.miragon.blueprint.domain.leasing.ApplicationId;
 import io.miragon.blueprint.domain.leasing.LeasingApplication;
 import io.miragon.blueprint.domain.leasing.LeasingStatus;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class OrderBikeServiceTest {
@@ -105,5 +108,21 @@ class OrderBikeServiceTest {
                 .hasMessage("Bike BIKE-OOS is not available at the dealer");
         verify(repository).save(argThat(app -> app.bikeId().equals(alternative) && app.orderId() == null));
         verify(bikeDealer, never()).order(any());
+    }
+
+    @Test
+    void orderBikeFailsForAnUnknownApplication() {
+
+        // given: an id the repository cannot resolve
+        ApplicationId unknownId = new ApplicationId(UUID.fromString("123e4567-e89b-12d3-a456-426614174999"));
+        when(repository.findById(unknownId)).thenReturn(Optional.empty());
+
+        // when / then: ordering fails with the unknown-application message, the dealer is never asked
+        assertThatThrownBy(() -> underTest.orderBike(unknownId, new BikeId("BIKE-900")))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Unknown application " + unknownId);
+        verify(repository).findById(unknownId);
+        verifyNoMoreInteractions(repository);
+        verifyNoInteractions(bikeDealer);
     }
 }

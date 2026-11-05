@@ -140,7 +140,7 @@ class RemoteLeasingProcessAdapterTest {
     }
 
     @Test
-    void completeAlternativeClarificationFailsWhenNoActiveTaskExists() {
+    void findTaskIdFailsWhenNoActiveTaskExists() {
 
         // given: the engine reports no active task
         LeasingApplication application = testLeasingApplication().build();

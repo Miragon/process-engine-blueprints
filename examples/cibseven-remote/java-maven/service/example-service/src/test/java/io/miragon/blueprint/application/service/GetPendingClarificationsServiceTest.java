@@ -1,8 +1,10 @@
 package io.miragon.blueprint.application.service;
 
+import static io.miragon.blueprint.domain.leasing.TestObjectBuilder.testLeasingApplication;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import io.miragon.blueprint.application.port.outbound.BikePortfolioRepository;
@@ -13,14 +15,11 @@ import io.miragon.blueprint.domain.bike.BikeId;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
 import io.miragon.blueprint.domain.leasing.LeasingApplication;
 import io.miragon.blueprint.domain.leasing.PendingClarification;
-import io.miragon.blueprint.domain.leasing.TestObjectBuilder;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.junit.jupiter.api.Test;
 
 class GetPendingClarificationsServiceTest {
 
@@ -34,13 +33,9 @@ class GetPendingClarificationsServiceTest {
     private final LocalDateTime waitingSince = LocalDateTime.of(2026, 8, 17, 9, 30);
 
     @Test
-    @DisplayName("enriches each open task with its application and requested bike model")
     void enrichesEachOpenTaskWithItsApplicationAndRequestedBikeModel() {
         // given: one open clarification whose application requested BIKE-OOS
-        LeasingApplication application = TestObjectBuilder.aLeasingApplication()
-                .id(id)
-                .bikeId(new BikeId("BIKE-OOS"))
-                .build();
+        LeasingApplication application = testLeasingApplication().id(id).bikeId(new BikeId("BIKE-OOS")).build();
         when(taskInbox.findOpenClarifications())
                 .thenReturn(List.of(new TaskInboxPort.OpenClarification(id, waitingSince)));
         when(repository.findById(id)).thenReturn(Optional.of(application));
@@ -61,7 +56,6 @@ class GetPendingClarificationsServiceTest {
     }
 
     @Test
-    @DisplayName("skips tasks whose application can no longer be found")
     void skipsTasksWhoseApplicationCanNoLongerBeFound() {
         // given: an open task pointing at a vanished application
         when(taskInbox.findOpenClarifications())
@@ -75,7 +69,6 @@ class GetPendingClarificationsServiceTest {
     }
 
     @Test
-    @DisplayName("returns nothing when no clarification is open")
     void returnsNothingWhenNoClarificationIsOpen() {
         // given: an empty task list
         when(taskInbox.findOpenClarifications()).thenReturn(List.of());
@@ -83,5 +76,6 @@ class GetPendingClarificationsServiceTest {
 
         // when / then: the inbox is empty
         assertThat(underTest.pending()).isEmpty();
+        verifyNoInteractions(repository);
     }
 }

@@ -1,7 +1,7 @@
 import { test } from "@playwright/test";
 import { expectStatus, submitApplication } from "./helpers/ui";
 
-// Mirrors bruno/07-alternative-declined: submit BIKE-OOS -> sign -> decline the alternative from the
+// Mirrors bruno/08-alternative-declined: submit BIKE-OOS -> sign -> decline the alternative from the
 // /aufgaben inbox -> the contract is reversed and the case ends storniert, with no order to cancel.
 test("alternative declined: declining from the inbox cancels the leasing", async ({ page }) => {
   const applicationId = await submitApplication(page, {

@@ -8,7 +8,6 @@ import static org.mockito.Mockito.when;
 
 import io.miragon.blueprint.application.port.outbound.BikeDealerPort;
 import io.miragon.blueprint.domain.bike.OrderId;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class RequestOrderCancellationServiceTest {
@@ -17,16 +16,12 @@ class RequestOrderCancellationServiceTest {
     private final RequestOrderCancellationService underTest = new RequestOrderCancellationService(bikeDealer);
 
     @Test
-    @DisplayName("requestCancellation asks the dealer and returns its answer")
     void requestCancellationAsksTheDealerAndReturnsItsAnswer() {
-
         // given: a placed order the dealer allows cancelling
         OrderId orderId = new OrderId("ORDER-900");
         when(bikeDealer.requestCancellation(orderId)).thenReturn(true);
-
         // when: the dealer is asked whether it can be cancelled
         boolean possible = underTest.requestCancellation(orderId);
-
         // then: the dealer's answer is returned
         assertThat(possible).isTrue();
         verify(bikeDealer).requestCancellation(orderId);
@@ -34,14 +29,13 @@ class RequestOrderCancellationServiceTest {
     }
 
     @Test
-    @DisplayName("requestCancellation returns false when the dealer refuses")
     void requestCancellationReturnsFalseWhenTheDealerRefuses() {
-        // given: a placed order the dealer will not allow cancelling
-        OrderId orderId = new OrderId("ORDER-900");
+        // given: an order the dealer will not allow cancelling
+        OrderId orderId = new OrderId("ORDER-901");
         when(bikeDealer.requestCancellation(orderId)).thenReturn(false);
         // when: the dealer is asked whether it can be cancelled
         boolean possible = underTest.requestCancellation(orderId);
-        // then: the dealer's negative answer is returned
+        // then: the dealer's negative answer is propagated unchanged
         assertThat(possible).isFalse();
         verify(bikeDealer).requestCancellation(orderId);
         verifyNoMoreInteractions(bikeDealer);

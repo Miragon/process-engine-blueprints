@@ -1,10 +1,12 @@
 package io.miragon.blueprint.adapter.outbound.db;
 
-import static io.miragon.blueprint.domain.leasing.TestObjectBuilder.aLeasingApplication;
+import static io.miragon.blueprint.domain.leasing.TestObjectBuilder.testLeasingApplication;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.miragon.blueprint.application.port.outbound.LeasingApplicationRepository;
+import io.miragon.blueprint.domain.bike.OrderId;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
+import io.miragon.blueprint.domain.leasing.ContractId;
 import io.miragon.blueprint.domain.leasing.LeasingApplication;
 import io.miragon.blueprint.domain.leasing.LeasingStatus;
 import java.time.LocalDateTime;
@@ -37,7 +39,7 @@ class LeasingApplicationPersistenceAdapterTest {
     void savesAndReloadsAnApplication() {
 
         // given: a leasing application
-        LeasingApplication application = aLeasingApplication().id(id).build();
+        LeasingApplication application = testLeasingApplication().id(id).build();
 
         // when: it is saved and re-read from a cleared persistence context
         LeasingApplication saved = underTest.save(application);
@@ -46,6 +48,27 @@ class LeasingApplicationPersistenceAdapterTest {
         entityManager.clear();
 
         // then: the reloaded application equals the original
+        assertThat(underTest.findById(id)).get().usingRecursiveComparison().isEqualTo(application);
+    }
+
+    @Test
+    @DisplayName("saves and reloads an application carrying an order and a contract")
+    void savesAndReloadsAnApplicationCarryingAnOrderAndAContract() {
+
+        // given: a leasing application that already has an order and a contract
+        LeasingApplication application = testLeasingApplication()
+                .id(id)
+                .status(LeasingStatus.ACTIVE)
+                .orderId(new OrderId("ORDER-1"))
+                .contractId(new ContractId("CONTRACT-1"))
+                .build();
+
+        // when: it is saved and re-read from a cleared persistence context
+        underTest.save(application);
+        entityManager.flush();
+        entityManager.clear();
+
+        // then: the reloaded application keeps its order and contract ids
         assertThat(underTest.findById(id)).get().usingRecursiveComparison().isEqualTo(application);
     }
 
@@ -68,7 +91,7 @@ class LeasingApplicationPersistenceAdapterTest {
         assertThat(underTest.findById(id))
                 .get()
                 .usingRecursiveComparison()
-                .isEqualTo(aLeasingApplication().id(id).build());
+                .isEqualTo(testLeasingApplication().id(id).build());
     }
 
     @Test
@@ -76,15 +99,15 @@ class LeasingApplicationPersistenceAdapterTest {
     void findAllReturnsAPageOrderedByCreationDateNewestFirst() {
 
         // given: three applications created on different days
-        LeasingApplication older = aLeasingApplication()
+        LeasingApplication older = testLeasingApplication()
                 .id(new ApplicationId(UUID.randomUUID()))
                 .createdAt(LocalDateTime.of(2026, 1, 1, 8, 0))
                 .build();
-        LeasingApplication newer = aLeasingApplication()
+        LeasingApplication newer = testLeasingApplication()
                 .id(new ApplicationId(UUID.randomUUID()))
                 .createdAt(LocalDateTime.of(2026, 3, 1, 8, 0))
                 .build();
-        LeasingApplication newest = aLeasingApplication()
+        LeasingApplication newest = testLeasingApplication()
                 .id(new ApplicationId(UUID.randomUUID()))
                 .createdAt(LocalDateTime.of(2026, 6, 1, 8, 0))
                 .build();
@@ -109,15 +132,15 @@ class LeasingApplicationPersistenceAdapterTest {
     void findAllFiltersByStatusAndPaginates() {
 
         // given: two RECEIVED and one ACTIVE application
-        underTest.save(aLeasingApplication()
+        underTest.save(testLeasingApplication()
                 .id(new ApplicationId(UUID.randomUUID()))
                 .status(LeasingStatus.RECEIVED)
                 .build());
-        underTest.save(aLeasingApplication()
+        underTest.save(testLeasingApplication()
                 .id(new ApplicationId(UUID.randomUUID()))
                 .status(LeasingStatus.RECEIVED)
                 .build());
-        underTest.save(aLeasingApplication()
+        underTest.save(testLeasingApplication()
                 .id(new ApplicationId(UUID.randomUUID()))
                 .status(LeasingStatus.ACTIVE)
                 .build());

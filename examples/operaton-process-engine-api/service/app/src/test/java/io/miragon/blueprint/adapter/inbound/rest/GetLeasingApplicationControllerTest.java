@@ -82,6 +82,8 @@ class GetLeasingApplicationControllerTest {
         assertThat(response.getResponse().getStatus()).isEqualTo(200);
         assertThat(response.getResponse().getContentAsString())
                 .contains("\"orderId\":null", "\"contractId\":null", "\"bikeModel\":null");
+        verify(query).byId(application.id());
+        verifyNoMoreInteractions(query);
     }
 
     @Test
@@ -98,5 +100,7 @@ class GetLeasingApplicationControllerTest {
 
         // then: the response is 404 Not Found
         assertThat(response.getResponse().getStatus()).isEqualTo(404);
+        verify(query).byId(id);
+        verifyNoMoreInteractions(query);
     }
 }

@@ -6,7 +6,7 @@
 ## Context
 
 The blueprint serves two audiences. New projects that are free to choose should start from the stack we
-consider modern: **Kotlin + Gradle**. Many enterprise teams — and our developer trainings —
+consider modern: **Kotlin + Gradle**. Many enterprise teams — and our Camunda 8 developer trainings —
 are bound to **Java + Maven** and must be able to use the blueprint without knowing Kotlin or Gradle.
 Until now this blueprint existed in Kotlin + Gradle only.
 
@@ -73,7 +73,8 @@ alone; such a gate would mostly produce noise. The gates compare observable beha
   Konsist for the two source rules
   ([ADR-0007](0007-two-architecture-test-tools-archunit-and-konsist.md)).
 - Java records carry no nullability, so the Java DTOs declare it with annotations to produce the same
-  `required` arrays and nullable types the Kotlin types yield.
+  `required` arrays and nullable types the Kotlin types yield, and reject a missing required property in
+  their compact constructor the way Kotlin rejects it while deserialising.
 - The Java variant binds the BPMN tasks the same way the Kotlin one does: VanillaBP `@WorkflowTask`
   methods on the shared workflow aggregate. It mirrors all four Gradle modules, including the Zeebe
   glue (`common-zeebe`) and the process-test helper (`common-zeebe-test`), and the resource comparison

@@ -33,7 +33,6 @@ public class SelectAlternativeService implements SelectAlternativeUseCase {
                 .orElseThrow(() -> new IllegalStateException("Unknown application " + command.applicationId()));
         BikeId alternativeBike = command.bikeId();
         if (command.alternativeFound() && alternativeBike != null) {
-            // Register the chosen alternative in the portfolio (its model may be new), then point the application at it.
             if (command.bikeModel() != null) {
                 bikePortfolio.save(new Bike(alternativeBike, command.bikeModel()));
             }

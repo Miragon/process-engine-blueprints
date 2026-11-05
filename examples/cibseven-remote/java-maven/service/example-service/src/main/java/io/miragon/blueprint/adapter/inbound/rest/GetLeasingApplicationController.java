@@ -1,13 +1,12 @@
 package io.miragon.blueprint.adapter.inbound.rest;
 
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
+
 import io.miragon.blueprint.application.port.inbound.GetLeasingApplicationQuery;
-import io.miragon.blueprint.domain.bike.OrderId;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
-import io.miragon.blueprint.domain.leasing.ContractId;
 import io.miragon.blueprint.domain.leasing.LeasingApplication;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.jspecify.annotations.Nullable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,23 +31,19 @@ public class GetLeasingApplicationController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @Schema(requiredProperties = {"applicationId", "customerName", "email", "bikeId", "status"})
     public record LeasingApplicationDto(
-            String applicationId,
-            String customerName,
-            String email,
-            String bikeId,
-            @Schema(nullable = true) @Nullable String bikeModel,
-            String status,
-            @Schema(nullable = true) @Nullable String orderId,
-            @Schema(nullable = true) @Nullable String contractId
-    ) {
+            @Schema(requiredMode = REQUIRED) String applicationId,
+            @Schema(requiredMode = REQUIRED) String customerName,
+            @Schema(requiredMode = REQUIRED) String email,
+            @Schema(requiredMode = REQUIRED) String bikeId,
+            @Schema(nullable = true) String bikeModel,
+            @Schema(requiredMode = REQUIRED) String status,
+            @Schema(nullable = true) String orderId,
+            @Schema(nullable = true) String contractId) {
     }
 
     private static LeasingApplicationDto toDto(GetLeasingApplicationQuery.Result result) {
         LeasingApplication application = result.application();
-        OrderId orderId = application.orderId();
-        ContractId contractId = application.contractId();
         return new LeasingApplicationDto(
                 application.id().value().toString(),
                 application.customerName().value(),
@@ -57,7 +52,7 @@ public class GetLeasingApplicationController {
                 // resolved from the bike portfolio, not carried on the application
                 result.bikeModel(),
                 application.status().name(),
-                orderId != null ? orderId.value() : null,
-                contractId != null ? contractId.value() : null);
+                application.orderId() != null ? application.orderId().value() : null,
+                application.contractId() != null ? application.contractId().value() : null);
     }
 }

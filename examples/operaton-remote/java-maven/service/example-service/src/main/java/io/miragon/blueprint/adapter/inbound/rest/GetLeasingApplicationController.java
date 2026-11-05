@@ -26,11 +26,20 @@ public class GetLeasingApplicationController {
     @Operation(operationId = "getLeasingApplication")
     @GetMapping("/{applicationId}")
     public ResponseEntity<LeasingApplicationDto> byId(@PathVariable String applicationId) {
-        GetLeasingApplicationQuery.Result result = query.byId(ApplicationId.of(applicationId));
-        if (result == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(toDto(result));
+        return query.byId(ApplicationId.of(applicationId))
+                .map(result -> ResponseEntity.ok(toDto(result)))
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    public record LeasingApplicationDto(
+            @Schema(requiredMode = REQUIRED) String applicationId,
+            @Schema(requiredMode = REQUIRED) String customerName,
+            @Schema(requiredMode = REQUIRED) String email,
+            @Schema(requiredMode = REQUIRED) String bikeId,
+            @Schema(nullable = true) String bikeModel,
+            @Schema(requiredMode = REQUIRED) String status,
+            @Schema(nullable = true) String orderId,
+            @Schema(nullable = true) String contractId) {
     }
 
     private static LeasingApplicationDto toDto(GetLeasingApplicationQuery.Result result) {
@@ -45,16 +54,5 @@ public class GetLeasingApplicationController {
                 application.status().name(),
                 application.orderId() != null ? application.orderId().value() : null,
                 application.contractId() != null ? application.contractId().value() : null);
-    }
-
-    public record LeasingApplicationDto(
-            @Schema(requiredMode = REQUIRED) String applicationId,
-            @Schema(requiredMode = REQUIRED) String customerName,
-            @Schema(requiredMode = REQUIRED) String email,
-            @Schema(requiredMode = REQUIRED) String bikeId,
-            @Schema(nullable = true) String bikeModel,
-            @Schema(requiredMode = REQUIRED) String status,
-            @Schema(nullable = true) String orderId,
-            @Schema(nullable = true) String contractId) {
     }
 }

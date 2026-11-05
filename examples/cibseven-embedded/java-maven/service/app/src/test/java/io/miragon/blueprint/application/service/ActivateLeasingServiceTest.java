@@ -1,6 +1,7 @@
 package io.miragon.blueprint.application.service;
 
 import static io.miragon.blueprint.domain.leasing.TestObjectBuilder.testLeasingApplication;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
@@ -36,6 +37,21 @@ class ActivateLeasingServiceTest {
         // then: the application is persisted with ACTIVE
         verify(repository).findById(id);
         verify(repository).save(argThat(app -> app.status() == LeasingStatus.ACTIVE));
+        verifyNoMoreInteractions(repository);
+    }
+
+    @Test
+    void activateFailsForAnUnknownApplication() {
+
+        // given: an id the repository cannot resolve
+        ApplicationId unknownId = new ApplicationId(UUID.fromString("123e4567-e89b-12d3-a456-426614174999"));
+        when(repository.findById(unknownId)).thenReturn(Optional.empty());
+
+        // when / then: activation fails with the unknown-application message and nothing is persisted
+        assertThatThrownBy(() -> underTest.activate(unknownId))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Unknown application " + unknownId);
+        verify(repository).findById(unknownId);
         verifyNoMoreInteractions(repository);
     }
 }

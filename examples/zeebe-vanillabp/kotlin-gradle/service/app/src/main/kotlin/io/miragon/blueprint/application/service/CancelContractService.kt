@@ -11,6 +11,7 @@ class CancelContractService(
 ) : CancelContractUseCase {
 
     override fun cancelContract(application: LeasingApplication) {
+        // Revoke the contract the contract system issued earlier (its id is recorded on the application).
         val contractId = application.contractId ?: error("No contract issued for application ${application.id}")
         contract.revokeContract(contractId)
     }

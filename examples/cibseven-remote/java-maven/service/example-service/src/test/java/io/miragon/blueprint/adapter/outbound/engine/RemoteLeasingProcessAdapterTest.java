@@ -47,7 +47,7 @@ class RemoteLeasingProcessAdapterTest {
     void submitRequestStartsTheProcessViaItsMessageStartEventWithTypedVariables() {
 
         // given: a valid application and an engine that accepts the start message
-        LeasingApplication application = testLeasingApplication();
+        LeasingApplication application = testLeasingApplication().build();
         server.expect(requestTo("http://engine/engine-rest/message"))
                 .andExpect(method(HttpMethod.POST))
                 .andExpect(jsonPath("$.messageName").value("miravelo.leasingRequestReceived"))
@@ -70,7 +70,7 @@ class RemoteLeasingProcessAdapterTest {
     void correlateContractSignedSendsTheMessageCorrelatedByBusinessKey() {
 
         // given: an engine that accepts the correlation
-        LeasingApplication application = testLeasingApplication();
+        LeasingApplication application = testLeasingApplication().build();
         server.expect(requestTo("http://engine/engine-rest/message"))
                 .andExpect(method(HttpMethod.POST))
                 .andExpect(jsonPath("$.messageName").value("miravelo.contractSigned"))
@@ -89,7 +89,7 @@ class RemoteLeasingProcessAdapterTest {
     void correlateHandoverReportedSendsTheMessageCorrelatedByBusinessKey() {
 
         // given: an engine that accepts the correlation
-        LeasingApplication application = testLeasingApplication();
+        LeasingApplication application = testLeasingApplication().build();
         server.expect(requestTo("http://engine/engine-rest/message"))
                 .andExpect(method(HttpMethod.POST))
                 .andExpect(jsonPath("$.messageName").value("miravelo.handoverReported"))
@@ -108,7 +108,7 @@ class RemoteLeasingProcessAdapterTest {
     void correlateApplicationWithdrawnSendsTheMessageCorrelatedByBusinessKey() {
 
         // given: an engine that accepts the correlation
-        LeasingApplication application = testLeasingApplication();
+        LeasingApplication application = testLeasingApplication().build();
         server.expect(requestTo("http://engine/engine-rest/message"))
                 .andExpect(method(HttpMethod.POST))
                 .andExpect(jsonPath("$.messageName").value("miravelo.applicationWithdrawn"))
@@ -127,7 +127,7 @@ class RemoteLeasingProcessAdapterTest {
     void completeAlternativeClarificationLooksUpTheTaskByBusinessKeyAndCompletesIt() {
 
         // given: one active clarify-alternative task for the application
-        LeasingApplication application = testLeasingApplication();
+        LeasingApplication application = testLeasingApplication().build();
         server.expect(requestTo(containsString("/task?")))
                 .andExpect(method(HttpMethod.GET))
                 .andRespond(withSuccess("[{\"id\":\"task-1\"}]", MediaType.APPLICATION_JSON));
@@ -149,14 +149,16 @@ class RemoteLeasingProcessAdapterTest {
     void findTaskIdFailsWhenNoActiveTaskExists() {
 
         // given: the engine reports no active task
-        LeasingApplication application = testLeasingApplication();
+        LeasingApplication application = testLeasingApplication().build();
         server.expect(requestTo(containsString("/task?")))
                 .andExpect(method(HttpMethod.GET))
                 .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
 
         // when / then: completing the clarification surfaces the missing task
         Throwable error = catchThrowable(() -> underTest.completeAlternativeClarification(application.id(), false, null));
-        assertThat(error).isInstanceOf(IllegalStateException.class);
+        assertThat(error)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("No active task");
         server.verify();
     }
 
@@ -165,7 +167,7 @@ class RemoteLeasingProcessAdapterTest {
     void findTaskIdFailsWhenTheEngineReturnsATaskWithoutAnId() {
 
         // given: the engine reports a task that carries no id
-        LeasingApplication application = testLeasingApplication();
+        LeasingApplication application = testLeasingApplication().build();
         server.expect(requestTo(containsString("/task?")))
                 .andExpect(method(HttpMethod.GET))
                 .andRespond(withSuccess(

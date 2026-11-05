@@ -26,12 +26,12 @@ class GetLeasingApplicationControllerTest {
     private lateinit var query: GetLeasingApplicationQuery
 
     @Test
-    fun `returns the application with its resolved bike model when it exists`() {
+    fun `returns the application with all of its fields mapped when it exists`() {
 
-        // given: a fully populated application the query can find, with its bike model resolved
+        // given: a fully-populated application (incl. order and contract) the query can find
         val application = testLeasingApplication(
-            orderId = OrderId("ORDER-1"),
-            contractId = ContractId("CONTRACT-1"),
+            orderId = OrderId("ORDER-42"),
+            contractId = ContractId("CONTRACT-7"),
         )
         every { query.byId(application.id) } returns GetLeasingApplicationQuery.Result(application, "Gravel Explorer 900")
         val operation = get("/api/bike-leasing/{applicationId}", application.id.value.toString())
@@ -39,19 +39,37 @@ class GetLeasingApplicationControllerTest {
         // when: the request is performed
         val response = mockMvc.perform(operation).andReturn()
 
-        // then: the response is 200 and carries every mapped field of the application
+        // then: the response is 200 and every DTO field is mapped from the domain object
+        assertThat(response.response.status).isEqualTo(200)
+        assertThat(response.response.contentAsString).contains(
+            application.id.value.toString(),
+            application.customerName.value,
+            application.email.value,
+            application.bikeId.value,
+            "Gravel Explorer 900",
+            "RECEIVED",
+            "ORDER-42",
+            "CONTRACT-7",
+        )
+        verify { query.byId(application.id) }
+        confirmVerified(query)
+    }
+
+    @Test
+    fun `maps a not-yet-ordered application with null order and contract`() {
+
+        // given: an application still without an order or contract (both nullable fields absent)
+        val application = testLeasingApplication(orderId = null, contractId = null)
+        every { query.byId(application.id) } returns GetLeasingApplicationQuery.Result(application, null)
+        val operation = get("/api/bike-leasing/{applicationId}", application.id.value.toString())
+
+        // when: the request is performed
+        val response = mockMvc.perform(operation).andReturn()
+
+        // then: the response is 200 and the nullable fields are serialised as null
         assertThat(response.response.status).isEqualTo(200)
         assertThat(response.response.contentAsString)
-            .contains(
-                application.id.value.toString(),
-                application.customerName.value,
-                application.email.value,
-                application.bikeId.value,
-                "Gravel Explorer 900",
-                "RECEIVED",
-                "ORDER-1",
-                "CONTRACT-1",
-            )
+            .contains("\"orderId\":null", "\"contractId\":null", "\"bikeModel\":null")
         verify { query.byId(application.id) }
         confirmVerified(query)
     }
@@ -69,24 +87,7 @@ class GetLeasingApplicationControllerTest {
 
         // then: the response is 404 Not Found
         assertThat(response.response.status).isEqualTo(404)
-    }
-
-    @Test
-    fun `returns null order, contract and bike model for an application that was not ordered yet`() {
-
-        // given: a freshly received application without order or contract, whose bike is unknown to the portfolio
-        val application = testLeasingApplication()
-        every { query.byId(application.id) } returns GetLeasingApplicationQuery.Result(application, null)
-        val operation = get("/api/bike-leasing/{applicationId}", application.id.value.toString())
-
-        // when: the request is performed
-        val response = mockMvc.perform(operation).andReturn()
-
-        // then: the optional fields are serialised as JSON null
-        assertThat(response.response.status).isEqualTo(200)
-        assertThat(response.response.contentAsString)
-            .contains("\"bikeModel\":null", "\"orderId\":null", "\"contractId\":null")
-        verify { query.byId(application.id) }
+        verify { query.byId(id) }
         confirmVerified(query)
     }
 }

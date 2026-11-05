@@ -29,7 +29,7 @@ package `io.miragon.blueprint` under `service/app/src/main/` and `service/app/sr
    with `@Operation(operationId = …)` and a `@WebMvcTest`; or, for an engine-driven hop, a delegate
    or listener in `adapter/inbound/operaton/` with its unit test. Note which.
 6. **Process adapter and test**: the method in `adapter/outbound/operaton/` that correlates or
-   completes it, and a process test in the test tree's `process/` that walks the path.
+   completes it, and a process test in the test tree's `adapter/process/` that walks the path.
 7. **openapi.json**: `openapi/openapi.json`, the operationId, path and response status present and
    matching the controller. If the path is absent, the export test was not rerun: a drift-gate
    failure.

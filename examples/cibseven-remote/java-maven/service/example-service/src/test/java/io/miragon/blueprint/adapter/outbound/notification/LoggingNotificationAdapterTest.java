@@ -16,7 +16,7 @@ class LoggingNotificationAdapterTest {
     void sendLogsTheNotificationWithoutError() {
 
         // given: a subject and an application
-        LeasingApplication application = testLeasingApplication();
+        LeasingApplication application = testLeasingApplication().build();
 
         // when / then: sending the notification completes without throwing
         assertThatCode(() -> underTest.send("Please review and sign your leasing contract", application))

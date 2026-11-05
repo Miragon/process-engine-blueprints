@@ -38,10 +38,9 @@ class GlobalExceptionConfigurationTest {
                 .when(useCase).reportHandover(any());
 
         // when: the POST is performed
-        MvcResult response =
-                mockMvc
-                        .perform(post("/api/bike-leasing/{applicationId}/report-handover", pathVar))
-                        .andReturn();
+        MvcResult response = mockMvc
+                .perform(post("/api/bike-leasing/{applicationId}/report-handover", pathVar))
+                .andReturn();
 
         // then: 409 Conflict is returned as application/problem+json
         assertThat(response.getResponse().getStatus()).isEqualTo(409);

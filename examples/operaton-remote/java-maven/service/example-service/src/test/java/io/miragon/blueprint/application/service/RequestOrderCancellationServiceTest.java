@@ -17,14 +17,11 @@ class RequestOrderCancellationServiceTest {
 
     @Test
     void requestCancellationAsksTheDealerAndReturnsItsAnswer() {
-
         // given: a placed order the dealer allows cancelling
         OrderId orderId = new OrderId("ORDER-900");
         when(bikeDealer.requestCancellation(orderId)).thenReturn(true);
-
         // when: the dealer is asked whether it can be cancelled
         boolean possible = underTest.requestCancellation(orderId);
-
         // then: the dealer's answer is returned
         assertThat(possible).isTrue();
         verify(bikeDealer).requestCancellation(orderId);
@@ -33,12 +30,12 @@ class RequestOrderCancellationServiceTest {
 
     @Test
     void requestCancellationReturnsFalseWhenTheDealerRefuses() {
-        // given: a placed order the dealer will not allow cancelling
-        OrderId orderId = new OrderId("ORDER-900");
+        // given: an order the dealer will not allow cancelling
+        OrderId orderId = new OrderId("ORDER-901");
         when(bikeDealer.requestCancellation(orderId)).thenReturn(false);
         // when: the dealer is asked whether it can be cancelled
         boolean possible = underTest.requestCancellation(orderId);
-        // then: the dealer's negative answer is returned
+        // then: the dealer's negative answer is propagated unchanged
         assertThat(possible).isFalse();
         verify(bikeDealer).requestCancellation(orderId);
         verifyNoMoreInteractions(bikeDealer);

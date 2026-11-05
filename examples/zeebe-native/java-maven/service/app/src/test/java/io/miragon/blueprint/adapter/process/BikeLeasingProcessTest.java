@@ -17,6 +17,7 @@ import io.camunda.process.test.api.CamundaSpringProcessTest;
 import io.camunda.process.test.api.assertions.ProcessInstanceSelector;
 import io.camunda.process.test.api.assertions.ProcessInstanceSelectors;
 import io.miragon.blueprint.adapter.outbound.zeebe.LeasingProcessAdapter;
+import io.miragon.blueprint.adapter.outbound.zeebe.TaskInboxAdapter;
 import io.miragon.blueprint.adapter.process.BikeLeasingProcessProcessApi.FlowNodes;
 import io.miragon.blueprint.application.port.inbound.ActivateLeasingUseCase;
 import io.miragon.blueprint.application.port.inbound.BookCancellationCostsUseCase;
@@ -29,6 +30,7 @@ import io.miragon.blueprint.application.port.inbound.RequestOrderCancellationUse
 import io.miragon.blueprint.application.port.inbound.SendCancellationConfirmationUseCase;
 import io.miragon.blueprint.application.port.inbound.SendContractUseCase;
 import io.miragon.blueprint.application.port.inbound.SendSignatureReminderUseCase;
+import io.miragon.blueprint.application.port.outbound.TaskInboxPort;
 import io.miragon.blueprint.domain.bike.BikeId;
 import io.miragon.blueprint.domain.bike.BikeUnavailableException;
 import io.miragon.blueprint.domain.bike.OrderId;
@@ -77,6 +79,9 @@ class BikeLeasingProcessTest {
 
     @Autowired
     private LeasingProcessAdapter process;
+
+    @Autowired
+    private TaskInboxAdapter inbox;
 
     @MockitoBean
     private RejectApplicationUseCase rejectApplicationUseCase;
@@ -434,6 +439,58 @@ class BikeLeasingProcessTest {
             .hasCompletedElement(FlowNodes.CallActivityCancelBikeOrder.ELEMENT_ID, 1);
         assertThat(orderCancellationsOf(submission.instanceKey())).isEqualTo(1);
         verify(requestOrderCancellationUseCase, times(1)).requestCancellation(any());
+    }
+
+    @Test
+    @DisplayName("bike unavailable - the inbox lists the case and the process adapter completes its task")
+    void bikeUnavailableTheInboxListsTheCaseAndTheProcessAdapterCompletesItsTask() {
+        Submission submission = submitUntilBikeUnavailable();
+        ApplicationId id = submission.id();
+        ProcessInstanceSelector instance = ProcessInstanceSelectors.byKey(submission.instanceKey());
+
+        // the open clarification task shows up in the inbox
+        Awaitility.await()
+            .atMost(Duration.ofSeconds(30))
+            .pollInterval(Duration.ofMillis(200))
+            .untilAsserted(() -> assertThat(openClarifications()).contains(id));
+
+        process.completeAlternativeClarification(id, true, new BikeId("BIKE-ALT"));
+
+        CamundaAssert.assertThatProcessInstance(instance)
+            .hasVariable(FlowNodes.UserTaskClarifyAlternative.Variables.BIKE_ID.getValue(), "BIKE-ALT");
+        CamundaAssert.assertThatProcessInstance(instance).hasCompletedElement(FlowNodes.ServiceTaskOrderBike.ELEMENT_ID, 1);
+        verify(orderBikeUseCase).orderBike(id, new BikeId("BIKE-ALT"));
+
+        // and the task is completed, so the case disappears from the inbox
+        Awaitility.await()
+            .atMost(Duration.ofSeconds(30))
+            .pollInterval(Duration.ofMillis(200))
+            .untilAsserted(() -> assertThat(openClarifications()).doesNotContain(id));
+    }
+
+    @Test
+    @DisplayName("dealer outage - the order counts down its retries and raises an incident")
+    void dealerOutageTheOrderCountsDownItsRetriesAndRaisesAnIncident() {
+        when(orderBikeUseCase.orderBike(any(), any())).thenThrow(new IllegalStateException("dealer down"));
+
+        ApplicationId id = submit(35, 3500.0);
+        long instanceKey = awaitProcessInstance();
+        ProcessInstanceSelector instance = ProcessInstanceSelectors.byKey(instanceKey);
+
+        CamundaAssert.assertThatProcessInstance(instance).hasCompletedElements(FlowNodes.ServiceTaskSendContract.ELEMENT_ID);
+        process.correlateContractSigned(id);
+
+        // the worker fails the job with a 10s backoff per retry, so the incident takes about 20s
+        Awaitility.await()
+            .atMost(Duration.ofSeconds(60))
+            .pollInSameThread()
+            .pollInterval(Duration.ofSeconds(1))
+            .untilAsserted(() -> CamundaAssert.assertThatProcessInstance(instance).hasActiveIncidents());
+        verify(orderBikeUseCase, times(3)).orderBike(id, new BikeId("BIKE-TEST"));
+    }
+
+    private List<ApplicationId> openClarifications() {
+        return inbox.findOpenClarifications().stream().map(TaskInboxPort.OpenClarification::applicationId).toList();
     }
 
     private record Submission(ApplicationId id, long instanceKey) {

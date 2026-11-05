@@ -3,10 +3,9 @@ package io.miragon.blueprint.application.service;
 import io.miragon.blueprint.application.port.inbound.ListBikesQuery;
 import io.miragon.blueprint.application.port.outbound.BikeDealerPort;
 import io.miragon.blueprint.application.port.outbound.BikePortfolioRepository;
+import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
@@ -29,10 +28,9 @@ public class ListBikesService implements ListBikesQuery {
         // The portfolio returns the catalogue already ordered by id; the service only enriches each
         // bike with its dealer availability. (Sorting here would emit a synthetic Comparator class in
         // the application.service package, which the architecture tests rightly reject.)
-        return bikePortfolio
-                .findAll()
-                .stream()
-                .map(bike -> new ListBikesQuery.Item(bike.bikeId(), bike.model(), bikeDealer.checkAvailability(bike.bikeId())))
+        return bikePortfolio.findAll().stream()
+                .map(bike -> new ListBikesQuery.Item(
+                        bike.bikeId(), bike.model(), bikeDealer.checkAvailability(bike.bikeId())))
                 .toList();
     }
 }

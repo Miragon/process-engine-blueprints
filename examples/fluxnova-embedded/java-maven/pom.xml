@@ -71,6 +71,16 @@
                 <groupId>org.finos.fluxnova.bpm.test</groupId>
                 <artifactId>fluxnova-bpm-testing-process-coverage</artifactId>
                 <version>${fluxnova-process-test-coverage.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.finos.fluxnova.bpm</groupId>
+                        <artifactId>fluxnova-engine</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.finos.fluxnova.bpm</groupId>
+                        <artifactId>fluxnova-engine-spring</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <!-- OpenAPI — springdoc (3.x = the Spring Boot 4 line) -->

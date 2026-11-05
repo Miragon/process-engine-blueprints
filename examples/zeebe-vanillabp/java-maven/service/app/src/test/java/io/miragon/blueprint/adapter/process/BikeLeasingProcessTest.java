@@ -164,7 +164,17 @@ class BikeLeasingProcessTest {
         CamundaAssert.assertThatProcessInstance(instance).isCompleted();
         CamundaAssert.assertThatProcessInstance(instance)
                 .hasCompletedElementsInOrder(
-                        pathUntilContractSigned()
+                        PathWalk.from(FlowNodes.startEventLeasingRequestReceived())
+                                .then(next -> next.businessRuleTaskCheckCreditRating())
+                                .then(next -> next.gatewayIsSolvent())
+                                .onto(next -> next.subProcessConcludeContract())
+                                .inside(
+                                        FlowNodes.subProcessConcludeContract(),
+                                        start -> PathWalk.from(start.startEventCustomerEligible())
+                                                .then(next -> next.serviceTaskSendContract())
+                                                .then(next -> next.gatewayAwaitSignature())
+                                                .then(next -> next.eventContractSigned())
+                                                .end(next -> next.endEventContractValid()))
                                 .then(next -> next.gatewayFork())
                                 .then(next -> next.serviceTaskIssueInsurancePolicy())
                                 .then(next -> next.gatewayJoin())
@@ -174,7 +184,18 @@ class BikeLeasingProcessTest {
                                 .end(next -> next.endEventLeasingActive())
                                 .getIds())
                 .hasCompletedElementsInOrder(
-                        PathWalk.from(FlowNodes.gatewayFork())
+                        PathWalk.from(FlowNodes.startEventLeasingRequestReceived())
+                                .then(next -> next.businessRuleTaskCheckCreditRating())
+                                .then(next -> next.gatewayIsSolvent())
+                                .onto(next -> next.subProcessConcludeContract())
+                                .inside(
+                                        FlowNodes.subProcessConcludeContract(),
+                                        start -> PathWalk.from(start.startEventCustomerEligible())
+                                                .then(next -> next.serviceTaskSendContract())
+                                                .then(next -> next.gatewayAwaitSignature())
+                                                .then(next -> next.eventContractSigned())
+                                                .end(next -> next.endEventContractValid()))
+                                .then(next -> next.gatewayFork())
                                 .then(next -> next.gatewayBikeSourceJoin())
                                 .then(next -> next.serviceTaskOrderBike())
                                 .then(next -> next.gatewayJoin())
@@ -224,19 +245,26 @@ class BikeLeasingProcessTest {
         processTestContext.increaseTime(Duration.ofDays(14).plusHours(1));
 
         CamundaAssert.assertThatProcessInstance(instance).isCompleted();
-        // Zeebe terminates the throwing end event and its sub-process, so the walk resumes at the boundary event
         CamundaAssert.assertThatProcessInstance(instance)
                 .hasCompletedElementsInOrder(
-                        pathUntilSignatureAwaited().then(next -> next.eventSignatureDeadline()).getIds())
-                .hasTerminatedElements(
-                        FlowNodes.EndEventNotSigned.ELEMENT_ID,
-                        FlowNodes.SubProcessConcludeContract.ELEMENT_ID)
-                .hasCompletedElementsInOrder(
-                        PathWalk.from(FlowNodes.eventContractNotSigned())
+                        PathWalk.from(FlowNodes.startEventLeasingRequestReceived())
+                                .then(next -> next.businessRuleTaskCheckCreditRating())
+                                .then(next -> next.gatewayIsSolvent())
+                                .onto(next -> next.subProcessConcludeContract())
+                                .inside(
+                                        FlowNodes.subProcessConcludeContract(),
+                                        start -> PathWalk.from(start.startEventCustomerEligible())
+                                                .then(next -> next.serviceTaskSendContract())
+                                                .then(next -> next.gatewayAwaitSignature())
+                                                .end(next -> next.eventSignatureDeadline()))
+                                .interruptedBy(FlowNodes.subProcessConcludeContract(), next -> next.eventContractNotSigned())
                                 .then(next -> next.gatewayRejectionJoin())
                                 .then(next -> next.serviceTaskSendRejection())
                                 .end(next -> next.endEventApplicationRejected())
-                                .getIds());
+                                .getIds())
+                .hasTerminatedElements(
+                        FlowNodes.EndEventNotSigned.ELEMENT_ID,
+                        FlowNodes.SubProcessConcludeContract.ELEMENT_ID);
         verify(rejectApplicationUseCase, times(1)).reject(argThat(application -> application.id().equals(id)));
         assertThat(aggregateOf(id).getStatus()).isEqualTo(LeasingStatus.REJECTED);
     }
@@ -250,7 +278,9 @@ class BikeLeasingProcessTest {
 
         CamundaAssert.assertThatProcessInstance(instance).isCompleted();
         CamundaAssert.assertThatProcessInstance(instance).hasCompletedElementsInOrder(
-                pathUntilCreditRatingChecked()
+                PathWalk.from(FlowNodes.startEventLeasingRequestReceived())
+                        .then(next -> next.businessRuleTaskCheckCreditRating())
+                        .then(next -> next.gatewayIsSolvent())
                         .then(next -> next.gatewayRejectionJoin())
                         .then(next -> next.serviceTaskSendRejection())
                         .end(next -> next.endEventApplicationRejected())
@@ -284,7 +314,22 @@ class BikeLeasingProcessTest {
 
         CamundaAssert.assertThatProcessInstance(instance).isCompleted();
         CamundaAssert.assertThatProcessInstance(instance).hasCompletedElements(
-                PathWalk.from(FlowNodes.startEventApplicationWithdrawn())
+                PathWalk.from(FlowNodes.startEventLeasingRequestReceived())
+                        .then(next -> next.businessRuleTaskCheckCreditRating())
+                        .then(next -> next.gatewayIsSolvent())
+                        .onto(next -> next.subProcessConcludeContract())
+                        .inside(
+                                FlowNodes.subProcessConcludeContract(),
+                                start -> PathWalk.from(start.startEventCustomerEligible())
+                                        .then(next -> next.serviceTaskSendContract())
+                                        .then(next -> next.gatewayAwaitSignature())
+                                        .then(next -> next.eventContractSigned())
+                                        .end(next -> next.endEventContractValid()))
+                        .then(next -> next.gatewayFork())
+                        .then(next -> next.gatewayBikeSourceJoin())
+                        .then(next -> next.serviceTaskOrderBike())
+                        .then(next -> next.gatewayJoin())
+                        .enter(FlowNodes.subProcessApplicationWithdrawn(), start -> start.startEventApplicationWithdrawn())
                         .then(next -> next.eventReverseApplication())
                         .throwingCompensation(
                                 FlowNodes.eventCompensateContract(), next -> next.serviceTaskCancelContract())
@@ -335,7 +380,20 @@ class BikeLeasingProcessTest {
                 .hasTerminatedElement(FlowNodes.ServiceTaskOrderBike.ELEMENT_ID, 1)
                 .hasCompletedElement(FlowNodes.ServiceTaskOrderBike.ELEMENT_ID, 1)
                 .hasCompletedElementsInOrder(
-                        PathWalk.from(FlowNodes.eventBikeUnavailable())
+                        PathWalk.from(FlowNodes.startEventLeasingRequestReceived())
+                                .then(next -> next.businessRuleTaskCheckCreditRating())
+                                .then(next -> next.gatewayIsSolvent())
+                                .onto(next -> next.subProcessConcludeContract())
+                                .inside(
+                                        FlowNodes.subProcessConcludeContract(),
+                                        start -> PathWalk.from(start.startEventCustomerEligible())
+                                                .then(next -> next.serviceTaskSendContract())
+                                                .then(next -> next.gatewayAwaitSignature())
+                                                .then(next -> next.eventContractSigned())
+                                                .end(next -> next.endEventContractValid()))
+                                .then(next -> next.gatewayFork())
+                                .then(next -> next.gatewayBikeSourceJoin())
+                                .interruptedBy(FlowNodes.serviceTaskOrderBike(), next -> next.eventBikeUnavailable())
                                 .then(next -> next.userTaskClarifyAlternative())
                                 .then(next -> next.gatewayAlternativeFound())
                                 .then(next -> next.gatewayBikeSourceJoin())
@@ -368,7 +426,22 @@ class BikeLeasingProcessTest {
         CamundaAssert.assertThatProcessInstance(instance).isCompleted();
         CamundaAssert.assertThatProcessInstance(instance)
                 .hasCompletedElements(
-                        PathWalk.from(FlowNodes.gatewayAlternativeFound())
+                        PathWalk.from(FlowNodes.startEventLeasingRequestReceived())
+                                .then(next -> next.businessRuleTaskCheckCreditRating())
+                                .then(next -> next.gatewayIsSolvent())
+                                .onto(next -> next.subProcessConcludeContract())
+                                .inside(
+                                        FlowNodes.subProcessConcludeContract(),
+                                        start -> PathWalk.from(start.startEventCustomerEligible())
+                                                .then(next -> next.serviceTaskSendContract())
+                                                .then(next -> next.gatewayAwaitSignature())
+                                                .then(next -> next.eventContractSigned())
+                                                .end(next -> next.endEventContractValid()))
+                                .then(next -> next.gatewayFork())
+                                .then(next -> next.gatewayBikeSourceJoin())
+                                .interruptedBy(FlowNodes.serviceTaskOrderBike(), next -> next.eventBikeUnavailable())
+                                .then(next -> next.userTaskClarifyAlternative())
+                                .then(next -> next.gatewayAlternativeFound())
                                 .then(next -> next.eventTriggerReversal())
                                 .throwingCompensation(
                                         FlowNodes.eventCompensateContract(), next -> next.serviceTaskCancelContract())
@@ -407,7 +480,21 @@ class BikeLeasingProcessTest {
         CamundaAssert.assertThatProcessInstance(instance).isCompleted();
         CamundaAssert.assertThatProcessInstance(instance)
                 .hasCompletedElements(
-                        PathWalk.from(FlowNodes.startEventApplicationWithdrawn())
+                        PathWalk.from(FlowNodes.startEventLeasingRequestReceived())
+                                .then(next -> next.businessRuleTaskCheckCreditRating())
+                                .then(next -> next.gatewayIsSolvent())
+                                .onto(next -> next.subProcessConcludeContract())
+                                .inside(
+                                        FlowNodes.subProcessConcludeContract(),
+                                        start -> PathWalk.from(start.startEventCustomerEligible())
+                                                .then(next -> next.serviceTaskSendContract())
+                                                .then(next -> next.gatewayAwaitSignature())
+                                                .then(next -> next.eventContractSigned())
+                                                .end(next -> next.endEventContractValid()))
+                                .then(next -> next.gatewayFork())
+                                .then(next -> next.gatewayBikeSourceJoin())
+                                .interruptedBy(FlowNodes.serviceTaskOrderBike(), next -> next.eventBikeUnavailable())
+                                .enter(FlowNodes.subProcessApplicationWithdrawn(), start -> start.startEventApplicationWithdrawn())
                                 .then(next -> next.eventReverseApplication())
                                 .throwingCompensation(
                                         FlowNodes.eventCompensateContract(), next -> next.serviceTaskCancelContract())
@@ -529,32 +616,6 @@ class BikeLeasingProcessTest {
                 .join()
                 .items()
                 .size();
-    }
-
-    private PathWalk<FlowNodes.GatewayIsSolvent, FlowNodes.GatewayIsSolvent.Next> pathUntilCreditRatingChecked() {
-        return PathWalk.from(FlowNodes.startEventLeasingRequestReceived())
-                .then(next -> next.businessRuleTaskCheckCreditRating())
-                .then(next -> next.gatewayIsSolvent());
-    }
-
-    private PathWalk<FlowNodes.GatewayAwaitSignature, FlowNodes.GatewayAwaitSignature.Next> pathUntilSignatureAwaited() {
-        return pathUntilCreditRatingChecked()
-                .onto(next -> next.subProcessConcludeContract())
-                .enter(FlowNodes.subProcessConcludeContract(), start -> start.startEventCustomerEligible())
-                .then(next -> next.serviceTaskSendContract())
-                .then(next -> next.gatewayAwaitSignature());
-    }
-
-    private PathWalk<FlowNodes.SubProcessConcludeContract, FlowNodes.SubProcessConcludeContract.Next> pathUntilContractSigned() {
-        return pathUntilCreditRatingChecked()
-                .onto(next -> next.subProcessConcludeContract())
-                .inside(
-                        FlowNodes.subProcessConcludeContract(),
-                        start -> PathWalk.from(start.startEventCustomerEligible())
-                                .then(next -> next.serviceTaskSendContract())
-                                .then(next -> next.gatewayAwaitSignature())
-                                .then(next -> next.eventContractSigned())
-                                .end(next -> next.endEventContractValid()));
     }
 
     private ApplicationId submit(int age, double income) {

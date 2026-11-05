@@ -33,6 +33,7 @@ import io.miragon.blueprint.domain.leasing.LeasingStatus
 import io.miragon.bpmn.runtime.path.ProcessPath
 import io.miragon.bpmn.runtime.path.enter
 import io.miragon.bpmn.runtime.path.inside
+import io.miragon.bpmn.runtime.path.interruptedBy
 import io.miragon.bpmn.runtime.path.onto
 import io.miragon.bpmn.runtime.path.then
 import io.miragon.bpmn.runtime.path.throwingCompensation
@@ -152,7 +153,17 @@ class BikeLeasingProcessTest {
         CamundaAssert.assertThatProcessInstance(instance).isCompleted()
         CamundaAssert.assertThatProcessInstance(instance)
             .hasCompletedElementsInOrder(
-                pathUntilContractSigned()
+                ProcessPath.from(FlowNodes.StartEventLeasingRequestReceived)
+                    .then { it.businessRuleTaskCheckCreditRating }
+                    .then { it.gatewayIsSolvent }
+                    .onto { it.subProcessConcludeContract }
+                    .inside {
+                        enter { it.startEventCustomerEligible }
+                            .then { it.serviceTaskSendContract }
+                            .then { it.gatewayAwaitSignature }
+                            .then { it.eventContractSigned }
+                            .then { it.endEventContractValid }
+                    }
                     .then { it.gatewayFork }
                     .then { it.serviceTaskIssueInsurancePolicy }
                     .then { it.gatewayJoin }
@@ -162,7 +173,18 @@ class BikeLeasingProcessTest {
                     .then { it.endEventLeasingActive },
             )
             .hasCompletedElementsInOrder(
-                ProcessPath.from(FlowNodes.GatewayFork)
+                ProcessPath.from(FlowNodes.StartEventLeasingRequestReceived)
+                    .then { it.businessRuleTaskCheckCreditRating }
+                    .then { it.gatewayIsSolvent }
+                    .onto { it.subProcessConcludeContract }
+                    .inside {
+                        enter { it.startEventCustomerEligible }
+                            .then { it.serviceTaskSendContract }
+                            .then { it.gatewayAwaitSignature }
+                            .then { it.eventContractSigned }
+                            .then { it.endEventContractValid }
+                    }
+                    .then { it.gatewayFork }
                     .then { it.gatewayBikeSourceJoin }
                     .then { it.serviceTaskOrderBike }
                     .then { it.gatewayJoin },
@@ -207,18 +229,26 @@ class BikeLeasingProcessTest {
         processTestContext.increaseTime(Duration.ofDays(14).plusHours(1))
 
         CamundaAssert.assertThatProcessInstance(instance).isCompleted()
-        // Zeebe terminates the throwing end event and its sub-process, so the walk resumes at the boundary event
         CamundaAssert.assertThatProcessInstance(instance)
-            .hasCompletedElementsInOrder(pathUntilSignatureAwaited().then { it.eventSignatureDeadline })
-            .hasTerminatedElements(
-                FlowNodes.EndEventNotSigned.ELEMENT_ID,
-                FlowNodes.SubProcessConcludeContract.ELEMENT_ID,
-            )
             .hasCompletedElementsInOrder(
-                ProcessPath.from(FlowNodes.EventContractNotSigned)
+                ProcessPath.from(FlowNodes.StartEventLeasingRequestReceived)
+                    .then { it.businessRuleTaskCheckCreditRating }
+                    .then { it.gatewayIsSolvent }
+                    .onto { it.subProcessConcludeContract }
+                    .inside {
+                        enter { it.startEventCustomerEligible }
+                            .then { it.serviceTaskSendContract }
+                            .then { it.gatewayAwaitSignature }
+                            .then { it.eventSignatureDeadline }
+                    }
+                    .interruptedBy(FlowNodes.SubProcessConcludeContract) { it.eventContractNotSigned }
                     .then { it.gatewayRejectionJoin }
                     .then { it.serviceTaskSendRejection }
                     .then { it.endEventApplicationRejected },
+            )
+            .hasTerminatedElements(
+                FlowNodes.EndEventNotSigned.ELEMENT_ID,
+                FlowNodes.SubProcessConcludeContract.ELEMENT_ID,
             )
         verify(exactly = 1) { rejectApplicationUseCase.reject(match { it.id == id }) }
         assertThat(aggregateOf(id).status).isEqualTo(LeasingStatus.REJECTED)
@@ -233,7 +263,9 @@ class BikeLeasingProcessTest {
 
         CamundaAssert.assertThatProcessInstance(instance).isCompleted()
         CamundaAssert.assertThatProcessInstance(instance).hasCompletedElementsInOrder(
-            pathUntilCreditRatingChecked()
+            ProcessPath.from(FlowNodes.StartEventLeasingRequestReceived)
+                .then { it.businessRuleTaskCheckCreditRating }
+                .then { it.gatewayIsSolvent }
                 .then { it.gatewayRejectionJoin }
                 .then { it.serviceTaskSendRejection }
                 .then { it.endEventApplicationRejected },
@@ -264,7 +296,22 @@ class BikeLeasingProcessTest {
 
         CamundaAssert.assertThatProcessInstance(instance).isCompleted()
         CamundaAssert.assertThatProcessInstance(instance).hasCompletedElements(
-            ProcessPath.from(FlowNodes.StartEventApplicationWithdrawn)
+            ProcessPath.from(FlowNodes.StartEventLeasingRequestReceived)
+                .then { it.businessRuleTaskCheckCreditRating }
+                .then { it.gatewayIsSolvent }
+                .onto { it.subProcessConcludeContract }
+                .inside {
+                    enter { it.startEventCustomerEligible }
+                        .then { it.serviceTaskSendContract }
+                        .then { it.gatewayAwaitSignature }
+                        .then { it.eventContractSigned }
+                        .then { it.endEventContractValid }
+                }
+                .then { it.gatewayFork }
+                .then { it.gatewayBikeSourceJoin }
+                .then { it.serviceTaskOrderBike }
+                .then { it.gatewayJoin }
+                .enter(FlowNodes.SubProcessApplicationWithdrawn) { it.startEventApplicationWithdrawn }
                 .then { it.eventReverseApplication }
                 .throwingCompensation(FlowNodes.EventCompensateContract) { it.serviceTaskCancelContract }
                 .throwingCompensation(FlowNodes.EventCompensateInsurance) { it.serviceTaskCancelPolicy }
@@ -311,7 +358,20 @@ class BikeLeasingProcessTest {
             .hasTerminatedElement(FlowNodes.ServiceTaskOrderBike.ELEMENT_ID, 1)
             .hasCompletedElement(FlowNodes.ServiceTaskOrderBike.ELEMENT_ID, 1)
             .hasCompletedElementsInOrder(
-                ProcessPath.from(FlowNodes.EventBikeUnavailable)
+                ProcessPath.from(FlowNodes.StartEventLeasingRequestReceived)
+                    .then { it.businessRuleTaskCheckCreditRating }
+                    .then { it.gatewayIsSolvent }
+                    .onto { it.subProcessConcludeContract }
+                    .inside {
+                        enter { it.startEventCustomerEligible }
+                            .then { it.serviceTaskSendContract }
+                            .then { it.gatewayAwaitSignature }
+                            .then { it.eventContractSigned }
+                            .then { it.endEventContractValid }
+                    }
+                    .then { it.gatewayFork }
+                    .then { it.gatewayBikeSourceJoin }
+                    .interruptedBy(FlowNodes.ServiceTaskOrderBike) { it.eventBikeUnavailable }
                     .then { it.userTaskClarifyAlternative }
                     .then { it.gatewayAlternativeFound }
                     .then { it.gatewayBikeSourceJoin }
@@ -343,7 +403,22 @@ class BikeLeasingProcessTest {
         CamundaAssert.assertThatProcessInstance(instance).isCompleted()
         CamundaAssert.assertThatProcessInstance(instance)
             .hasCompletedElements(
-                ProcessPath.from(FlowNodes.GatewayAlternativeFound)
+                ProcessPath.from(FlowNodes.StartEventLeasingRequestReceived)
+                    .then { it.businessRuleTaskCheckCreditRating }
+                    .then { it.gatewayIsSolvent }
+                    .onto { it.subProcessConcludeContract }
+                    .inside {
+                        enter { it.startEventCustomerEligible }
+                            .then { it.serviceTaskSendContract }
+                            .then { it.gatewayAwaitSignature }
+                            .then { it.eventContractSigned }
+                            .then { it.endEventContractValid }
+                    }
+                    .then { it.gatewayFork }
+                    .then { it.gatewayBikeSourceJoin }
+                    .interruptedBy(FlowNodes.ServiceTaskOrderBike) { it.eventBikeUnavailable }
+                    .then { it.userTaskClarifyAlternative }
+                    .then { it.gatewayAlternativeFound }
                     .then { it.eventTriggerReversal }
                     .throwingCompensation(FlowNodes.EventCompensateContract) { it.serviceTaskCancelContract }
                     .throwingCompensation(FlowNodes.EventCompensateInsurance) { it.serviceTaskCancelPolicy }
@@ -381,7 +456,21 @@ class BikeLeasingProcessTest {
         CamundaAssert.assertThatProcessInstance(instance).isCompleted()
         CamundaAssert.assertThatProcessInstance(instance)
             .hasCompletedElements(
-                ProcessPath.from(FlowNodes.StartEventApplicationWithdrawn)
+                ProcessPath.from(FlowNodes.StartEventLeasingRequestReceived)
+                    .then { it.businessRuleTaskCheckCreditRating }
+                    .then { it.gatewayIsSolvent }
+                    .onto { it.subProcessConcludeContract }
+                    .inside {
+                        enter { it.startEventCustomerEligible }
+                            .then { it.serviceTaskSendContract }
+                            .then { it.gatewayAwaitSignature }
+                            .then { it.eventContractSigned }
+                            .then { it.endEventContractValid }
+                    }
+                    .then { it.gatewayFork }
+                    .then { it.gatewayBikeSourceJoin }
+                    .interruptedBy(FlowNodes.ServiceTaskOrderBike) { it.eventBikeUnavailable }
+                    .enter(FlowNodes.SubProcessApplicationWithdrawn) { it.startEventApplicationWithdrawn }
                     .then { it.eventReverseApplication }
                     .throwingCompensation(FlowNodes.EventCompensateContract) { it.serviceTaskCancelContract }
                     .throwingCompensation(FlowNodes.EventCompensateInsurance) { it.serviceTaskCancelPolicy }
@@ -497,29 +586,6 @@ class BikeLeasingProcessTest {
             .join()
             .items()
             .size
-
-    private fun pathUntilCreditRatingChecked() =
-        ProcessPath.from(FlowNodes.StartEventLeasingRequestReceived)
-            .then { it.businessRuleTaskCheckCreditRating }
-            .then { it.gatewayIsSolvent }
-
-    private fun pathUntilSignatureAwaited() =
-        pathUntilCreditRatingChecked()
-            .onto { it.subProcessConcludeContract }
-            .enter { it.startEventCustomerEligible }
-            .then { it.serviceTaskSendContract }
-            .then { it.gatewayAwaitSignature }
-
-    private fun pathUntilContractSigned() =
-        pathUntilCreditRatingChecked()
-            .onto { it.subProcessConcludeContract }
-            .inside {
-                enter { it.startEventCustomerEligible }
-                    .then { it.serviceTaskSendContract }
-                    .then { it.gatewayAwaitSignature }
-                    .then { it.eventContractSigned }
-                    .then { it.endEventContractValid }
-            }
 
     private fun submit(age: Int, income: Double, bikeId: String = "BIKE-TEST"): ApplicationId {
         val application =

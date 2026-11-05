@@ -209,15 +209,6 @@ TDD. Match the test style to the layer:
 | `adapter.outbound.db` | `@DataJpaTest` |
 | process end-to-end | CIB seven process tests, paths asserted via `ProcessPath` |
 
-The process tests also write a **process test coverage** report per test class, with the CIB seven community extension Process Test Coverage: an HTML page per class that draws the paths the tests took on the model and gives the share of flow nodes and sequence flows they reached. Open the folder after the build. No minimum is enforced.
-
-<!-- variant:kotlin-gradle -->
-- Kotlin/Gradle: `service/app/build/reports/process-test-coverage/`
-<!-- /variant:kotlin-gradle -->
-<!-- variant:java-maven -->
-- Java/Maven: `service/app/target/process-test-coverage/`
-<!-- /variant:java-maven -->
-
 - **Mock ports, not the domain.** Build real domain objects with the test factory
   (`domain/leasing/TestObjectBuilder`).
 <!-- variant:kotlin-gradle -->
@@ -234,6 +225,15 @@ The process tests also write a **process test coverage** report per test class, 
 - **Seed a persistence test directly** (`@Sql`), not through the adapter under test, and flush and
   clear before reading back.
 - Tests run against H2 with Flyway off; no Postgres needed.
+
+The process tests also write a **process test coverage** report per test class, with the CIB seven community extension Process Test Coverage: an HTML page per class that draws the paths the tests took on the model and gives the share of flow nodes and sequence flows they reached. No minimum is enforced.
+
+<!-- variant:kotlin-gradle -->
+Report folder: `service/app/build/reports/process-test-coverage/`
+<!-- /variant:kotlin-gradle -->
+<!-- variant:java-maven -->
+Report folder: `service/app/target/process-test-coverage/`
+<!-- /variant:java-maven -->
 
 **Mutation testing gates the domain at 80, nightly**: a test that executes without asserting
 will fail

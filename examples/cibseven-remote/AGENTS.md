@@ -197,13 +197,13 @@ TDD. Match the test style to the layer:
 | `adapter.outbound.engine` (remote client) | `MockRestServiceServer` |
 | process end-to-end | CIB seven process tests (`cibseven-bpm-assert`, in-memory engine), paths asserted against the generated API |
 
-The process tests also write a **process test coverage** report per test class, with the CIB seven community extension Process Test Coverage: an HTML page per class that draws the paths the tests took on the model and gives the share of flow nodes and sequence flows they reached. Open the folder after the build. No minimum is enforced.
+The process tests also write a **process test coverage** report per test class, with the CIB seven community extension Process Test Coverage: an HTML page per class that draws the paths the tests took on the model and gives the share of flow nodes and sequence flows they reached. No minimum is enforced.
 
 <!-- variant:kotlin-gradle -->
-- Kotlin/Gradle: `service/example-service/build/reports/process-test-coverage/`
+Report folder: `service/example-service/build/reports/process-test-coverage/`
 <!-- /variant:kotlin-gradle -->
 <!-- variant:java-maven -->
-- Java/Maven: `service/example-service/target/process-test-coverage/`
+Report folder: `service/example-service/target/process-test-coverage/`
 <!-- /variant:java-maven -->
 
 **Mutation testing gates the domain at 80, nightly**: a test that executes without asserting will fail the nightly run. Coverage

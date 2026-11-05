@@ -151,11 +151,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-reflect</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <!-- `runtime`, not `test`: CIB seven's webclient (cibseven-webclient-core) already puts h2 on the
                  runtime classpath, and a direct test-scoped declaration would narrow it (in Maven the direct
                  scope wins) and drop it from the boot jar. -->

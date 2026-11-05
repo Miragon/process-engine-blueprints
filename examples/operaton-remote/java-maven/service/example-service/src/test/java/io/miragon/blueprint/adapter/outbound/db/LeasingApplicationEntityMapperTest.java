@@ -7,11 +7,13 @@ import io.miragon.blueprint.domain.bike.OrderId;
 import io.miragon.blueprint.domain.leasing.ContractId;
 import io.miragon.blueprint.domain.leasing.LeasingApplication;
 import io.miragon.blueprint.domain.leasing.LeasingStatus;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class LeasingApplicationEntityMapperTest {
 
     @Test
+    @DisplayName("toEntity copies every field including the nullable order and contract ids")
     void toEntityCopiesEveryFieldIncludingTheNullableOrderAndContractIds() {
         // given: a fully populated application carrying an order and a contract
         LeasingApplication application = testLeasingApplication()
@@ -37,14 +39,14 @@ class LeasingApplicationEntityMapperTest {
     }
 
     @Test
+    @DisplayName("toDomain reconstructs every field including the nullable order and contract ids")
     void toDomainReconstructsEveryFieldIncludingTheNullableOrderAndContractIds() {
         // given: an entity carrying an order and a contract
-        LeasingApplicationEntity entity = LeasingApplicationEntityMapper.toEntity(
-                testLeasingApplication()
-                        .status(LeasingStatus.ACTIVE)
-                        .orderId(new OrderId("ORDER-1"))
-                        .contractId(new ContractId("CONTRACT-1"))
-                        .build());
+        LeasingApplicationEntity entity = LeasingApplicationEntityMapper.toEntity(testLeasingApplication()
+                .status(LeasingStatus.ACTIVE)
+                .orderId(new OrderId("ORDER-1"))
+                .contractId(new ContractId("CONTRACT-1"))
+                .build());
 
         // when: it is mapped back to the domain
         LeasingApplication application = LeasingApplicationEntityMapper.toDomain(entity);
@@ -63,6 +65,7 @@ class LeasingApplicationEntityMapperTest {
     }
 
     @Test
+    @DisplayName("toDomain keeps the order and contract ids null when the entity has none")
     void toDomainKeepsTheOrderAndContractIdsNullWhenTheEntityHasNone() {
         // given: an entity without an order or a contract
         LeasingApplicationEntity entity = LeasingApplicationEntityMapper.toEntity(testLeasingApplication().build());

@@ -1,5 +1,7 @@
 package io.miragon.blueprint.adapter.inbound.rest;
 
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
+
 import io.miragon.blueprint.application.port.inbound.ListBikesQuery;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -9,9 +11,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * {@code GET /api/bikes} — the bike catalogue for the submit form's picker. Exists so nobody has to type a
- * bike id by hand; unavailable bikes (e.g. {@code BIKE-OOS}) stay in the list on purpose, so a user can
- * drive the bike-unavailable scenario from the UI.
+ * {@code GET /api/bikes} — the bike catalogue for the submit form's picker. Exists so nobody has to
+ * type a bike id by hand; unavailable bikes (e.g. {@code BIKE-OOS}) stay in the list on purpose, so a
+ * user can drive the bike-unavailable scenario from the UI.
  */
 @RestController
 @RequestMapping("/api/bikes")
@@ -27,14 +29,13 @@ public class ListBikesController {
     @GetMapping
     public List<BikeDto> all() {
         return query.all().stream()
-            .map(bike -> new BikeDto(bike.bikeId().value(), bike.model(), bike.available()))
-            .toList();
+                .map(it -> new BikeDto(it.bikeId().value(), it.model(), it.available()))
+                .toList();
     }
 
     public record BikeDto(
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String bikeId,
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String model,
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED) boolean available
-    ) {
+            @Schema(requiredMode = REQUIRED) String bikeId,
+            @Schema(requiredMode = REQUIRED) String model,
+            @Schema(requiredMode = REQUIRED) boolean available) {
     }
 }

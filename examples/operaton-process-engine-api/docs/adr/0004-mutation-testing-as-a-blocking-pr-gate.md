@@ -8,7 +8,7 @@
 
 Line coverage answers "was this line executed?", not "would a test notice if the code broke?". That
 gap matters most for **AI-assisted tests**, which reliably chase coverage while writing weak assertions
-(assert-not-null instead of assert-a-value). A blueprint that asks agents to generate tests needs a
+(assert-not-null instead of assert-a-value). A blueprint that invites agents to generate tests needs a
 gate that grades *assertion strength*, not just execution. Mutation testing is inherently slower than
 unit tests, though, so the gate must stay a guardrail, not a tollbooth — it must not become the thing
 that stalls merges.
@@ -25,8 +25,8 @@ We run **PIT (pitest)** as a **nightly gate** with `mutationThreshold = 80`, con
 - **It mutates the domain only** (`io.miragon.blueprint.domain.*`), the code that holds the rules.
   Adapters are mapping and wiring, which the unit, process and Bruno layers already exercise.
 - The **kill-set** is the fast Mockito / `@WebMvcTest` / `@DataJpaTest` unit tests; the engine
-  integration tests (`process.*`) and the ArchUnit tests (`architecture.*`) are excluded from
-  the kill-set — they'd make every run slow and non-deterministic without adding mutation signal.
+  integration tests (`process.*`) and the ArchUnit tests (`architecture.*`) are excluded from the
+  kill-set — they'd make every run slow and non-deterministic without adding mutation signal.
 
 **Why 80 and not 100:** on the Kotlin codebase this repo was ported from, the ceiling was the compiler's
 synthetic bytecode — *equivalent mutants* no test could kill. Plain Java emits almost none of that, so
@@ -35,11 +35,11 @@ through the port (the bar never moved, so scores stay comparable), and the Java 
 needs a few nightly full sweeps to establish a baseline. Raising the gate (e.g. to 90+) once those
 sweeps show consistent headroom is the recorded follow-up.
 
-**What a weak test looks like** (the two patterns the gate caught in this repo's own spike): a test
-that asserts too few of a DTO's fields — PIT blanks the unasserted ones (`return ""`) and every test
-stays green; and a test that exercises only one branch of a boolean — the *"always return true"*
-mutant is then *equivalent* to the original. Both are fixed by asserting **every** mapped field and
-**both** outcomes of each branch — one assertion per outcome, not per method.
+**What a weak test looks like:** a test that asserts too few of a DTO's fields — PIT blanks the
+unasserted ones (`return ""`) and every test stays green; and a test that exercises only one branch of a
+boolean — the *"always return true"* mutant is then *equivalent* to the original. Both are fixed by
+asserting **every** mapped field and **both** outcomes of each branch — one assertion per outcome, not
+per method.
 
 ## Consequences
 

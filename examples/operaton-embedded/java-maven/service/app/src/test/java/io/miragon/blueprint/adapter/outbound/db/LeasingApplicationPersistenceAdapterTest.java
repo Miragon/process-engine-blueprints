@@ -10,6 +10,7 @@ import io.miragon.blueprint.domain.leasing.LeasingStatus;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
@@ -32,13 +33,15 @@ class LeasingApplicationPersistenceAdapterTest {
     private final ApplicationId id = new ApplicationId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
 
     @Test
+    @DisplayName("saves and reloads an application")
     void savesAndReloadsAnApplication() {
 
         // given: a leasing application
         LeasingApplication application = testLeasingApplication().id(id).build();
 
         // when: it is saved and re-read from a cleared persistence context
-        underTest.save(application);
+        LeasingApplication saved = underTest.save(application);
+        assertThat(saved).usingRecursiveComparison().isEqualTo(application);
         entityManager.flush();
         entityManager.clear();
 
@@ -47,15 +50,17 @@ class LeasingApplicationPersistenceAdapterTest {
     }
 
     @Test
-    void findByIdReturnsEmptyWhenTheApplicationDoesNotExist() {
+    @DisplayName("findById returns null when the application does not exist")
+    void findByIdReturnsNullWhenTheApplicationDoesNotExist() {
 
         // given: an empty database
-        // when / then: the lookup returns an empty result
+        // when / then: the lookup finds nothing
         assertThat(underTest.findById(id)).isEmpty();
     }
 
     @Test
     @Sql("classpath:sql/leasing-application.sql")
+    @DisplayName("findById maps an existing row back to the domain")
     void findByIdMapsAnExistingRowBackToTheDomain() {
 
         // given: a pre-inserted row (see sql/leasing-application.sql)
@@ -67,6 +72,7 @@ class LeasingApplicationPersistenceAdapterTest {
     }
 
     @Test
+    @DisplayName("findAll returns a page ordered by creation date, newest first")
     void findAllReturnsAPageOrderedByCreationDateNewestFirst() {
 
         // given: three applications created on different days
@@ -99,6 +105,7 @@ class LeasingApplicationPersistenceAdapterTest {
     }
 
     @Test
+    @DisplayName("findAll filters by status and paginates")
     void findAllFiltersByStatusAndPaginates() {
 
         // given: two RECEIVED and one ACTIVE application

@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import io.miragon.blueprint.application.port.inbound.SelectAlternativeUseCase;
 import io.miragon.blueprint.domain.bike.BikeId;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -26,6 +27,7 @@ class SelectAlternativeControllerTest {
     private SelectAlternativeUseCase useCase;
 
     @Test
+    @DisplayName("client clarifies an alternative bike")
     void clientClarifiesAnAlternativeBike() throws Exception {
 
         // given: a decision body and the application-id path variable
@@ -49,6 +51,7 @@ class SelectAlternativeControllerTest {
     }
 
     @Test
+    @DisplayName("client reports that no alternative was found")
     void clientReportsThatNoAlternativeWasFound() throws Exception {
 
         // given: a decision body with no alternative and no bike details
@@ -71,6 +74,7 @@ class SelectAlternativeControllerTest {
     }
 
     @Test
+    @DisplayName("rejects an accepted alternative without a bike id with a 400 problem detail")
     void rejectsAnAcceptedAlternativeWithoutABikeIdWithA400ProblemDetail() throws Exception {
 
         // given: a decision body that accepts an alternative but names no bike

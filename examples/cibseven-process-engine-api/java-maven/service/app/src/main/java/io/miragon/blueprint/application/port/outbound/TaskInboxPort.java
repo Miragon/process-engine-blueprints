@@ -14,8 +14,6 @@ public interface TaskInboxPort {
 
     List<OpenClarification> findOpenClarifications();
 
-    record OpenClarification(
-            ApplicationId applicationId,
-            LocalDateTime waitingSince) {
+    record OpenClarification(ApplicationId applicationId, LocalDateTime waitingSince) {
     }
 }

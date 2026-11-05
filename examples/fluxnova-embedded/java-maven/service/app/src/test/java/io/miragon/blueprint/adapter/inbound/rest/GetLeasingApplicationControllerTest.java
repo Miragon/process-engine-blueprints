@@ -13,6 +13,7 @@ import io.miragon.blueprint.domain.leasing.ApplicationId;
 import io.miragon.blueprint.domain.leasing.ContractId;
 import io.miragon.blueprint.domain.leasing.LeasingApplication;
 import java.util.Optional;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -30,6 +31,7 @@ class GetLeasingApplicationControllerTest {
     private GetLeasingApplicationQuery query;
 
     @Test
+    @DisplayName("returns the application with all of its fields mapped when it exists")
     void returnsTheApplicationWithAllOfItsFieldsMappedWhenItExists() throws Exception {
 
         // given: a fully-populated application (incl. order and contract) the query can find
@@ -59,6 +61,7 @@ class GetLeasingApplicationControllerTest {
     }
 
     @Test
+    @DisplayName("maps a not-yet-ordered application with null order and contract")
     void mapsANotYetOrderedApplicationWithNullOrderAndContract() throws Exception {
 
         // given: an application still without an order or contract (both nullable fields absent)
@@ -78,6 +81,7 @@ class GetLeasingApplicationControllerTest {
     }
 
     @Test
+    @DisplayName("returns 404 when the application does not exist")
     void returns404WhenTheApplicationDoesNotExist() throws Exception {
 
         // given: an unknown application id

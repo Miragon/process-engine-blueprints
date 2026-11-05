@@ -14,7 +14,6 @@ public class BikeEntity {
     @Column(name = "model", nullable = false)
     private String model;
 
-    /** For JPA only. */
     protected BikeEntity() {
     }
 

@@ -23,10 +23,10 @@ class BikeDealerAdapter : BikeDealerPort {
 
     /**
      * Demo mechanism (not a real integration fault): ordering one of these bikes makes the dealer
-     * call fail as if the dealer's API were unreachable. The `orderBike` activity retries every 10s
-     * without limit, visible as a pending activity in the Temporal UI, and the application stays
-     * withdrawable meanwhile. It stays available in [checkAvailability] so the flow reaches the order
-     * step (rather than the out-of-stock branch) before failing.
+     * call fail as if the dealer's API were unreachable, which drives the reproducible outage demo. How
+     * the failed order step is retried is up to the process engine and its inbound adapter. It stays
+     * available in [checkAvailability] so the flow reaches the order step (rather than the out-of-stock branch)
+     * before failing.
      */
     private val unavailableDealerBikeIds = setOf("BIKE-FAIL")
 

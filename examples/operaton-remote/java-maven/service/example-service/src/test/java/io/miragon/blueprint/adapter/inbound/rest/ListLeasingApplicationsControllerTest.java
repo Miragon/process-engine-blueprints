@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +36,7 @@ class ListLeasingApplicationsControllerTest {
     private final ApplicationId id = new ApplicationId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
 
     @Test
+    @DisplayName("returns a page of application summaries")
     void returnsAPageOfApplicationSummaries() throws Exception {
         // given: a single-item page
         when(query.list(any())).thenReturn(
@@ -67,6 +69,7 @@ class ListLeasingApplicationsControllerTest {
     }
 
     @Test
+    @DisplayName("parses the status filter and paging params into the query")
     void parsesTheStatusFilterAndPagingParamsIntoTheQuery() throws Exception {
         // given
         when(query.list(any())).thenReturn(
@@ -85,6 +88,7 @@ class ListLeasingApplicationsControllerTest {
     }
 
     @Test
+    @DisplayName("parses the status filter independently of the default locale")
     void parsesTheStatusFilterIndependentlyOfTheDefaultLocale() throws Exception {
         // given: a default locale whose upper-casing of "i" is not "I"
         when(query.list(any())).thenReturn(
@@ -107,6 +111,7 @@ class ListLeasingApplicationsControllerTest {
     }
 
     @Test
+    @DisplayName("rejects an unknown status with a 400 problem detail")
     void rejectsAnUnknownStatusWithA400ProblemDetail() throws Exception {
         // when: an invalid status is requested
         MvcResult response = mockMvc.perform(get("/api/bike-leasing?status=bogus")).andReturn();

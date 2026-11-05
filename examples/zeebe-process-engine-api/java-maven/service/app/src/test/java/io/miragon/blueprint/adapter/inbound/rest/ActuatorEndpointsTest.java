@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 import io.camunda.client.CamundaClient;
-import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -27,11 +26,11 @@ import org.springframework.test.context.ActiveProfiles;
  * back the built-in {@code db} health indicator (which reports {@code UP}).
  */
 @SpringBootTest(
-    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = {
-        "spring.main.web-application-type=servlet",
-        "spring.autoconfigure.exclude=io.camunda.client.spring.configuration.CamundaAutoConfiguration",
-    })
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties = {
+                "spring.main.web-application-type=servlet",
+                "spring.autoconfigure.exclude=io.camunda.client.spring.configuration.CamundaAutoConfiguration",
+        })
 @ActiveProfiles("test")
 class ActuatorEndpointsTest {
 
@@ -79,8 +78,9 @@ class ActuatorEndpointsTest {
         assertThat(response.body()).contains("# HELP");
     }
 
-    private HttpResponse<String> get(String path) throws IOException, InterruptedException {
-        HttpRequest request = HttpRequest.newBuilder(URI.create("http://localhost:" + port + path)).GET().build();
+    private HttpResponse<String> get(String path) throws Exception {
+        HttpRequest request =
+                HttpRequest.newBuilder(URI.create("http://localhost:" + port + path)).GET().build();
         return HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
     }
 }

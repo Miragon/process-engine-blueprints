@@ -10,6 +10,7 @@ import io.miragon.blueprint.application.port.inbound.SelectAlternativeUseCase;
 import io.miragon.blueprint.domain.bike.BikeId;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
 import java.util.Map;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -31,6 +32,7 @@ class SelectAlternativeControllerTest {
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Test
+    @DisplayName("client clarifies an alternative bike")
     void clientClarifiesAnAlternativeBike() throws Exception {
 
         // given: a decision body and the application-id path variable
@@ -54,6 +56,7 @@ class SelectAlternativeControllerTest {
     }
 
     @Test
+    @DisplayName("client reports that no alternative was found")
     void clientReportsThatNoAlternativeWasFound() throws Exception {
 
         // given: a decision body with no alternative and no bike details
@@ -75,6 +78,7 @@ class SelectAlternativeControllerTest {
     }
 
     @Test
+    @DisplayName("a decision without the alternative-found flag is rejected")
     void aDecisionWithoutTheAlternativeFoundFlagIsRejected() throws Exception {
 
         // given: a decision body that names a bike but not whether an alternative was found

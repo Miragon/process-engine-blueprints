@@ -28,13 +28,13 @@ task) become questions, not choices.
 
 ## 3. Plan, then stop
 
-If the issue changes a model, let the agent `review-process` audit the current model and its glue
-now, restate the change in your own words and collect the business questions; the model edit comes
-after the approval.
+If the issue changes a model, run the agent `review-process` on the current models now and restate
+the change in business terms (which element, which path, which outcome) with the business questions;
+the model edit comes after the approval.
 
 Write the plan as a checklist along the chain, skipping hops the issue does not touch:
 
-1. Model change (skill `bpmn-cli:bpmn`, one topic per new service task) and the regenerated process API
+1. Model change (skill `bpmn-cli:bpmn`, never XML by hand; one topic per new service task) and the regenerated process API
 2. Domain and application: value objects, ports, services, domain rules
 3. External-task workers with their unit tests (skills `bpmn-to-code:create-worker`,
    `bpmn-to-code:test-worker`), process-adapter methods for new messages or user tasks (skill

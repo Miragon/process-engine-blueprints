@@ -26,15 +26,7 @@ public class BikeEntity {
         return bikeId;
     }
 
-    public void setBikeId(String bikeId) {
-        this.bikeId = bikeId;
-    }
-
     public String getModel() {
         return model;
-    }
-
-    public void setModel(String model) {
-        this.model = model;
     }
 }

@@ -34,7 +34,8 @@ import kotlin.io.path.isDirectory
  * This is not really an assertion test — it is a code generator wearing a JUnit costume so it runs
  * inside `./gradlew build` with a live application context. Zeebe is not needed to publish the
  * contract, so the engine's client autoconfiguration is excluded and a mock client is supplied,
- * which keeps this gate fast and broker-free. See the OpenAPI-contract ADR.
+ * which keeps this gate fast and broker-free. See ADR-0003
+ * (docs/adr/0003-openapi-as-the-checked-in-contract.md).
  */
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,

@@ -38,6 +38,16 @@ public class SubmitLeasingRequestController {
         return ResponseEntity.ok(new LeasingApplicationCreatedDto(id.value().toString()));
     }
 
+    private static SubmitLeasingRequestUseCase.Command toCommand(LeasingRequestInput input) {
+        return new SubmitLeasingRequestUseCase.Command(
+                new CustomerName(input.customerName()),
+                new Email(input.email()),
+                input.age(),
+                input.monthlyNetIncome(),
+                new BikeId(input.bikeId()),
+                input.bikeModel());
+    }
+
     public record LeasingRequestInput(
             @Schema(requiredMode = REQUIRED) String customerName,
             @Schema(requiredMode = REQUIRED) String email,
@@ -46,9 +56,6 @@ public class SubmitLeasingRequestController {
             @Schema(requiredMode = REQUIRED) String bikeId,
             @Schema(requiredMode = REQUIRED) String bikeModel) {
 
-        // Fail while Jackson builds the body, so a missing or null string field is a 400 for the client —
-        // not a 500 from the value objects in toCommand. A missing or null age/monthlyNetIncome is not
-        // rejected here: it becomes 0, the primitive default.
         public LeasingRequestInput {
             Objects.requireNonNull(customerName, "customerName");
             Objects.requireNonNull(email, "email");
@@ -58,15 +65,5 @@ public class SubmitLeasingRequestController {
     }
 
     public record LeasingApplicationCreatedDto(@Schema(requiredMode = REQUIRED) String applicationId) {
-    }
-
-    private static SubmitLeasingRequestUseCase.Command toCommand(LeasingRequestInput input) {
-        return new SubmitLeasingRequestUseCase.Command(
-                new CustomerName(input.customerName()),
-                new Email(input.email()),
-                input.age(),
-                input.monthlyNetIncome(),
-                new BikeId(input.bikeId()),
-                input.bikeModel());
     }
 }

@@ -58,7 +58,7 @@ class SelectAlternativeServiceTest {
             underTest.selectAlternative(SelectAlternativeUseCase.Command(unknownId, alternativeFound = false, bikeId = null, bikeModel = null))
         }
             .isInstanceOf(IllegalStateException::class.java)
-            .hasMessage("Unknown application 123e4567-e89b-12d3-a456-426614174000")
+            .hasMessage("Unknown application $unknownId")
         verify { repository.findById(unknownId) }
         confirmVerified(repository, bikePortfolio, process)
     }

@@ -23,8 +23,8 @@ public final class LeasingApplicationEntityMapper {
                 new BikeId(entity.getBikeId()),
                 entity.getStatus(),
                 entity.getCreatedAt(),
-                entity.getOrderId() == null ? null : new OrderId(entity.getOrderId()),
-                entity.getContractId() == null ? null : new ContractId(entity.getContractId()));
+                entity.getOrderId() != null ? new OrderId(entity.getOrderId()) : null,
+                entity.getContractId() != null ? new ContractId(entity.getContractId()) : null);
     }
 
     public static LeasingApplicationEntity toEntity(LeasingApplication domain) {
@@ -36,8 +36,8 @@ public final class LeasingApplicationEntityMapper {
                 domain.monthlyNetIncome(),
                 domain.bikeId().value(),
                 domain.status(),
-                domain.orderId() == null ? null : domain.orderId().value(),
-                domain.contractId() == null ? null : domain.contractId().value(),
+                domain.orderId() != null ? domain.orderId().value() : null,
+                domain.contractId() != null ? domain.contractId().value() : null,
                 domain.createdAt());
     }
 }

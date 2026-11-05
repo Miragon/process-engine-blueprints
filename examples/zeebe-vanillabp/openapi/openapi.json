@@ -51,7 +51,7 @@
       },
       "post" : {
         "tags" : [ "submit-leasing-request-controller" ],
-        "operationId" : "submit",
+        "operationId" : "submitLeasingRequest",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -79,7 +79,7 @@
     "/api/bike-leasing/{applicationId}/withdraw" : {
       "post" : {
         "tags" : [ "withdraw-application-controller" ],
-        "operationId" : "withdraw",
+        "operationId" : "withdrawApplication",
         "parameters" : [ {
           "name" : "applicationId",
           "in" : "path",
@@ -136,7 +136,7 @@
     "/api/bike-leasing/{applicationId}/clarify-alternative" : {
       "post" : {
         "tags" : [ "select-alternative-controller" ],
-        "operationId" : "clarifyAlternative",
+        "operationId" : "selectAlternative",
         "parameters" : [ {
           "name" : "applicationId",
           "in" : "path",
@@ -207,7 +207,7 @@
     "/api/bike-leasing/{applicationId}" : {
       "get" : {
         "tags" : [ "get-leasing-application-controller" ],
-        "operationId" : "byId",
+        "operationId" : "getLeasingApplication",
         "parameters" : [ {
           "name" : "applicationId",
           "in" : "path",

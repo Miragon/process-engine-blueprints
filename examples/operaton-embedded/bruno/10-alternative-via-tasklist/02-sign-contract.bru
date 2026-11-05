@@ -11,9 +11,9 @@ post {
 }
 
 script:pre-request {
-  const id = bru.getVar("applicationId");
+  const id = bru.getVar('applicationId');
   await pollApp(`/api/bike-leasing/${id}`, (b, s) => s === 200 && b && b.contractId != null);
-  await pollMessageSubscription(id, "miravelo.contractSigned");
+  await pollMessageSubscription(id, 'miravelo.contractSigned');
 }
 
 assert {

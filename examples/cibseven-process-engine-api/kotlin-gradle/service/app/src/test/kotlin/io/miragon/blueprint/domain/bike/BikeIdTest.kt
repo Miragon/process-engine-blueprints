@@ -19,12 +19,14 @@ class BikeIdTest {
         // when/then: a blank value is refused
         assertThatThrownBy { BikeId("   ") }
             .isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessage("BikeId must not be blank")
     }
 
     @Test
-    fun `rejects a bike id of non-breaking spaces`() {
-        // when/then: a value of only non-breaking spaces (U+00A0, U+2007, U+202F) is blank too
+    fun `rejects a bike id made of no-break spaces`() {
+        // when/then: a value that only looks empty is refused, too
         assertThatThrownBy { BikeId("\u00A0\u2007\u202F") }
             .isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessage("BikeId must not be blank")
     }
 }

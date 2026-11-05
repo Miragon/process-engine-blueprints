@@ -5,5 +5,6 @@ import java.util.List;
 
 /** Lists the applications waiting on the alternative-clarification user task — the back-office inbox. */
 public interface GetPendingClarificationsQuery {
+
     List<PendingClarification> pending();
 }

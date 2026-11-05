@@ -1,57 +1,35 @@
 ---
 name: create-adr
-description: Write a new Architecture Decision Record (ADR) under docs/adr/ in this repo's MADR-lite format (Status, Context, Decision, Consequences). Use when the user asks to "write an ADR", "record an architecture decision", or "document why we did X". Auto-numbers from the existing index, derives the filename slug from the title, copies docs/adr/0000-adr-template.md, and shows a full draft before writing.
-allowed-tools: Read, Write, Glob
+description: "Write a new Architecture Decision Record under docs/adr/ in this repo's format (Status, Date, Deciders, Context, Decision, Consequences). Use when the user asks to write an ADR, record an architecture decision, or document why something was done. Numbers it after the highest existing record, copies docs/adr/0000-adr-template.md, marks a superseded ADR, adds it to the list in docs/README.md, and shows the full draft before writing."
+allowed-tools: Read, Write, Edit, Glob, Grep
 ---
 
 # Skill: create-adr
 
-Write a new Architecture Decision Record following the format in `docs/adr/` (see
-[ADR-0001](../../../docs/adr/0001-record-architecture-decisions.md)).
+Write a new ADR following `docs/adr/` (see
+[ADR-0001](../../../docs/adr/0001-record-architecture-decisions.md) and `docs/README.md`).
+
+## Rules
+
+- **A reversal is a new ADR** that supersedes the old one: flip the old one's Status to
+  "Superseded by [ADR-NNNN](…)". A refinement of the same decision may rewrite the record in place
+  with a bumped Date, as the template allows. Never add "Update" or changelog sections.
+- **Record what is decided, not what is planned.** Code proves an implementation, not the motive:
+  a reason the user did not state is marked "(⚠ reconstructed, to be confirmed)".
+- Numbers have gaps; never reuse or renumber one.
+- One decision per record, roughly one screenful, present tense.
 
 ## Instructions
 
-### Step 1 — Verify prerequisites
-
-`Glob docs/adr/*.md`.
-
-- If `docs/adr/` has no results at all, **stop** and tell the user to create the directory and add
-  `docs/adr/0000-adr-template.md` first.
-- If `docs/adr/0000-adr-template.md` is missing, **stop** and ask for the template. Do not invent one.
-
-### Step 2 — Determine the next number
-
-Take the highest four-digit prefix among the existing files and add one, zero-padded to four digits
-(e.g. after `0008-…` the next is `0009`). Ignore `0000-adr-template.md` when it is the only file.
-
-### Step 3 — Derive the slug
-
-Kebab-case the title: lowercase, spaces/underscores → `-`, drop non-alphanumeric, collapse repeats.
-Target path: `docs/adr/{NNNN}-{slug}.md`.
-
-### Step 4 — Read the template
-
-`Read docs/adr/0000-adr-template.md` and use its exact section structure (Status, Date, Context,
-Decision, Consequences with Positive / Negative-trade-offs / Neutral).
-
-### Step 5 — Gather content
-
-Ask the user (skip anything the request already answers):
-
-1. **Context** — the problem, forces, constraints, options considered.
-2. **Decision** — what was decided, in active voice, plus the concrete mechanics (tool, file, gate).
-3. **Consequences** — positive, negative/trade-offs, neutral.
-4. **Status** — default `Accepted`; ask only if they hint otherwise.
-
-### Step 6 — Draft, cross-link, confirm
-
-- Title: short imperative phrase. Date: today, `YYYY-MM-DD`.
-- **Cross-link** related ADRs by relative path (e.g. hexagonal → `0002-…`, contract → `0004-…`). The
-  existing ADRs are heavily cross-linked; match that.
-- Keep it to roughly **one screenful** — this repo's ADRs are tight on purpose.
-- Show the full draft and ask: "Write this to `{path}`? (yes / edit / cancel)".
-
-### Step 7 — Write and report
-
-On `yes`, write the file. Report the path and remind the user to **commit the ADR in the same commit
-as the code it documents**, so decision and implementation travel together in git history.
+1. **Glob `docs/adr/*.md`.** Stop and ask if `0000-adr-template.md` is missing; never invent one.
+2. **Next number** = highest four-digit prefix + 1, zero-padded.
+3. **Slug** = kebab-cased title. Path: `docs/adr/{NNNN}-{slug}.md`.
+4. **Read the template** and keep its sections (Status, Date, Deciders, Context, Decision,
+   Consequences, optional Implementation notes last).
+5. **Gather content** the request does not already answer: context and options, the decision and its
+   mechanics, consequences, status (default `Accepted`).
+6. **Draft and cross-link** related ADRs by relative path (hexagon → `0002-…`, contract → `0004-…`,
+   mutation gate → `0006-…`, agent instructions → `0007-…`). Show the full draft and ask:
+   "Write this to `{path}`? (yes / edit / cancel)".
+7. **Write and report.** Add a row to the ADR table in `docs/README.md`. Remind the user to commit the
+   ADR with the change it documents.

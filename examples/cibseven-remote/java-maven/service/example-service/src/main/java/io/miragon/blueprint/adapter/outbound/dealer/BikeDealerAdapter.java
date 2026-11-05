@@ -3,18 +3,18 @@ package io.miragon.blueprint.adapter.outbound.dealer;
 import io.miragon.blueprint.application.port.outbound.BikeDealerPort;
 import io.miragon.blueprint.domain.bike.BikeId;
 import io.miragon.blueprint.domain.bike.OrderId;
+import java.util.Set;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import java.util.Set;
-import java.util.UUID;
 
 /**
  * Simulated bike dealer. Availability is decided by a small deny-list of bike ids so the
  * bike-unavailable → alternative branch can be triggered deterministically. The ids mirror the Bruno
- * scenario data: {@code BIKE-OOS} is the out-of-stock bike the {@code 05-bike-unavailable} collection submits,
- * and {@code BIKE-FAIL} is the poison id the {@code 06-incident-demo} collection uses to make the dealer "outage"
- * throw — see {@link #order}.
+ * scenario data: {@code BIKE-OOS} is the out-of-stock bike the {@code 05-bike-unavailable} collection
+ * submits, and {@code BIKE-FAIL} is the poison id the {@code 06-incident-demo} collection uses to make
+ * the dealer "outage" throw — see {@link #order}.
  */
 @Component
 public class BikeDealerAdapter implements BikeDealerPort {
@@ -25,18 +25,16 @@ public class BikeDealerAdapter implements BikeDealerPort {
 
     /**
      * Demo mechanism (not a real integration fault): ordering one of these bikes makes the dealer
-     * call fail as if the dealer's API were unreachable. {@code serviceTask_orderBike} runs as a remote
-     * external task, so the {@code OrderBikeWorker} reports the failure back to the engine with a retry
-     * budget that exhausts and raises an incident — the basis of the reproducible incident demo. It
-     * stays available in {@link #checkAvailability} so the flow reaches the order step (rather than the
-     * out-of-stock branch) before failing.
+     * call fail as if the dealer's API were unreachable, which drives the reproducible outage demo. How
+     * the failed order step is retried is up to the process engine and its inbound adapter. It stays
+     * available in {@link #checkAvailability} so the flow reaches the order step (rather than the out-of-stock branch)
+     * before failing.
      */
     private final Set<String> unavailableDealerBikeIds = Set.of("BIKE-FAIL");
 
     @Override
     public boolean checkAvailability(BikeId bikeId) {
-        boolean available = !outOfStockBikeIds.contains(bikeId.value());
-        return available;
+        return !outOfStockBikeIds.contains(bikeId.value());
     }
 
     @Override
@@ -64,10 +62,8 @@ public class BikeDealerAdapter implements BikeDealerPort {
 
     /**
      * Signals that the (simulated) bike dealer could not be reached while placing an order. Thrown for
-     * the {@code BIKE-FAIL} poison id to drive the reproducible incident demo: because {@code serviceTask_orderBike}
-     * runs as a remote external task, this surfaces as a failed external task that retries and then
-     * raises an incident. Nested so it stays colocated with the demo logic without needing an
-     * outbound-adapter naming suffix.
+     * the {@code BIKE-FAIL} poison id to drive the reproducible outage demo. Nested so it stays colocated with
+     * the demo logic without needing an outbound-adapter naming suffix.
      */
     public static class DealerUnavailableException extends RuntimeException {
 

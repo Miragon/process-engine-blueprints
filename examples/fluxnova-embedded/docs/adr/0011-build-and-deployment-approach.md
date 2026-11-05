@@ -1,4 +1,4 @@
-# 0014 — Build and deployment approach: OCI image
+# 0011 — Build and deployment approach: OCI image
 
 - **Status:** Accepted
 - **Date:** 2026-08-20
@@ -44,6 +44,5 @@ The how-to (build the image, the podman socket note) is in
   with no Dockerfile to maintain. The build & deployment dimension is now filled.
 - **Negative / trade-offs:** with **podman** the buildpack step needs a Docker-API socket
   (`podman system service` + `DOCKER_HOST`). The image is **not production-hardened** — it carries the
-  dev `jwtSecret` and admin/admin credentials from `application.yaml`, which a real deployment must
-  override.
+  dev admin/admin credentials from `application.yaml`, which a real deployment must override.
 - **Neutral:** a CI job that builds the image is a natural follow-up, deferred for now.

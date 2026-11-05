@@ -22,11 +22,11 @@ public class CancelContractService implements CancelContractUseCase {
     @Override
     public void cancelContract(ApplicationId id) {
         LeasingApplication application = repository.findById(id)
-                .orElseThrow(() -> new IllegalStateException("Unknown application " + id.value()));
+                .orElseThrow(() -> new IllegalStateException("Unknown application " + id));
         // Revoke the contract the contract system issued earlier (its id is recorded on the application).
         ContractId contractId = application.contractId();
         if (contractId == null) {
-            throw new IllegalStateException("No contract issued for application " + id.value());
+            throw new IllegalStateException("No contract issued for application " + id);
         }
         contract.revokeContract(contractId);
     }

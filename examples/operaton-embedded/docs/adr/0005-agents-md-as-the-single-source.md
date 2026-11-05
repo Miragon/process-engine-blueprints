@@ -12,15 +12,15 @@ guarantees they drift. Meanwhile `AGENTS.md` has emerged as a cross-tool, vendor
 
 ## Decision
 
-**`AGENTS.md` is the real file** — the single source of truth for build commands, the port table, and
-the architecture rules. Tool-specific files are **thin pointers** to it: `CLAUDE.md` is exactly one
-line, `@AGENTS.md`.
+**`AGENTS.md` is the real file** — the single source of truth for build commands, the port table,
+architecture rules, and the day-to-day workflow. Tool-specific files are **thin pointers** to it:
+`CLAUDE.md` is exactly one line, `@AGENTS.md`.
 
 - We use an **`@`-import, not a symlink.** A symlink breaks on Windows checkouts and inside ZIP/tarball
   exports of the repo (a blueprint gets downloaded, not just cloned); an `@`-import is plain text that
   travels everywhere and is resolved by the tool.
-- The port table lives in `AGENTS.md` and is referenced by the README, so backend 8080 / Postgres 5432
-  have one authoritative home (see
+- The port table lives in `AGENTS.md` so backend 8080 / Postgres 5432 have one
+  authoritative home (see
   [ADR-0006](0006-fixed-ports-for-v1-portless-as-the-upgrade.md)).
 
 ## Consequences
@@ -28,6 +28,6 @@ line, `@AGENTS.md`.
 - **Positive:** one file to maintain; new tools are onboarded by adding a one-line pointer; the
   convention is portable across clone, ZIP, and worktree.
 - **Negative / trade-offs:** an agent whose tool does **not** resolve `@`-imports needs a one-time nudge
-  to read `AGENTS.md`.
-- **Neutral:** `AGENTS.md` stays the one place a contributor looks for how to work in the repo, so its
-  conventions are discoverable without crawling the tree.
+  to read `AGENTS.md`; nested files, if any, mean an agent must respect the nearest one.
+- **Neutral:** `AGENTS.md` is the discoverable entry point, so an agent finds the repo's conventions
+  without crawling the tree.

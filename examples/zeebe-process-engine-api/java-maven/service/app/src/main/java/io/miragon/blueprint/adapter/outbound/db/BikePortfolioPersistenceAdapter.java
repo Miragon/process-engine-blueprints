@@ -30,8 +30,8 @@ public class BikePortfolioPersistenceAdapter implements BikePortfolioRepository 
     @Override
     public List<Bike> findAll() {
         return repository.findAll(Sort.by(Sort.Direction.ASC, "bikeId")).stream()
-            .map(BikePortfolioPersistenceAdapter::toDomain)
-            .toList();
+                .map(BikePortfolioPersistenceAdapter::toDomain)
+                .toList();
     }
 
     @Override
@@ -39,9 +39,10 @@ public class BikePortfolioPersistenceAdapter implements BikePortfolioRepository 
         if (bikeIds.isEmpty()) {
             return List.of();
         }
-        return repository.findAllById(bikeIds.stream().map(BikeId::value).toList()).stream()
-            .map(BikePortfolioPersistenceAdapter::toDomain)
-            .toList();
+        List<String> ids = bikeIds.stream().map(BikeId::value).toList();
+        return repository.findAllById(ids).stream()
+                .map(BikePortfolioPersistenceAdapter::toDomain)
+                .toList();
     }
 
     private static Bike toDomain(BikeEntity entity) {

@@ -6,6 +6,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
+import java.util.UUID
 
 class LeasingApplicationTest {
 
@@ -59,6 +60,36 @@ class LeasingApplicationTest {
     }
 
     @Test
+    fun `withdraw moves the application to WITHDRAWN`() {
+        // given: a handed-over application
+        val application = testLeasingApplication(status = LeasingStatus.HANDED_OVER)
+        // when: the customer withdraws
+        val withdrawn = application.withdraw()
+        // then: the status is WITHDRAWN
+        assertThat(withdrawn.status).isEqualTo(LeasingStatus.WITHDRAWN)
+    }
+
+    @Test
+    fun `reportHandover moves the application to HANDED_OVER`() {
+        // given: an ordered application
+        val application = testLeasingApplication(status = LeasingStatus.ORDERED)
+        // when: the handover is reported
+        val handedOver = application.reportHandover()
+        // then: the status is HANDED_OVER
+        assertThat(handedOver.status).isEqualTo(LeasingStatus.HANDED_OVER)
+    }
+
+    @Test
+    fun `activate moves the application to ACTIVE`() {
+        // given: a handed-over application
+        val application = testLeasingApplication(status = LeasingStatus.HANDED_OVER)
+        // when: the leasing is activated
+        val active = application.activate()
+        // then: the status is ACTIVE
+        assertThat(active.status).isEqualTo(LeasingStatus.ACTIVE)
+    }
+
+    @Test
     fun `receive rejects an application whose monthly net income is zero`() {
         // when / then: an application without income cannot be received
         assertThatThrownBy { receiveApplication(monthlyNetIncome = 0.0) }
@@ -73,6 +104,48 @@ class LeasingApplicationTest {
         // then: it starts its lifecycle as RECEIVED
         assertThat(application.status).isEqualTo(LeasingStatus.RECEIVED)
         assertThat(application.monthlyNetIncome).isEqualTo(0.01)
+    }
+
+    @Test
+    fun `receive creates a RECEIVED application without order and contract`() {
+        // given: the data of a freshly submitted leasing request
+        val id = ApplicationId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"))
+        val createdAt = LocalDateTime.of(2024, 1, 15, 10, 30, 0)
+        // when: the application is received
+        val received = LeasingApplication.receive(
+            id = id,
+            customerName = CustomerName("John Doe"),
+            email = Email("john.doe@test.com"),
+            age = 35,
+            monthlyNetIncome = 3500.0,
+            bikeId = BikeId("BIKE-900"),
+            createdAt = createdAt,
+        )
+        // then: it is RECEIVED, carries the submitted data and has neither order nor contract yet
+        assertThat(received).isEqualTo(
+            LeasingApplication(
+                id = id,
+                customerName = CustomerName("John Doe"),
+                email = Email("john.doe@test.com"),
+                age = 35,
+                monthlyNetIncome = 3500.0,
+                bikeId = BikeId("BIKE-900"),
+                status = LeasingStatus.RECEIVED,
+                createdAt = createdAt,
+                orderId = null,
+                contractId = null,
+            ),
+        )
+    }
+
+    @Test
+    fun `cancel moves the application to CANCELLED`() {
+        // given: a withdrawn application
+        val application = testLeasingApplication(status = LeasingStatus.WITHDRAWN)
+        // when: the compensation has completed
+        val cancelled = application.cancel()
+        // then: the status is CANCELLED
+        assertThat(cancelled).isEqualTo(application.copy(status = LeasingStatus.CANCELLED))
     }
 
     private fun receiveApplication(monthlyNetIncome: Double) =

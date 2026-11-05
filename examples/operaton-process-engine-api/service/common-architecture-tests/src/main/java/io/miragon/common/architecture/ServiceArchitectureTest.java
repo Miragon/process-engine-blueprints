@@ -3,62 +3,49 @@ package io.miragon.common.architecture;
 import org.junit.jupiter.api.Nested;
 
 /**
- * A single, ready-to-use architecture suite for a service — combining <b>ArchUnit</b> and the
- * source-level lint, each doing what it is best at.
- *
- * <p>A service wires up the full suite with one line:
+ * A single, ready-to-use ArchUnit architecture suite for a service. A service wires up the full suite
+ * with one class:
  *
  * <pre>{@code
  * class ArchitectureTest extends ServiceArchitectureTest {
- *     ArchitectureTest() {
- *         super("io.miragon.blueprint");
- *     }
+ *     protected String rootPackage() { return "io.miragon.blueprint"; }
  * }
  * }</pre>
  *
- * <h2>Why a mix, and who owns what</h2>
+ * <p>ArchUnit reads compiled <strong>bytecode</strong>, so it sees the fully resolved dependency
+ * graph. It owns the dependency &amp; structure rules ({@link HexagonalArchitectureTest}), naming
+ * conventions ({@link NamingConventionArchitectureTest}), freedom of cycles and the no-{@code println}
+ * check ({@link BasicCodingGuidelinesTest}). The two source-structure guidelines Konsist used to own
+ * (no wildcard imports, one top-level type per file) are enforced by Checkstyle in the Maven build.
  *
- * <ul>
- *   <li><b>ArchUnit</b> reads compiled <b>bytecode</b>, so it sees the fully resolved dependency
- *       graph. It owns the <i>dependency &amp; structure</i> rules — hexagonal layering,
- *       technology-neutrality of domain &amp; application, port/adapter isolation
- *       ({@link Dependencies}), naming conventions ({@link Naming}), freedom of cycles and the
- *       no-standard-streams check ({@link CodingGuidelines}).
- *   <li><b>Checkstyle</b> reads Java <b>source</b>, so it sees things the compiler erases or
- *       tolerates. It owns the <i>source-structure</i> rules — one top-level declaration per file
- *       (SRP) and no wildcard imports. It runs in the same build gate (see the shared
- *       {@code checkstyle.xml} at the repo root and ADR-0014).
- * </ul>
- *
- * <p>This module is <b>self-contained</b>: it carries the ArchUnit dependency and its own copies of
- * the rules, so it can be dropped into a service as a single test dependency.
+ * <p>This module is <strong>self-contained</strong>: it carries the ArchUnit dependency and its own
+ * copies of the rules, so it can be dropped into a service as a single test dependency.
  */
 public abstract class ServiceArchitectureTest {
 
-    private final String rootPackage;
-
-    protected ServiceArchitectureTest(String rootPackage) {
-        this.rootPackage = rootPackage;
-    }
+    protected abstract String rootPackage();
 
     @Nested
-    public class Dependencies extends HexagonalArchitectureTest {
-        public Dependencies() {
-            super(rootPackage);
+    class Dependencies extends HexagonalArchitectureTest {
+        @Override
+        protected String rootPackage() {
+            return ServiceArchitectureTest.this.rootPackage();
         }
     }
 
     @Nested
-    public class Naming extends NamingConventionArchitectureTest {
-        public Naming() {
-            super(rootPackage);
+    class Naming extends NamingConventionArchitectureTest {
+        @Override
+        protected String rootPackage() {
+            return ServiceArchitectureTest.this.rootPackage();
         }
     }
 
     @Nested
-    public class CodingGuidelines extends BasicCodingGuidelinesTest {
-        public CodingGuidelines() {
-            super(rootPackage);
+    class CodingGuidelines extends BasicCodingGuidelinesTest {
+        @Override
+        protected String rootPackage() {
+            return ServiceArchitectureTest.this.rootPackage();
         }
     }
 }

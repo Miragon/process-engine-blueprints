@@ -8,6 +8,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -30,7 +31,8 @@ import tools.jackson.databind.node.ObjectNode;
  * <p>This is not really an assertion test — it is a code generator wearing a JUnit costume so it runs
  * inside {@code ./mvnw verify} with a live application context. Zeebe is not needed to publish the
  * contract, so the engine's client autoconfiguration is excluded, which keeps this gate fast and
- * broker-free. See the OpenAPI-contract ADR.
+ * broker-free. See ADR-0003
+ * (docs/adr/0003-openapi-as-the-checked-in-contract.md).
  */
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
@@ -51,6 +53,7 @@ class OpenApiSpecExportTest {
             .build();
 
     @Test
+    @DisplayName("exports the OpenAPI contract to openapi_openapi_json at the repo root")
     void exportsTheOpenApiContractToOpenapiOpenapiJsonAtTheRepoRoot() throws Exception {
         // given: the live spec served by springdoc
         String raw = fetch("http://localhost:" + port + "/v3/api-docs");
@@ -77,7 +80,7 @@ class OpenApiSpecExportTest {
         return response.body();
     }
 
-    /** Walk up from the module working directory until the directory holding the shared {@code openapi/} contract is found. */
+    /** Walk up from the module working directory until the directory holding the {@code openapi/} contract is found. */
     private Path repoRoot() {
         Path dir = Path.of(System.getProperty("user.dir")).toAbsolutePath();
         while (dir != null) {

@@ -1,13 +1,15 @@
 package io.miragon.blueprint.adapter.inbound.rest;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
+
 import io.miragon.blueprint.application.port.inbound.SubmitLeasingRequestUseCase;
 import io.miragon.blueprint.domain.bike.BikeId;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
 import io.miragon.blueprint.domain.leasing.CustomerName;
 import io.miragon.blueprint.domain.leasing.Email;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -36,32 +38,32 @@ public class SubmitLeasingRequestController {
         return ResponseEntity.ok(new LeasingApplicationCreatedDto(id.value().toString()));
     }
 
-    // `required = true` mirrors the non-null contract Kotlin once carried in its type system: swagger-core
-    // cannot derive it from JSpecify annotations (swagger-api/swagger-core#5001). On this input record it
-    // also restores the Kotlin-era deserialization behavior — a missing field is rejected with 400.
+    private static SubmitLeasingRequestUseCase.Command toCommand(LeasingRequestInput input) {
+        return new SubmitLeasingRequestUseCase.Command(
+                new CustomerName(input.customerName()),
+                new Email(input.email()),
+                input.age(),
+                input.monthlyNetIncome(),
+                new BikeId(input.bikeId()),
+                input.bikeModel());
+    }
+
     public record LeasingRequestInput(
-        @JsonProperty(value = "customerName", required = true) String customerName,
-        @JsonProperty(value = "email", required = true) String email,
-        @JsonProperty(value = "age", required = true) int age,
-        @JsonProperty(value = "monthlyNetIncome", required = true) double monthlyNetIncome,
-        @JsonProperty(value = "bikeId", required = true) String bikeId,
-        @JsonProperty(value = "bikeModel", required = true) String bikeModel
-    ) {
-        @JsonCreator
+            @Schema(requiredMode = REQUIRED) String customerName,
+            @Schema(requiredMode = REQUIRED) String email,
+            @Schema(requiredMode = REQUIRED) int age,
+            @Schema(requiredMode = REQUIRED) double monthlyNetIncome,
+            @Schema(requiredMode = REQUIRED) String bikeId,
+            @Schema(requiredMode = REQUIRED) String bikeModel) {
+
         public LeasingRequestInput {
+            Objects.requireNonNull(customerName, "customerName");
+            Objects.requireNonNull(email, "email");
+            Objects.requireNonNull(bikeId, "bikeId");
+            Objects.requireNonNull(bikeModel, "bikeModel");
         }
     }
 
-    public record LeasingApplicationCreatedDto(@JsonProperty(required = true) String applicationId) {
-    }
-
-    private static SubmitLeasingRequestUseCase.Command toCommand(LeasingRequestInput input) {
-        return new SubmitLeasingRequestUseCase.Command(
-            new CustomerName(input.customerName()),
-            new Email(input.email()),
-            input.age(),
-            input.monthlyNetIncome(),
-            new BikeId(input.bikeId()),
-            input.bikeModel());
+    public record LeasingApplicationCreatedDto(@Schema(requiredMode = REQUIRED) String applicationId) {
     }
 }

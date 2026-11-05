@@ -11,12 +11,12 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
 /**
- * Seeds MiraVelo's bike catalogue on start-up so the picker ({@code GET /api/bikes}) is never empty and the
- * Bruno scenarios always find their ids. Idempotent — {@code save} upserts by id.
+ * Seeds MiraVelo's bike catalogue on start-up so the picker ({@code GET /api/bikes}) is never empty
+ * and the Bruno scenarios always find their ids. Idempotent — {@code save} upserts by id.
  *
- * <p>{@code BIKE-OOS} is seeded deliberately: it is the dealer's out-of-stock bike, so selecting it drives the
- * bike-unavailable → alternative-selection scenario end to end. Availability itself is decided by the
- * dealer, not stored here.
+ * <p>{@code BIKE-OOS} is seeded deliberately: it is the dealer's out-of-stock bike, so selecting it
+ * drives the bike-unavailable → alternative-selection scenario end to end. Availability itself is
+ * decided by the dealer, not stored here.
  *
  * <p>It lives in the root package next to the application class — application bootstrap, outside the
  * hexagonal layers — and is excluded from mutation testing for the same reason.
@@ -26,8 +26,7 @@ public class BikeCatalogueSeeder implements ApplicationRunner {
 
     private static final Logger log = LoggerFactory.getLogger(BikeCatalogueSeeder.class);
 
-    private static final List<Bike> CATALOGUE =
-        List.of(
+    private static final List<Bike> CATALOGUE = List.of(
             new Bike(new BikeId("BIKE-900"), "Gravel Explorer 900"),
             new Bike(new BikeId("BIKE-800"), "Carbon Road 800"),
             new Bike(new BikeId("BIKE-OOS"), "Mountain Trail 600"));

@@ -10,7 +10,6 @@ import java.util.Optional;
  * separate aggregate from the leasing application (which only references a bike by its {@link BikeId}).
  */
 public interface BikePortfolioRepository {
-
     Bike save(Bike bike);
 
     Optional<Bike> findByBikeId(BikeId bikeId);

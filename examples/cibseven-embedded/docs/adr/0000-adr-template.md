@@ -37,4 +37,5 @@ How to use this template:
   tense, and never add "Update", "Changelog", or dated-amendment sections. When a decision changes,
   rewrite the record in place (bump the Date) or supersede it with a new ADR and flip this one's Status
   to "Superseded by …". The reader should never have to reconstruct the current state from a diff.
+- The `/create-adr` skill automates numbering, the slug, and drafting from this template.
 -->

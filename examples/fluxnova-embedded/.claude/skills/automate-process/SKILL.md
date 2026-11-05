@@ -42,8 +42,8 @@ to the other, then regenerate, wire and test **both**.
   `.ELEMENT_ID`, `Variables`, `Next`; the shared `Messages`, `Errors`, `Escalations`, `ServiceTasks`),
   never raw strings. `adapter/process` is generated: never edit it (except
   `HistoryCleanupConfiguration`).
-- **Engine limits:** a service task is a delegate by expression (`#{beanName}`, enforced by the
-  model test `adapter/process/model/ServiceTaskDelegateExpressionRule`); asynchronous continuations
+- **Engine limits:** a service task is a delegate by expression (`#{beanName}`, enforced by
+  `adapter/process/model/ServiceTaskDelegateExpressionRule`); asynchronous continuations
   (`asyncAfter` on most tasks, `asyncBefore` on `serviceTask_orderBike`) are where retries and
   incidents happen; a compensation handler (`isForCompensation`) only runs for an activity that
   completed.

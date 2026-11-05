@@ -1,65 +1,62 @@
 ---
 name: create-persistence-adapter
-argument-hint: "[<path-to-Repository-port-file-or-domain-aggregate>]"
-description: Scaffold or update a JPA persistence adapter (outbound adapter) in service/app for a domain aggregate — entity, Spring Data repository, mapper, and the @Component adapter implementing the outbound Repository port. Use when the user asks to "create a persistence adapter", "generate a JPA adapter", "scaffold the persistence layer", or "add an outbound db adapter". Generated code obeys the hexagonal + naming ArchUnit rules.
-allowed-tools: Read, Write, Glob
+argument-hint: "[Repository port or domain aggregate]"
+description: "Create or update the JPA persistence adapter for one domain aggregate: entity, Spring Data repository, mapper, the @Component implementing the outbound Repository port, its Flyway migration and its @DataJpaTest. Use when the user asks to create a persistence adapter, persist an aggregate, add a column or a query, or add an outbound db adapter."
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
 # Skill: create-persistence-adapter
 
-Generate or update the persistence files for one aggregate in
-`service/app/src/main/kotlin/io/miragon/blueprint/adapter/outbound/db/`. See
-[ADR-0002](../../../docs/adr/0002-hexagonal-architecture-for-the-backend.md).
+Files per aggregate in `adapter/outbound/db/` (package `io.miragon.blueprint` under
+`service/app/src/main/`), the tests next to them in the test tree. The rules are in `AGENTS.md`
+(Architecture, Testing) and [ADR-0013](../../../docs/adr/0013-flyway-for-database-migrations.md).
 
-Files per aggregate:
+## Production pattern
 
-- `*Entity.kt` — `@Entity` data class mapping the aggregate to a table.
-- `*JpaRepository.kt` — Spring Data `JpaRepository` interface.
-- `*EntityMapper.kt` — entity ↔ domain conversion. Used for a **rich** aggregate (see
-  `LeasingApplicationEntityMapper`); for a **trivial** two-field aggregate the existing code inlines a
-  private `toDomain()` on the adapter (see `BikePortfolioPersistenceAdapter`). Match the neighbour: rich
-  aggregate → dedicated mapper `object`; trivial → inline is acceptable.
-- `*PersistenceAdapter.kt` — `@Component` implementing the outbound port.
+Copy the shape of the existing adapters:
 
-## IMPORTANT — the rules ArchUnit enforces
+| Aggregate | Reference | Shows |
+|---|---|---|
+| `LeasingApplication` | `LeasingApplicationEntity`, `LeasingApplicationJpaRepository`, `LeasingApplicationEntityMapper`, `LeasingApplicationPersistenceAdapter` | a separate mapper, a filtered and paged query behind the port's own `Criteria`/`Page` |
+| `Bike` | `BikeEntity`, `BikePortfolioJpaRepository`, `BikePortfolioPersistenceAdapter` | a small aggregate mapped inside the adapter |
 
-- The adapter implements **every** method of the outbound port and **that port only**.
-- Naming suffixes allowed in `adapter.outbound`: `PersistenceAdapter`, `Adapter`, `Mapper`, `Entity`,
-  `Repository`. The primary aggregate adapter is `*PersistenceAdapter`.
-- The outbound port itself is named `*Repository` (that suffix is required in
-  `application.port.outbound`).
-- Column names are `snake_case`; enums use `@Enumerated(EnumType.STRING)` (never the ordinal).
-- A dedicated mapper is a Kotlin **`object`** (singleton) — never a `class` or `companion object`.
-- `find*` returns nullable / throws on absence per the port contract; `save` delegates to the repo.
+- The adapter is a `@Component` implementing exactly the outbound `*Repository` port.
+- **Spring Data types stop at the adapter.** The port owns `Criteria`/`Page`; the adapter translates
+  (`PageRequest`, `Sort`) and returns the port's types.
+- Columns are `snake_case`, enums `@Enumerated(EnumType.STRING)`, value objects are mapped to
+  primitives and back (`ApplicationId(UUID)` ↔ `UUID`).
+- **Flyway owns the schema.** Hibernate only validates (`ddl-auto: validate`), so every entity change
+  ships with the next `service/app/src/main/resources/db/migration/V<n>__<what>.sql`; never edit an
+  applied migration. A new filter or sort column gets an index.
+
+## Test pattern
+
+`@DataJpaTest` + `@ActiveProfiles("test")` + `@Import(<Adapter>)` (reference:
+`LeasingApplicationPersistenceAdapterTest`), one test per port method and per filter, including the
+empty result:
+
+- **Round trip through a cleared context:** save, `flush()`, `clear()`, then read back, or the test only
+  reads the first-level cache.
+- **Read tests seed independently** of the adapter under test: an `@Sql` script in
+  `service/app/src/test/resources/sql/` (see `leasing-application.sql` and the `findById` test), so a
+  broken `save` cannot hide a broken read. The older `findAll` tests and `BikePortfolioPersistenceAdapterTest`
+  still seed through `save`; don't copy that.
+- **A new column** also goes into the seed script and into the defaults of the domain test factory
+  (`TestObjectBuilder`). The test schema is generated from the entities (`ddl-auto: create-drop`), so
+  a seed without the column still runs and the round trip silently compares `null`.
+- Compare whole objects (`usingRecursiveComparison()`) built with the domain test factory
+  (`TestObjectBuilder`).
+
+Tests run against H2 with Flyway off; the migration is checked when the service starts against
+Postgres, so start it once after a schema change.
 
 ## Instructions
 
-### Step 1 — Resolve the aggregate
-
-`$ARGUMENTS` may be a `*Repository` port under `application/port/outbound/`, or a domain aggregate under
-`domain/{leasing,bike}/`. Read the port (interface name, all method signatures) and the aggregate (all
-fields). Strip `Repository` to get the aggregate name. If neither is given, `Glob
-**/application/port/outbound/*Repository.kt`, list, and ask.
-
-### Step 2 — Target location
-
-Package: `io.miragon.blueprint.adapter.outbound.db`. Source root: `service/app/src/main/kotlin/`.
-
-### Step 3 — Determine should-state per file
-
-Map each domain value object to its primitive for the entity (`BikeId(val value: UUID)` → `UUID`,
-`Email(val value: String)` → `String`). Derive `snake_case` column and table names. The JPA repository
-extends `JpaRepository<Entity, IdType>` and adds the `findBy…` query the port needs. The mapper (if
-used) has `toDomain`/`toEntity`; the adapter delegates every port method through it (or through an
-inline `toDomain` for a trivial aggregate).
-
-For each file that already exists, read it and add only what's missing (a field, a query method, a port
-method), preserving existing logic.
-
-### Step 4 — Write the files
-
-### Step 5 — Report and hand off
-
-Report created/updated/skipped, then remind the user to add a schema migration if a new table is
-introduced, add a `@DataJpaTest` slice test, and run `./gradlew build` (ArchUnit + pitest kill-set run
-here). Wiring into the service is automatic — Spring component-scans `io.miragon.blueprint`.
+1. **Resolve the aggregate** from `$ARGUMENTS` (a `*Repository` port in `application/port/outbound/` or
+   an aggregate in `domain/`), else list the ports and ask.
+2. **Derive the target state:** columns, value-object mapping, the queries the port needs. Add only
+   what is missing to existing files.
+3. **Write the tests first**, then entity, repository, mapper, adapter and migration.
+4. **Verify:** the adapter tests by name, then the architecture tests (`AGENTS.md` →
+   Verify After Each Task); with the stack running, start the service once so Hibernate validates the
+   schema against the migrated Postgres.

@@ -3,7 +3,7 @@ package io.miragon.blueprint.application.port.outbound;
 import io.miragon.blueprint.domain.bike.Bike;
 import io.miragon.blueprint.domain.bike.BikeId;
 import java.util.List;
-import org.jspecify.annotations.Nullable;
+import java.util.Optional;
 
 /**
  * Persistence port for MiraVelo's bike portfolio — the catalogue of bikes and their models, kept as a
@@ -13,8 +13,7 @@ public interface BikePortfolioRepository {
 
     Bike save(Bike bike);
 
-    @Nullable
-    Bike findByBikeId(BikeId bikeId);
+    Optional<Bike> findByBikeId(BikeId bikeId);
 
     /** The whole catalogue — backs the {@code GET /api/bikes} picker. */
     List<Bike> findAll();

@@ -29,8 +29,8 @@ public class ListBikesService implements ListBikesQuery {
         // bike with its dealer availability. (Sorting here would emit a synthetic Comparator class in
         // the application.service package, which the architecture tests rightly reject.)
         return bikePortfolio.findAll().stream()
-            .map(bike -> new ListBikesQuery.Item(
-                bike.bikeId(), bike.model(), bikeDealer.checkAvailability(bike.bikeId())))
-            .toList();
+                .map(bike -> new ListBikesQuery.Item(
+                        bike.bikeId(), bike.model(), bikeDealer.checkAvailability(bike.bikeId())))
+                .toList();
     }
 }

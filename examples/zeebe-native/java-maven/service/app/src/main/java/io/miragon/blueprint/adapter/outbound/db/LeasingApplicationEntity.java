@@ -48,17 +48,16 @@ public class LeasingApplicationEntity {
     }
 
     public LeasingApplicationEntity(
-        UUID applicationId,
-        String customerName,
-        String email,
-        int age,
-        double monthlyNetIncome,
-        String bikeId,
-        LeasingStatus status,
-        String orderId,
-        String contractId,
-        LocalDateTime createdAt
-    ) {
+            UUID applicationId,
+            String customerName,
+            String email,
+            int age,
+            double monthlyNetIncome,
+            String bikeId,
+            LeasingStatus status,
+            String orderId,
+            String contractId,
+            LocalDateTime createdAt) {
         this.applicationId = applicationId;
         this.customerName = customerName;
         this.email = email;

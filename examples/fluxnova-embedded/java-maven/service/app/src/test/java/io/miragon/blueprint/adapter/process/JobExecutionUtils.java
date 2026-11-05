@@ -15,22 +15,33 @@ public final class JobExecutionUtils {
     }
 
     /**
-     * Executes the async-continuation job of a <strong>specific</strong> element (by activity id),
+     * Executes the async-continuation jobs of a <strong>specific</strong> element (by activity id),
      * rather than whichever job happens to be next. This lets a test read as an explicit, ordered
      * trace of the process and fails loudly (no job found) if the expected continuation is missing —
      * which is the safer, more readable choice for the deterministic, linear parts of a flow.
+     *
+     * <p>The {@code camunda:asyncBefore} and {@code camunda:asyncAfter} flags create up to two jobs
+     * per element, and a joining gateway gets one per incoming path; this runs them all.
      */
     public static void executeJobFor(ProcessEngine engine, FlowNode activity) {
-        Job job = engine.getManagementService()
-                .createJobQuery()
-                .messages()
-                .activityId(activity.getId().getValue())
-                .singleResult();
+        Job job = findJobFor(engine, activity);
         if (job == null) {
             throw new IllegalArgumentException(
                     "no async-continuation job found for activity '" + activity.getId().getValue() + "'");
         }
-        engine.getManagementService().executeJob(job.getId());
+        while (job != null) {
+            engine.getManagementService().executeJob(job.getId());
+            job = findJobFor(engine, activity);
+        }
+    }
+
+    private static Job findJobFor(ProcessEngine engine, FlowNode activity) {
+        List<Job> jobs = engine.getManagementService()
+                .createJobQuery()
+                .messages()
+                .activityId(activity.getId().getValue())
+                .listPage(0, 1);
+        return jobs.isEmpty() ? null : jobs.get(0);
     }
 
     /**

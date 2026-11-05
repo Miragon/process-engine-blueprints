@@ -16,13 +16,10 @@ class IssueInsurancePolicyServiceTest {
 
     @Test
     void issuePolicyDelegatesToTheInsurer() {
-
         // given: an eligible application
         LeasingApplication application = testLeasingApplication().build();
-
         // when: the policy is issued
         underTest.issuePolicy(application.id());
-
         // then: the insurance out-port binds the policy
         verify(insurance).issuePolicy(application.id());
         verifyNoMoreInteractions(insurance);

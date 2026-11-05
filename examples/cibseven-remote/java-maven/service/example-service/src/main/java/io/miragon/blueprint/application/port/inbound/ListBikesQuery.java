@@ -14,7 +14,6 @@ public interface ListBikesQuery {
     record Item(
             BikeId bikeId,
             String model,
-            boolean available
-    ) {
+            boolean available) {
     }
 }

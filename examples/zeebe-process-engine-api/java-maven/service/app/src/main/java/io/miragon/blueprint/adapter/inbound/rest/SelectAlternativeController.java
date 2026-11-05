@@ -1,8 +1,11 @@
 package io.miragon.blueprint.adapter.inbound.rest;
 
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
+
 import io.miragon.blueprint.application.port.inbound.SelectAlternativeUseCase;
 import io.miragon.blueprint.domain.bike.BikeId;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,24 +28,23 @@ public class SelectAlternativeController {
         this.useCase = useCase;
     }
 
+    @Operation(operationId = "selectAlternative")
     @PostMapping("/{applicationId}/clarify-alternative")
     public ResponseEntity<Void> clarifyAlternative(
-        @PathVariable String applicationId,
-        @RequestBody AlternativeDecisionInput input
-    ) {
+            @PathVariable String applicationId,
+            @RequestBody AlternativeDecisionInput input) {
         useCase.selectAlternative(
-            new SelectAlternativeUseCase.Command(
-                ApplicationId.of(applicationId),
-                input.alternativeFound(),
-                input.bikeId() == null ? null : new BikeId(input.bikeId()),
-                input.bikeModel()));
+                new SelectAlternativeUseCase.Command(
+                        ApplicationId.of(applicationId),
+                        input.alternativeFound(),
+                        input.bikeId() != null ? new BikeId(input.bikeId()) : null,
+                        input.bikeModel()));
         return ResponseEntity.accepted().build();
     }
 
     public record AlternativeDecisionInput(
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED) boolean alternativeFound,
-        @Schema(types = {"string", "null"}) String bikeId,
-        @Schema(types = {"string", "null"}) String bikeModel
-    ) {
+            @Schema(requiredMode = REQUIRED) boolean alternativeFound,
+            @Schema(nullable = true) String bikeId,
+            @Schema(nullable = true) String bikeModel) {
     }
 }

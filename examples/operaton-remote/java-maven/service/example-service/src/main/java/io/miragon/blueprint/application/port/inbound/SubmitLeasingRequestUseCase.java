@@ -14,6 +14,7 @@ public interface SubmitLeasingRequestUseCase {
             int age,
             double monthlyNetIncome,
             BikeId bikeId,
-            String bikeModel) {
+            String bikeModel
+    ) {
     }
 }

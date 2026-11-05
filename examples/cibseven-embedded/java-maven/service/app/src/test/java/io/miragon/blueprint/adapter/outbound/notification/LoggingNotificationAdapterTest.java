@@ -4,6 +4,7 @@ import static io.miragon.blueprint.domain.leasing.TestObjectBuilder.testLeasingA
 import static org.assertj.core.api.Assertions.assertThatCode;
 
 import io.miragon.blueprint.domain.leasing.LeasingApplication;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class LoggingNotificationAdapterTest {
@@ -11,6 +12,7 @@ class LoggingNotificationAdapterTest {
     private final LoggingNotificationAdapter underTest = new LoggingNotificationAdapter();
 
     @Test
+    @DisplayName("send logs the notification without error")
     void sendLogsTheNotificationWithoutError() {
 
         // given: a subject and an application

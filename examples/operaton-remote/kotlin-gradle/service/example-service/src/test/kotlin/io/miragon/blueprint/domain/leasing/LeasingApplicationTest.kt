@@ -6,6 +6,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
+import java.util.UUID
 
 class LeasingApplicationTest {
 
@@ -103,6 +104,48 @@ class LeasingApplicationTest {
         // then: it starts its lifecycle as RECEIVED
         assertThat(application.status).isEqualTo(LeasingStatus.RECEIVED)
         assertThat(application.monthlyNetIncome).isEqualTo(0.01)
+    }
+
+    @Test
+    fun `receive creates a RECEIVED application without order and contract`() {
+        // given: the data of a freshly submitted leasing request
+        val id = ApplicationId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"))
+        val createdAt = LocalDateTime.of(2024, 1, 15, 10, 30, 0)
+        // when: the application is received
+        val received = LeasingApplication.receive(
+            id = id,
+            customerName = CustomerName("John Doe"),
+            email = Email("john.doe@test.com"),
+            age = 35,
+            monthlyNetIncome = 3500.0,
+            bikeId = BikeId("BIKE-900"),
+            createdAt = createdAt,
+        )
+        // then: it is RECEIVED, carries the submitted data and has neither order nor contract yet
+        assertThat(received).isEqualTo(
+            LeasingApplication(
+                id = id,
+                customerName = CustomerName("John Doe"),
+                email = Email("john.doe@test.com"),
+                age = 35,
+                monthlyNetIncome = 3500.0,
+                bikeId = BikeId("BIKE-900"),
+                status = LeasingStatus.RECEIVED,
+                createdAt = createdAt,
+                orderId = null,
+                contractId = null,
+            ),
+        )
+    }
+
+    @Test
+    fun `cancel moves the application to CANCELLED`() {
+        // given: a withdrawn application
+        val application = testLeasingApplication(status = LeasingStatus.WITHDRAWN)
+        // when: the compensation has completed
+        val cancelled = application.cancel()
+        // then: the status is CANCELLED
+        assertThat(cancelled).isEqualTo(application.copy(status = LeasingStatus.CANCELLED))
     }
 
     private fun receiveApplication(monthlyNetIncome: Double) =

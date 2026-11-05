@@ -13,7 +13,7 @@ class ActivateLeasingService(
 ) : ActivateLeasingUseCase {
 
     override fun activate(id: ApplicationId) {
-        val application = repository.findById(id) ?: error("Unknown application ${id.value}")
+        val application = repository.findById(id) ?: error("Unknown application $id")
         repository.save(application.activate())
     }
 }

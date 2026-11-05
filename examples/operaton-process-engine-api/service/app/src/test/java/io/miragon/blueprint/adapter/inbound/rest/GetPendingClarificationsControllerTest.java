@@ -1,10 +1,17 @@
 package io.miragon.blueprint.adapter.inbound.rest;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+
 import io.miragon.blueprint.application.port.inbound.GetPendingClarificationsQuery;
 import io.miragon.blueprint.domain.bike.BikeId;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
 import io.miragon.blueprint.domain.leasing.CustomerName;
 import io.miragon.blueprint.domain.leasing.PendingClarification;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,14 +19,6 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 @WebMvcTest(GetPendingClarificationsController.class)
 class GetPendingClarificationsControllerTest {
@@ -36,17 +35,14 @@ class GetPendingClarificationsControllerTest {
     @DisplayName("returns the pending clarifications without exposing a task id")
     void returnsThePendingClarificationsWithoutExposingATaskId() throws Exception {
         // given: one application waiting on the clarify-alternative task
-        given(query.pending()).willReturn(
-            List.of(
-                new PendingClarification(
-                    id,
-                    new CustomerName("Erin Restock"),
-                    new BikeId("BIKE-OOS"),
-                    "Mountain Trail 600",
-                    LocalDateTime.of(2026, 8, 17, 9, 30)
-                )
-            )
-        );
+        when(query.pending()).thenReturn(
+                List.of(
+                        new PendingClarification(
+                                id,
+                                new CustomerName("Erin Restock"),
+                                new BikeId("BIKE-OOS"),
+                                "Mountain Trail 600",
+                                LocalDateTime.of(2026, 8, 17, 9, 30))));
 
         // when
         MvcResult response = mockMvc.perform(get("/api/tasks/clarify-alternative")).andReturn();
@@ -62,7 +58,7 @@ class GetPendingClarificationsControllerTest {
     @DisplayName("returns an empty array when the inbox is empty")
     void returnsAnEmptyArrayWhenTheInboxIsEmpty() throws Exception {
         // given
-        given(query.pending()).willReturn(List.of());
+        when(query.pending()).thenReturn(List.of());
 
         // when / then
         MvcResult response = mockMvc.perform(get("/api/tasks/clarify-alternative")).andReturn();

@@ -31,7 +31,7 @@ public class OrderBikeWorker {
 
     @ProcessEngineWorker(topic = ServiceTasks.ORDER_BIKE)
     public Map<String, Object> orderBike(@Variable String applicationId, @Variable String bikeId)
-        throws BpmnErrorOccurred {
+            throws BpmnErrorOccurred {
         try {
             OrderId orderId = useCase.orderBike(ApplicationId.of(applicationId), new BikeId(bikeId));
             return Map.of(FlowNodes.ServiceTaskOrderBike.Variables.ORDER_ID.getValue(), orderId.value());

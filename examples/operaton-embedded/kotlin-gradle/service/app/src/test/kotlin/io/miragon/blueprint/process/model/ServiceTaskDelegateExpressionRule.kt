@@ -8,7 +8,7 @@ import io.miragon.bpmn.domain.validation.model.SingleModelValidationContext
 import io.miragon.bpmn.domain.validation.model.ValidationViolation
 
 /**
- * Custom bpmn-to-code validation rule: every *implemented* service task must use a Camunda delegate
+ * Custom bpmn-to-code validation rule: every *implemented* service task must use a delegate
  * expression (`#{...}`) — i.e. no external tasks, `camunda:class` or plain `${...}` expressions.
  *
  * This keeps all service-task logic behind Spring-managed JavaDelegates, matching this blueprint's

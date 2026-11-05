@@ -39,7 +39,8 @@ public class BikePortfolioPersistenceAdapter implements BikePortfolioRepository 
         if (bikeIds.isEmpty()) {
             return List.of();
         }
-        return repository.findAllById(bikeIds.stream().map(BikeId::value).toList()).stream()
+        List<String> ids = bikeIds.stream().map(BikeId::value).toList();
+        return repository.findAllById(ids).stream()
                 .map(BikePortfolioPersistenceAdapter::toDomain)
                 .toList();
     }

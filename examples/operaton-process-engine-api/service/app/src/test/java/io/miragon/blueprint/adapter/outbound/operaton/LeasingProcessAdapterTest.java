@@ -1,5 +1,15 @@
 package io.miragon.blueprint.adapter.outbound.operaton;
 
+import static io.miragon.blueprint.domain.leasing.TestObjectBuilder.testLeasingApplication;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
 import dev.bpmcrafters.processengineapi.CommonRestrictions;
 import dev.bpmcrafters.processengineapi.Empty;
 import dev.bpmcrafters.processengineapi.correlation.CorrelateMessageCmd;
@@ -15,24 +25,15 @@ import io.miragon.blueprint.adapter.process.BikeLeasingProcessProcessApi.FlowNod
 import io.miragon.blueprint.adapter.process.Messages;
 import io.miragon.blueprint.domain.bike.BikeId;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
+import io.miragon.blueprint.domain.leasing.LeasingApplication;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import org.junit.jupiter.api.DisplayName;
+import org.operaton.bpm.engine.MismatchingMessageCorrelationException;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-
-import static io.miragon.blueprint.domain.leasing.TestObjectBuilder.testLeasingApplication;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 
 class LeasingProcessAdapterTest {
 
@@ -41,31 +42,29 @@ class LeasingProcessAdapterTest {
     private final UserTaskSupport userTaskSupport = mock(UserTaskSupport.class);
     private final UserTaskCompletionApi userTaskCompletionApi = mock(UserTaskCompletionApi.class);
     private final LeasingProcessAdapter underTest = new LeasingProcessAdapter(
-        startProcessApi,
-        correlationApi,
-        userTaskSupport,
-        userTaskCompletionApi
-    );
+            startProcessApi,
+            correlationApi,
+            userTaskSupport,
+            userTaskCompletionApi);
 
     private final ApplicationId id = new ApplicationId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
 
     @Test
-    @DisplayName("submitRequest starts the process by message with the application variables and keys")
-    void submitRequestStartsTheProcessByMessageWithTheApplicationVariablesAndKeys() {
+    void submitRequest_starts_the_process_by_message_with_the_application_variables_and_keys() {
 
         // given: a leasing application and a captured start command
-        var application = testLeasingApplication().id(id).build();
-        given(startProcessApi.startProcess(any()))
-            .willReturn(CompletableFuture.completedFuture(mock(ProcessInformation.class)));
+        LeasingApplication application = testLeasingApplication().id(id).build();
+        when(startProcessApi.startProcess(any()))
+                .thenReturn(CompletableFuture.completedFuture(mock(ProcessInformation.class)));
 
         // when: the request is submitted
         underTest.submitRequest(application);
 
         // then: the leasing-request message starts the process with the DMN inputs, bike, business + correlation key
         ArgumentCaptor<StartProcessByMessageCmd> cmd = ArgumentCaptor.forClass(StartProcessByMessageCmd.class);
-        then(startProcessApi).should().startProcess(cmd.capture());
+        verify(startProcessApi).startProcess(cmd.capture());
         assertThat(cmd.getValue().getMessageName()).isEqualTo(Messages.MIRAVELO_LEASING_REQUEST_RECEIVED.getValue());
-        var payload = cmd.getValue().get();
+        Map<String, Object> payload = cmd.getValue().get();
         assertThat(payload.get("applicationId")).isEqualTo(id.value().toString());
         assertThat(payload.get("age")).isEqualTo(35);
         assertThat(payload.get("monthlyNetIncome")).isEqualTo(3500.0);
@@ -75,186 +74,201 @@ class LeasingProcessAdapterTest {
     }
 
     @Test
-    @DisplayName("completeAlternativeClarification resolves the task by application id and completes it")
-    void completeAlternativeClarificationResolvesTheTaskByApplicationIdAndCompletesIt() {
+    void completeAlternativeClarification_resolves_the_task_by_application_id_and_completes_it() {
 
         // given: an open clarify-alternative task delivered to the user-task pool for this application
-        var task = new TaskInformation(
-            "task-1",
-            Map.of(CommonRestrictions.ACTIVITY_ID, FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID)
-        );
-        given(userTaskSupport.getAllTasks()).willReturn(List.of(task));
-        given(userTaskSupport.getPayload("task-1")).willReturn(Map.of("applicationId", id.value().toString()));
-        given(userTaskCompletionApi.completeTask(any()))
-            .willReturn(CompletableFuture.completedFuture(Empty.INSTANCE));
+        TaskInformation task = clarifyAlternativeTask("task-1");
+        when(userTaskSupport.getAllTasks()).thenReturn(List.of(task));
+        when(userTaskSupport.getPayload("task-1")).thenReturn(Map.of("applicationId", id.value().toString()));
+        when(userTaskCompletionApi.completeTask(any())).thenReturn(CompletableFuture.completedFuture(Empty.INSTANCE));
 
         // when: an alternative bike is selected from the outside
         underTest.completeAlternativeClarification(id, true, new BikeId("BIKE-42"));
 
         // then: the resolved task is completed with the decision and the chosen bike
         ArgumentCaptor<CompleteTaskCmd> cmd = ArgumentCaptor.forClass(CompleteTaskCmd.class);
-        then(userTaskCompletionApi).should().completeTask(cmd.capture());
+        verify(userTaskCompletionApi).completeTask(cmd.capture());
         assertThat(cmd.getValue().getTaskId()).isEqualTo("task-1");
-        var payload = cmd.getValue().get();
+        Map<String, Object> payload = cmd.getValue().get();
         assertThat(payload.get("alternativeFound")).isEqualTo(true);
         assertThat(payload.get("bikeId")).isEqualTo("BIKE-42");
     }
 
     @Test
-    @DisplayName("completeAlternativeClarification picks the clarify-alternative task of the given application")
-    void completeAlternativeClarificationPicksTheClarifyAlternativeTaskOfTheGivenApplication() {
+    void completeAlternativeClarification_skips_a_pooled_task_whose_payload_cannot_be_read() {
 
-        // given: the pool also holds another activity's task, another application's task and one without payload
-        var otherActivity = new TaskInformation(
-            "task-other-activity",
-            Map.of(CommonRestrictions.ACTIVITY_ID, "userTask_clarifyReturn")
-        );
-        var otherApplication = clarifyAlternativeTask("task-other-application");
-        var withoutPayload = clarifyAlternativeTask("task-without-payload");
-        var expected = clarifyAlternativeTask("task-expected");
-        given(userTaskSupport.getAllTasks())
-            .willReturn(List.of(otherActivity, otherApplication, withoutPayload, expected));
-        given(userTaskSupport.getPayload("task-other-activity"))
-            .willReturn(Map.of("applicationId", id.value().toString()));
-        given(userTaskSupport.getPayload("task-other-application"))
-            .willReturn(Map.of("applicationId", UUID.randomUUID().toString()));
-        given(userTaskSupport.getPayload("task-without-payload"))
-            .willThrow(new IllegalStateException("payload not delivered yet"));
-        given(userTaskSupport.getPayload("task-expected")).willReturn(Map.of("applicationId", id.value().toString()));
-        given(userTaskCompletionApi.completeTask(any()))
-            .willReturn(CompletableFuture.completedFuture(Empty.INSTANCE));
+        // given: a stale clarify-alternative task whose payload lookup fails, next to the one of this application
+        TaskInformation stale = clarifyAlternativeTask("task-stale");
+        TaskInformation task = clarifyAlternativeTask("task-1");
+        when(userTaskSupport.getAllTasks()).thenReturn(List.of(stale, task));
+        when(userTaskSupport.getPayload("task-stale")).thenThrow(new IllegalArgumentException("unknown task"));
+        when(userTaskSupport.getPayload("task-1")).thenReturn(Map.of("applicationId", id.value().toString()));
+        when(userTaskCompletionApi.completeTask(any())).thenReturn(CompletableFuture.completedFuture(Empty.INSTANCE));
 
-        // when: the clarification is completed without an alternative
+        // when: the clarification ends without an alternative
         underTest.completeAlternativeClarification(id, false, null);
 
-        // then: only the task of this application is completed, carrying the decision and no bike
+        // then: the failing task counts as no match; the matching task is completed with the decision only
         ArgumentCaptor<CompleteTaskCmd> cmd = ArgumentCaptor.forClass(CompleteTaskCmd.class);
-        then(userTaskCompletionApi).should().completeTask(cmd.capture());
-        assertThat(cmd.getValue().getTaskId()).isEqualTo("task-expected");
-        assertThat(cmd.getValue().get()).containsExactly(Map.entry("alternativeFound", false));
+        verify(userTaskCompletionApi).completeTask(cmd.capture());
+        assertThat(cmd.getValue().getTaskId()).isEqualTo("task-1");
+        assertThat(cmd.getValue().get()).containsExactlyEntriesOf(Map.of("alternativeFound", false));
     }
 
     @Test
-    @DisplayName("completeAlternativeClarification waits until the task is delivered to the pool")
-    void completeAlternativeClarificationWaitsUntilTheTaskIsDeliveredToThePool() {
+    void completeAlternativeClarification_ignores_pooled_tasks_of_other_activities_and_applications() {
 
-        // given: a pool that is still empty on the first lookup
-        given(userTaskSupport.getAllTasks())
-            .willReturn(List.of())
-            .willReturn(List.of(clarifyAlternativeTask("task-late")));
-        given(userTaskSupport.getPayload("task-late")).willReturn(Map.of("applicationId", id.value().toString()));
-        given(userTaskCompletionApi.completeTask(any()))
-            .willReturn(CompletableFuture.completedFuture(Empty.INSTANCE));
+        // given: a task of another activity for this application and a clarify-alternative task of another
+        // application, both pooled before the clarify-alternative task of this application
+        TaskInformation otherActivity = new TaskInformation(
+                "task-other-activity",
+                Map.of(CommonRestrictions.ACTIVITY_ID, "userTask_somethingElse"));
+        TaskInformation otherApplication = clarifyAlternativeTask("task-other-application");
+        TaskInformation task = clarifyAlternativeTask("task-1");
+        when(userTaskSupport.getAllTasks()).thenReturn(List.of(otherActivity, otherApplication, task));
+        when(userTaskSupport.getPayload("task-other-activity"))
+                .thenReturn(Map.of("applicationId", id.value().toString()));
+        when(userTaskSupport.getPayload("task-other-application"))
+                .thenReturn(Map.of("applicationId", UUID.randomUUID().toString()));
+        when(userTaskSupport.getPayload("task-1")).thenReturn(Map.of("applicationId", id.value().toString()));
+        when(userTaskCompletionApi.completeTask(any())).thenReturn(CompletableFuture.completedFuture(Empty.INSTANCE));
 
-        // when: the clarification is completed
+        // when: an alternative bike is selected from the outside
         underTest.completeAlternativeClarification(id, true, new BikeId("BIKE-42"));
 
-        // then: the pool is asked again and the late task is completed
-        then(userTaskSupport).should(times(2)).getAllTasks();
+        // then: only the clarify-alternative task of this application is completed
         ArgumentCaptor<CompleteTaskCmd> cmd = ArgumentCaptor.forClass(CompleteTaskCmd.class);
-        then(userTaskCompletionApi).should().completeTask(cmd.capture());
-        assertThat(cmd.getValue().getTaskId()).isEqualTo("task-late");
+        verify(userTaskCompletionApi).completeTask(cmd.capture());
+        assertThat(cmd.getValue().getTaskId()).isEqualTo("task-1");
     }
 
     @Test
-    @DisplayName("completeAlternativeClarification fails and stays interrupted when the wait for the task is interrupted")
-    void completeAlternativeClarificationFailsAndStaysInterruptedWhenTheWaitForTheTaskIsInterrupted() {
+    void completeAlternativeClarification_waits_for_the_task_to_be_delivered() {
 
-        // given: no task in the pool and a thread that is asked to stop
-        given(userTaskSupport.getAllTasks()).willReturn(List.of());
+        // given: a pool that is still empty on the first lookup and holds the task on the second
+        TaskInformation deliveredTask = clarifyAlternativeTask("task-1");
+        when(userTaskSupport.getAllTasks()).thenReturn(List.of(), List.of(deliveredTask));
+        when(userTaskSupport.getPayload("task-1")).thenReturn(Map.of("applicationId", id.value().toString()));
+        when(userTaskCompletionApi.completeTask(any())).thenReturn(CompletableFuture.completedFuture(Empty.INSTANCE));
+
+        // when: the clarification is completed before the task was delivered
+        underTest.completeAlternativeClarification(id, true, null);
+
+        // then: the lookup is repeated and the delivered task is completed
+        ArgumentCaptor<CompleteTaskCmd> cmd = ArgumentCaptor.forClass(CompleteTaskCmd.class);
+        verify(userTaskCompletionApi).completeTask(cmd.capture());
+        assertThat(cmd.getValue().getTaskId()).isEqualTo("task-1");
+        verify(userTaskSupport, times(2)).getAllTasks();
+    }
+
+    @Test
+    void completeAlternativeClarification_fails_and_keeps_the_interrupt_when_the_task_wait_is_interrupted() {
+
+        // given: no clarify-alternative task in the pool yet and an interrupted caller
+        when(userTaskSupport.getAllTasks()).thenReturn(List.of());
         Thread.currentThread().interrupt();
-
-        // when / then: the lookup gives up at its first wait, keeps the interrupt flag and completes nothing
         try {
-            assertThatThrownBy(() -> underTest.completeAlternativeClarification(id, true, new BikeId("BIKE-42")))
-                .isInstanceOf(IllegalStateException.class)
-                .hasCauseInstanceOf(InterruptedException.class);
+            // when / then: the wait aborts at once with an unchecked exception wrapping the interrupt
+            assertThatThrownBy(() -> underTest.completeAlternativeClarification(id, true, null))
+                    .isExactlyInstanceOf(RuntimeException.class)
+                    .hasMessage("Interrupted while waiting for the clarify-alternative task")
+                    .hasCauseInstanceOf(InterruptedException.class);
+            // and: the interrupt flag is restored for the caller
+            assertThat(Thread.currentThread().isInterrupted()).isTrue();
         } finally {
-            assertThat(Thread.interrupted()).isTrue();
+            // clear the flag so it cannot leak into other tests
+            Thread.interrupted();
         }
-        then(userTaskSupport).should(times(1)).getAllTasks();
-        then(userTaskCompletionApi).should(never()).completeTask(any());
+        verifyNoInteractions(userTaskCompletionApi);
     }
 
     @Test
-    @DisplayName("a failed correlation surfaces the engine's runtime exception instead of the async wrapper")
-    void aFailedCorrelationSurfacesTheEnginesRuntimeExceptionInsteadOfTheAsyncWrapper() {
-
-        // given: a correlation the engine refuses
-        var refusal = new IllegalStateException("no matching subscription");
-        given(correlationApi.correlateMessage(any())).willReturn(CompletableFuture.failedFuture(refusal));
-
-        // when / then: the engine's exception itself reaches the caller
-        assertThatThrownBy(() -> underTest.correlateContractSigned(id)).isSameAs(refusal);
-    }
-
-    @Test
-    @DisplayName("a failed correlation surfaces an error instead of the async wrapper")
-    void aFailedCorrelationSurfacesAnErrorInsteadOfTheAsyncWrapper() {
-
-        // given: a correlation that dies with an error
-        var error = new AssertionError("engine broke");
-        given(correlationApi.correlateMessage(any())).willReturn(CompletableFuture.failedFuture(error));
-
-        // when / then: the error itself reaches the caller
-        assertThatThrownBy(() -> underTest.correlateContractSigned(id)).isSameAs(error);
-    }
-
-    @Test
-    @DisplayName("a correlation failing with a checked exception keeps the async wrapper")
-    void aCorrelationFailingWithACheckedExceptionKeepsTheAsyncWrapper() {
-
-        // given: a correlation that fails with a checked exception
-        var checked = new Exception("connection lost");
-        given(correlationApi.correlateMessage(any())).willReturn(CompletableFuture.failedFuture(checked));
-
-        // when / then: the wrapper is passed on with the checked exception as its cause
-        assertThatThrownBy(() -> underTest.correlateContractSigned(id))
-            .isInstanceOf(CompletionException.class)
-            .hasCause(checked);
-    }
-
-    @Test
-    @DisplayName("correlateContractSigned correlates the message by the global correlation key")
-    void correlateContractSignedCorrelatesTheMessageByTheGlobalCorrelationKey() {
+    void correlateContractSigned_correlates_the_message_by_the_global_correlation_key() {
         assertCorrelation(Messages.MIRAVELO_CONTRACT_SIGNED.getValue(), () -> underTest.correlateContractSigned(id));
     }
 
     @Test
-    @DisplayName("correlateHandoverReported correlates the message by the global correlation key")
-    void correlateHandoverReportedCorrelatesTheMessageByTheGlobalCorrelationKey() {
-        assertCorrelation(Messages.MIRAVELO_HANDOVER_REPORTED.getValue(), () -> underTest.correlateHandoverReported(id));
+    void correlateHandoverReported_correlates_the_message_by_the_global_correlation_key() {
+        assertCorrelation(
+                Messages.MIRAVELO_HANDOVER_REPORTED.getValue(),
+                () -> underTest.correlateHandoverReported(id));
     }
 
     @Test
-    @DisplayName("correlateApplicationWithdrawn correlates the message by the global correlation key")
-    void correlateApplicationWithdrawnCorrelatesTheMessageByTheGlobalCorrelationKey() {
+    void correlateApplicationWithdrawn_correlates_the_message_by_the_global_correlation_key() {
         assertCorrelation(
-            Messages.MIRAVELO_APPLICATION_WITHDRAWN.getValue(),
-            () -> underTest.correlateApplicationWithdrawn(id)
-        );
+                Messages.MIRAVELO_APPLICATION_WITHDRAWN.getValue(),
+                () -> underTest.correlateApplicationWithdrawn(id));
     }
 
-    private TaskInformation clarifyAlternativeTask(String taskId) {
-        return new TaskInformation(
-            taskId,
-            Map.of(CommonRestrictions.ACTIVITY_ID, FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID)
-        );
+    @Test
+    void correlation_rethrows_an_unchecked_engine_failure_unwrapped() {
+
+        // given: the engine rejects the correlation, e.g. because the token already left the wait state
+        MismatchingMessageCorrelationException failure =
+                new MismatchingMessageCorrelationException("no execution waits for the message");
+        when(correlationApi.correlateMessage(any())).thenReturn(CompletableFuture.failedFuture(failure));
+
+        // when / then: the very engine exception surfaces (the REST advice maps it to 409), not the async wrapper
+        assertThatThrownBy(() -> underTest.correlateContractSigned(id)).isSameAs(failure);
+    }
+
+    @Test
+    void correlation_rethrows_an_error_unwrapped() {
+
+        // given: the correlation fails with an Error
+        Error failure = new Error("engine failure");
+        when(correlationApi.correlateMessage(any())).thenReturn(CompletableFuture.failedFuture(failure));
+
+        // when / then: the Error itself surfaces, not the async wrapper
+        assertThatThrownBy(() -> underTest.correlateHandoverReported(id)).isSameAs(failure);
+    }
+
+    @Test
+    void correlation_rethrows_the_completion_exception_for_a_checked_cause() {
+
+        // given: the correlation fails with a checked exception, which cannot be rethrown unwrapped
+        Exception failure = new Exception("checked failure");
+        when(correlationApi.correlateMessage(any())).thenReturn(CompletableFuture.failedFuture(failure));
+
+        // when / then: the CompletionException carrying the checked cause surfaces instead
+        assertThatThrownBy(() -> underTest.correlateApplicationWithdrawn(id))
+                .isInstanceOf(CompletionException.class)
+                .cause().isSameAs(failure);
+    }
+
+    @Test
+    void a_failed_correlation_without_an_engine_cause_surfaces_the_async_wrapper_itself() {
+
+        // given: a correlation whose async wrapper carries no cause
+        CompletionException causelessFailure = new CompletionException("correlation aborted", null);
+        CompletableFuture<Empty> failingCorrelation = mock();
+        when(failingCorrelation.join()).thenThrow(causelessFailure);
+        when(correlationApi.correlateMessage(any())).thenReturn(failingCorrelation);
+
+        // when / then: the async wrapper itself surfaces
+        assertThatThrownBy(() -> underTest.correlateContractSigned(id)).isSameAs(causelessFailure);
     }
 
     private void assertCorrelation(String expectedMessage, Runnable action) {
 
         // given: a captured correlate command
-        given(correlationApi.correlateMessage(any())).willReturn(CompletableFuture.completedFuture(Empty.INSTANCE));
+        when(correlationApi.correlateMessage(any())).thenReturn(CompletableFuture.completedFuture(Empty.INSTANCE));
 
         // when: the correlation is triggered
         action.run();
 
         // then: the expected message correlates to the instance whose global correlationKey equals the id
         ArgumentCaptor<CorrelateMessageCmd> cmd = ArgumentCaptor.forClass(CorrelateMessageCmd.class);
-        then(correlationApi).should().correlateMessage(cmd.capture());
+        verify(correlationApi).correlateMessage(cmd.capture());
         assertThat(cmd.getValue().getMessageName()).isEqualTo(expectedMessage);
         assertThat(cmd.getValue().getCorrelation().get().getCorrelationKey()).isEqualTo(id.value().toString());
         assertThat(cmd.getValue().getRestrictions().get("useGlobalCorrelationKey")).isEqualTo("true");
+    }
+
+    private static TaskInformation clarifyAlternativeTask(String taskId) {
+        return new TaskInformation(
+                taskId,
+                Map.of(CommonRestrictions.ACTIVITY_ID, FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID));
     }
 }

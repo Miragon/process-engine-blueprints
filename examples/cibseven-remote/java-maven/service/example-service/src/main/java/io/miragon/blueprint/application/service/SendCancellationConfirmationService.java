@@ -15,7 +15,9 @@ public class SendCancellationConfirmationService implements SendCancellationConf
     private final LeasingApplicationRepository repository;
     private final NotificationPort notification;
 
-    public SendCancellationConfirmationService(LeasingApplicationRepository repository, NotificationPort notification) {
+    public SendCancellationConfirmationService(
+            LeasingApplicationRepository repository,
+            NotificationPort notification) {
         this.repository = repository;
         this.notification = notification;
     }

@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface LeasingApplicationJpaRepository extends JpaRepository<LeasingApplicationEntity, UUID> {
+
     Optional<LeasingApplicationEntity> findByApplicationId(UUID id);
 
     Page<LeasingApplicationEntity> findAllByStatus(LeasingStatus status, Pageable pageable);

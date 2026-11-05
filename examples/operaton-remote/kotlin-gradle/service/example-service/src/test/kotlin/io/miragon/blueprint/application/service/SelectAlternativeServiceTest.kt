@@ -65,16 +65,16 @@ class SelectAlternativeServiceTest {
     }
 
     @Test
-    fun `an unknown application is reported by its plain id`() {
+    fun `an unknown application is reported with its id`() {
 
         // given: no application is stored under the id
         val id = ApplicationId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"))
         every { repository.findById(id) } returns null
 
-        // when / then: the decision is refused, naming the id as the client sent it
+        // when / then: the decision is refused, naming the id
         assertThatThrownBy { underTest.selectAlternative(SelectAlternativeUseCase.Command(id, alternativeFound = false)) }
             .isInstanceOf(IllegalStateException::class.java)
-            .hasMessage("Unknown application 123e4567-e89b-12d3-a456-426614174000")
+            .hasMessage("Unknown application $id")
         verify { repository.findById(id) }
         confirmVerified(repository, bikePortfolio, process)
     }

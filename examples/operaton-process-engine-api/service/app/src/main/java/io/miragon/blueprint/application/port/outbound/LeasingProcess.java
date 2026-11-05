@@ -3,7 +3,6 @@ package io.miragon.blueprint.application.port.outbound;
 import io.miragon.blueprint.domain.bike.BikeId;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
 import io.miragon.blueprint.domain.leasing.LeasingApplication;
-import org.jspecify.annotations.Nullable;
 
 /**
  * Outbound port that drives the BPMN engine: it starts a process instance, correlates the messages
@@ -20,9 +19,12 @@ public interface LeasingProcess {
 
     void correlateApplicationWithdrawn(ApplicationId id);
 
-    void completeAlternativeClarification(ApplicationId id, boolean alternativeFound, @Nullable BikeId bikeId);
-
-    default void completeAlternativeClarification(ApplicationId id, boolean alternativeFound) {
-        completeAlternativeClarification(id, alternativeFound, null);
-    }
+    /**
+     * @param bikeId the alternative bike to re-order; {@code null} when no alternative was found (or the
+     *               requested bike is kept)
+     */
+    void completeAlternativeClarification(
+            ApplicationId id,
+            boolean alternativeFound,
+            BikeId bikeId);
 }

@@ -82,20 +82,17 @@ class OpenApiSpecExportTest {
         return response.body();
     }
 
-    /**
-     * Walk up from the module working directory until a directory containing the {@code .git} entry is
-     * found. In git worktrees {@code .git} is a plain file, not a directory, so mere existence is
-     * checked.
-     */
+    /** Walk up from the module working directory until the directory holding the {@code openapi/} contract is found. */
     private Path repoRoot() {
         Path dir = Path.of(System.getProperty("user.dir")).toAbsolutePath();
         while (dir != null) {
-            if (Files.exists(dir.resolve(".git"))) {
+            if (Files.isDirectory(dir.resolve("openapi"))) {
                 return dir;
             }
             dir = dir.getParent();
         }
         throw new IllegalStateException(
-            "could not locate the repo root (no .git found above " + System.getProperty("user.dir") + ")");
+                "could not locate the repo root (no openapi directory found above "
+                        + System.getProperty("user.dir") + ")");
     }
 }

@@ -11,10 +11,10 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 
 /**
- * Smoke-tests the operational surface added for issue #10: the actuator probes and the Prometheus
- * scrape endpoint must respond so orchestrators (liveness/readiness) and monitoring can rely on them.
+ * Smoke-tests the operational surface: the actuator probes and the Prometheus scrape endpoint must
+ * respond so orchestrators (liveness/readiness) and monitoring can rely on them.
  *
- * Boots a full servlet context the same way [io.miragon.blueprint.adapter.inbound.rest.OpenApiSpecExportTest]
+ * Boots a full servlet context the same way [OpenApiSpecExportTest]
  * does — the `test` profile is `web-application-type=none`, so we override it to `servlet` and let
  * the H2 datasource back the built-in `db` health indicator (which reports `UP`).
  */

@@ -7,28 +7,27 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
 /**
- * OpenAPI metadata for the generated contract served at `/v3/api-docs`.
+ * OpenAPI metadata for the generated contract served at {@code /v3/api-docs}.
  *
- * This is cross-cutting web configuration and lives in `adapter.inbound.rest`, NOT in a separate
- * `config` package — the architecture tests ignore only direct members of the root package, so a
- * new `io.miragon.blueprint.config` package would fail the suite. The `Configuration` suffix is
- * whitelisted for this package in `NamingConventionArchitectureTest`.
+ * <p>This is cross-cutting web configuration and lives in {@code adapter.inbound.rest}, NOT in a
+ * separate {@code config} package — the architecture tests ignore only direct members of the root
+ * package, so a new {@code io.miragon.blueprint.config} package would fail the suite. The
+ * {@code Configuration} suffix is whitelisted for this package in {@code NamingConventionArchitectureTest}.
  */
 @Configuration
 public class OpenApiConfiguration {
 
-    // @Primary makes springdoc's openAPIBuilder pick ours for the /api/** contract any API consumer
-    // is generated from, ahead of any OpenAPI bean the embedded engine's webapp might contribute.
+    // The Operaton webapp registers its own OpenAPI bean. @Primary makes springdoc's openAPIBuilder
+    // pick ours for the /api/** contract we publish to API consumers.
     @Bean
     @Primary
     public OpenAPI bikeLeasingOpenApi() {
         return new OpenAPI()
-            .info(
-                new Info()
-                    .title("MiraVelo Bike-Leasing API")
-                    .version("1.0")
-                    .description(
-                        "Customer-portal and back-office endpoints for the MiraVelo bike-leasing "
-                            + "process. The engine-internal /engine-rest API is intentionally excluded."));
+                .info(new Info()
+                        .title("MiraVelo Bike-Leasing API")
+                        .version("1.0")
+                        .description(
+                                "Customer-portal and back-office endpoints for the MiraVelo bike-leasing "
+                                        + "process. The engine-internal /engine-rest API is intentionally excluded."));
     }
 }

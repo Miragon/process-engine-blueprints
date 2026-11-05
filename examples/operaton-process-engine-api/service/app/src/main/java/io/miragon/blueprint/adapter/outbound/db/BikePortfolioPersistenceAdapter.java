@@ -4,7 +4,7 @@ import io.miragon.blueprint.application.port.outbound.BikePortfolioRepository;
 import io.miragon.blueprint.domain.bike.Bike;
 import io.miragon.blueprint.domain.bike.BikeId;
 import java.util.List;
-import org.jspecify.annotations.Nullable;
+import java.util.Optional;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
@@ -23,17 +23,15 @@ public class BikePortfolioPersistenceAdapter implements BikePortfolioRepository 
     }
 
     @Override
-    public @Nullable Bike findByBikeId(BikeId bikeId) {
-        return repository.findById(bikeId.value())
-            .map(BikePortfolioPersistenceAdapter::toDomain)
-            .orElse(null);
+    public Optional<Bike> findByBikeId(BikeId bikeId) {
+        return repository.findById(bikeId.value()).map(BikePortfolioPersistenceAdapter::toDomain);
     }
 
     @Override
     public List<Bike> findAll() {
         return repository.findAll(Sort.by(Sort.Direction.ASC, "bikeId")).stream()
-            .map(BikePortfolioPersistenceAdapter::toDomain)
-            .toList();
+                .map(BikePortfolioPersistenceAdapter::toDomain)
+                .toList();
     }
 
     @Override
@@ -41,9 +39,10 @@ public class BikePortfolioPersistenceAdapter implements BikePortfolioRepository 
         if (bikeIds.isEmpty()) {
             return List.of();
         }
-        return repository.findAllById(bikeIds.stream().map(BikeId::value).toList()).stream()
-            .map(BikePortfolioPersistenceAdapter::toDomain)
-            .toList();
+        List<String> ids = bikeIds.stream().map(BikeId::value).toList();
+        return repository.findAllById(ids).stream()
+                .map(BikePortfolioPersistenceAdapter::toDomain)
+                .toList();
     }
 
     private static Bike toDomain(BikeEntity entity) {

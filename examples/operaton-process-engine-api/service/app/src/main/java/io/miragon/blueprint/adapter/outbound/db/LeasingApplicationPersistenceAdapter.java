@@ -3,7 +3,7 @@ package io.miragon.blueprint.adapter.outbound.db;
 import io.miragon.blueprint.application.port.outbound.LeasingApplicationRepository;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
 import io.miragon.blueprint.domain.leasing.LeasingApplication;
-import org.jspecify.annotations.Nullable;
+import java.util.Optional;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -25,28 +25,24 @@ public class LeasingApplicationPersistenceAdapter implements LeasingApplicationR
     }
 
     @Override
-    public @Nullable LeasingApplication findById(ApplicationId id) {
-        LeasingApplicationEntity entity = repository.findByApplicationId(id.value());
-        return entity != null ? LeasingApplicationEntityMapper.toDomain(entity) : null;
+    public Optional<LeasingApplication> findById(ApplicationId id) {
+        return repository.findByApplicationId(id.value()).map(LeasingApplicationEntityMapper::toDomain);
     }
 
     @Override
-    public LeasingApplicationRepository.Page findAll(Criteria criteria) {
+    public Page findAll(Criteria criteria) {
         // Newest first — the list shows the most recent applications at the top. Spring Data's paging
         // types are used only here, inside the adapter, and never returned to the application layer.
         Pageable pageable = PageRequest.of(criteria.page(), criteria.size(), Sort.by(Sort.Direction.DESC, "createdAt"));
-        // Fully qualified: the port's nested Page is an inherited member type and would shadow an
-        // imported Spring Data Page inside this class.
         org.springframework.data.domain.Page<LeasingApplicationEntity> result =
-            criteria.status() != null
-                ? repository.findAllByStatus(criteria.status(), pageable)
-                : repository.findAll(pageable);
-        return new LeasingApplicationRepository.Page(
-            result.getContent().stream().map(LeasingApplicationEntityMapper::toDomain).toList(),
-            result.getNumber(),
-            result.getSize(),
-            result.getTotalElements(),
-            result.getTotalPages()
-        );
+                criteria.status() != null
+                        ? repository.findAllByStatus(criteria.status(), pageable)
+                        : repository.findAll(pageable);
+        return new Page(
+                result.getContent().stream().map(LeasingApplicationEntityMapper::toDomain).toList(),
+                result.getNumber(),
+                result.getSize(),
+                result.getTotalElements(),
+                result.getTotalPages());
     }
 }

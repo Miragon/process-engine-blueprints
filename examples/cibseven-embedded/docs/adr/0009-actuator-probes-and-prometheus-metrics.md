@@ -1,4 +1,4 @@
-# 0012 — Actuator probes and Prometheus metrics
+# 0009 — Actuator probes and Prometheus metrics
 
 - **Status:** Accepted
 - **Date:** 2026-08-20
@@ -27,8 +27,8 @@ comment in `application.yaml` documents how to flip it to `always`. **OpenTeleme
 deferred** as a natural but non-required next step.
 
 The actuator paths sit outside springdoc's `paths-to-match: /api/**`, so the checked-in
-`openapi/openapi.json` contract (see [ADR-0003](0003-openapi-as-the-checked-in-contract.md)) and any
-client generated from it are unaffected.
+`openapi/openapi.json` contract (see [ADR-0003](0003-openapi-as-the-checked-in-contract.md)) is
+unaffected.
 
 ## Consequences
 

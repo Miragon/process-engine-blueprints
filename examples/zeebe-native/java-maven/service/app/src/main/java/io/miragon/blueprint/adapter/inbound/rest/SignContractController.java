@@ -2,6 +2,7 @@ package io.miragon.blueprint.adapter.inbound.rest;
 
 import io.miragon.blueprint.application.port.inbound.SignContractUseCase;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,6 +19,7 @@ public class SignContractController {
         this.useCase = useCase;
     }
 
+    @Operation(operationId = "signContract")
     @PostMapping("/{applicationId}/sign-contract")
     public ResponseEntity<Void> signContract(@PathVariable String applicationId) {
         useCase.signContract(ApplicationId.of(applicationId));

@@ -19,8 +19,8 @@ architecture rules, and the day-to-day workflow. Tool-specific files are **thin 
 - We use an **`@`-import, not a symlink.** A symlink breaks on Windows checkouts and inside ZIP/tarball
   exports of the repo (a blueprint gets downloaded, not just cloned); an `@`-import is plain text that
   travels everywhere and is resolved by the tool.
-- The port table lives in `AGENTS.md` so app 8081 / Temporal gRPC 7233 / UI 8233 / Postgres 5432 have
-  one authoritative home (see
+- The port table lives in `AGENTS.md` so app 8081 / Temporal gRPC 7233 / UI 8233 / Postgres 5432 have one
+  authoritative home (see
   [ADR-0006](0006-fixed-ports-for-v1-portless-as-the-upgrade.md)).
 
 ## Consequences

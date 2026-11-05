@@ -43,7 +43,7 @@ class BikeDealerAdapterTest {
 
     @Test
     fun `ordering the incident-demo bike fails as a simulated dealer outage`() {
-        // given: the poison bike / when-then: the dealer call throws so the async job fails → incident
+        // given: the poison bike / when-then: the dealer call throws so the order job fails → incident
         assertThatThrownBy { underTest.order(BikeId("BIKE-FAIL")) }
             .isInstanceOf(BikeDealerAdapter.DealerUnavailableException::class.java)
     }

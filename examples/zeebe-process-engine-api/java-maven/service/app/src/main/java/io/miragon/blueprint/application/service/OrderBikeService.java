@@ -16,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class OrderBikeService implements OrderBikeUseCase {
 
     private final LeasingApplicationRepository repository;
-
     private final BikeDealerPort bikeDealer;
 
     public OrderBikeService(LeasingApplicationRepository repository, BikeDealerPort bikeDealer) {
@@ -27,7 +26,7 @@ public class OrderBikeService implements OrderBikeUseCase {
     @Override
     public OrderId orderBike(ApplicationId id, BikeId bikeId) {
         LeasingApplication storedApplication = repository.findById(id)
-            .orElseThrow(() -> new IllegalStateException("Unknown application " + id));
+                .orElseThrow(() -> new IllegalStateException("Unknown application " + id));
         LeasingApplication application = storedApplication.selectAlternative(bikeId);
         if (!bikeDealer.checkAvailability(bikeId)) {
             repository.save(application);

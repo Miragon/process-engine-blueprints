@@ -21,9 +21,7 @@ import java.net.http.HttpResponse
  */
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = [
-        "spring.main.web-application-type=servlet",
-    ],
+    properties = ["spring.main.web-application-type=servlet"],
 )
 @ActiveProfiles("test")
 class ActuatorEndpointsTest {

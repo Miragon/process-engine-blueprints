@@ -7,6 +7,7 @@ import io.miragon.blueprint.domain.bike.BikeId;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
 import io.miragon.blueprint.domain.leasing.CustomerName;
 import io.miragon.blueprint.domain.leasing.Email;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Objects;
 import org.slf4j.Logger;
@@ -29,6 +30,7 @@ public class SubmitLeasingRequestController {
         this.useCase = useCase;
     }
 
+    @Operation(operationId = "submitLeasingRequest")
     @PostMapping
     public ResponseEntity<LeasingApplicationCreatedDto> submit(@RequestBody LeasingRequestInput input) {
         log.debug("Received leasing request: {}", input);

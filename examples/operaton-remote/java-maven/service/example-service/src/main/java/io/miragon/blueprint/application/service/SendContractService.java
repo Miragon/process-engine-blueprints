@@ -30,7 +30,7 @@ public class SendContractService implements SendContractUseCase {
     @Override
     public void sendContract(ApplicationId id) {
         LeasingApplication application = repository.findById(id)
-                .orElseThrow(() -> new IllegalStateException("Unknown application " + id.value()));
+                .orElseThrow(() -> new IllegalStateException("Unknown application " + id));
         // Issue the contract in the contract system and record its id on the application.
         ContractId contractId = contract.issueContract(id);
         repository.save(application.withContract(contractId));

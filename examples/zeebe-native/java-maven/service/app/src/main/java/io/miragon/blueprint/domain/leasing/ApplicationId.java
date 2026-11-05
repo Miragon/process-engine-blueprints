@@ -1,13 +1,13 @@
 package io.miragon.blueprint.domain.leasing;
 
-import static io.miragon.blueprint.domain.DomainPreconditions.requireNonNull;
-
 import java.util.UUID;
 
 public record ApplicationId(UUID value) {
 
     public ApplicationId {
-        requireNonNull(value, "ApplicationId must not be null");
+        if (value == null) {
+            throw new IllegalArgumentException("ApplicationId must not be null");
+        }
     }
 
     public static ApplicationId newId() {
@@ -20,6 +20,6 @@ public record ApplicationId(UUID value) {
 
     @Override
     public String toString() {
-        return "ApplicationId(value=" + value + ")";
+        return value.toString();
     }
 }

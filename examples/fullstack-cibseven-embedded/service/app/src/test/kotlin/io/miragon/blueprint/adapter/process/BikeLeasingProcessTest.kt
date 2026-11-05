@@ -117,7 +117,7 @@ class BikeLeasingProcessTest {
         processEngine.executeJobFor(FlowNodes.EventContractSigned) // forks into insurance + bike order
         processEngine.executeJobFor(FlowNodes.ServiceTaskIssueInsurancePolicy)
         processEngine.executeJobFor(FlowNodes.ServiceTaskOrderBike)
-        processEngine.continueToNextWaitState() // both branches join -> handover wait state
+        processEngine.executeJobFor(FlowNodes.GatewayJoin) // -> handover wait state
 
         process.correlateHandoverReported(id)
         processEngine.executeJobFor(FlowNodes.EventHandoverReported) // -> withdrawal-period timer
@@ -264,7 +264,7 @@ class BikeLeasingProcessTest {
         processEngine.executeJobFor(FlowNodes.StartEventLeasingRequestReceived)
         processEngine.executeJobFor(FlowNodes.ServiceTaskSendContract)
         process.correlateContractSigned(id)
-        processEngine.executeJobFor(FlowNodes.EventContractSigned) // forks into insurance + bike order
+        processEngine.executeJobFor(FlowNodes.EventContractSigned)
         processEngine.executeJobFor(FlowNodes.ServiceTaskIssueInsurancePolicy)
         processEngine.executeJobFor(FlowNodes.ServiceTaskOrderBike) // unavailable -> parks on the clarify-alternative user task
 
@@ -398,7 +398,7 @@ class BikeLeasingProcessTest {
         processEngine.executeJobFor(FlowNodes.StartEventLeasingRequestReceived)
         processEngine.executeJobFor(FlowNodes.ServiceTaskSendContract)
         process.correlateContractSigned(id)
-        processEngine.executeJobFor(FlowNodes.EventContractSigned) // forks into insurance + bike order
+        processEngine.executeJobFor(FlowNodes.EventContractSigned)
         processEngine.executeJobFor(FlowNodes.ServiceTaskIssueInsurancePolicy)
         processEngine.executeJobFor(FlowNodes.ServiceTaskOrderBike) // unavailable -> parks on the clarify-alternative user task
         return id

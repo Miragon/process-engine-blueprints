@@ -5,7 +5,7 @@
 
 ## Context
 
-The hexagonal rules are machine-enforced,
+The hexagonal rules are machine-enforced ([ADR-0002](0002-hexagonal-architecture-for-the-backend.md)),
 and the suite that enforces them runs **two** tools — ArchUnit *and* Konsist. Running two frameworks
 for "architecture tests" looks redundant, so the choice needs a reason.
 
@@ -27,8 +27,8 @@ We use **both**, each for the rules only it can express, in `service/common-arch
 fail `./gradlew build`):
 
 - **ArchUnit (bytecode)** — the layered-dependency graph and naming/suffix rules
-  (`HexagonalArchitectureTest`, `NamingConventionArchitectureTest`) plus basic coding guidelines
-  (no `println`/`System.out`, no package cycles).
+  (`HexagonalArchitectureTest`, `NamingConventionArchitectureTest`, `ServiceArchitectureTest`) plus
+  basic coding guidelines (`BasicCodingGuidelinesTest`: no `println`/`System.out`, no package cycles).
 - **Konsist (source)** — conventions the bytecode no longer carries (`KotlinSourceGuidelinesTest`):
   at most one top-level class/interface/object per file, and no wildcard imports (except `java.util`).
 

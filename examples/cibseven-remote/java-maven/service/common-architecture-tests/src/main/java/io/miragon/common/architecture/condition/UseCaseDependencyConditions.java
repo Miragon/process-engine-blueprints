@@ -5,7 +5,6 @@ import com.tngtech.archunit.core.domain.JavaParameter;
 import com.tngtech.archunit.lang.ArchCondition;
 import com.tngtech.archunit.lang.ConditionEvents;
 import com.tngtech.archunit.lang.SimpleConditionEvent;
-
 import java.util.List;
 
 public final class UseCaseDependencyConditions {
@@ -19,32 +18,27 @@ public final class UseCaseDependencyConditions {
      * Moreover, it prevents performance issues by ensuring only one transaction is open,
      * as transactions are managed on the application layer.
      */
-    public static ArchCondition<JavaClass> onlyFulfilOneUseCase() {
-        return new ArchCondition<>("only fulfil one use case") {
-
-            @Override
-            public void check(
-                    JavaClass javaClass,
-                    ConditionEvents events
-            ) {
-                List<JavaParameter> applicationDependencies = this.findUseCaseDependenciesInConstructor(javaClass);
-                if (applicationDependencies.size() > 1) {
-                    String message = javaClass.getName() + " depends on more than one use-case: " + applicationDependencies;
-                    events.add(SimpleConditionEvent.violated(javaClass, message));
+    public static final ArchCondition<JavaClass> ONLY_FULFIL_ONE_USE_CASE =
+            new ArchCondition<>("only fulfil one use case") {
+                @Override
+                public void check(JavaClass javaClass, ConditionEvents events) {
+                    List<JavaParameter> applicationDependencies = findUseCaseDependenciesInConstructor(javaClass);
+                    if (applicationDependencies.size() > 1) {
+                        String message = javaClass.getName()
+                                + " depends on more than one use-case: " + applicationDependencies;
+                        events.add(SimpleConditionEvent.violated(javaClass, message));
+                    }
                 }
-            }
+            };
 
-            /**
-             * Finds all constructor parameters that are from the application package,
-             * which typically represent use case dependencies.
-             */
-            private List<JavaParameter> findUseCaseDependenciesInConstructor(JavaClass javaClass) {
-                return javaClass.getConstructors()
-                        .stream()
-                        .flatMap(constructor -> constructor.getParameters().stream())
-                        .filter(param -> param.getRawType().getPackageName().contains("application.port.inbound"))
-                        .toList();
-            }
-        };
+    /**
+     * Finds all constructor parameters that are from the application package,
+     * which typically represent use case dependencies.
+     */
+    private static List<JavaParameter> findUseCaseDependenciesInConstructor(JavaClass javaClass) {
+        return javaClass.getConstructors().stream()
+                .flatMap(constructor -> constructor.getParameters().stream())
+                .filter(param -> param.getRawType().getPackageName().contains("application.port.inbound"))
+                .toList();
     }
 }

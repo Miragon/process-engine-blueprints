@@ -28,9 +28,9 @@ package `io.miragon.blueprint` under `service/example-service/src/main/` and
    BPMN error.
 4. **Inbound port**: `application/port/inbound/`, the `*UseCase`/`*Query` the service implements.
 5. **Entry point**: a one-endpoint `@RestController` in `adapter/inbound/rest/` injecting that port,
-   with `@Operation(operationId = …)` (or the method name springdoc falls back to) and a
-   `@WebMvcTest`; or, for an engine-driven hop, an external-task worker in `adapter/inbound/`
-   subscribed to the element's topic, with its unit test. Note which.
+   with `@Operation(operationId = …)` and a `@WebMvcTest`; or, for an engine-driven hop, an
+   external-task worker in `adapter/inbound/` subscribed to the element's topic, with its unit test.
+   Note which.
 6. **Process adapter and test**: the method in `adapter/outbound/engine/` that correlates or
    completes it, and a process test in the test tree's `adapter/process/` that walks the path.
 7. **openapi.json**: `openapi/openapi.json`, the operationId, path and response status present and

@@ -1,4 +1,4 @@
-# 0004 — OpenAPI as the checked-in contract
+# 0003 — OpenAPI as the checked-in contract
 
 - **Status:** Accepted
 - **Date:** 2026-08-18
@@ -49,8 +49,6 @@ so they never need a running backend to build, and every API change is visible i
 
 ## Implementation notes
 
-Two things bite when this runs on the embedded CIB seven engine:
-
 - **Swagger UI vs. the CIB seven webclient.** The webapp registers its own resource handlers *and* its
   own `OpenAPI` bean. `OpenApiConfiguration`'s bean is marked `@Primary` so springdoc serves ours for
   `/api/**` (the spec export checks this at build time). `/camunda`, `/webapp`, `/swagger-ui.html` and
@@ -60,5 +58,6 @@ Two things bite when this runs on the embedded CIB seven engine:
 - **Jackson 3 date-time.** Spring Boot 4 ships Jackson 3, which defaults `WRITE_DATES_AS_TIMESTAMPS` on,
   and the webclient serves `/api` with its own mapper that ignores global config. springdoc types the
   fields as `string/date-time`, so DTO date fields are pinned with `@JsonFormat(shape = STRING)` to keep
-  payload and contract in sync. Operation ids are set explicitly (`@Operation(operationId = …)`) so the
-  generated client method names stay clean and stable (e.g. `listLeasingApplications`).
+  payload and contract in sync.
+- **Stable operation ids.** Operation ids are set explicitly (`@Operation(operationId = …)`) so any
+  generated client's method names stay clean and stable (e.g. `listLeasingApplications`).

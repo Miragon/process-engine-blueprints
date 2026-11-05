@@ -10,9 +10,10 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Skill, Agent
 The model is the business's artifact; this skill changes it technically. The rules it relies on are in
 `AGENTS.md` (Ground Rules for Changes, Process Glue, Agent Tooling); read them first.
 
-Glue code and its tests live in the package `io.miragon.blueprint` under `service/app/src/main/` and
-`service/app/src/test/`. The agent `review-process` is loaded at session start; if it is not
-available, read `.claude/agents/review-process.md` and apply it yourself.
+Paths are relative to the directory that holds `service/`. Glue code and its tests live in the
+package `io.miragon.blueprint` under `service/app/src/main/` and `service/app/src/test/`. The agent
+`review-process` is loaded at session start; if it is not available, read
+`.claude/agents/review-process.md` and apply it yourself.
 
 ## The models
 

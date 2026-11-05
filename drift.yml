@@ -1,749 +1,830 @@
-# Files the examples deliberately carry as identical copies. CI fails when a copy drifts; change every
-# example of a rule together, or move the file out of the rule. Build files, wrappers, lockfiles, stacks and
-# workflows are left out on purpose: Dependabot bumps them per example. `dependabot-automerge.yml` is the
-# exception: its only action is bumped in one group across all examples.
-# Refresh the proposal with `node scripts/check-drift.mjs --propose`.
-identical:
-  - name: all examples
-    examples:
-      - cibseven-embedded
-      - cibseven-process-engine-api
-      - cibseven-remote
-      - fluxnova-embedded
-      - fullstack-cibseven-embedded
-      - operaton-embedded
-      - operaton-process-engine-api
-      - operaton-remote
-      - temporal-native
-      - zeebe-native
-      - zeebe-process-engine-api
-      - zeebe-vanillabp
+# How far the examples may drift apart. `npm run drift` (CI and the pre-commit hook) fails unless every file of
+# every example is either identical to its copies in other examples (listed in the generated drift.lock.yml) or
+# listed here with a reason. Both variants of an example must also have the same source files and the same test
+# methods (languageOnly lists the exceptions) and identical identicalResources (blueprint.yaml).
+#
+# Paths are compared per language: kotlin-gradle/ only with kotlin-gradle/, java-maven/ only with java-maven/.
+# A single-variant example with its variant at the root (path: . in blueprint.yaml) has its service/ compared
+# as <variant>/service/.
+#
+# engines:      spellings replaced by {engine} before comparing, so copies that differ only in the engine name
+#               count as identical; paths and globs below use {engine} too.
+# independent:  never compared, because Dependabot bumps them per example.
+# differs:      compared, may differ, reason required; an entry whose files are all identical again fails.
+# languageOnly: sources (path without src/<lang> and extension) or tests (<source>#<name>) in one variant only.
+#               Test names are compared by @DisplayName or method name, ignoring case and punctuation, with
+#               null and empty treated alike (Kotlin returns null where Java returns Optional.empty()).
+#
+# After a change: npm run drift:update to refresh drift.lock.yml, then npm run drift.
+engines:
+  cibseven: [cibseven, Cibseven, cib-seven, CIB seven, CIB-seven]
+  operaton: [operaton, Operaton, OPERATON]
+  fluxnova: [finos.fluxnova, fluxnova, Fluxnova]
+independent:
+  - files: ["**/gradlew", "**/gradlew.bat", "**/mvnw", "**/mvnw.cmd", "**/gradle-wrapper.jar", "**/gradle-wrapper.properties", "**/maven-wrapper.properties", "**/package.json", "**/package-lock.json", "**/docker-compose*.yml", ".github/dependabot.yml", "**/pom.xml", "**/*.gradle.kts", "**/libs.versions.toml", ".github/workflows/**", "!.github/workflows/dependabot-automerge.yml"]
+    reason: "Dependabot bumps these per example, so a version can be ahead in one example for a while."
+differs:
+  - files:
+      - ".claude/README.md"
+      - "AGENTS.md"
+      - "CONTRIBUTING.md"
+      - "README.md"
+      - "blueprint.yaml"
+      - "bruno/README.md"
+      - "bruno/collection.bru"
+      - "docs/README.md"
+      - "docs/starter.md"
+      - "java-maven/README.md"
+      - "java-maven/service/common-zeebe-test/README.md"
+      - "java-maven/service/common-zeebe/README.md"
+      - "java-maven/service/common-{engine}-client/README.md"
+      - "java-maven/service/engine-service/README.md"
+      - "kotlin-gradle/README.md"
+      - "kotlin-gradle/service/common-temporal-test/README.md"
+      - "kotlin-gradle/service/common-temporal/README.md"
+      - "kotlin-gradle/service/common-zeebe-test/README.md"
+      - "kotlin-gradle/service/common-zeebe/README.md"
+      - "kotlin-gradle/service/common-{engine}-client/README.md"
+      - "kotlin-gradle/service/engine-service/README.md"
+      - "openapi/openapi.json"
+      - "scripts/create-starter.sh"
+    reason: "Describes this one example (engine, integration, ports, commands), so every copy names its own example."
+  - files:
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/BikeLeasingApplication.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/inbound/workflow/ActivateLeasingTask.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/inbound/workflow/BikeLeasingWorkflow.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/inbound/workflow/BookCostsTask.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/inbound/workflow/CancelContractTask.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/inbound/workflow/CancelPolicyTask.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/inbound/workflow/ClarifyAlternativeTask.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/inbound/workflow/ClarifyReturnTask.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/inbound/workflow/IssueInsurancePolicyTask.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/inbound/workflow/OrderBikeTask.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/inbound/workflow/RequestCancellationTask.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/inbound/workflow/SendCancellationConfirmationTask.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/inbound/workflow/SendContractTask.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/inbound/workflow/SendRejectionTask.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/inbound/workflow/SendReminderMailTask.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/inbound/zeebe/ActivateLeasingWorker.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/inbound/zeebe/BookCostsWorker.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/inbound/zeebe/CancelContractWorker.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/inbound/zeebe/CancelPolicyWorker.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/inbound/zeebe/IssueInsurancePolicyWorker.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/inbound/zeebe/OrderBikeWorker.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/inbound/zeebe/RequestCancellationWorker.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/inbound/zeebe/SendCancellationConfirmationWorker.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/inbound/zeebe/SendContractWorker.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/inbound/zeebe/SendRejectionWorker.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/inbound/zeebe/SendReminderMailWorker.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/outbound/workflow/LeasingProcessAdapter.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/outbound/zeebe/LeasingProcessAdapter.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/outbound/zeebe/TaskInboxAdapter.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/outbound/{engine}/LeasingProcessAdapter.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/process/BikeLeasingProcessProcessApi.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/process/CancelBikeOrderProcessApi.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/process/EngineApiConfiguration.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/process/LeasingApplicationAggregate.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/process/ProcessVariables.java"
+      - "java-maven/service/app/src/main/resources/application.yaml"
+      - "java-maven/service/app/src/main/resources/bpmn/bike-leasing.bpmn"
+      - "java-maven/service/app/src/main/resources/bpmn/cancel-bike-order.bpmn"
+      - "java-maven/service/app/src/main/resources/bpmn/check-credit-rating.dmn"
+      - "java-maven/service/app/src/main/resources/db/migration/V2__workflow_aggregate.sql"
+      - "java-maven/service/app/src/main/resources/dmn/check-credit-rating.dmn"
+      - "java-maven/service/app/src/main/resources/forms/clarify-alternative.form"
+      - "java-maven/service/app/src/main/resources/forms/clarify-return.form"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/workflow/ActivateLeasingTaskTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/workflow/BikeLeasingWorkflowTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/workflow/BookCostsTaskTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/workflow/CancelContractTaskTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/workflow/CancelPolicyTaskTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/workflow/ClarifyAlternativeTaskTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/workflow/ClarifyReturnTaskTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/workflow/IssueInsurancePolicyTaskTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/workflow/OrderBikeTaskTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/workflow/RequestCancellationTaskTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/workflow/SendCancellationConfirmationTaskTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/workflow/SendContractTaskTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/workflow/SendRejectionTaskTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/workflow/SendReminderMailTaskTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/zeebe/OrderBikeWorkerTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/outbound/workflow/LeasingProcessAdapterTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/outbound/zeebe/LeasingProcessAdapterTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/outbound/zeebe/TaskInboxAdapterTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/outbound/{engine}/TaskInboxAdapterTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/BikeLeasingProcessTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/BikeUnavailableTransactionTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/JobExecutionUtils.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/LeasingApplicationAggregateTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/ProcessDeploymentTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/ProcessInstanceUtils.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/TimerUtils.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/model/BikeLeasingModelValidationTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/model/ServiceTaskExternalTopicRule.java"
+      - "java-maven/service/app/src/test/resources/application-test.yaml"
+      - "java-maven/service/app/src/test/resources/junit-platform.properties"
+      - "java-maven/service/common-architecture-tests/src/main/java/io/miragon/common/architecture/HexagonalArchitectureTest.java"
+      - "java-maven/service/common-architecture-tests/src/main/java/io/miragon/common/architecture/NamingConventionArchitectureTest.java"
+      - "java-maven/service/common-zeebe-test/README.md"
+      - "java-maven/service/common-zeebe-test/src/main/java/io/miragon/common/test/config/TestProcessEngineConfiguration.java"
+      - "java-maven/service/common-zeebe-test/src/main/java/io/miragon/common/test/config/WorkflowDeploymentTestConfiguration.java"
+      - "java-maven/service/common-zeebe/README.md"
+      - "java-maven/service/common-zeebe/src/main/java/io/miragon/common/zeebe/config/EngineAutoConfiguration.java"
+      - "java-maven/service/common-zeebe/src/main/java/io/miragon/common/zeebe/config/ZeebeEnvironmentConfiguration.java"
+      - "java-maven/service/common-zeebe/src/main/java/io/miragon/common/zeebe/context/EventualConsistent.java"
+      - "java-maven/service/common-zeebe/src/main/java/io/miragon/common/zeebe/context/StronglyConsistent.java"
+      - "java-maven/service/common-zeebe/src/main/java/io/miragon/common/zeebe/engine/ProcessEngineApi.java"
+      - "java-maven/service/common-zeebe/src/main/resources/zeebe-application.yaml"
+      - "java-maven/service/common-zeebe/src/test/java/io/miragon/common/zeebe/engine/ProcessEngineApiTest.java"
+      - "java-maven/service/common-{engine}-client/README.md"
+      - "java-maven/service/engine-service/README.md"
+      - "java-maven/service/engine-service/src/main/java/io/miragon/blueprint/{engine}EngineApplication.java"
+      - "java-maven/service/engine-service/src/main/resources/application.yaml"
+      - "java-maven/service/example-service/src/main/java/io/miragon/blueprint/ExampleServiceApplication.java"
+      - "java-maven/service/example-service/src/main/java/io/miragon/blueprint/adapter/inbound/{engine}/ActivateLeasingWorker.java"
+      - "java-maven/service/example-service/src/main/java/io/miragon/blueprint/adapter/inbound/{engine}/BaseExternalTaskWorker.java"
+      - "java-maven/service/example-service/src/main/java/io/miragon/blueprint/adapter/inbound/{engine}/BookCostsWorker.java"
+      - "java-maven/service/example-service/src/main/java/io/miragon/blueprint/adapter/inbound/{engine}/CancelContractWorker.java"
+      - "java-maven/service/example-service/src/main/java/io/miragon/blueprint/adapter/inbound/{engine}/CancelPolicyWorker.java"
+      - "java-maven/service/example-service/src/main/java/io/miragon/blueprint/adapter/inbound/{engine}/IssueInsurancePolicyWorker.java"
+      - "java-maven/service/example-service/src/main/java/io/miragon/blueprint/adapter/inbound/{engine}/OrderBikeWorker.java"
+      - "java-maven/service/example-service/src/main/java/io/miragon/blueprint/adapter/inbound/{engine}/RequestCancellationWorker.java"
+      - "java-maven/service/example-service/src/main/java/io/miragon/blueprint/adapter/inbound/{engine}/SendCancellationConfirmationWorker.java"
+      - "java-maven/service/example-service/src/main/java/io/miragon/blueprint/adapter/inbound/{engine}/SendContractWorker.java"
+      - "java-maven/service/example-service/src/main/java/io/miragon/blueprint/adapter/inbound/{engine}/SendRejectionWorker.java"
+      - "java-maven/service/example-service/src/main/java/io/miragon/blueprint/adapter/inbound/{engine}/SendReminderMailWorker.java"
+      - "java-maven/service/example-service/src/main/java/io/miragon/blueprint/adapter/outbound/engine/ProcessModelDeploymentAdapter.java"
+      - "java-maven/service/example-service/src/main/java/io/miragon/blueprint/adapter/outbound/engine/RemoteLeasingProcessAdapter.java"
+      - "java-maven/service/example-service/src/main/java/io/miragon/blueprint/adapter/outbound/engine/TaskInboxAdapter.java"
+      - "java-maven/service/example-service/src/main/java/io/miragon/blueprint/domain/leasing/LeasingApplication.java"
+      - "java-maven/service/example-service/src/main/resources/application.yaml"
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/inbound/{engine}/OrderBikeWorkerTest.java"
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/outbound/engine/RemoteLeasingProcessAdapterTest.java"
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/outbound/engine/TaskInboxAdapterTest.java"
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/process/BikeLeasingModelValidationTest.java"
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/process/BikeLeasingProcessTest.java"
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/process/ProcessDriveUtils.java"
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/process/ServiceTaskExternalTopicRule.java"
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/process/model/BikeLeasingModelValidationTest.java"
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/process/model/ServiceTaskExternalTopicRule.java"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/temporal/ActivateLeasingActivity.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/temporal/BookCostsActivity.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/temporal/CancelContractActivity.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/temporal/CancelPolicyActivity.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/temporal/IssueInsurancePolicyActivity.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/temporal/OrderBikeActivity.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/temporal/RequestCancellationActivity.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/temporal/SendCancellationConfirmationActivity.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/temporal/SendContractActivity.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/temporal/SendRejectionActivity.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/temporal/SendReminderMailActivity.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/workflow/ActivateLeasingTask.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/workflow/BikeLeasingWorkflow.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/workflow/BookCostsTask.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/workflow/CancelContractTask.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/workflow/CancelPolicyTask.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/workflow/ClarifyAlternativeTask.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/workflow/ClarifyReturnTask.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/workflow/IssueInsurancePolicyTask.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/workflow/OrderBikeTask.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/workflow/RequestCancellationTask.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/workflow/SendCancellationConfirmationTask.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/workflow/SendContractTask.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/workflow/SendRejectionTask.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/workflow/SendReminderMailTask.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/zeebe/ActivateLeasingWorker.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/zeebe/BookCostsWorker.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/zeebe/CancelContractWorker.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/zeebe/CancelPolicyWorker.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/zeebe/IssueInsurancePolicyWorker.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/zeebe/OrderBikeWorker.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/zeebe/RequestCancellationWorker.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/zeebe/SendCancellationConfirmationWorker.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/zeebe/SendContractWorker.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/zeebe/SendRejectionWorker.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/zeebe/SendReminderMailWorker.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/{engine}/ActivateLeasingWorker.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/{engine}/BookCostsWorker.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/{engine}/CancelContractWorker.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/{engine}/CancelPolicyWorker.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/{engine}/IssueInsurancePolicyWorker.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/{engine}/OrderBikeWorker.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/{engine}/RequestCancellationWorker.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/{engine}/SendCancellationConfirmationWorker.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/{engine}/SendContractWorker.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/{engine}/SendRejectionWorker.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/{engine}/SendReminderMailWorker.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/outbound/temporal/LeasingProcessAdapter.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/outbound/temporal/TaskInboxAdapter.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/outbound/workflow/LeasingProcessAdapter.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/outbound/zeebe/LeasingProcessAdapter.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/outbound/zeebe/TaskInboxAdapter.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/outbound/{engine}/LeasingProcessAdapter.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/outbound/{engine}/ProcessEngineExtensions.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/outbound/{engine}/TaskInboxAdapter.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/process/AlternativeDecision.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/process/BikeLeasingActivities.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/process/BikeLeasingProcessProcessApi.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/process/BikeLeasingTaskQueue.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/process/BikeLeasingWorkflow.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/process/BikeLeasingWorkflowImpl.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/process/BikeUnavailableFailure.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/process/CancelBikeOrderActivities.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/process/CancelBikeOrderProcessApi.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/process/CancelBikeOrderWorkflow.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/process/CancelBikeOrderWorkflowImpl.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/process/ClarificationWaitingSince.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/process/CreditRating.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/process/EngineApiConfiguration.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/process/LeasingApplicationAggregate.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/process/LeasingRequest.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/process/ProcessVariables.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/process/ServiceTasks.kt"
+      - "kotlin-gradle/service/app/src/main/resources/application.yaml"
+      - "kotlin-gradle/service/app/src/main/resources/bpmn/bike-leasing.bpmn"
+      - "kotlin-gradle/service/app/src/main/resources/bpmn/cancel-bike-order.bpmn"
+      - "kotlin-gradle/service/app/src/main/resources/bpmn/check-credit-rating.dmn"
+      - "kotlin-gradle/service/app/src/main/resources/db/migration/V2__workflow_aggregate.sql"
+      - "kotlin-gradle/service/app/src/main/resources/dmn/check-credit-rating.dmn"
+      - "kotlin-gradle/service/app/src/main/resources/forms/clarify-alternative.form"
+      - "kotlin-gradle/service/app/src/main/resources/forms/clarify-return.form"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/temporal/ActivateLeasingActivityTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/temporal/BookCostsActivityTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/temporal/CancelContractActivityTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/temporal/CancelPolicyActivityTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/temporal/IssueInsurancePolicyActivityTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/temporal/OrderBikeActivityTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/temporal/RequestCancellationActivityTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/temporal/SendCancellationConfirmationActivityTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/temporal/SendContractActivityTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/temporal/SendRejectionActivityTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/temporal/SendReminderMailActivityTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/workflow/ActivateLeasingTaskTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/workflow/BikeLeasingWorkflowTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/workflow/BookCostsTaskTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/workflow/CancelContractTaskTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/workflow/CancelPolicyTaskTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/workflow/ClarifyAlternativeTaskTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/workflow/ClarifyReturnTaskTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/workflow/IssueInsurancePolicyTaskTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/workflow/OrderBikeTaskTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/workflow/RequestCancellationTaskTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/workflow/SendCancellationConfirmationTaskTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/workflow/SendContractTaskTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/workflow/SendRejectionTaskTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/workflow/SendReminderMailTaskTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/zeebe/OrderBikeWorkerTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/outbound/temporal/LeasingProcessAdapterTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/outbound/temporal/TaskInboxAdapterTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/outbound/workflow/LeasingProcessAdapterTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/outbound/zeebe/LeasingProcessAdapterTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/outbound/zeebe/TaskInboxAdapterTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/outbound/{engine}/LeasingProcessAdapterTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/outbound/{engine}/TaskInboxAdapterTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/BikeLeasingProcessTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/BikeUnavailableTransactionTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/CreditRatingTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/JobExecutionUtils.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/LeasingApplicationAggregateTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/ProcessDeploymentTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/model/BikeLeasingModelValidationTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/model/ServiceTaskExternalTopicRule.kt"
+      - "kotlin-gradle/service/app/src/test/resources/application-test.yaml"
+      - "kotlin-gradle/service/common-architecture-tests/src/main/kotlin/io/miragon/common/architecture/HexagonalArchitectureTest.kt"
+      - "kotlin-gradle/service/common-architecture-tests/src/main/kotlin/io/miragon/common/architecture/KotlinSourceGuidelinesTest.kt"
+      - "kotlin-gradle/service/common-architecture-tests/src/main/kotlin/io/miragon/common/architecture/NamingConventionArchitectureTest.kt"
+      - "kotlin-gradle/service/common-temporal-test/README.md"
+      - "kotlin-gradle/service/common-temporal-test/src/main/kotlin/io/miragon/common/test/temporal/TestWorkflowEnvironmentExtensions.kt"
+      - "kotlin-gradle/service/common-temporal/README.md"
+      - "kotlin-gradle/service/common-temporal/src/main/kotlin/io/miragon/common/temporal/config/EngineAutoConfiguration.kt"
+      - "kotlin-gradle/service/common-temporal/src/main/kotlin/io/miragon/common/temporal/config/KotlinDataConverter.kt"
+      - "kotlin-gradle/service/common-temporal/src/main/kotlin/io/miragon/common/temporal/config/TemporalEnvironmentConfiguration.kt"
+      - "kotlin-gradle/service/common-temporal/src/main/resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports"
+      - "kotlin-gradle/service/common-temporal/src/main/resources/temporal-application.yaml"
+      - "kotlin-gradle/service/common-temporal/src/test/kotlin/io/miragon/common/temporal/config/KotlinDataConverterTest.kt"
+      - "kotlin-gradle/service/common-zeebe-test/README.md"
+      - "kotlin-gradle/service/common-zeebe-test/src/main/kotlin/io/miragon/common/test/config/TestProcessEngineConfiguration.kt"
+      - "kotlin-gradle/service/common-zeebe-test/src/main/kotlin/io/miragon/common/test/config/WorkflowDeploymentTestConfiguration.kt"
+      - "kotlin-gradle/service/common-zeebe/README.md"
+      - "kotlin-gradle/service/common-zeebe/src/main/kotlin/io/miragon/common/zeebe/config/EngineAutoConfiguration.kt"
+      - "kotlin-gradle/service/common-zeebe/src/main/kotlin/io/miragon/common/zeebe/context/EventualConsistent.kt"
+      - "kotlin-gradle/service/common-zeebe/src/main/kotlin/io/miragon/common/zeebe/context/StronglyConsistent.kt"
+      - "kotlin-gradle/service/common-zeebe/src/main/kotlin/io/miragon/common/zeebe/engine/ProcessEngineApi.kt"
+      - "kotlin-gradle/service/common-zeebe/src/main/resources/zeebe-application.yaml"
+      - "kotlin-gradle/service/common-zeebe/src/test/kotlin/io/miragon/common/zeebe/engine/ProcessEngineApiTest.kt"
+      - "kotlin-gradle/service/common-{engine}-client/README.md"
+      - "kotlin-gradle/service/engine-service/README.md"
+      - "kotlin-gradle/service/engine-service/src/main/kotlin/io/miragon/blueprint/{engine}EngineApplication.kt"
+      - "kotlin-gradle/service/engine-service/src/main/resources/application.yaml"
+      - "kotlin-gradle/service/example-service/src/main/kotlin/io/miragon/blueprint/adapter/inbound/{engine}/BookCostsWorker.kt"
+      - "kotlin-gradle/service/example-service/src/main/kotlin/io/miragon/blueprint/adapter/inbound/{engine}/OrderBikeWorker.kt"
+      - "kotlin-gradle/service/example-service/src/main/kotlin/io/miragon/blueprint/adapter/inbound/{engine}/RequestCancellationWorker.kt"
+      - "kotlin-gradle/service/example-service/src/main/resources/application.yaml"
+      - "kotlin-gradle/service/example-service/src/test/kotlin/io/miragon/blueprint/adapter/outbound/engine/RemoteLeasingProcessAdapterTest.kt"
+      - "kotlin-gradle/service/example-service/src/test/kotlin/io/miragon/blueprint/adapter/process/BikeLeasingModelValidationTest.kt"
+      - "kotlin-gradle/service/example-service/src/test/kotlin/io/miragon/blueprint/adapter/process/BikeLeasingProcessTest.kt"
+      - "kotlin-gradle/service/example-service/src/test/kotlin/io/miragon/blueprint/adapter/process/ProcessDriveUtils.kt"
+      - "kotlin-gradle/service/example-service/src/test/kotlin/io/miragon/blueprint/adapter/process/ServiceTaskExternalTopicRule.kt"
+      - "kotlin-gradle/service/example-service/src/test/kotlin/io/miragon/blueprint/adapter/process/model/BikeLeasingModelValidationTest.kt"
+      - "kotlin-gradle/service/example-service/src/test/kotlin/io/miragon/blueprint/adapter/process/model/ServiceTaskExternalTopicRule.kt"
+    reason: "Engine and integration specific by design (adapters, engine configuration, BPMN details, engine helper modules); kept apart on purpose."
+  - examples: [fullstack-cibseven-embedded, operaton-process-engine-api]
     files:
-      - .github/workflows/dependabot-automerge.yml
-      - .npmrc
-      - CLAUDE.md
-      - LICENSE
-      - bruno/00-demo-data/01-awaiting-signature/01-submit.bru
-      - bruno/00-demo-data/02-awaiting-handover/01-submit.bru
-      - bruno/00-demo-data/03-in-withdrawal-period/01-submit.bru
-      - bruno/00-demo-data/05-rejected/01-submit.bru
-      - bruno/00-demo-data/07-withdrawn-return-open/01-submit.bru
-      - bruno/01-happy-path/01-submit.bru
-  - name: cibseven-embedded + cibseven-process-engine-api + cibseven-remote + fluxnova-embedded + fullstack-cibseven-embedded + operaton-embedded + operaton-process-engine-api + operaton-remote + zeebe-native + zeebe-process-engine-api + zeebe-vanillabp
-    examples:
-      - cibseven-embedded
-      - cibseven-process-engine-api
-      - cibseven-remote
-      - fluxnova-embedded
-      - fullstack-cibseven-embedded
-      - operaton-embedded
-      - operaton-process-engine-api
-      - operaton-remote
-      - zeebe-native
-      - zeebe-process-engine-api
-      - zeebe-vanillabp
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/process/model/ServiceTaskExternalTopicRule.java"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/{engine}/ActivateLeasingDelegateTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/{engine}/BaseDelegateTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/{engine}/BookCostsDelegateTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/{engine}/CancelContractDelegateTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/{engine}/CancelPolicyDelegateTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/{engine}/IssueInsurancePolicyDelegateTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/{engine}/OrderBikeDelegateTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/{engine}/RequestCancellationDelegateTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/{engine}/SendCancellationConfirmationDelegateTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/{engine}/SendContractDelegateTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/{engine}/SendRejectionDelegateTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/{engine}/SendReminderMailDelegateTest.kt"
+      - "checkstyle.xml"
+      - "frontend/.dockerignore"
+      - "frontend/.gitignore"
+      - "frontend/.npmrc"
+      - "frontend/.nvmrc"
+      - "frontend/.prettierignore"
+      - "frontend/.prettierrc.json"
+      - "frontend/AGENTS.md"
+      - "frontend/Dockerfile"
+      - "frontend/e2e/01-happy-path.spec.ts"
+      - "frontend/e2e/02-escalation.spec.ts"
+      - "frontend/e2e/03-abort.spec.ts"
+      - "frontend/e2e/04-not-solvent.spec.ts"
+      - "frontend/e2e/05-bike-unavailable.spec.ts"
+      - "frontend/e2e/06-alternative-declined.spec.ts"
+      - "frontend/e2e/helpers/engine-rest.ts"
+      - "frontend/e2e/helpers/ui.ts"
+      - "frontend/eslint.config.js"
+      - "frontend/index.html"
+      - "frontend/knip.json"
+      - "frontend/nginx.conf"
+      - "frontend/orval.config.ts"
+      - "frontend/playwright.config.ts"
+      - "frontend/public/apple-touch-icon.png"
+      - "frontend/public/favicon.svg"
+      - "frontend/src/app/main.tsx"
+      - "frontend/src/app/route-tree.gen.ts"
+      - "frontend/src/app/routes/__root.tsx"
+      - "frontend/src/app/routes/antraege.$applicationId.tsx"
+      - "frontend/src/app/routes/antraege.neu.tsx"
+      - "frontend/src/app/routes/aufgaben.tsx"
+      - "frontend/src/app/routes/index.tsx"
+      - "frontend/src/app/styles/index.css"
+      - "frontend/src/app/styles/theme.css"
+      - "frontend/src/entities/bike/api/queries.ts"
+      - "frontend/src/entities/bike/index.ts"
+      - "frontend/src/entities/bike/model/bike-option.ts"
+      - "frontend/src/entities/leasing-application/api/keys.test.ts"
+      - "frontend/src/entities/leasing-application/api/keys.ts"
+      - "frontend/src/entities/leasing-application/api/queries.ts"
+      - "frontend/src/entities/leasing-application/index.ts"
+      - "frontend/src/entities/leasing-application/model/status.test.ts"
+      - "frontend/src/entities/leasing-application/model/status.ts"
+      - "frontend/src/entities/leasing-application/ui/status-badge.tsx"
+      - "frontend/src/entities/user-task/api/queries.ts"
+      - "frontend/src/entities/user-task/index.ts"
+      - "frontend/src/features/clarify-alternative/index.ts"
+      - "frontend/src/features/clarify-alternative/ui/clarify-alternative-form.tsx"
+      - "frontend/src/features/report-handover/api/use-report-handover.ts"
+      - "frontend/src/features/report-handover/index.ts"
+      - "frontend/src/features/report-handover/ui/report-handover-button.test.tsx"
+      - "frontend/src/features/report-handover/ui/report-handover-button.tsx"
+      - "frontend/src/features/sign-contract/api/use-sign-contract.ts"
+      - "frontend/src/features/sign-contract/index.ts"
+      - "frontend/src/features/sign-contract/ui/sign-contract-button.tsx"
+      - "frontend/src/features/submit-leasing-request/index.ts"
+      - "frontend/src/features/submit-leasing-request/model/submit-form-schema.test.ts"
+      - "frontend/src/features/submit-leasing-request/model/submit-form-schema.ts"
+      - "frontend/src/features/submit-leasing-request/ui/submit-leasing-form.tsx"
+      - "frontend/src/features/withdraw-application/api/use-withdraw-application.ts"
+      - "frontend/src/features/withdraw-application/index.ts"
+      - "frontend/src/features/withdraw-application/ui/withdraw-application-button.tsx"
+      - "frontend/src/pages/application-detail/index.ts"
+      - "frontend/src/pages/application-detail/ui/application-detail-page.test.tsx"
+      - "frontend/src/pages/application-detail/ui/application-detail-page.tsx"
+      - "frontend/src/pages/application-list/index.ts"
+      - "frontend/src/pages/application-list/ui/application-list-page.test.tsx"
+      - "frontend/src/pages/application-list/ui/application-list-page.tsx"
+      - "frontend/src/pages/not-found/index.ts"
+      - "frontend/src/pages/not-found/ui/not-found-page.tsx"
+      - "frontend/src/pages/submit-application/index.ts"
+      - "frontend/src/pages/submit-application/ui/submit-application-page.test.tsx"
+      - "frontend/src/pages/submit-application/ui/submit-application-page.tsx"
+      - "frontend/src/pages/task-inbox/index.ts"
+      - "frontend/src/pages/task-inbox/ui/task-inbox-page.tsx"
+      - "frontend/src/shared/api/generated/endpoints.msw.ts"
+      - "frontend/src/shared/api/generated/endpoints.ts"
+      - "frontend/src/shared/api/generated/model/alternativeDecisionInput.ts"
+      - "frontend/src/shared/api/generated/model/bikeDto.ts"
+      - "frontend/src/shared/api/generated/model/index.ts"
+      - "frontend/src/shared/api/generated/model/leasingApplicationCreatedDto.ts"
+      - "frontend/src/shared/api/generated/model/leasingApplicationDto.ts"
+      - "frontend/src/shared/api/generated/model/leasingApplicationPageDto.ts"
+      - "frontend/src/shared/api/generated/model/leasingApplicationSummaryDto.ts"
+      - "frontend/src/shared/api/generated/model/leasingRequestInput.ts"
+      - "frontend/src/shared/api/generated/model/listLeasingApplicationsParams.ts"
+      - "frontend/src/shared/api/generated/model/pendingClarificationDto.ts"
+      - "frontend/src/shared/api/generated/zod.ts"
+      - "frontend/src/shared/api/http-client.ts"
+      - "frontend/src/shared/api/index.ts"
+      - "frontend/src/shared/config/index.ts"
+      - "frontend/src/shared/i18n/de.tone.test.ts"
+      - "frontend/src/shared/i18n/de.ts"
+      - "frontend/src/shared/i18n/dictionaries.ts"
+      - "frontend/src/shared/i18n/en.ts"
+      - "frontend/src/shared/i18n/i18n.parity.test.ts"
+      - "frontend/src/shared/i18n/index.ts"
+      - "frontend/src/shared/i18n/locale-context.tsx"
+      - "frontend/src/shared/lib/cn.ts"
+      - "frontend/src/shared/lib/format.ts"
+      - "frontend/src/shared/lib/index.ts"
+      - "frontend/src/shared/testing/index.ts"
+      - "frontend/src/shared/testing/msw-server.ts"
+      - "frontend/src/shared/testing/setup.ts"
+      - "frontend/src/shared/testing/test-utils.tsx"
+      - "frontend/src/shared/testing/vitest.setup.ts"
+      - "frontend/src/shared/ui/alert.tsx"
+      - "frontend/src/shared/ui/badge.tsx"
+      - "frontend/src/shared/ui/button.test.tsx"
+      - "frontend/src/shared/ui/button.tsx"
+      - "frontend/src/shared/ui/card.tsx"
+      - "frontend/src/shared/ui/ci-guard.test.ts"
+      - "frontend/src/shared/ui/dialog.tsx"
+      - "frontend/src/shared/ui/empty-state.tsx"
+      - "frontend/src/shared/ui/field.tsx"
+      - "frontend/src/shared/ui/index.ts"
+      - "frontend/src/shared/ui/input.tsx"
+      - "frontend/src/shared/ui/label.tsx"
+      - "frontend/src/shared/ui/query-boundary.tsx"
+      - "frontend/src/shared/ui/select.tsx"
+      - "frontend/src/shared/ui/separator.tsx"
+      - "frontend/src/shared/ui/skeleton.tsx"
+      - "frontend/src/shared/ui/spinner.tsx"
+      - "frontend/src/shared/ui/table.tsx"
+      - "frontend/src/shared/ui/textarea.tsx"
+      - "frontend/src/shared/ui/toaster.tsx"
+      - "frontend/src/vite-env.d.ts"
+      - "frontend/src/widgets/app-shell/index.ts"
+      - "frontend/src/widgets/app-shell/ui/app-shell.tsx"
+      - "frontend/src/widgets/application-actions/index.ts"
+      - "frontend/src/widgets/application-actions/model/available-actions.test.ts"
+      - "frontend/src/widgets/application-actions/model/available-actions.ts"
+      - "frontend/src/widgets/application-actions/ui/application-actions.tsx"
+      - "frontend/src/widgets/application-summary/index.ts"
+      - "frontend/src/widgets/application-summary/ui/application-summary.tsx"
+      - "frontend/src/widgets/application-table/index.ts"
+      - "frontend/src/widgets/application-table/ui/application-table.tsx"
+      - "frontend/src/widgets/leasing-progress/index.ts"
+      - "frontend/src/widgets/leasing-progress/ui/leasing-progress.test.tsx"
+      - "frontend/src/widgets/leasing-progress/ui/leasing-progress.tsx"
+      - "frontend/src/widgets/task-inbox-list/index.ts"
+      - "frontend/src/widgets/task-inbox-list/ui/task-inbox-list.tsx"
+      - "frontend/steiger.config.ts"
+      - "frontend/tsconfig.json"
+      - "frontend/tsconfig.node.json"
+      - "frontend/vite.config.ts"
+      - "frontend/vitest.config.ts"
+    reason: "Only in this single-variant example (its frontend and its own modules and checks), so there is no counterpart to compare with."
+  - reason: "Drifted before this check: domain, application and test code differ in details such as error messages and test packages. To be aligned with the fan-out-change skill, then remove the path here."
     files:
-      - .claude/hooks/lint-bpmn.sh
-  - name: cibseven-embedded + cibseven-process-engine-api + cibseven-remote + fluxnova-embedded + operaton-embedded + operaton-process-engine-api + operaton-remote + zeebe-native + zeebe-process-engine-api + zeebe-vanillabp
-    examples:
-      - cibseven-embedded
-      - cibseven-process-engine-api
-      - cibseven-remote
-      - fluxnova-embedded
-      - operaton-embedded
-      - operaton-process-engine-api
-      - operaton-remote
-      - zeebe-native
-      - zeebe-process-engine-api
-      - zeebe-vanillabp
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/process/util/ProcessPathAssertions.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/inbound/rest/GetLeasingApplicationController.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/inbound/rest/OpenApiConfiguration.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/inbound/rest/SelectAlternativeController.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/outbound/db/LeasingApplicationJpaRepository.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/outbound/db/LeasingApplicationPersistenceAdapter.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/outbound/db/TaskInboxAdapter.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/application/port/inbound/ActivateLeasingUseCase.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/application/port/inbound/CancelContractUseCase.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/application/port/inbound/ListLeasingApplicationsQuery.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/application/port/inbound/OrderBikeUseCase.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/application/port/inbound/RejectApplicationUseCase.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/application/port/inbound/SelectAlternativeUseCase.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/application/port/inbound/SendCancellationConfirmationUseCase.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/application/port/inbound/SendContractUseCase.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/application/port/inbound/SendSignatureReminderUseCase.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/application/port/outbound/LeasingApplicationRepository.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/application/port/outbound/LeasingProcess.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/application/service/ActivateLeasingService.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/application/service/CancelContractService.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/application/service/GetPendingClarificationsService.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/application/service/ListBikesService.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/application/service/OrderBikeService.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/application/service/RejectApplicationService.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/application/service/SelectAlternativeService.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/application/service/SendCancellationConfirmationService.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/application/service/SendContractService.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/application/service/SendSignatureReminderService.java"
+      - "java-maven/service/app/src/main/java/io/miragon/blueprint/application/service/SubmitLeasingRequestService.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/ArchitectureTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/actuator/ActuatorEndpointsTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/rest/ActuatorEndpointsTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/rest/OpenApiSpecExportTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/rest/SelectAlternativeControllerTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/rest/SubmitLeasingRequestControllerTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/outbound/db/LeasingApplicationPersistenceAdapterTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/outbound/db/TaskInboxAdapterTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/ActivateLeasingServiceTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/CancelContractServiceTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/GetLeasingApplicationServiceTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/GetPendingClarificationsServiceTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/ListBikesServiceTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/ListLeasingApplicationsServiceTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/OrderBikeServiceTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/RejectApplicationServiceTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/ReportHandoverServiceTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/RequestOrderCancellationServiceTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/SelectAlternativeServiceTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/SendCancellationConfirmationServiceTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/SendContractServiceTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/SendSignatureReminderServiceTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/SubmitLeasingRequestServiceTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/WithdrawApplicationServiceTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/openapi/OpenApiSpecExportTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/process/BikeLeasingProcessTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/process/BikeUnavailableTransactionTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/process/model/BikeLeasingModelValidationTest.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/process/model/ServiceTaskDelegateExpressionRule.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/process/util/JobExecutionUtils.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/process/util/ProcessInstanceUtils.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/process/util/TimerUtils.java"
+      - "java-maven/service/example-service/src/main/java/io/miragon/blueprint/adapter/inbound/rest/GetLeasingApplicationController.java"
+      - "java-maven/service/example-service/src/main/java/io/miragon/blueprint/adapter/inbound/rest/GetPendingClarificationsController.java"
+      - "java-maven/service/example-service/src/main/java/io/miragon/blueprint/adapter/inbound/rest/GlobalExceptionConfiguration.java"
+      - "java-maven/service/example-service/src/main/java/io/miragon/blueprint/adapter/inbound/rest/ListBikesController.java"
+      - "java-maven/service/example-service/src/main/java/io/miragon/blueprint/adapter/inbound/rest/ListLeasingApplicationsController.java"
+      - "java-maven/service/example-service/src/main/java/io/miragon/blueprint/adapter/inbound/rest/SelectAlternativeController.java"
+      - "java-maven/service/example-service/src/main/java/io/miragon/blueprint/adapter/inbound/rest/SubmitLeasingRequestController.java"
+      - "java-maven/service/example-service/src/main/java/io/miragon/blueprint/adapter/outbound/db/LeasingApplicationEntity.java"
+      - "java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/port/inbound/GetLeasingApplicationQuery.java"
+      - "java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/port/inbound/ListLeasingApplicationsQuery.java"
+      - "java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/port/inbound/SelectAlternativeUseCase.java"
+      - "java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/port/outbound/LeasingApplicationRepository.java"
+      - "java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/port/outbound/LeasingProcess.java"
+      - "java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/service/GetLeasingApplicationService.java"
+      - "java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/service/GetPendingClarificationsService.java"
+      - "java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/service/ListBikesService.java"
+      - "java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/service/ListLeasingApplicationsService.java"
+      - "java-maven/service/example-service/src/main/java/io/miragon/blueprint/application/service/SubmitLeasingRequestService.java"
+      - "java-maven/service/example-service/src/main/java/io/miragon/blueprint/domain/leasing/PendingClarification.java"
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/ArchitectureTest.java"
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/inbound/rest/GetLeasingApplicationControllerTest.java"
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/inbound/rest/SelectAlternativeControllerTest.java"
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/inbound/rest/SubmitLeasingRequestControllerTest.java"
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/outbound/contract/LoggingContractAdapterTest.java"
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/outbound/db/LeasingApplicationEntityMapperTest.java"
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/outbound/db/LeasingApplicationPersistenceAdapterTest.java"
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/outbound/insurance/LoggingInsuranceAdapterTest.java"
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/outbound/notification/LoggingNotificationAdapterTest.java"
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/application/service/ActivateLeasingServiceTest.java"
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/application/service/BookCancellationCostsServiceTest.java"
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/application/service/CancelContractServiceTest.java"
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/application/service/CancelInsurancePolicyServiceTest.java"
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/application/service/GetLeasingApplicationServiceTest.java"
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/application/service/GetPendingClarificationsServiceTest.java"
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/application/service/IssueInsurancePolicyServiceTest.java"
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/application/service/ListBikesServiceTest.java"
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/application/service/ListLeasingApplicationsServiceTest.java"
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/application/service/OrderBikeServiceTest.java"
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/application/service/RejectApplicationServiceTest.java"
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/application/service/ReportHandoverServiceTest.java"
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/application/service/RequestOrderCancellationServiceTest.java"
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/application/service/SelectAlternativeServiceTest.java"
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/application/service/SendCancellationConfirmationServiceTest.java"
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/application/service/SendContractServiceTest.java"
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/application/service/SendSignatureReminderServiceTest.java"
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/application/service/SignContractServiceTest.java"
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/application/service/SubmitLeasingRequestServiceTest.java"
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/application/service/WithdrawApplicationServiceTest.java"
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/domain/leasing/LeasingApplicationTest.java"
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/domain/leasing/TestObjectBuilder.java"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/BikeCatalogueSeeder.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/rest/DevCorsConfiguration.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/rest/GetLeasingApplicationController.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/rest/OpenApiConfiguration.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/rest/ReportHandoverController.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/rest/SelectAlternativeController.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/rest/SignContractController.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/rest/WithdrawApplicationController.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/outbound/db/LeasingApplicationJpaRepository.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/outbound/db/LeasingApplicationPersistenceAdapter.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/outbound/db/TaskInboxAdapter.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/outbound/dealer/BikeDealerAdapter.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/ActivateLeasingUseCase.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/CancelContractUseCase.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/OrderBikeUseCase.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/RejectApplicationUseCase.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/SelectAlternativeUseCase.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/SendCancellationConfirmationUseCase.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/SendContractUseCase.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/SendSignatureReminderUseCase.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/outbound/LeasingProcess.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/ActivateLeasingService.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/CancelContractService.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/OrderBikeService.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/RejectApplicationService.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/SelectAlternativeService.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/SendCancellationConfirmationService.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/SendContractService.kt"
+      - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/SendSignatureReminderService.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/ArchitectureTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/actuator/ActuatorEndpointsTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/rest/ActuatorEndpointsTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/rest/OpenApiSpecExportTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/rest/SelectAlternativeControllerTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/rest/SubmitLeasingRequestControllerTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/outbound/db/LeasingApplicationPersistenceAdapterTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/outbound/db/TaskInboxAdapterTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/outbound/dealer/BikeDealerAdapterTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/ActivateLeasingServiceTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/CancelContractServiceTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/GetLeasingApplicationServiceTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/GetPendingClarificationsServiceTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/ListBikesServiceTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/ListLeasingApplicationsServiceTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/OrderBikeServiceTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/RejectApplicationServiceTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/ReportHandoverServiceTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/SelectAlternativeServiceTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/SendCancellationConfirmationServiceTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/SendContractServiceTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/SendSignatureReminderServiceTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/WithdrawApplicationServiceTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/architecture/ArchitectureTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/openapi/OpenApiSpecExportTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/process/BikeLeasingProcessTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/process/BikeUnavailableTransactionTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/process/model/BikeLeasingModelValidationTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/process/model/ServiceTaskDelegateExpressionRule.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/process/util/JobExecutionUtils.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/process/util/ProcessInstanceUtils.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/process/util/ProcessPathAssertions.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/process/util/TimerUtils.kt"
+      - "kotlin-gradle/service/example-service/src/test/kotlin/io/miragon/blueprint/adapter/inbound/rest/SubmitLeasingRequestControllerTest.kt"
+      - "kotlin-gradle/service/example-service/src/test/kotlin/io/miragon/blueprint/application/service/SelectAlternativeServiceTest.kt"
+  - reason: "ADR numbering and wording drifted between the examples. To be aligned when the ADRs are consolidated, then remove the path here."
     files:
-      - .claude/skills/create-adr/SKILL.md
-      - bruno/06-incident-demo/01-submit.bru
-      - bruno/07-list-and-inbox/01-list-bikes.bru
-      - bruno/07-list-and-inbox/02-submit-out-of-stock.bru
-      - bruno/07-list-and-inbox/03-list-received.bru
-      - bruno/09-invalid-request/01-submit-without-income.bru
-      - docs/adr/0000-adr-template.md
-  - name: cibseven-embedded + cibseven-process-engine-api + cibseven-remote + fluxnova-embedded + operaton-embedded + operaton-process-engine-api + operaton-remote + zeebe-native + zeebe-process-engine-api
-    examples:
-      - cibseven-embedded
-      - cibseven-process-engine-api
-      - cibseven-remote
-      - fluxnova-embedded
-      - operaton-embedded
-      - operaton-process-engine-api
-      - operaton-remote
-      - zeebe-native
-      - zeebe-process-engine-api
+      - "docs/adr/0002-hexagonal-architecture-for-the-backend.md"
+      - "docs/adr/0003-feature-sliced-design-for-the-frontend.md"
+      - "docs/adr/0003-openapi-as-the-checked-in-contract.md"
+      - "docs/adr/0004-mutation-testing-as-a-blocking-pr-gate.md"
+      - "docs/adr/0004-openapi-as-the-checked-in-contract.md"
+      - "docs/adr/0005-agents-md-as-the-single-source.md"
+      - "docs/adr/0005-frontend-stays-out-of-the-gradle-build.md"
+      - "docs/adr/0006-fixed-ports-for-v1-portless-as-the-upgrade.md"
+      - "docs/adr/0006-mutation-testing-as-a-blocking-pr-gate.md"
+      - "docs/adr/0007-agents-md-as-the-single-source.md"
+      - "docs/adr/0007-two-architecture-test-tools-archunit-and-konsist.md"
+      - "docs/adr/0008-fixed-ports-for-v1-portless-as-the-upgrade.md"
+      - "docs/adr/0008-track-the-latest-major-versions.md"
+      - "docs/adr/0009-actuator-probes-and-prometheus-metrics.md"
+      - "docs/adr/0009-two-test-layers-bruno-and-playwright.md"
+      - "docs/adr/0010-flyway-for-database-migrations.md"
+      - "docs/adr/0010-two-architecture-test-tools-archunit-and-konsist.md"
+      - "docs/adr/0011-build-and-deployment-approach.md"
+      - "docs/adr/0011-track-the-latest-major-versions.md"
+      - "docs/adr/0012-actuator-probes-and-prometheus-metrics.md"
+      - "docs/adr/0012-polling-for-eventual-consistency-in-e2e-tests.md"
+      - "docs/adr/0013-flyway-for-database-migrations.md"
+      - "docs/adr/0013-two-stack-variants-side-by-side-on-main.md"
+      - "docs/adr/0013-{engine}-as-the-process-engine.md"
+      - "docs/adr/0013-{engine}-as-the-target-engine.md"
+      - "docs/adr/0014-architecture-tests-after-the-java-port.md"
+      - "docs/adr/0014-build-and-deployment-approach.md"
+      - "docs/adr/0014-process-engine-api-on-camunda-8.md"
+      - "docs/adr/0014-temporal-as-a-beta-next-to-the-bpmn-engines.md"
+      - "docs/adr/0014-two-stack-variants-side-by-side-on-main.md"
+      - "docs/adr/0015-polling-for-eventual-consistency-in-e2e-tests.md"
+      - "docs/assets/frontend-applications.png"
+      - "docs/vanillabp-spike.md"
+      - "docs/{engine}-migration.md"
+  - reason: "Agent and skill texts drifted between the examples. To be aligned with the fan-out-change skill, then remove the path here."
     files:
-      - bruno/07-list-and-inbox/06-resolve-clarification.bru
-      - bruno/09-invalid-request/02-accept-alternative-without-bike.bru
-  - name: cibseven-embedded + cibseven-remote + fluxnova-embedded + fullstack-cibseven-embedded + operaton-embedded + operaton-remote + zeebe-native + zeebe-process-engine-api + zeebe-vanillabp
-    examples:
-      - cibseven-embedded
-      - cibseven-remote
-      - fluxnova-embedded
-      - fullstack-cibseven-embedded
-      - operaton-embedded
-      - operaton-remote
-      - zeebe-native
-      - zeebe-process-engine-api
-      - zeebe-vanillabp
+      - ".claude/agents/review-process.md"
+      - ".claude/agents/review-vertical-slice.md"
+      - ".claude/settings.json"
+      - ".claude/skills/automate-process/SKILL.md"
+      - ".claude/skills/create-adr/SKILL.md"
+      - ".claude/skills/create-delegate/SKILL.md"
+      - ".claude/skills/create-feature-slice/SKILL.md"
+      - ".claude/skills/create-persistence-adapter/SKILL.md"
+      - ".claude/skills/create-rest-controller/SKILL.md"
+      - ".claude/skills/implement-issue/SKILL.md"
+      - ".claude/skills/review-change/SKILL.md"
+      - ".claude/skills/sync-api-client/SKILL.md"
+      - ".claude/skills/test-in-browser/SKILL.md"
+  - reason: "Scenario requests differ in engine details (task ids, endpoints) in some examples. To be checked per scenario whether they can be aligned."
     files:
-      - .github/CODEOWNERS
-  - name: cibseven-embedded + cibseven-process-engine-api + cibseven-remote + fluxnova-embedded + fullstack-cibseven-embedded + operaton-embedded + operaton-process-engine-api + operaton-remote
-    examples:
-      - cibseven-embedded
-      - cibseven-process-engine-api
-      - cibseven-remote
-      - fluxnova-embedded
-      - fullstack-cibseven-embedded
-      - operaton-embedded
-      - operaton-process-engine-api
-      - operaton-remote
+      - "bruno/01-happy-path/04-sign-contract.bru"
+      - "bruno/01-happy-path/05-get-application.bru"
+      - "bruno/01-happy-path/05-report-handover.bru"
+      - "bruno/01-happy-path/06-get-withdrawal-timer.bru"
+      - "bruno/01-happy-path/08-assert-leasing-active.bru"
+      - "bruno/01-happy-path/09-get-application.bru"
+      - "bruno/02-escalation/03-get-signature-deadline-timer.bru"
+      - "bruno/02-escalation/05-assert-rejected.bru"
+      - "bruno/03-abort/03-sign-contract.bru"
+      - "bruno/03-abort/04-assert-withdrawn.bru"
+      - "bruno/03-abort/04-withdraw.bru"
+      - "bruno/03-abort/05-complete-clarify-return.bru"
+      - "bruno/03-abort/05-get-clarify-return-task.bru"
+      - "bruno/03-abort/06-complete-clarify-return.bru"
+      - "bruno/03-abort/07-assert-cancelled.bru"
+      - "bruno/03-abort/08-assert-contract-compensated.bru"
+      - "bruno/04-not-solvent/02-assert-rejected.bru"
+      - "bruno/05-bike-unavailable/03-clarify-alternative.bru"
+      - "bruno/05-bike-unavailable/03-sign-contract.bru"
+      - "bruno/05-bike-unavailable/04-clarify-alternative.bru"
+      - "bruno/05-bike-unavailable/05-get-application.bru"
+      - "bruno/05-bike-unavailable/05-report-handover.bru"
+      - "bruno/05-bike-unavailable/06-get-withdrawal-timer.bru"
+      - "bruno/05-bike-unavailable/08-assert-leasing-active.bru"
+      - "bruno/05-bike-unavailable/09-get-application.bru"
+      - "bruno/06-incident-demo/04-assert-incident.bru"
+      - "bruno/06-incident-demo/06-retry-job.bru"
+      - "bruno/06-list-and-inbox/01-list-bikes.bru"
+      - "bruno/06-list-and-inbox/02-submit-out-of-stock.bru"
+      - "bruno/06-list-and-inbox/03-list-received.bru"
+      - "bruno/06-list-and-inbox/04-sign-contract.bru"
+      - "bruno/06-list-and-inbox/05-inbox-has-task.bru"
+      - "bruno/06-list-and-inbox/06-resolve-clarification.bru"
+      - "bruno/06-list-and-inbox/07-inbox-empty.bru"
+      - "bruno/07-alternative-declined/01-submit.bru"
+      - "bruno/07-alternative-declined/02-get-instance.bru"
+      - "bruno/07-alternative-declined/03-sign-contract.bru"
+      - "bruno/07-alternative-declined/04-decline-alternative.bru"
+      - "bruno/07-alternative-declined/05-assert-contract-cancelled.bru"
+      - "bruno/07-alternative-declined/06-assert-contract-compensated.bru"
+      - "bruno/07-alternative-declined/07-assert-no-order-cancellation.bru"
+      - "bruno/07-alternative-declined/08-assert-no-incident.bru"
+      - "bruno/07-alternative-declined/09-get-application.bru"
+      - "bruno/07-list-and-inbox/04-sign-contract.bru"
+      - "bruno/07-list-and-inbox/06-resolve-clarification.bru"
+      - "bruno/08-alternative-declined/04-decline-alternative.bru"
+      - "bruno/08-invalid-request/01-submit-without-income.bru"
+      - "bruno/08-invalid-request/02-accept-alternative-without-bike.bru"
+      - "bruno/09-alternative-via-tasklist/01-submit.bru"
+      - "bruno/09-alternative-via-tasklist/02-sign-contract.bru"
+      - "bruno/09-alternative-via-tasklist/03-get-clarify-alternative-task.bru"
+      - "bruno/09-alternative-via-tasklist/04-complete-clarify-alternative.bru"
+      - "bruno/09-alternative-via-tasklist/05-assert-alternative-ordered.bru"
+      - "bruno/10-alternative-via-tasklist/03-get-clarify-alternative-task.bru"
+      - "bruno/10-alternative-via-tasklist/04-complete-clarify-alternative.bru"
+      - "bruno/bruno.json"
+      - "bruno/environments/local.bru"
+  - reason: "Tooling configuration drifted between the examples. To be aligned where the examples use the same tools, then remove the path here."
     files:
-      - .bpmnlintrc
-      - bruno/00-demo-data/01-awaiting-signature/02-assert-received.bru
-      - bruno/00-demo-data/02-awaiting-handover/03-assert-ordered.bru
-      - bruno/00-demo-data/03-in-withdrawal-period/04-assert-handed-over.bru
-      - bruno/00-demo-data/04-active/01-submit.bru
-      - bruno/00-demo-data/04-active/02-get-instance.bru
-      - bruno/00-demo-data/04-active/05-get-withdrawal-timer.bru
-      - bruno/00-demo-data/04-active/06-fire-withdrawal-timer.bru
-      - bruno/00-demo-data/04-active/07-assert-active.bru
-      - bruno/00-demo-data/05-rejected/02-assert-rejected.bru
-      - bruno/00-demo-data/06-alternative-in-inbox/01-submit.bru
-      - bruno/00-demo-data/06-alternative-in-inbox/03-assert-in-inbox.bru
-      - bruno/00-demo-data/07-withdrawn-return-open/02-get-instance.bru
-      - bruno/00-demo-data/07-withdrawn-return-open/05-assert-withdrawn.bru
-      - bruno/00-demo-data/07-withdrawn-return-open/06-assert-clarify-return-open.bru
-      - bruno/01-happy-path/02-get-instance.bru
-      - bruno/01-happy-path/03-get-application.bru
-      - bruno/01-happy-path/07-fire-withdrawal-timer.bru
-      - bruno/02-escalation/01-submit.bru
-      - bruno/02-escalation/02-get-instance.bru
-      - bruno/02-escalation/04-fire-signature-deadline-timer.bru
-      - bruno/03-abort/01-submit.bru
-      - bruno/03-abort/02-get-instance.bru
-      - bruno/04-not-solvent/01-submit.bru
-      - bruno/05-bike-unavailable/01-submit.bru
-      - bruno/05-bike-unavailable/02-get-instance.bru
-      - bruno/05-bike-unavailable/07-fire-withdrawal-timer.bru
-  - name: cibseven-embedded + cibseven-process-engine-api + cibseven-remote + fluxnova-embedded + fullstack-cibseven-embedded + operaton-process-engine-api + operaton-remote
-    examples:
-      - cibseven-embedded
-      - cibseven-process-engine-api
-      - cibseven-remote
-      - fluxnova-embedded
-      - fullstack-cibseven-embedded
-      - operaton-process-engine-api
-      - operaton-remote
-    files:
-      - bruno/01-happy-path/09-get-application.bru
-      - bruno/03-abort/08-assert-contract-compensated.bru
-  - name: cibseven-embedded + cibseven-process-engine-api + cibseven-remote + fluxnova-embedded + operaton-embedded + operaton-process-engine-api + operaton-remote
-    examples:
-      - cibseven-embedded
-      - cibseven-process-engine-api
-      - cibseven-remote
-      - fluxnova-embedded
-      - operaton-embedded
-      - operaton-process-engine-api
-      - operaton-remote
-    files:
-      - bruno/06-incident-demo/02-get-instance.bru
-      - bruno/08-alternative-declined/02-get-instance.bru
-      - bruno/08-alternative-declined/06-assert-contract-compensated.bru
-      - bruno/08-alternative-declined/07-assert-no-order-cancellation.bru
-      - bruno/08-alternative-declined/08-assert-no-incident.bru
-      - bruno/08-alternative-declined/09-get-application.bru
-      - bruno/10-alternative-via-tasklist/01-submit.bru
-  - name: cibseven-embedded + cibseven-process-engine-api + fluxnova-embedded + operaton-embedded + zeebe-native + zeebe-process-engine-api + zeebe-vanillabp
-    examples:
-      - cibseven-embedded
-      - cibseven-process-engine-api
-      - fluxnova-embedded
-      - operaton-embedded
-      - zeebe-native
-      - zeebe-process-engine-api
-      - zeebe-vanillabp
-    files:
-      - designiq.yml
-      - java-maven/service/app/src/test/resources/sql/leasing-application.sql
-      - kotlin-gradle/service/app/src/test/resources/sql/leasing-application.sql
-      - scripts/create-starter.sh
-  - name: cibseven-embedded + cibseven-process-engine-api + cibseven-remote + fluxnova-embedded + operaton-embedded + operaton-remote
-    examples:
-      - cibseven-embedded
-      - cibseven-process-engine-api
-      - cibseven-remote
-      - fluxnova-embedded
-      - operaton-embedded
-      - operaton-remote
-    files:
-      - .claude/settings.json
-      - .gitignore
-  - name: cibseven-embedded + cibseven-process-engine-api + cibseven-remote + operaton-embedded + operaton-process-engine-api + operaton-remote
-    examples:
-      - cibseven-embedded
-      - cibseven-process-engine-api
-      - cibseven-remote
-      - operaton-embedded
-      - operaton-process-engine-api
-      - operaton-remote
-    files:
-      - bruno/10-alternative-via-tasklist/04-complete-clarify-alternative.bru
-  - name: cibseven-embedded + cibseven-process-engine-api + fluxnova-embedded + operaton-embedded + zeebe-native + zeebe-process-engine-api
-    examples:
-      - cibseven-embedded
-      - cibseven-process-engine-api
-      - fluxnova-embedded
-      - operaton-embedded
-      - zeebe-native
-      - zeebe-process-engine-api
-    files:
-      - .claude/skills/create-persistence-adapter/SKILL.md
-  - name: cibseven-embedded + cibseven-remote + fluxnova-embedded + operaton-embedded + operaton-remote
-    examples:
-      - cibseven-embedded
-      - cibseven-remote
-      - fluxnova-embedded
-      - operaton-embedded
-      - operaton-remote
-    files:
-      - bruno/08-alternative-declined/01-submit.bru
-  - name: cibseven-process-engine-api + fluxnova-embedded + fullstack-cibseven-embedded + operaton-embedded + operaton-process-engine-api
-    examples:
-      - cibseven-process-engine-api
-      - fluxnova-embedded
-      - fullstack-cibseven-embedded
-      - operaton-embedded
-      - operaton-process-engine-api
-    files:
-      - bruno/environments/local.bru
-  - name: cibseven-process-engine-api + operaton-embedded + zeebe-native + zeebe-process-engine-api + zeebe-vanillabp
-    examples:
-      - cibseven-process-engine-api
-      - operaton-embedded
-      - zeebe-native
-      - zeebe-process-engine-api
-      - zeebe-vanillabp
-    files:
-      - docs/adr/0007-two-architecture-test-tools-archunit-and-konsist.md
-  - name: cibseven-embedded + cibseven-process-engine-api + cibseven-remote + fullstack-cibseven-embedded
-    examples:
-      - cibseven-embedded
-      - cibseven-process-engine-api
-      - cibseven-remote
-      - fullstack-cibseven-embedded
-    files:
-      - bruno/bruno.json
-  - name: cibseven-embedded + cibseven-process-engine-api + fluxnova-embedded + operaton-embedded
-    examples:
-      - cibseven-embedded
-      - cibseven-process-engine-api
-      - fluxnova-embedded
-      - operaton-embedded
-    files:
-      - .claude/skills/create-rest-controller/SKILL.md
-  - name: cibseven-embedded + fluxnova-embedded + fullstack-cibseven-embedded + operaton-embedded
-    examples:
-      - cibseven-embedded
-      - fluxnova-embedded
-      - fullstack-cibseven-embedded
-      - operaton-embedded
-    files:
-      - bruno/00-demo-data/02-awaiting-handover/02-sign-contract.bru
-      - bruno/00-demo-data/03-in-withdrawal-period/02-sign-contract.bru
-      - bruno/00-demo-data/03-in-withdrawal-period/03-report-handover.bru
-      - bruno/00-demo-data/04-active/03-sign-contract.bru
-      - bruno/00-demo-data/04-active/04-report-handover.bru
-      - bruno/00-demo-data/06-alternative-in-inbox/02-sign-contract.bru
-      - bruno/00-demo-data/07-withdrawn-return-open/03-sign-contract.bru
-      - bruno/00-demo-data/07-withdrawn-return-open/04-withdraw.bru
-      - docs/assets/bike-leasing.png
-  - name: cibseven-process-engine-api + cibseven-remote + operaton-process-engine-api + operaton-remote
-    examples:
-      - cibseven-process-engine-api
-      - cibseven-remote
-      - operaton-process-engine-api
-      - operaton-remote
-    files:
-      - bruno/01-happy-path/08-assert-leasing-active.bru
-      - bruno/02-escalation/05-assert-rejected.bru
-      - bruno/03-abort/07-assert-cancelled.bru
-      - bruno/04-not-solvent/02-assert-rejected.bru
-      - bruno/05-bike-unavailable/08-assert-leasing-active.bru
-      - bruno/08-alternative-declined/05-assert-contract-cancelled.bru
-      - bruno/10-alternative-via-tasklist/05-assert-alternative-ordered.bru
-      - docs/assets/bike-leasing.png
-  - name: operaton-embedded + zeebe-native + zeebe-process-engine-api + zeebe-vanillabp
-    examples:
-      - operaton-embedded
-      - zeebe-native
-      - zeebe-process-engine-api
-      - zeebe-vanillabp
-    files:
-      - bruno/07-list-and-inbox/05-inbox-has-task.bru
-      - bruno/07-list-and-inbox/07-inbox-empty.bru
-  - name: cibseven-embedded + cibseven-process-engine-api + operaton-embedded
-    examples:
-      - cibseven-embedded
-      - cibseven-process-engine-api
-      - operaton-embedded
-    files:
-      - java-maven/service/app/src/main/resources/dmn/check-credit-rating.dmn
-      - java-maven/service/app/src/main/resources/forms/clarify-alternative.form
-      - java-maven/service/app/src/main/resources/forms/clarify-return.form
-      - kotlin-gradle/service/app/src/main/resources/dmn/check-credit-rating.dmn
-      - kotlin-gradle/service/app/src/main/resources/forms/clarify-alternative.form
-      - kotlin-gradle/service/app/src/main/resources/forms/clarify-return.form
-  - name: cibseven-embedded + fluxnova-embedded + fullstack-cibseven-embedded
-    examples:
-      - cibseven-embedded
-      - fluxnova-embedded
-      - fullstack-cibseven-embedded
-    files:
-      - bruno/01-happy-path/08-assert-leasing-active.bru
-      - bruno/05-bike-unavailable/09-get-application.bru
-  - name: cibseven-embedded + fluxnova-embedded + operaton-embedded
-    examples:
-      - cibseven-embedded
-      - fluxnova-embedded
-      - operaton-embedded
-    files:
-      - .claude/README.md
-      - .claude/skills/automate-process/references/visual-check.md
-      - .claude/skills/implement-issue/SKILL.md
-      - .claude/skills/review-change/SKILL.md
-      - .githooks/pre-commit
-      - bruno/06-incident-demo/05-get-failed-job.bru
-      - bruno/08-alternative-declined/03-sign-contract.bru
-      - bruno/08-alternative-declined/04-decline-alternative.bru
-      - bruno/08-alternative-declined/05-assert-contract-cancelled.bru
-      - java-maven/config/checkstyle/checkstyle.xml
-  - name: operaton-embedded + operaton-process-engine-api + operaton-remote
-    examples:
-      - operaton-embedded
-      - operaton-process-engine-api
-      - operaton-remote
-    files:
-      - bruno/bruno.json
-  # temporal-native keeps the core of zeebe-native, so only the adapters around the engine differ. Files
-  # listed here are pinned to zeebe-native, which the rules above pin to the other examples.
-  - name: temporal-native + zeebe-native + zeebe-process-engine-api
-    examples:
-      - temporal-native
-      - zeebe-native
-      - zeebe-process-engine-api
-    files:
-      - .claude/skills/create-adr/SKILL.md
-      - .github/CODEOWNERS
-      - bruno/00-demo-data/01-awaiting-signature/02-assert-received.bru
-      - bruno/00-demo-data/02-awaiting-handover/02-sign-contract.bru
-      - bruno/00-demo-data/02-awaiting-handover/03-assert-ordered.bru
-      - bruno/00-demo-data/03-in-withdrawal-period/02-sign-contract.bru
-      - bruno/00-demo-data/03-in-withdrawal-period/03-report-handover.bru
-      - bruno/00-demo-data/03-in-withdrawal-period/04-assert-handed-over.bru
-      - bruno/00-demo-data/05-rejected/02-assert-rejected.bru
-      - bruno/00-demo-data/06-alternative-in-inbox/01-submit.bru
-      - bruno/00-demo-data/06-alternative-in-inbox/02-sign-contract.bru
-      - bruno/00-demo-data/06-alternative-in-inbox/03-assert-in-inbox.bru
-      - bruno/00-demo-data/07-withdrawn-return-open/02-sign-contract.bru
-      - bruno/00-demo-data/07-withdrawn-return-open/03-withdraw.bru
-      - bruno/00-demo-data/07-withdrawn-return-open/04-assert-withdrawn.bru
-      - bruno/01-happy-path/02-get-application.bru
-      - bruno/01-happy-path/03-sign-contract.bru
-      - bruno/01-happy-path/04-report-handover.bru
-      - bruno/03-abort/01-submit.bru
-      - bruno/03-abort/02-sign-contract.bru
-      - bruno/03-abort/03-withdraw.bru
-      - bruno/04-not-solvent/01-submit.bru
-      - bruno/04-not-solvent/02-assert-rejected.bru
-      - bruno/05-bike-unavailable/01-submit.bru
-      - bruno/05-bike-unavailable/02-sign-contract.bru
-      - bruno/05-bike-unavailable/04-report-handover.bru
-      - bruno/05-bike-unavailable/05-get-application.bru
-      - bruno/07-list-and-inbox/01-list-bikes.bru
-      - bruno/07-list-and-inbox/02-submit-out-of-stock.bru
-      - bruno/07-list-and-inbox/03-list-received.bru
-      - bruno/07-list-and-inbox/04-sign-contract.bru
-      - bruno/07-list-and-inbox/05-inbox-has-task.bru
-      - bruno/07-list-and-inbox/06-resolve-clarification.bru
-      - bruno/07-list-and-inbox/07-inbox-empty.bru
-      - bruno/08-alternative-declined/01-submit.bru
-      - bruno/08-alternative-declined/03-sign-contract.bru
-      - bruno/08-alternative-declined/04-decline-alternative.bru
-      - bruno/08-alternative-declined/09-assert-cancelled.bru
-      - bruno/09-invalid-request/01-submit-without-income.bru
-      - bruno/09-invalid-request/02-accept-alternative-without-bike.bru
-      - docs/adr/0000-adr-template.md
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/ActivateLeasingUseCase.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/BookCancellationCostsUseCase.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/CancelContractUseCase.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/CancelInsurancePolicyUseCase.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/GetLeasingApplicationQuery.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/GetPendingClarificationsQuery.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/IssueInsurancePolicyUseCase.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/ListBikesQuery.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/ListLeasingApplicationsQuery.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/OrderBikeUseCase.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/RejectApplicationUseCase.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/ReportHandoverUseCase.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/RequestOrderCancellationUseCase.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/SelectAlternativeUseCase.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/SendCancellationConfirmationUseCase.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/SendContractUseCase.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/SendSignatureReminderUseCase.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/SignContractUseCase.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/SubmitLeasingRequestUseCase.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/WithdrawApplicationUseCase.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/outbound/BikeDealerPort.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/outbound/BikePortfolioRepository.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/outbound/ContractPort.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/outbound/InsurancePort.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/outbound/LeasingApplicationRepository.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/outbound/LeasingProcess.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/outbound/NotificationPort.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/outbound/TaskInboxPort.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/ActivateLeasingService.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/BookCancellationCostsService.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/CancelContractService.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/CancelInsurancePolicyService.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/GetLeasingApplicationService.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/GetPendingClarificationsService.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/IssueInsurancePolicyService.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/ListBikesService.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/ListLeasingApplicationsService.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/OrderBikeService.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/RejectApplicationService.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/ReportHandoverService.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/RequestOrderCancellationService.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/SelectAlternativeService.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/SendCancellationConfirmationService.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/SendContractService.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/SendSignatureReminderService.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/SignContractService.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/SubmitLeasingRequestService.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/WithdrawApplicationService.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/domain/bike/Bike.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/domain/bike/BikeId.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/domain/bike/BikeUnavailableException.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/domain/bike/OrderId.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/domain/leasing/ApplicationId.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/domain/leasing/ContractId.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/domain/leasing/CustomerName.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/domain/leasing/Email.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/domain/leasing/LeasingApplication.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/domain/leasing/LeasingStatus.kt
-      - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/domain/leasing/PendingClarification.kt
-      - kotlin-gradle/service/app/src/main/resources/db/migration/V1__init.sql
-      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/ActivateLeasingServiceTest.kt
-      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/BookCancellationCostsServiceTest.kt
-      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/CancelContractServiceTest.kt
-      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/CancelInsurancePolicyServiceTest.kt
-      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/GetLeasingApplicationServiceTest.kt
-      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/GetPendingClarificationsServiceTest.kt
-      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/IssueInsurancePolicyServiceTest.kt
-      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/ListBikesServiceTest.kt
-      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/ListLeasingApplicationsServiceTest.kt
-      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/OrderBikeServiceTest.kt
-      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/RejectApplicationServiceTest.kt
-      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/ReportHandoverServiceTest.kt
-      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/RequestOrderCancellationServiceTest.kt
-      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/SelectAlternativeServiceTest.kt
-      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/SendCancellationConfirmationServiceTest.kt
-      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/SendContractServiceTest.kt
-      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/SendSignatureReminderServiceTest.kt
-      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/SignContractServiceTest.kt
-      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/SubmitLeasingRequestServiceTest.kt
-      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/WithdrawApplicationServiceTest.kt
-      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/domain/bike/BikeIdTest.kt
-      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/domain/bike/OrderIdTest.kt
-      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/domain/leasing/ApplicationIdTest.kt
-      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/domain/leasing/ContractIdTest.kt
-      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/domain/leasing/CustomerNameTest.kt
-      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/domain/leasing/EmailTest.kt
-      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/domain/leasing/LeasingApplicationTest.kt
-      - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/domain/leasing/TestObjectBuilder.kt
-      - openapi/openapi.json
-  - name: zeebe-native + zeebe-process-engine-api + zeebe-vanillabp
-    examples:
-      - zeebe-native
-      - zeebe-process-engine-api
-      - zeebe-vanillabp
-    files:
-      - .claude/settings.json
-      - .githooks/pre-commit
-      - .gitignore
-      - bruno/00-demo-data/01-awaiting-signature/02-assert-received.bru
-      - bruno/00-demo-data/02-awaiting-handover/02-sign-contract.bru
-      - bruno/00-demo-data/02-awaiting-handover/03-assert-ordered.bru
-      - bruno/00-demo-data/03-in-withdrawal-period/02-sign-contract.bru
-      - bruno/00-demo-data/03-in-withdrawal-period/03-report-handover.bru
-      - bruno/00-demo-data/03-in-withdrawal-period/04-assert-handed-over.bru
-      - bruno/00-demo-data/05-rejected/02-assert-rejected.bru
-      - bruno/00-demo-data/06-alternative-in-inbox/01-submit.bru
-      - bruno/00-demo-data/06-alternative-in-inbox/02-sign-contract.bru
-      - bruno/00-demo-data/06-alternative-in-inbox/03-assert-in-inbox.bru
-      - bruno/00-demo-data/07-withdrawn-return-open/02-sign-contract.bru
-      - bruno/00-demo-data/07-withdrawn-return-open/03-withdraw.bru
-      - bruno/00-demo-data/07-withdrawn-return-open/04-assert-withdrawn.bru
-      - bruno/00-demo-data/07-withdrawn-return-open/05-assert-clarify-return-open.bru
-      - bruno/01-happy-path/02-get-application.bru
-      - bruno/01-happy-path/03-sign-contract.bru
-      - bruno/01-happy-path/04-report-handover.bru
-      - bruno/01-happy-path/05-get-application.bru
-      - bruno/03-abort/01-submit.bru
-      - bruno/03-abort/02-sign-contract.bru
-      - bruno/03-abort/03-withdraw.bru
-      - bruno/03-abort/04-find-clarify-return-task.bru
-      - bruno/03-abort/06-assert-cancelled.bru
-      - bruno/04-not-solvent/01-submit.bru
-      - bruno/04-not-solvent/02-assert-rejected.bru
-      - bruno/05-bike-unavailable/01-submit.bru
-      - bruno/05-bike-unavailable/02-sign-contract.bru
-      - bruno/05-bike-unavailable/04-report-handover.bru
-      - bruno/06-incident-demo/02-get-instance.bru
-      - bruno/06-incident-demo/03-sign-contract.bru
-      - bruno/06-incident-demo/04-assert-incident.bru
-      - bruno/06-incident-demo/05-reset-job-retries.bru
-      - bruno/06-incident-demo/06-resolve-incident.bru
-      - bruno/07-list-and-inbox/04-sign-contract.bru
-      - bruno/08-alternative-declined/01-submit.bru
-      - bruno/08-alternative-declined/02-get-instance.bru
-      - bruno/08-alternative-declined/03-sign-contract.bru
-      - bruno/08-alternative-declined/05-assert-contract-cancelled.bru
-      - bruno/08-alternative-declined/06-assert-contract-compensated.bru
-      - bruno/08-alternative-declined/07-assert-no-order-cancellation.bru
-      - bruno/08-alternative-declined/08-assert-no-incident.bru
-      - bruno/08-alternative-declined/09-assert-cancelled.bru
-      - bruno/bruno.json
-      - bruno/collection.bru
-      - bruno/environments/local.bru
-      - docs/adr/0001-record-architecture-decisions.md
-      - docs/adr/0003-openapi-as-the-checked-in-contract.md
-      - docs/adr/0005-agents-md-as-the-single-source.md
-      - docs/adr/0006-fixed-ports-for-v1-portless-as-the-upgrade.md
-      - docs/adr/0008-track-the-latest-major-versions.md
-      - docs/adr/0009-actuator-probes-and-prometheus-metrics.md
-      - docs/adr/0010-flyway-for-database-migrations.md
-      - docs/assets/bike-leasing.png
-      - java-maven/service/app/src/main/resources/db/migration/V1__init.sql
-      - java-maven/service/common-zeebe/src/main/resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports
-      - kotlin-gradle/gradle.properties
-      - kotlin-gradle/service/app/src/main/resources/db/migration/V1__init.sql
-      - kotlin-gradle/service/common-zeebe/src/main/resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports
-      - openapi/openapi.json
-  - name: cibseven-embedded + cibseven-process-engine-api
-    examples:
-      - cibseven-embedded
-      - cibseven-process-engine-api
-    files:
-      - java-maven/service/app/src/main/resources/db/migration/V1__init.sql
-      - kotlin-gradle/service/app/src/main/resources/db/migration/V1__init.sql
-      - openapi/openapi.json
-  - name: cibseven-embedded + cibseven-remote
-    examples:
-      - cibseven-embedded
-      - cibseven-remote
-    files:
-      - .pulse-cli.json
-  - name: cibseven-embedded + fluxnova-embedded
-    examples:
-      - cibseven-embedded
-      - fluxnova-embedded
-    files:
-      - bruno/01-happy-path/04-sign-contract.bru
-      - bruno/01-happy-path/05-report-handover.bru
-      - bruno/01-happy-path/06-get-withdrawal-timer.bru
-      - bruno/02-escalation/03-get-signature-deadline-timer.bru
-      - bruno/02-escalation/05-assert-rejected.bru
-      - bruno/03-abort/03-sign-contract.bru
-      - bruno/03-abort/04-withdraw.bru
-      - bruno/03-abort/05-get-clarify-return-task.bru
-      - bruno/03-abort/07-assert-cancelled.bru
-      - bruno/04-not-solvent/02-assert-rejected.bru
-      - bruno/05-bike-unavailable/03-sign-contract.bru
-      - bruno/05-bike-unavailable/04-clarify-alternative.bru
-      - bruno/05-bike-unavailable/05-report-handover.bru
-      - bruno/05-bike-unavailable/06-get-withdrawal-timer.bru
-      - bruno/05-bike-unavailable/08-assert-leasing-active.bru
-      - bruno/06-incident-demo/03-sign-contract.bru
-      - bruno/06-incident-demo/04-assert-incident.bru
-      - bruno/07-list-and-inbox/04-sign-contract.bru
-      - bruno/07-list-and-inbox/05-inbox-has-task.bru
-      - bruno/07-list-and-inbox/07-inbox-empty.bru
-      - bruno/10-alternative-via-tasklist/02-sign-contract.bru
-      - bruno/10-alternative-via-tasklist/03-get-clarify-alternative-task.bru
-      - bruno/10-alternative-via-tasklist/05-assert-alternative-ordered.bru
-      - docs/adr/0001-record-architecture-decisions.md
-      - docs/adr/0007-two-architecture-test-tools-archunit-and-konsist.md
-  - name: cibseven-embedded + operaton-embedded
-    examples:
-      - cibseven-embedded
-      - operaton-embedded
-    files:
-      - bruno/03-abort/06-complete-clarify-return.bru
-      - bruno/06-incident-demo/06-retry-job.bru
-      - java-maven/service/app/src/main/resources/bpmn/bike-leasing.bpmn
-      - java-maven/service/app/src/main/resources/bpmn/cancel-bike-order.bpmn
-      - kotlin-gradle/service/app/src/main/resources/bpmn/bike-leasing.bpmn
-      - kotlin-gradle/service/app/src/main/resources/bpmn/cancel-bike-order.bpmn
-  - name: cibseven-process-engine-api + fullstack-cibseven-embedded
-    examples:
-      - cibseven-process-engine-api
-      - fullstack-cibseven-embedded
-    files:
-      - .pulse-cli.json
-  - name: cibseven-process-engine-api + operaton-process-engine-api
-    examples:
-      - cibseven-process-engine-api
-      - operaton-process-engine-api
-    files:
-      - .githooks/pre-commit
-      - bruno/01-happy-path/06-get-withdrawal-timer.bru
-      - bruno/02-escalation/03-get-signature-deadline-timer.bru
-      - bruno/03-abort/05-get-clarify-return-task.bru
-      - bruno/03-abort/06-complete-clarify-return.bru
-      - bruno/05-bike-unavailable/04-clarify-alternative.bru
-      - bruno/05-bike-unavailable/06-get-withdrawal-timer.bru
-      - bruno/05-bike-unavailable/09-get-application.bru
-      - bruno/06-incident-demo/04-assert-incident.bru
-      - bruno/06-incident-demo/05-get-failed-task.bru
-      - bruno/06-incident-demo/06-retry-task.bru
-      - bruno/07-list-and-inbox/05-inbox-has-task.bru
-      - bruno/07-list-and-inbox/07-inbox-empty.bru
-      - bruno/08-alternative-declined/01-submit.bru
-      - bruno/08-alternative-declined/04-decline-alternative.bru
-      - bruno/10-alternative-via-tasklist/03-get-clarify-alternative-task.bru
-      - docs/adr/0001-record-architecture-decisions.md
-      - docs/adr/0005-agents-md-as-the-single-source.md
-  - name: cibseven-remote + operaton-remote
-    examples:
-      - cibseven-remote
-      - operaton-remote
-    files:
-      - .claude/README.md
-      - .claude/agents/review-vertical-slice.md
-      - .claude/skills/create-persistence-adapter/SKILL.md
-      - .claude/skills/create-rest-controller/SKILL.md
-      - .claude/skills/implement-issue/SKILL.md
-      - .claude/skills/review-change/SKILL.md
-      - .githooks/pre-commit
-      - bruno/01-happy-path/06-get-withdrawal-timer.bru
-      - bruno/02-escalation/03-get-signature-deadline-timer.bru
-      - bruno/03-abort/05-get-clarify-return-task.bru
-      - bruno/03-abort/06-complete-clarify-return.bru
-      - bruno/05-bike-unavailable/04-clarify-alternative.bru
-      - bruno/05-bike-unavailable/06-get-withdrawal-timer.bru
-      - bruno/05-bike-unavailable/09-get-application.bru
-      - bruno/06-incident-demo/04-assert-incident.bru
-      - bruno/06-incident-demo/05-get-failed-task.bru
-      - bruno/06-incident-demo/06-retry-task.bru
-      - bruno/07-list-and-inbox/05-inbox-has-task.bru
-      - bruno/07-list-and-inbox/07-inbox-empty.bru
-      - bruno/08-alternative-declined/04-decline-alternative.bru
-      - bruno/10-alternative-via-tasklist/03-get-clarify-alternative-task.bru
-      - bruno/environments/local.bru
-      - designiq.yml
-      - docs/adr/0005-agents-md-as-the-single-source.md
-      - docs/adr/0007-two-architecture-test-tools-archunit-and-konsist.md
-      - docs/adr/0009-actuator-probes-and-prometheus-metrics.md
-      - docs/adr/0011-build-and-deployment-approach.md
-      - java-maven/service/example-service/src/main/resources/bpmn/bike-leasing.bpmn
-      - java-maven/service/example-service/src/main/resources/bpmn/cancel-bike-order.bpmn
-      - java-maven/service/example-service/src/main/resources/dmn/check-credit-rating.dmn
-      - java-maven/service/example-service/src/main/resources/forms/clarify-alternative.form
-      - java-maven/service/example-service/src/main/resources/forms/clarify-return.form
-      - java-maven/service/example-service/src/test/resources/sql/leasing-application.sql
-      - kotlin-gradle/service/example-service/src/main/resources/bpmn/bike-leasing.bpmn
-      - kotlin-gradle/service/example-service/src/main/resources/bpmn/cancel-bike-order.bpmn
-      - kotlin-gradle/service/example-service/src/main/resources/dmn/check-credit-rating.dmn
-      - kotlin-gradle/service/example-service/src/main/resources/forms/clarify-alternative.form
-      - kotlin-gradle/service/example-service/src/main/resources/forms/clarify-return.form
-      - kotlin-gradle/service/example-service/src/test/resources/sql/leasing-application.sql
-      - openapi/openapi.json
-      - stack/init-databases.sql
-  - name: fluxnova-embedded + operaton-embedded
-    examples:
-      - fluxnova-embedded
-      - operaton-embedded
-    files:
-      - openapi/openapi.json
-  - name: fullstack-cibseven-embedded + operaton-process-engine-api
-    examples:
-      - fullstack-cibseven-embedded
-      - operaton-process-engine-api
-    files:
-      - designiq.yml
-      - service/app/src/main/resources/dmn/check-credit-rating.dmn
-      - service/app/src/main/resources/forms/clarify-alternative.form
-      - service/app/src/main/resources/forms/clarify-return.form
-      - service/app/src/test/resources/sql/leasing-application.sql
-  - name: operaton-embedded + operaton-process-engine-api
-    examples:
-      - operaton-embedded
-      - operaton-process-engine-api
-    files:
-      - .pulse-cli.json
-  - name: operaton-process-engine-api + operaton-remote
-    examples:
-      - operaton-process-engine-api
-      - operaton-remote
-    files:
-      - bruno/00-demo-data/02-awaiting-handover/02-sign-contract.bru
-      - bruno/00-demo-data/03-in-withdrawal-period/02-sign-contract.bru
-      - bruno/00-demo-data/03-in-withdrawal-period/03-report-handover.bru
-      - bruno/00-demo-data/04-active/03-sign-contract.bru
-      - bruno/00-demo-data/04-active/04-report-handover.bru
-      - bruno/00-demo-data/06-alternative-in-inbox/02-sign-contract.bru
-      - bruno/00-demo-data/07-withdrawn-return-open/03-sign-contract.bru
-      - bruno/00-demo-data/07-withdrawn-return-open/04-withdraw.bru
-      - bruno/01-happy-path/04-sign-contract.bru
-      - bruno/03-abort/03-sign-contract.bru
-      - bruno/05-bike-unavailable/03-sign-contract.bru
-      - bruno/06-incident-demo/03-sign-contract.bru
-      - bruno/07-list-and-inbox/04-sign-contract.bru
-      - bruno/08-alternative-declined/03-sign-contract.bru
-      - bruno/10-alternative-via-tasklist/02-sign-contract.bru
-  - name: zeebe-native + zeebe-process-engine-api
-    examples:
-      - zeebe-native
-      - zeebe-process-engine-api
-    files:
-      - .bpmnlintrc
-      - .claude/README.md
-      - .claude/skills/create-rest-controller/SKILL.md
-      - .claude/skills/implement-issue/SKILL.md
-      - .claude/skills/review-change/SKILL.md
-      - bruno/03-abort/05-complete-clarify-return.bru
-      - bruno/05-bike-unavailable/03-clarify-alternative.bru
-      - bruno/10-alternative-via-tasklist/01-submit.bru
-      - bruno/10-alternative-via-tasklist/02-get-instance.bru
-      - bruno/10-alternative-via-tasklist/03-sign-contract.bru
-      - bruno/10-alternative-via-tasklist/04-find-clarify-alternative-task.bru
-      - bruno/10-alternative-via-tasklist/05-complete-clarify-alternative.bru
-      - bruno/10-alternative-via-tasklist/06-assert-alternative-ordered.bru
-      - bruno/README.md
-      - docs/adr/0004-mutation-testing-as-a-blocking-pr-gate.md
-      - docs/adr/0013-two-stack-variants-side-by-side-on-main.md
-      - java-maven/config/checkstyle/checkstyle.xml
-      - java-maven/service/app/src/main/resources/bpmn/bike-leasing.bpmn
-      - java-maven/service/app/src/main/resources/bpmn/cancel-bike-order.bpmn
-      - java-maven/service/app/src/main/resources/dmn/check-credit-rating.dmn
-      - java-maven/service/app/src/main/resources/forms/clarify-alternative.form
-      - java-maven/service/app/src/main/resources/forms/clarify-return.form
-      - kotlin-gradle/service/app/src/main/resources/bpmn/bike-leasing.bpmn
-      - kotlin-gradle/service/app/src/main/resources/bpmn/cancel-bike-order.bpmn
-      - kotlin-gradle/service/app/src/main/resources/dmn/check-credit-rating.dmn
-      - kotlin-gradle/service/app/src/main/resources/forms/clarify-alternative.form
-      - kotlin-gradle/service/app/src/main/resources/forms/clarify-return.form
-  - name: zeebe-native + zeebe-vanillabp
-    examples:
-      - zeebe-native
-      - zeebe-vanillabp
-    files:
-      - docs/adr/0002-hexagonal-architecture-for-the-backend.md
-      - docs/adr/0011-build-and-deployment-approach.md
-      - docs/adr/0012-polling-for-eventual-consistency-in-e2e-tests.md
+      - ".bpmnlintrc"
+      - ".githooks/pre-commit"
+      - ".gitignore"
+      - ".mcp.json"
+      - ".pulse-cli.json"
+      - "java-maven/.mvn/maven.config"
+      - "java-maven/config/checkstyle/source-guidelines.xml"
+  - examples: [temporal-native]
+    files: [.gitignore]
+    reason: "Single-variant example whose starter script keeps no variant markers, so its .gitignore lists only the Kotlin/Gradle entries."
+languageOnly:
+  - examples: [cibseven-embedded, cibseven-process-engine-api, cibseven-remote, fluxnova-embedded, operaton-embedded, operaton-remote, zeebe-native, zeebe-process-engine-api, zeebe-vanillabp]
+    sources: [service/common-architecture-tests/src/main/io/miragon/common/architecture/KotlinSourceGuidelinesTest]
+    reason: "Konsist rules for Kotlin sources; Java has no counterpart."
+  - examples: [cibseven-embedded, cibseven-process-engine-api, fluxnova-embedded, operaton-embedded]
+    sources: ["service/app/src/main/io/miragon/blueprint/adapter/outbound/{engine}/ProcessEngineExtensions"]
+    reason: "Kotlin extension functions over the engine services; Java calls the services directly."
+  - examples: [zeebe-native, zeebe-process-engine-api, zeebe-vanillabp]
+    sources: [service/common-zeebe-test/src/main/io/miragon/common/test/assertions/CamundaAssertExtensions]
+    reason: "Kotlin extension functions over the Camunda assertions; Java calls the assertions directly."
+  - examples: [cibseven-process-engine-api]
+    sources: [service/app/src/test/io/miragon/blueprint/adapter/process/ProcessPathAssertions]
+    reason: "Missing in Java so far, the Java process tests assert the path inline. To be ported, then remove the entry."
+  - examples: [cibseven-remote, operaton-remote]
+    sources: [service/example-service/src/test/io/miragon/blueprint/adapter/process/ProcessPathAssertions]
+    reason: "Missing in Java so far, the Java process tests assert the path inline. To be ported, then remove the entry."
+  - examples: [zeebe-vanillabp]
+    sources: [service/app/src/test/io/miragon/blueprint/adapter/inbound/rest/OpenApiConfigurationTest]
+    reason: "Only the Java variant tests the OpenAPI configuration so far. To be ported to Kotlin, then remove the entry."
+  - examples: [cibseven-process-engine-api]
+    tests:
+      - "service/app/src/test/io/miragon/blueprint/adapter/outbound/{engine}/LeasingProcessAdapterTest#complete alternative clarification propagates the interruption when the task wait is interrupted"
+      - "service/app/src/test/io/miragon/blueprint/adapter/outbound/{engine}/LeasingProcessAdapterTest#completeAlternativeClarificationFailsAndKeepsTheInterruptWhenTheTaskWaitIsInterrupted"
+      - "service/app/src/test/io/miragon/blueprint/adapter/outbound/{engine}/LeasingProcessAdapterTest#correlation rethrows a checked cause unwrapped"
+      - "service/app/src/test/io/miragon/blueprint/adapter/outbound/{engine}/LeasingProcessAdapterTest#correlationRethrowsTheCompletionExceptionForACheckedCause"
+    reason: "Interrupts and checked exceptions behave differently in Kotlin and Java, so each variant tests its own behaviour."
+  - examples: [cibseven-embedded, cibseven-process-engine-api, fluxnova-embedded, operaton-embedded, zeebe-native, zeebe-process-engine-api, zeebe-vanillabp]
+    tests: ["service/app/src/test/io/miragon/blueprint/domain/leasing/ApplicationIdTest#rejectsAMissingUuid"]
+    reason: "Kotlin's non-null type rules out a missing UUID at compile time; only Java needs the test."
+  - examples: [cibseven-remote, operaton-remote]
+    tests: ["service/example-service/src/test/io/miragon/blueprint/domain/leasing/ApplicationIdTest#rejectsAMissingUuid"]
+    reason: "Kotlin's non-null type rules out a missing UUID at compile time; only Java needs the test."
+  - examples: [operaton-remote]
+    tests:
+      - "service/example-service/src/test/io/miragon/blueprint/adapter/outbound/engine/RemoteLeasingProcessAdapterTest#find task id fails when no active task exists"
+      - "service/example-service/src/test/io/miragon/blueprint/adapter/outbound/engine/RemoteLeasingProcessAdapterTest#complete alternative clarification fails when no active task exists"
+      - "service/example-service/src/test/io/miragon/blueprint/application/service/OrderBikeServiceTest#orderBikeFailsForAnUnknownApplication"
+    reason: "Coverage gap between the variants. To be ported to the other variant, then remove the entry."

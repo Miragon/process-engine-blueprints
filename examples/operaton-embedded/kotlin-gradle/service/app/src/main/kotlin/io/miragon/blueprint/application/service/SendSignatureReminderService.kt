@@ -13,7 +13,7 @@ class SendSignatureReminderService(
 ) : SendSignatureReminderUseCase {
 
     override fun sendSignatureReminder(id: ApplicationId) {
-        val application = repository.findById(id) ?: error("Unknown application ${id.value}")
+        val application = repository.findById(id) ?: error("Unknown application $id")
         notification.send("Reminder: your leasing contract is still awaiting signature", application)
     }
 }

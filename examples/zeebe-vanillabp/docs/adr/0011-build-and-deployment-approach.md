@@ -34,6 +34,9 @@ and keep `stack/docker-compose.yml` as the local Camunda 8 dev stack.
   runs are unchanged, but every deploy-relevant value (the datasource URL/credentials, the Zeebe
   connection) is read from an env var that wins over the baked default.
 
+The how-to (build the image, the podman socket note) is in
+[CONTRIBUTING.md](../../CONTRIBUTING.md).
+
 ## Consequences
 
 - **Positive:** `bootBuildImage` produces a runnable, layered container with no Dockerfile to maintain;

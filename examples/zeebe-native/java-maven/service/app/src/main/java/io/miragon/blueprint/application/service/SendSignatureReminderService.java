@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 public class SendSignatureReminderService implements SendSignatureReminderUseCase {
 
     private final LeasingApplicationRepository repository;
-
     private final NotificationPort notification;
 
     public SendSignatureReminderService(LeasingApplicationRepository repository, NotificationPort notification) {
@@ -22,7 +21,7 @@ public class SendSignatureReminderService implements SendSignatureReminderUseCas
     @Override
     public void sendSignatureReminder(ApplicationId id) {
         LeasingApplication application = repository.findById(id)
-            .orElseThrow(() -> new IllegalStateException("Unknown application " + id));
+                .orElseThrow(() -> new IllegalStateException("Unknown application " + id));
         notification.send("Reminder: your leasing contract is still awaiting signature", application);
     }
 }

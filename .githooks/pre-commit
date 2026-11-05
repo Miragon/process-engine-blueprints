@@ -1,10 +1,16 @@
 #!/usr/bin/env bash
 # Repo-wide pre-commit hook. Install once with: npm run hooks:install (from the root or any example).
 #
-# Lints the BPMN models of every example whose models are staged, with that example's own bpmnlint.
+# Checks that the examples have not drifted apart (drift.yml) when anything under examples/ or the drift files is
+# staged, and lints the BPMN models of every example whose models are staged, with that example's own bpmnlint.
 set -euo pipefail
 
 root="$(git rev-parse --show-toplevel)"
+
+if git diff --cached --name-only | grep -qE '^(examples/|drift\.(lock\.)?yml$)'; then
+  node "$root/scripts/check-drift.mjs"
+fi
+
 examples_with_staged_models="$(git diff --cached --name-only --diff-filter=ACMR \
   | grep -E '^examples/[^/]+/.*\.bpmn$' | cut -d/ -f2 | sort -u || true)"
 

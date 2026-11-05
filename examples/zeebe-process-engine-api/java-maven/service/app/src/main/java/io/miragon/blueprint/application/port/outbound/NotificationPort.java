@@ -7,5 +7,6 @@ import io.miragon.blueprint.domain.leasing.LeasingApplication;
  * The blueprint ships a logging implementation; a real service would send an email or push message.
  */
 public interface NotificationPort {
+
     void send(String subject, LeasingApplication application);
 }

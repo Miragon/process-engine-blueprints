@@ -23,6 +23,7 @@ description: Add a new example to this monorepo, or import an existing standalon
    (`embedded` or `remote`), `summary`, `stack`, `variants` with their paths, `identicalResources`, and
    `missingVariants` with a reason when it has only one. New engine or integration values also need a label in
    `scripts/lib/readme.mjs`.
-5. **Regenerate and check:** `npm run generate`, then `node scripts/check-drift.mjs --propose` to see which
-   files it shares with the others and add the rules that should hold to `drift.yml`; `npm run drift`,
+5. **Regenerate and check:** `npm run generate`, `npm run drift:update`, then `npm run drift`: every file
+   the new example does not share with another one must get a reason in `drift.yml` (`differs`), and sources
+   in one variant only go to `languageOnly`;
    `npm test`, and `tooling/starter/export.sh <name> <variant> /tmp/<name>` plus its build.

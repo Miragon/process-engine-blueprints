@@ -59,7 +59,7 @@ class OpenApiSpecExportTest {
         // when: it is re-serialised with sorted keys and a fixed indenter
         val tree = deterministicMapper.readTree(raw) as ObjectNode
         // Drop the `servers` block — springdoc fills it with the random test port, which would make
-        // the drift gate flap. An API consumer resolves the base URL from its own configuration anyway.
+        // the drift gate flap. Any API consumer points at its own base URL anyway.
         tree.remove("servers")
         val pretty = deterministicMapper.writeValueAsString(tree) + "\n"
 

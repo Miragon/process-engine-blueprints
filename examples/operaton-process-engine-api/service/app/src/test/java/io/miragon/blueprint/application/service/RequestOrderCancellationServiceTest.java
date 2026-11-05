@@ -1,14 +1,14 @@
 package io.miragon.blueprint.application.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+
 import io.miragon.blueprint.application.port.outbound.BikeDealerPort;
 import io.miragon.blueprint.domain.bike.OrderId;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.mock;
 
 class RequestOrderCancellationServiceTest {
 
@@ -16,30 +16,28 @@ class RequestOrderCancellationServiceTest {
     private final RequestOrderCancellationService underTest = new RequestOrderCancellationService(bikeDealer);
 
     @Test
-    @DisplayName("requestCancellation asks the dealer and returns its answer")
-    void requestCancellationAsksTheDealerAndReturnsItsAnswer() {
+    void requestCancellation_asks_the_dealer_and_returns_its_answer() {
         // given: a placed order the dealer allows cancelling
         OrderId orderId = new OrderId("ORDER-900");
-        given(bikeDealer.requestCancellation(orderId)).willReturn(true);
+        when(bikeDealer.requestCancellation(orderId)).thenReturn(true);
         // when: the dealer is asked whether it can be cancelled
         boolean possible = underTest.requestCancellation(orderId);
         // then: the dealer's answer is returned
         assertThat(possible).isTrue();
-        then(bikeDealer).should().requestCancellation(orderId);
-        then(bikeDealer).shouldHaveNoMoreInteractions();
+        verify(bikeDealer).requestCancellation(orderId);
+        verifyNoMoreInteractions(bikeDealer);
     }
 
     @Test
-    @DisplayName("requestCancellation returns false when the dealer refuses")
-    void requestCancellationReturnsFalseWhenTheDealerRefuses() {
+    void requestCancellation_returns_false_when_the_dealer_refuses() {
         // given: an order the dealer will not allow cancelling
         OrderId orderId = new OrderId("ORDER-901");
-        given(bikeDealer.requestCancellation(orderId)).willReturn(false);
+        when(bikeDealer.requestCancellation(orderId)).thenReturn(false);
         // when: the dealer is asked whether it can be cancelled
         boolean possible = underTest.requestCancellation(orderId);
         // then: the dealer's negative answer is propagated unchanged
         assertThat(possible).isFalse();
-        then(bikeDealer).should().requestCancellation(orderId);
-        then(bikeDealer).shouldHaveNoMoreInteractions();
+        verify(bikeDealer).requestCancellation(orderId);
+        verifyNoMoreInteractions(bikeDealer);
     }
 }

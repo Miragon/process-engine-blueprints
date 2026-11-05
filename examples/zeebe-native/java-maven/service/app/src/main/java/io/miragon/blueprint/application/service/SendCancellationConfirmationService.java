@@ -19,10 +19,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class SendCancellationConfirmationService implements SendCancellationConfirmationUseCase {
 
     private final LeasingApplicationRepository repository;
-
     private final NotificationPort notification;
 
-    public SendCancellationConfirmationService(LeasingApplicationRepository repository, NotificationPort notification) {
+    public SendCancellationConfirmationService(
+            LeasingApplicationRepository repository,
+            NotificationPort notification) {
         this.repository = repository;
         this.notification = notification;
     }
@@ -30,7 +31,7 @@ public class SendCancellationConfirmationService implements SendCancellationConf
     @Override
     public void sendCancellationConfirmation(ApplicationId id) {
         LeasingApplication application = repository.findById(id)
-            .orElseThrow(() -> new IllegalStateException("Unknown application " + id));
+                .orElseThrow(() -> new IllegalStateException("Unknown application " + id));
         notification.send("Your bike-leasing application has been cancelled", application);
         repository.save(application.cancel());
     }

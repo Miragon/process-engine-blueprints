@@ -15,7 +15,6 @@ public class BikeEntity {
     private String model;
 
     protected BikeEntity() {
-        // required by JPA
     }
 
     public BikeEntity(String bikeId, String model) {

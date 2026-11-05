@@ -18,8 +18,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * {@code GET /api/bike-leasing?status=&page=&size=} — the customer-portal list. A separate controller from
- * the paging query keeps to the "one inbound port per controller" rule the architecture tests enforce.
+ * {@code GET /api/bike-leasing?status=&page=&size=} — the customer-portal list. A separate controller
+ * from the paging query keeps to the "one inbound port per controller" rule the architecture tests
+ * enforce.
  */
 @RestController
 @RequestMapping("/api/bike-leasing")
@@ -31,9 +32,6 @@ public class ListLeasingApplicationsController {
         this.query = query;
     }
 
-    /**
-     * @param status the status to filter by (case-insensitive); {@code null} lists every status
-     */
     @Operation(operationId = "listLeasingApplications")
     @GetMapping
     public LeasingApplicationPageDto list(
@@ -41,20 +39,20 @@ public class ListLeasingApplicationsController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         ListLeasingApplicationsQuery.Filter filter = new ListLeasingApplicationsQuery.Filter(
-                status == null ? null : parseStatus(status),
+                status != null ? parseStatus(status) : null,
                 page,
                 size);
         return toDto(query.list(filter));
     }
 
-    private static LeasingStatus parseStatus(String raw) {
+    private LeasingStatus parseStatus(String raw) {
         try {
             return LeasingStatus.valueOf(raw.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
-            String expected = Arrays.stream(LeasingStatus.values())
-                    .map(LeasingStatus::name)
-                    .collect(Collectors.joining(", "));
-            throw new IllegalArgumentException("unknown status '" + raw + "'; expected one of " + expected, e);
+            throw new IllegalArgumentException(
+                    "unknown status '" + raw + "'; expected one of "
+                            + Arrays.stream(LeasingStatus.values()).map(Enum::name).collect(Collectors.joining(", ")),
+                    e);
         }
     }
 
@@ -85,9 +83,6 @@ public class ListLeasingApplicationsController {
             @Schema(requiredMode = REQUIRED) int totalPages) {
     }
 
-    /**
-     * @param bikeModel the bike's model; {@code null} if the bike is not in the portfolio
-     */
     public record LeasingApplicationSummaryDto(
             @Schema(requiredMode = REQUIRED) String applicationId,
             @Schema(requiredMode = REQUIRED) String customerName,
@@ -95,7 +90,8 @@ public class ListLeasingApplicationsController {
             @Schema(nullable = true) String bikeModel,
             @Schema(requiredMode = REQUIRED) String status,
             // ISO-8601 string — see the note in GetLeasingApplicationController.LeasingApplicationDto.
+            @Schema(requiredMode = REQUIRED)
             @JsonFormat(shape = JsonFormat.Shape.STRING)
-            @Schema(requiredMode = REQUIRED) LocalDateTime createdAt) {
+            LocalDateTime createdAt) {
     }
 }

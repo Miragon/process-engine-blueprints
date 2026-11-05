@@ -37,8 +37,8 @@ Copy the shape of the existing controllers instead of inventing one:
   on). Throw those from the domain or the service; don't catch them in the controller.
 <!-- variant:blueprint -->
 - **Both variants export the same `openapi.json`.** Kotlin derives required and nullable from the
-  types; the Java records need `@Schema(requiredMode = REQUIRED)` / `@Schema(nullable = true)` on
-  their components to produce the same spec (see the Java `SelectAlternativeController`).
+  types; the Java records need `@Schema` annotations for required and nullable components to produce
+  the same spec (see the Java `SelectAlternativeController`).
 <!-- /variant:blueprint -->
 
 ## Test pattern

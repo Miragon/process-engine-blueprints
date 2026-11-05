@@ -46,6 +46,7 @@ import org.cibseven.bpm.engine.TaskService;
 import org.cibseven.bpm.engine.runtime.ProcessInstance;
 import org.cibseven.bpm.engine.task.Task;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -120,7 +121,8 @@ class BikeLeasingProcessTest {
     }
 
     @Test
-    void happy_path_contract_signed_bike_available_leasing_becomes_active() throws InterruptedException {
+    @DisplayName("happy path - contract signed, bike available, leasing becomes active")
+    void happyPathContractSignedBikeAvailableLeasingBecomesActive() throws InterruptedException {
         ApplicationId id = submit(35, 3500.0);
         ProcessInstance instance = findProcessInstance(runtimeService, id);
 
@@ -166,7 +168,8 @@ class BikeLeasingProcessTest {
     }
 
     @Test
-    void escalation_contract_not_signed_in_time_is_escalated_and_rejected() throws InterruptedException {
+    @DisplayName("escalation - contract not signed in time is escalated and rejected")
+    void escalationContractNotSignedInTimeIsEscalatedAndRejected() throws InterruptedException {
         ApplicationId id = submit(35, 3500.0);
         ProcessInstance instance = findProcessInstance(runtimeService, id);
 
@@ -197,7 +200,8 @@ class BikeLeasingProcessTest {
     }
 
     @Test
-    void not_solvent_the_DMN_routes_the_application_straight_to_rejection() throws InterruptedException {
+    @DisplayName("not solvent - the DMN routes the application straight to rejection")
+    void notSolventTheDmnRoutesTheApplicationStraightToRejection() throws InterruptedException {
         // age below 18 cannot sign a leasing contract, so the DMN returns solvent = false
         ApplicationId id = submit(15, 3500.0);
         ProcessInstance instance = findProcessInstance(runtimeService, id);
@@ -219,7 +223,8 @@ class BikeLeasingProcessTest {
     }
 
     @Test
-    void abort_withdrawing_the_application_compensates_the_completed_steps() throws InterruptedException {
+    @DisplayName("abort - withdrawing the application compensates the completed steps")
+    void abortWithdrawingTheApplicationCompensatesTheCompletedSteps() throws InterruptedException {
         when(requestOrderCancellationUseCase.requestCancellation(any())).thenReturn(true);
 
         ApplicationId id = submit(35, 3500.0);
@@ -272,7 +277,8 @@ class BikeLeasingProcessTest {
     }
 
     @Test
-    void bike_unavailable_clarifying_an_alternative_re_orders_and_leasing_becomes_active()
+    @DisplayName("bike unavailable - clarifying an alternative re-orders and leasing becomes active")
+    void bikeUnavailableClarifyingAnAlternativeReOrdersAndLeasingBecomesActive()
         throws InterruptedException {
         ApplicationId id = submitUntilBikeUnavailable();
         ProcessInstance instance = findProcessInstance(runtimeService, id);
@@ -319,7 +325,8 @@ class BikeLeasingProcessTest {
     }
 
     @Test
-    void bike_unavailable_declining_the_alternative_reverses_contract_and_policy_without_cancelling_an_order()
+    @DisplayName("bike unavailable - declining the alternative reverses contract and policy without cancelling an order")
+    void bikeUnavailableDecliningTheAlternativeReversesContractAndPolicyWithoutCancellingAnOrder()
         throws InterruptedException {
         ApplicationId id = submitUntilBikeUnavailable();
         ProcessInstance instance = findProcessInstance(runtimeService, id);
@@ -350,7 +357,8 @@ class BikeLeasingProcessTest {
     }
 
     @Test
-    void abort_while_clarifying_an_alternative_compensates_contract_and_policy_without_cancelling_an_order()
+    @DisplayName("abort while clarifying an alternative - compensates contract and policy without cancelling an order")
+    void abortWhileClarifyingAnAlternativeCompensatesContractAndPolicyWithoutCancellingAnOrder()
         throws InterruptedException {
         ApplicationId id = submitUntilBikeUnavailable();
         ProcessInstance instance = findProcessInstance(runtimeService, id);
@@ -378,7 +386,8 @@ class BikeLeasingProcessTest {
     }
 
     @Test
-    void abort_after_an_accepted_alternative_cancels_the_one_placed_order_exactly_once()
+    @DisplayName("abort after an accepted alternative - cancels the one placed order exactly once")
+    void abortAfterAnAcceptedAlternativeCancelsTheOnePlacedOrderExactlyOnce()
         throws InterruptedException {
         when(requestOrderCancellationUseCase.requestCancellation(any())).thenReturn(true);
 

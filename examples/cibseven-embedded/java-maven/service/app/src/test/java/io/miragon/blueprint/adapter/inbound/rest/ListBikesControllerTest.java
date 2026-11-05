@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import io.miragon.blueprint.application.port.inbound.ListBikesQuery;
 import io.miragon.blueprint.domain.bike.BikeId;
 import java.util.List;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -24,6 +25,7 @@ class ListBikesControllerTest {
     private ListBikesQuery query;
 
     @Test
+    @DisplayName("returns the catalogue with availability flags")
     void returnsTheCatalogueWithAvailabilityFlags() throws Exception {
         // given: a catalogue with one available and one out-of-stock bike
         when(query.all()).thenReturn(

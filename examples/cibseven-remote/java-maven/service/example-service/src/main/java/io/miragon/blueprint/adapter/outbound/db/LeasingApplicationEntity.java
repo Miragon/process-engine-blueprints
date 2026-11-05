@@ -58,8 +58,7 @@ public class LeasingApplicationEntity {
             LeasingStatus status,
             @Nullable String orderId,
             @Nullable String contractId,
-            LocalDateTime createdAt
-    ) {
+            LocalDateTime createdAt) {
         this.applicationId = applicationId;
         this.customerName = customerName;
         this.email = email;

@@ -21,7 +21,7 @@ public class SendSignatureReminderService implements SendSignatureReminderUseCas
     @Override
     public void sendSignatureReminder(ApplicationId id) {
         LeasingApplication application = repository.findById(id)
-                .orElseThrow(() -> new IllegalStateException("Unknown application " + id.value()));
+                .orElseThrow(() -> new IllegalStateException("Unknown application " + id));
         notification.send("Reminder: your leasing contract is still awaiting signature", application);
     }
 }

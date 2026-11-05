@@ -1,14 +1,14 @@
 package io.miragon.blueprint.adapter.outbound.db;
 
+import static io.miragon.blueprint.domain.leasing.TestObjectBuilder.testLeasingApplication;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import io.miragon.blueprint.domain.bike.OrderId;
 import io.miragon.blueprint.domain.leasing.ContractId;
 import io.miragon.blueprint.domain.leasing.LeasingApplication;
 import io.miragon.blueprint.domain.leasing.LeasingStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import static io.miragon.blueprint.domain.leasing.TestObjectBuilder.testLeasingApplication;
-import static org.assertj.core.api.Assertions.assertThat;
 
 class LeasingApplicationEntityMapperTest {
 
@@ -17,10 +17,10 @@ class LeasingApplicationEntityMapperTest {
     void toEntityCopiesEveryFieldIncludingTheNullableOrderAndContractIds() {
         // given: a fully populated application carrying an order and a contract
         LeasingApplication application = testLeasingApplication()
-            .status(LeasingStatus.ACTIVE)
-            .orderId(new OrderId("ORDER-1"))
-            .contractId(new ContractId("CONTRACT-1"))
-            .build();
+                .status(LeasingStatus.ACTIVE)
+                .orderId(new OrderId("ORDER-1"))
+                .contractId(new ContractId("CONTRACT-1"))
+                .build();
 
         // when: it is mapped to its persistence entity
         LeasingApplicationEntity entity = LeasingApplicationEntityMapper.toEntity(application);
@@ -42,8 +42,7 @@ class LeasingApplicationEntityMapperTest {
     @DisplayName("toDomain reconstructs every field including the nullable order and contract ids")
     void toDomainReconstructsEveryFieldIncludingTheNullableOrderAndContractIds() {
         // given: an entity carrying an order and a contract
-        LeasingApplicationEntity entity = LeasingApplicationEntityMapper.toEntity(
-            testLeasingApplication()
+        LeasingApplicationEntity entity = LeasingApplicationEntityMapper.toEntity(testLeasingApplication()
                 .status(LeasingStatus.ACTIVE)
                 .orderId(new OrderId("ORDER-1"))
                 .contractId(new ContractId("CONTRACT-1"))

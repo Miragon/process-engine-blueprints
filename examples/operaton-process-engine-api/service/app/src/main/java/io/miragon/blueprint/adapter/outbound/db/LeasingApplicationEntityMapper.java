@@ -15,29 +15,29 @@ public final class LeasingApplicationEntityMapper {
 
     public static LeasingApplication toDomain(LeasingApplicationEntity entity) {
         return new LeasingApplication(
-            new ApplicationId(entity.getApplicationId()),
-            new CustomerName(entity.getCustomerName()),
-            new Email(entity.getEmail()),
-            entity.getAge(),
-            entity.getMonthlyNetIncome(),
-            new BikeId(entity.getBikeId()),
-            entity.getStatus(),
-            entity.getCreatedAt(),
-            entity.getOrderId() != null ? new OrderId(entity.getOrderId()) : null,
-            entity.getContractId() != null ? new ContractId(entity.getContractId()) : null);
+                new ApplicationId(entity.getApplicationId()),
+                new CustomerName(entity.getCustomerName()),
+                new Email(entity.getEmail()),
+                entity.getAge(),
+                entity.getMonthlyNetIncome(),
+                new BikeId(entity.getBikeId()),
+                entity.getStatus(),
+                entity.getCreatedAt(),
+                entity.getOrderId() != null ? new OrderId(entity.getOrderId()) : null,
+                entity.getContractId() != null ? new ContractId(entity.getContractId()) : null);
     }
 
     public static LeasingApplicationEntity toEntity(LeasingApplication domain) {
         return new LeasingApplicationEntity(
-            domain.id().value(),
-            domain.customerName().value(),
-            domain.email().value(),
-            domain.age(),
-            domain.monthlyNetIncome(),
-            domain.bikeId().value(),
-            domain.status(),
-            domain.orderId() != null ? domain.orderId().value() : null,
-            domain.contractId() != null ? domain.contractId().value() : null,
-            domain.createdAt());
+                domain.id().value(),
+                domain.customerName().value(),
+                domain.email().value(),
+                domain.age(),
+                domain.monthlyNetIncome(),
+                domain.bikeId().value(),
+                domain.status(),
+                domain.orderId() != null ? domain.orderId().value() : null,
+                domain.contractId() != null ? domain.contractId().value() : null,
+                domain.createdAt());
     }
 }

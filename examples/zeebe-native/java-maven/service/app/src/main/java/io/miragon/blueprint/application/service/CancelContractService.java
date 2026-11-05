@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 public class CancelContractService implements CancelContractUseCase {
 
     private final LeasingApplicationRepository repository;
-
     private final ContractPort contract;
 
     public CancelContractService(LeasingApplicationRepository repository, ContractPort contract) {
@@ -23,7 +22,7 @@ public class CancelContractService implements CancelContractUseCase {
     @Override
     public void cancelContract(ApplicationId id) {
         LeasingApplication application = repository.findById(id)
-            .orElseThrow(() -> new IllegalStateException("Unknown application " + id));
+                .orElseThrow(() -> new IllegalStateException("Unknown application " + id));
         // Revoke the contract the contract system issued earlier (its id is recorded on the application).
         ContractId contractId = application.contractId();
         if (contractId == null) {

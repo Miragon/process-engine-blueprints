@@ -3,10 +3,10 @@ package io.miragon.blueprint.adapter.outbound.db;
 import io.miragon.blueprint.application.port.outbound.BikePortfolioRepository;
 import io.miragon.blueprint.domain.bike.Bike;
 import io.miragon.blueprint.domain.bike.BikeId;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Component;
 
 @Component
 public class BikePortfolioPersistenceAdapter implements BikePortfolioRepository {
@@ -38,11 +38,11 @@ public class BikePortfolioPersistenceAdapter implements BikePortfolioRepository 
     public List<Bike> findAllByIds(List<BikeId> bikeIds) {
         if (bikeIds.isEmpty()) {
             return List.of();
-        } else {
-            return repository.findAllById(bikeIds.stream().map(BikeId::value).toList()).stream()
-                    .map(BikePortfolioPersistenceAdapter::toDomain)
-                    .toList();
         }
+        List<String> ids = bikeIds.stream().map(BikeId::value).toList();
+        return repository.findAllById(ids).stream()
+                .map(BikePortfolioPersistenceAdapter::toDomain)
+                .toList();
     }
 
     private static Bike toDomain(BikeEntity entity) {

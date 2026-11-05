@@ -1,4 +1,4 @@
-# 0010 — Two architecture-test tools: ArchUnit (bytecode) and Konsist (source)
+# 0007 — Two architecture-test tools: ArchUnit (bytecode) and Konsist (source)
 
 - **Status:** Accepted
 - **Date:** 2026-08-20
@@ -27,8 +27,8 @@ We use **both**, each for the rules only it can express, in `service/common-arch
 fail `./gradlew build`):
 
 - **ArchUnit (bytecode)** — the layered-dependency graph and naming/suffix rules
-  (`HexagonalArchitectureTest`, `NamingConventionArchitectureTest`) plus basic coding guidelines
-  (no `println`/`System.out`, no package cycles).
+  (`HexagonalArchitectureTest`, `NamingConventionArchitectureTest`, `ServiceArchitectureTest`) plus
+  basic coding guidelines (`BasicCodingGuidelinesTest`: no `println`/`System.out`, no package cycles).
 - **Konsist (source)** — conventions the bytecode no longer carries (`KotlinSourceGuidelinesTest`):
   at most one top-level class/interface/object per file, and no wildcard imports (except `java.util`).
 

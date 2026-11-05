@@ -73,7 +73,7 @@ class SelectAlternativeServiceTest {
         assertThatThrownBy(() ->
                 underTest.selectAlternative(new SelectAlternativeUseCase.Command(unknownId, false, null, null)))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessage("Unknown application ApplicationId(value=3f0c7c52-9d1b-4a52-8a0e-6a4f6d5b1c11)");
+                .hasMessage("Unknown application " + unknownId);
         verify(repository).findById(unknownId);
         verifyNoMoreInteractions(repository, bikePortfolio, process);
     }

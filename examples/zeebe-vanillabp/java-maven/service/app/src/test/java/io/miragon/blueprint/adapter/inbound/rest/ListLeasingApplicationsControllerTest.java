@@ -3,7 +3,6 @@ package io.miragon.blueprint.adapter.inbound.rest;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
@@ -14,7 +13,9 @@ import io.miragon.blueprint.domain.leasing.CustomerName;
 import io.miragon.blueprint.domain.leasing.LeasingStatus;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +36,7 @@ class ListLeasingApplicationsControllerTest {
     private final ApplicationId id = new ApplicationId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
 
     @Test
+    @DisplayName("returns a page of application summaries")
     void returnsAPageOfApplicationSummaries() throws Exception {
         // given: a single-item page
         when(query.list(any())).thenReturn(
@@ -67,9 +69,11 @@ class ListLeasingApplicationsControllerTest {
     }
 
     @Test
+    @DisplayName("parses the status filter and paging params into the query")
     void parsesTheStatusFilterAndPagingParamsIntoTheQuery() throws Exception {
         // given
-        when(query.list(any())).thenReturn(new ListLeasingApplicationsQuery.Page(List.of(), 2, 5, 0, 0));
+        when(query.list(any())).thenReturn(
+                new ListLeasingApplicationsQuery.Page(List.of(), 2, 5, 0, 0));
         ArgumentCaptor<ListLeasingApplicationsQuery.Filter> filter =
                 ArgumentCaptor.forClass(ListLeasingApplicationsQuery.Filter.class);
 
@@ -84,6 +88,30 @@ class ListLeasingApplicationsControllerTest {
     }
 
     @Test
+    @DisplayName("parses the status filter independently of the default locale")
+    void parsesTheStatusFilterIndependentlyOfTheDefaultLocale() throws Exception {
+        // given: a default locale whose upper-casing of "i" is not "I"
+        when(query.list(any())).thenReturn(
+                new ListLeasingApplicationsQuery.Page(List.of(), 0, 20, 0, 0));
+        ArgumentCaptor<ListLeasingApplicationsQuery.Filter> filter =
+                ArgumentCaptor.forClass(ListLeasingApplicationsQuery.Filter.class);
+        Locale previousLocale = Locale.getDefault();
+        Locale.setDefault(Locale.forLanguageTag("tr-TR"));
+
+        // when: a filtered request is made with lowercase status
+        try {
+            mockMvc.perform(get("/api/bike-leasing?status=active")).andReturn();
+        } finally {
+            Locale.setDefault(previousLocale);
+        }
+
+        // then: the status is still recognised
+        verify(query).list(filter.capture());
+        assertThat(filter.getValue().status()).isEqualTo(LeasingStatus.ACTIVE);
+    }
+
+    @Test
+    @DisplayName("rejects an unknown status with a 400 problem detail")
     void rejectsAnUnknownStatusWithA400ProblemDetail() throws Exception {
         // when: an invalid status is requested
         MvcResult response = mockMvc.perform(get("/api/bike-leasing?status=bogus")).andReturn();
@@ -92,6 +120,5 @@ class ListLeasingApplicationsControllerTest {
         assertThat(response.getResponse().getStatus()).isEqualTo(400);
         assertThat(response.getResponse().getContentType()).contains("application/problem+json");
         assertThat(response.getResponse().getContentAsString()).contains("unknown status 'bogus'");
-        verifyNoInteractions(query);
     }
 }

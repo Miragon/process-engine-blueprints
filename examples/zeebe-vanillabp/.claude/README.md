@@ -17,12 +17,11 @@ Workflows, loaded when a task matches their description.
 
 The layer skills (`create-*`) are small recipes next to the workflows: each points at the existing
 classes as the production pattern and states the test pattern, so the agent writes the test first and
-matches the code. `implement-issue` calls them. The process glue comes from the bpmn-to-code plugin:
-`bpmn-to-code:create-worker` and `bpmn-to-code:test-worker` for a workflow task,
-`bpmn-to-code:create-process-adapter` for starting a process, correlating a message or completing a
-user task, `bpmn-to-code:test-process` for a process path. Those skills know job workers, not
-VanillaBP: take the generated names and the test shape from them, and the code shape from the
-existing `@WorkflowTask` classes and `LeasingProcessAdapter`. Model edits go through `bpmn-cli:bpmn`.
+matches the code. `implement-issue` calls them. The process glue comes from the plugins: model edits
+with `bpmn-cli:bpmn`, workflow tasks and the process adapter with `bpmn-to-code:create-worker`,
+`bpmn-to-code:create-process-adapter`, `bpmn-to-code:test-worker` and `bpmn-to-code:test-process`.
+Those skills know job workers, not VanillaBP: take the generated names and the test shape from them,
+and the code shape from the existing `@WorkflowTask` classes and `LeasingProcessAdapter`.
 
 ## Subagents — `.claude/agents/<name>.md`
 
@@ -42,11 +41,11 @@ Read-only reviewers with their own context, loaded at session start.
   Personal additions go in `settings.local.json` (git-ignored).
 - `hooks/lint-bpmn.sh` (PostToolUse) runs bpmnlint after every edit of an executable `.bpmn` and
   hands the findings back to Claude. It changes nothing.
-- `settings.json` also enables three pinned plugins, `bpmn-cli@miragon-bpmn` (skill `bpmn-cli:bpmn`),
-  `bpmn-to-code@bpmn-to-code` (skills `bpmn-to-code:*`) and `bpmnlint-rules@miragon-bpmnlint` (skills
-  `bpmnlint-rules:*`), from marketplaces fixed to a release tag. Claude Code installs them once you
-  trust the folder; cloud sessions do not load them. Its `env` sets `BPMN_KEEP_FLOW_IDS=1`, so
-  bpmn-cli keeps flow ids stable.
+- `settings.json` also enables three pinned plugins from marketplaces fixed to a release tag:
+  `bpmn-cli@miragon-bpmn` (skill `bpmn-cli:bpmn`), `bpmn-to-code@bpmn-to-code` (skills
+  `bpmn-to-code:*`) and `bpmnlint-rules@miragon-bpmnlint` (skills `bpmnlint-rules:*`). Claude Code
+  installs them once you trust the folder; cloud sessions do not load them. Its `env` sets
+  `BPMN_KEEP_FLOW_IDS=1`, so bpmn-cli keeps flow ids stable.
 
 ## What goes where
 

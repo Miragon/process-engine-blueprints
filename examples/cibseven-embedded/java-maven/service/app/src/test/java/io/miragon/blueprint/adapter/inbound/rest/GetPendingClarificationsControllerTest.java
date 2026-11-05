@@ -12,6 +12,7 @@ import io.miragon.blueprint.domain.leasing.PendingClarification;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -31,6 +32,7 @@ class GetPendingClarificationsControllerTest {
     private final ApplicationId id = new ApplicationId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
 
     @Test
+    @DisplayName("returns the pending clarifications without exposing a task id")
     void returnsThePendingClarificationsWithoutExposingATaskId() throws Exception {
         // given: one application waiting on the clarify-alternative task
         when(query.pending()).thenReturn(
@@ -53,6 +55,7 @@ class GetPendingClarificationsControllerTest {
     }
 
     @Test
+    @DisplayName("returns an empty array when the inbox is empty")
     void returnsAnEmptyArrayWhenTheInboxIsEmpty() throws Exception {
         // given
         when(query.pending()).thenReturn(List.of());

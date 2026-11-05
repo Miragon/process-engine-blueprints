@@ -45,7 +45,6 @@ public class LeasingApplicationEntity {
     private LocalDateTime createdAt;
 
     protected LeasingApplicationEntity() {
-        // required by JPA
     }
 
     public LeasingApplicationEntity(

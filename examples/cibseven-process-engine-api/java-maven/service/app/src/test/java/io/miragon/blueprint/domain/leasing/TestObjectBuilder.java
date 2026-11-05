@@ -6,10 +6,12 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
- * Shared test builder — start from a valid, solvent application and override only what a test cares about.
+ * Shared test builder — start from a valid, solvent application and override only what a test cares
+ * about, then call {@link #build()}.
  *
- * <p>Usage: {@code testLeasingApplication().id(id).status(LeasingStatus.ACTIVE).build()}. Every setter returns
- * the builder; {@link #build()} can be called repeatedly and always returns a new {@link LeasingApplication}.
+ * <pre>{@code
+ * LeasingApplication app = testLeasingApplication().status(LeasingStatus.ACTIVE).build();
+ * }</pre>
  */
 public final class TestObjectBuilder {
 
@@ -27,7 +29,7 @@ public final class TestObjectBuilder {
     private TestObjectBuilder() {
     }
 
-    /** Starts a builder pre-filled with the defaults of a valid, solvent application in status {@code RECEIVED}. */
+    /** Entry point: a valid, solvent, RECEIVED application. */
     public static TestObjectBuilder testLeasingApplication() {
         return new TestObjectBuilder();
     }
@@ -72,13 +74,11 @@ public final class TestObjectBuilder {
         return this;
     }
 
-    /** @param orderId the dealer order; {@code null} (the default) for a not-yet-ordered application */
     public TestObjectBuilder orderId(OrderId orderId) {
         this.orderId = orderId;
         return this;
     }
 
-    /** @param contractId the issued contract; {@code null} (the default) when no contract was issued */
     public TestObjectBuilder contractId(ContractId contractId) {
         this.contractId = contractId;
         return this;
@@ -86,15 +86,6 @@ public final class TestObjectBuilder {
 
     public LeasingApplication build() {
         return new LeasingApplication(
-            id,
-            customerName,
-            email,
-            age,
-            monthlyNetIncome,
-            bikeId,
-            status,
-            createdAt,
-            orderId,
-            contractId);
+                id, customerName, email, age, monthlyNetIncome, bikeId, status, createdAt, orderId, contractId);
     }
 }

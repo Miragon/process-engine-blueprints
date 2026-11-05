@@ -6,10 +6,11 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
- * Shared test builder — start from a valid, solvent application and override only what a test cares about:
+ * Shared test builder — start from a valid, solvent application and override only what a test cares
+ * about, then call {@link #build()}.
  *
  * <pre>{@code
- * LeasingApplication application = testLeasingApplication().age(40).monthlyNetIncome(4200.0).build();
+ * LeasingApplication app = testLeasingApplication().status(LeasingStatus.ACTIVE).build();
  * }</pre>
  */
 public final class TestObjectBuilder {
@@ -22,12 +23,13 @@ public final class TestObjectBuilder {
     private BikeId bikeId = new BikeId("BIKE-900");
     private LeasingStatus status = LeasingStatus.RECEIVED;
     private LocalDateTime createdAt = LocalDateTime.of(2024, 1, 15, 10, 30, 0);
-    private OrderId orderId;
-    private ContractId contractId;
+    private OrderId orderId = null;
+    private ContractId contractId = null;
 
     private TestObjectBuilder() {
     }
 
+    /** Entry point: a valid, solvent, RECEIVED application. */
     public static TestObjectBuilder testLeasingApplication() {
         return new TestObjectBuilder();
     }
@@ -84,6 +86,6 @@ public final class TestObjectBuilder {
 
     public LeasingApplication build() {
         return new LeasingApplication(
-            id, customerName, email, age, monthlyNetIncome, bikeId, status, createdAt, orderId, contractId);
+                id, customerName, email, age, monthlyNetIncome, bikeId, status, createdAt, orderId, contractId);
     }
 }

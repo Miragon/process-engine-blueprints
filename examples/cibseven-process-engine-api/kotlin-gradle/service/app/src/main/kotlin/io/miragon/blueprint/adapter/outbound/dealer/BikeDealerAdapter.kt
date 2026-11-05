@@ -23,12 +23,10 @@ class BikeDealerAdapter : BikeDealerPort {
 
     /**
      * Demo mechanism (not a real integration fault): ordering one of these bikes makes the dealer
-     * call fail as if the dealer's API were unreachable. `serviceTask_orderBike` is an external task
-     * consumed by [io.miragon.blueprint.adapter.inbound.cibseven.OrderBikeWorker], so an uncaught
-     * failure fails that external task; the cib-seven-embedded adapter retries it (3 attempts, its
-     * default retry policy) and then raises an incident — the basis of the reproducible incident
-     * demo. It stays available in [checkAvailability] so the flow reaches the order step (rather than
-     * the out-of-stock branch) before failing.
+     * call fail as if the dealer's API were unreachable, which drives the reproducible outage demo. How
+     * the failed order step is retried is up to the process engine and its inbound adapter. It stays
+     * available in [checkAvailability] so the flow reaches the order step (rather than the out-of-stock branch)
+     * before failing.
      */
     private val unavailableDealerBikeIds = setOf("BIKE-FAIL")
 
@@ -57,10 +55,8 @@ class BikeDealerAdapter : BikeDealerPort {
 
     /**
      * Signals that the (simulated) bike dealer could not be reached while placing an order. Thrown for
-     * the `BIKE-FAIL` poison id to drive the reproducible incident demo: because `serviceTask_orderBike`
-     * is an external task, this surfaces as a failed external task that retries and then raises an
-     * incident. Nested so it stays colocated with the demo logic without needing an outbound-adapter
-     * naming suffix.
+     * the `BIKE-FAIL` poison id to drive the reproducible outage demo. Nested so it stays colocated with
+     * the demo logic without needing an outbound-adapter naming suffix.
      */
     class DealerUnavailableException(bikeId: BikeId) :
         RuntimeException("Bike dealer API unavailable for ${bikeId.value} (simulated demo outage)")

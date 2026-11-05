@@ -16,7 +16,7 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.nio.file.Files
 import java.nio.file.Path
-import kotlin.io.path.exists
+import kotlin.io.path.isDirectory
 
 /**
  * Exports the live OpenAPI contract to `openapi/openapi.json` at the repo root, so the committed
@@ -59,7 +59,7 @@ class OpenApiSpecExportTest {
         // when: it is re-serialised with sorted keys and a fixed indenter
         val tree = deterministicMapper.readTree(raw) as ObjectNode
         // Drop the `servers` block — springdoc fills it with the random test port, which would make
-        // the drift gate flap. The frontend client uses the httpClient mutator's baseURL anyway.
+        // the drift gate flap. Any API consumer points at its own base URL anyway.
         tree.remove("servers")
         val pretty = deterministicMapper.writeValueAsString(tree) + "\n"
 
@@ -77,11 +77,11 @@ class OpenApiSpecExportTest {
         return response.body()
     }
 
-    /** Walk up from the module working directory until the directory holding the shared `openapi/` contract is found. */
+    /** Walk up from the module working directory until the directory holding the `openapi/` contract is found. */
     private fun repoRoot(): Path {
         var dir: Path? = Path.of(System.getProperty("user.dir")).toAbsolutePath()
         while (dir != null) {
-            if (dir.resolve("openapi").exists()) return dir
+            if (dir.resolve("openapi").isDirectory()) return dir
             dir = dir.parent
         }
         error("could not locate the repo root (no openapi directory found above ${System.getProperty("user.dir")})")

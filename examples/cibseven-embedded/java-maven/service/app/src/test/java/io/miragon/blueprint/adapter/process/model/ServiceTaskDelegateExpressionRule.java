@@ -9,7 +9,7 @@ import io.miragon.bpmn.domain.validation.model.ValidationViolation;
 import java.util.List;
 
 /**
- * Custom bpmn-to-code validation rule: every <em>implemented</em> service task must use a Camunda
+ * Custom bpmn-to-code validation rule: every <em>implemented</em> service task must use a
  * delegate expression ({@code #{...}}) — i.e. no external tasks, {@code camunda:class} or plain
  * {@code ${...}} expressions.
  *

@@ -4,41 +4,50 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class ApplicationIdTest {
 
     @Test
-    void a_new_id_is_fresh_and_random() {
-        // when: two ids are generated
-        ApplicationId first = ApplicationId.newId();
-        ApplicationId second = ApplicationId.newId();
-        // then: each wraps a UUID and they differ
-        assertThat(first.value()).isNotNull();
-        assertThat(second.value()).isNotNull();
-        assertThat(first).isNotEqualTo(second);
-    }
-
-    @Test
-    void of_parses_the_textual_uuid() {
-        // given/when: an id is parsed from its textual form
+    @DisplayName("parses the textual form of its UUID")
+    void parsesTheTextualFormOfItsUuid() {
+        // given/when: an application id is parsed from a UUID string
         ApplicationId id = ApplicationId.of("123e4567-e89b-12d3-a456-426614174000");
         // then: it wraps exactly that UUID
         assertThat(id.value()).isEqualTo(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
     }
 
     @Test
-    void of_rejects_a_malformed_uuid() {
-        // when/then: a value that is not a UUID is refused
+    @DisplayName("mints a fresh id on every call")
+    void mintsAFreshIdOnEveryCall() {
+        // when/then: two new ids are distinct
+        assertThat(ApplicationId.newId()).isNotNull().isNotEqualTo(ApplicationId.newId());
+    }
+
+    @Test
+    @DisplayName("rejects a malformed id")
+    void rejectsAMalformedId() {
+        // when/then: a value that is not a UUID is refused (the REST adapter maps this to 400)
         assertThatThrownBy(() -> ApplicationId.of("not-a-uuid"))
             .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
-    void the_textual_form_names_the_type_and_the_value() {
-        // given: an id, as the services interpolate it into the detail of a 404 response
+    @DisplayName("rejects a missing UUID")
+    void rejectsAMissingUuid() {
+        // when/then: null is refused
+        assertThatThrownBy(() -> new ApplicationId(null))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("ApplicationId must not be null");
+    }
+
+    @Test
+    @DisplayName("renders as its plain UUID")
+    void rendersAsItsPlainUuid() {
+        // given/when: an application id is turned into text
         ApplicationId id = ApplicationId.of("123e4567-e89b-12d3-a456-426614174000");
-        // when/then: both variants render it identically
-        assertThat(id.toString()).isEqualTo("ApplicationId(value=123e4567-e89b-12d3-a456-426614174000)");
+        // then: the text is the one the REST API exposes in a 404 detail
+        assertThat(id.toString()).isEqualTo("123e4567-e89b-12d3-a456-426614174000");
     }
 }

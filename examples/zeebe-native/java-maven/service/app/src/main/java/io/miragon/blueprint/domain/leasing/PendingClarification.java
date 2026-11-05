@@ -9,13 +9,13 @@ import java.time.LocalDateTime;
  * agent needs to pick up the case (who, which bike, since when), but deliberately no engine task id:
  * the case is resolved through the domain, correlated by application id.
  *
- * @param requestedBikeModel the bike's model from the portfolio; {@code null} if the bike is unknown there
+ * <p>{@code requestedBikeModel} may be {@code null} when the bike is not (or no longer) in the
+ * portfolio.
  */
 public record PendingClarification(
-    ApplicationId applicationId,
-    CustomerName customerName,
-    BikeId requestedBikeId,
-    String requestedBikeModel,
-    LocalDateTime waitingSince
-) {
+        ApplicationId applicationId,
+        CustomerName customerName,
+        BikeId requestedBikeId,
+        String requestedBikeModel,
+        LocalDateTime waitingSince) {
 }

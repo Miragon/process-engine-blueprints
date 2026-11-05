@@ -59,7 +59,7 @@ alone; such a gate would mostly produce noise. The gates compare observable beha
 ## Consequences
 
 - **Positive:** the Java variant has CI and dependency updates like everything else on `main`. Each
-  variant is a complete project on its own. Trainings use a plain directory instead of a tag checkout.
+  variant is a complete project on its own. Trainings use a plain directory.
 - **Negative / trade-offs:** every functional change is implemented and reviewed twice, and pull
   requests grow. A model change has to be copied to the other variant. `main` is no longer a pure
   Kotlin tree.

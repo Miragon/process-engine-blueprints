@@ -17,7 +17,7 @@ class SendContractService(
 ) : SendContractUseCase {
 
     override fun sendContract(id: ApplicationId) {
-        val application = repository.findById(id) ?: error("Unknown application ${id.value}")
+        val application = repository.findById(id) ?: error("Unknown application $id")
         // Issue the contract in the contract system and record its id on the application.
         val contractId = contract.issueContract(id)
         repository.save(application.withContract(contractId))

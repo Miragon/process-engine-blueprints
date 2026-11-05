@@ -27,30 +27,33 @@ class BikePortfolioPersistenceAdapterTest {
     @Test
     @DisplayName("saves and reloads a bike")
     void savesAndReloadsABike() {
+
         // given: a bike in the portfolio
         Bike bike = new Bike(new BikeId("BIKE-900"), "Gravel Explorer 900");
 
         // when: it is saved and re-read from a cleared persistence context
         Bike saved = underTest.save(bike);
+        assertThat(saved).isEqualTo(bike);
         entityManager.flush();
         entityManager.clear();
 
-        // then: both the returned and the reloaded bike equal the original
-        assertThat(saved).isEqualTo(bike);
+        // then: the reloaded bike equals the original
         assertThat(underTest.findByBikeId(new BikeId("BIKE-900"))).contains(bike);
     }
 
     @Test
     @DisplayName("findByBikeId returns null when the bike is not in the portfolio")
     void findByBikeIdReturnsNullWhenTheBikeIsNotInThePortfolio() {
+
         // given: an empty portfolio
-        // when / then: the lookup returns null
+        // when / then: the lookup finds nothing
         assertThat(underTest.findByBikeId(new BikeId("BIKE-000"))).isEmpty();
     }
 
     @Test
     @DisplayName("findAll returns the whole catalogue ordered by id")
     void findAllReturnsTheWholeCatalogueOrderedById() {
+
         // given: two bikes saved out of id order
         underTest.save(new Bike(new BikeId("BIKE-900"), "Gravel Explorer 900"));
         underTest.save(new Bike(new BikeId("BIKE-800"), "Carbon Road 800"));
@@ -59,14 +62,15 @@ class BikePortfolioPersistenceAdapterTest {
 
         // when / then: both are returned, ordered ascending by id
         assertThat(underTest.findAll())
-            .containsExactly(
-                new Bike(new BikeId("BIKE-800"), "Carbon Road 800"),
-                new Bike(new BikeId("BIKE-900"), "Gravel Explorer 900"));
+                .containsExactly(
+                        new Bike(new BikeId("BIKE-800"), "Carbon Road 800"),
+                        new Bike(new BikeId("BIKE-900"), "Gravel Explorer 900"));
     }
 
     @Test
     @DisplayName("findAllByIds resolves only the requested bikes and short-circuits on empty input")
     void findAllByIdsResolvesOnlyTheRequestedBikesAndShortCircuitsOnEmptyInput() {
+
         // given: three bikes
         underTest.save(new Bike(new BikeId("BIKE-900"), "Gravel Explorer 900"));
         underTest.save(new Bike(new BikeId("BIKE-800"), "Carbon Road 800"));
@@ -78,9 +82,8 @@ class BikePortfolioPersistenceAdapterTest {
         List<Bike> result = underTest.findAllByIds(List.of(new BikeId("BIKE-900"), new BikeId("BIKE-OOS")));
 
         // then: exactly those two come back
-        assertThat(result)
-            .extracting(bike -> bike.bikeId().value())
-            .containsExactlyInAnyOrder("BIKE-900", "BIKE-OOS");
+        assertThat(result.stream().map(b -> b.bikeId().value()).toList())
+                .containsExactlyInAnyOrder("BIKE-900", "BIKE-OOS");
         // and: an empty request returns an empty list without touching the database
         assertThat(underTest.findAllByIds(List.of())).isEmpty();
     }

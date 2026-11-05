@@ -52,7 +52,8 @@ class BikeDealerAdapterTest {
     void orderingTheIncidentDemoBikeFailsAsASimulatedDealerOutage() {
         // given: the poison bike / when-then: the dealer call throws so the order job fails → incident
         assertThatThrownBy(() -> underTest.order(new BikeId("BIKE-FAIL")))
-            .isInstanceOf(BikeDealerAdapter.DealerUnavailableException.class);
+                .isInstanceOf(BikeDealerAdapter.DealerUnavailableException.class)
+                .hasMessage("Bike dealer API unavailable for BIKE-FAIL (simulated demo outage)");
     }
 
     @Test

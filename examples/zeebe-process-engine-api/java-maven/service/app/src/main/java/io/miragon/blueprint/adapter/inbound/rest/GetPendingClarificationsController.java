@@ -1,5 +1,7 @@
 package io.miragon.blueprint.adapter.inbound.rest;
 
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.miragon.blueprint.application.port.inbound.GetPendingClarificationsQuery;
 import io.miragon.blueprint.domain.leasing.PendingClarification;
@@ -38,22 +40,21 @@ public class GetPendingClarificationsController {
 
     private static PendingClarificationDto toDto(PendingClarification clarification) {
         return new PendingClarificationDto(
-            clarification.applicationId().value().toString(),
-            clarification.customerName().value(),
-            clarification.requestedBikeId().value(),
-            clarification.requestedBikeModel(),
-            clarification.waitingSince());
+                clarification.applicationId().value().toString(),
+                clarification.customerName().value(),
+                clarification.requestedBikeId().value(),
+                clarification.requestedBikeModel(),
+                clarification.waitingSince());
     }
 
     public record PendingClarificationDto(
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String applicationId,
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String customerName,
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String requestedBikeId,
-        @Schema(types = {"string", "null"}) String requestedBikeModel,
-        // Serialised as an ISO-8601 string so the JSON carries a stable, machine-parseable timestamp.
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
-        @JsonFormat(shape = JsonFormat.Shape.STRING)
-        LocalDateTime waitingSince
-    ) {
+            @Schema(requiredMode = REQUIRED) String applicationId,
+            @Schema(requiredMode = REQUIRED) String customerName,
+            @Schema(requiredMode = REQUIRED) String requestedBikeId,
+            @Schema(nullable = true) String requestedBikeModel,
+            // Serialised as an ISO-8601 string so the JSON carries a stable, machine-parseable timestamp.
+            @Schema(requiredMode = REQUIRED)
+            @JsonFormat(shape = JsonFormat.Shape.STRING)
+            LocalDateTime waitingSince) {
     }
 }

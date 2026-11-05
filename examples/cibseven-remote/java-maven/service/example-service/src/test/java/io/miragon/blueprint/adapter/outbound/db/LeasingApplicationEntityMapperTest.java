@@ -43,13 +43,11 @@ class LeasingApplicationEntityMapperTest {
     @DisplayName("toDomain reconstructs every field including the nullable order and contract ids")
     void toDomainReconstructsEveryFieldIncludingTheNullableOrderAndContractIds() {
         // given: an entity carrying an order and a contract
-        LeasingApplicationEntity entity = LeasingApplicationEntityMapper.toEntity(
-                aLeasingApplication()
-                        .status(LeasingStatus.ACTIVE)
-                        .orderId(new OrderId("ORDER-1"))
-                        .contractId(new ContractId("CONTRACT-1"))
-                        .build()
-        );
+        LeasingApplicationEntity entity = LeasingApplicationEntityMapper.toEntity(aLeasingApplication()
+                .status(LeasingStatus.ACTIVE)
+                .orderId(new OrderId("ORDER-1"))
+                .contractId(new ContractId("CONTRACT-1"))
+                .build());
 
         // when: it is mapped back to the domain
         LeasingApplication application = LeasingApplicationEntityMapper.toDomain(entity);

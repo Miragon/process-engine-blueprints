@@ -43,9 +43,9 @@ to the other, then regenerate, wire and test **both**.
   `HistoryCleanupConfiguration`).
 - **Engine limits:** a service task is a delegate by expression (`#{beanName}`, enforced by
   `adapter/process/model/ServiceTaskDelegateExpressionRule`); asynchronous continuations
-  (`asyncAfter` on most tasks, `asyncBefore` on `serviceTask_orderBike`) are where retries and
-  incidents happen; a compensation handler (`isForCompensation`) only runs for an activity that
-  completed.
+  (`asyncBefore` and `asyncAfter` on most service tasks, `asyncBefore` alone on
+  `serviceTask_orderBike`) are where retries and incidents happen; a compensation handler
+  (`isForCompensation`) only runs for an activity that completed.
 
 ## Steps
 

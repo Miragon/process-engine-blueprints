@@ -28,11 +28,10 @@ class ListBikesControllerTest {
     @DisplayName("returns the catalogue with availability flags")
     void returnsTheCatalogueWithAvailabilityFlags() throws Exception {
         // given: a catalogue with one available and one out-of-stock bike
-        when(query.all())
-            .thenReturn(
+        when(query.all()).thenReturn(
                 List.of(
-                    new ListBikesQuery.Item(new BikeId("BIKE-900"), "Gravel Explorer 900", true),
-                    new ListBikesQuery.Item(new BikeId("BIKE-OOS"), "Mountain Trail 600", false)));
+                        new ListBikesQuery.Item(new BikeId("BIKE-900"), "Gravel Explorer 900", true),
+                        new ListBikesQuery.Item(new BikeId("BIKE-OOS"), "Mountain Trail 600", false)));
 
         // when
         MvcResult response = mockMvc.perform(get("/api/bikes")).andReturn();
@@ -40,10 +39,10 @@ class ListBikesControllerTest {
         // then: both bikes and their availability are serialised
         assertThat(response.getResponse().getStatus()).isEqualTo(200);
         assertThat(response.getResponse().getContentAsString()).contains(
-            "BIKE-900",
-            "Gravel Explorer 900",
-            "BIKE-OOS",
-            "\"available\":true",
-            "\"available\":false");
+                "BIKE-900",
+                "Gravel Explorer 900",
+                "BIKE-OOS",
+                "\"available\":true",
+                "\"available\":false");
     }
 }

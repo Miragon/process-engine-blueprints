@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class WithdrawApplicationService implements WithdrawApplicationUseCase {
 
     private final LeasingProcess process;
-
     private final LeasingApplicationRepository repository;
 
     public WithdrawApplicationService(LeasingProcess process, LeasingApplicationRepository repository) {
@@ -30,7 +29,7 @@ public class WithdrawApplicationService implements WithdrawApplicationUseCase {
     public void withdraw(ApplicationId id) {
         process.correlateApplicationWithdrawn(id);
         LeasingApplication application = repository.findById(id)
-            .orElseThrow(() -> new IllegalStateException("Unknown application " + id));
+                .orElseThrow(() -> new IllegalStateException("Unknown application " + id));
         repository.save(application.withdraw());
     }
 }

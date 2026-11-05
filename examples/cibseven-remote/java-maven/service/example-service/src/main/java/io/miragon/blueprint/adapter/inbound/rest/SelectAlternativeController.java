@@ -3,6 +3,7 @@ package io.miragon.blueprint.adapter.inbound.rest;
 import io.miragon.blueprint.application.port.inbound.SelectAlternativeUseCase;
 import io.miragon.blueprint.domain.bike.BikeId;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,7 @@ public class SelectAlternativeController {
         this.useCase = useCase;
     }
 
+    @Operation(operationId = "selectAlternative")
     @PostMapping("/{applicationId}/clarify-alternative")
     public ResponseEntity<Void> clarifyAlternative(
             @PathVariable String applicationId,

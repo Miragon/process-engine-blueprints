@@ -89,7 +89,7 @@ public class ListLeasingApplicationsController {
             @Schema(requiredMode = REQUIRED) String bikeId,
             @Schema(nullable = true) String bikeModel,
             @Schema(requiredMode = REQUIRED) String status,
-            // ISO-8601 string — see the note in GetLeasingApplicationController.LeasingApplicationDto.
+            // Serialised as an ISO-8601 string so the JSON carries a stable, machine-parseable timestamp.
             @Schema(requiredMode = REQUIRED)
             @JsonFormat(shape = JsonFormat.Shape.STRING)
             LocalDateTime createdAt) {

@@ -43,7 +43,7 @@ class GetPendingClarificationsController(
         val customerName: String,
         val requestedBikeId: String,
         val requestedBikeModel: String?,
-        // Serialised as an ISO-8601 string so the JSON carries a stable, machine-parseable timestamp.
+        // ISO-8601 string — see the note in GetLeasingApplicationController.LeasingApplicationDto.
         @field:JsonFormat(shape = JsonFormat.Shape.STRING)
         val waitingSince: LocalDateTime,
     )

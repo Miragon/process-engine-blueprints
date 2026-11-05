@@ -20,8 +20,7 @@ public class SelectAlternativeService implements SelectAlternativeUseCase {
     public SelectAlternativeService(
             LeasingApplicationRepository repository,
             BikePortfolioRepository bikePortfolio,
-            LeasingProcess process
-    ) {
+            LeasingProcess process) {
         this.repository = repository;
         this.bikePortfolio = bikePortfolio;
         this.process = process;
@@ -30,8 +29,7 @@ public class SelectAlternativeService implements SelectAlternativeUseCase {
     @Override
     public void selectAlternative(SelectAlternativeUseCase.Command command) {
         repository.findById(command.applicationId())
-                .orElseThrow(() -> new IllegalStateException(
-                        "Unknown application " + command.applicationId()));
+                .orElseThrow(() -> new IllegalStateException("Unknown application " + command.applicationId()));
         BikeId alternativeBike = command.bikeId();
         String bikeModel = command.bikeModel();
         if (command.alternativeFound() && alternativeBike != null && bikeModel != null) {
@@ -40,7 +38,6 @@ public class SelectAlternativeService implements SelectAlternativeUseCase {
         process.completeAlternativeClarification(
                 command.applicationId(),
                 command.alternativeFound(),
-                command.bikeId()
-        );
+                command.bikeId());
     }
 }

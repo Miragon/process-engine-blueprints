@@ -21,14 +21,14 @@ We **deliberately track the latest stable major versions** across the whole stac
 The reason is the template's job: these are **solution templates** that exist to show what the *current*
 technological stand makes possible — including first-class support for **AI-driven / agentic development**,
 which the newest tooling plus our guardrails ([ADR-0002](0002-hexagonal-architecture-for-the-backend.md)
-architecture tests, [ADR-0004](0004-mutation-testing-as-a-blocking-pr-gate.md) mutation gate, typed
-contracts, linting) are meant to enable. A template pinned to yesterday's versions would misrepresent both
-the capabilities and the starting point we actually recommend.
+architecture tests, [ADR-0004](0004-mutation-testing-as-a-blocking-pr-gate.md) mutation gate, the typed
+OpenAPI contract, linting) are meant to enable. A template pinned to yesterday's versions would
+misrepresent both the capabilities and the starting point we actually recommend.
 
 Mechanics that make this safe rather than reckless: dependency updates are automated (Dependabot), every
-version is exact-pinned, and each bump runs the full gate set (build, contract drift), so
-updates can be taken continuously instead of in a scary big-bang. Bleeding-edge workarounds are
-documented at the point of use.
+version is exact-pinned, and each bump runs the full gate set (build, architecture tests,
+contract drift), so updates can be taken continuously instead of in a scary big-bang. Bleeding-edge
+workarounds are documented at the point of use.
 
 ## Consequences
 
@@ -39,5 +39,4 @@ documented at the point of use.
   community answers, integration hacks); a long-dormant fork may need an upgrade pass before it builds.
   We accept these as the price of the stance.
 - **Neutral:** "latest **stable** major" — we track releases, not RCs/pre-releases, and the CI gates, not a
-  calendar, decide whether a given bump lands. The same rule keeps the build on the Maven 3.9.x line
-  until Maven 4 is GA.
+  calendar, decide whether a given bump lands.

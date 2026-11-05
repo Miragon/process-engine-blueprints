@@ -1,10 +1,10 @@
 package io.miragon.blueprint.domain.leasing;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 class ContractIdTest {
 
@@ -12,7 +12,7 @@ class ContractIdTest {
     @DisplayName("exposes the wrapped contract id")
     void exposesTheWrappedContractId() {
         // given/when: a contract id is created from a non-blank value
-        var contractId = new ContractId("CONTRACT-1");
+        ContractId contractId = new ContractId("CONTRACT-1");
         // then: the raw value is exposed unchanged
         assertThat(contractId.value()).isEqualTo("CONTRACT-1");
     }
@@ -22,6 +22,16 @@ class ContractIdTest {
     void rejectsABlankContractId() {
         // when/then: a blank value is refused
         assertThatThrownBy(() -> new ContractId("   "))
-            .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("ContractId must not be blank");
+    }
+
+    @Test
+    @DisplayName("rejects a contract id made of no-break spaces")
+    void rejectsAContractIdMadeOfNoBreakSpaces() {
+        // when/then: a value that only looks empty is refused, too
+        assertThatThrownBy(() -> new ContractId("\u00A0\u2007\u202F"))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("ContractId must not be blank");
     }
 }

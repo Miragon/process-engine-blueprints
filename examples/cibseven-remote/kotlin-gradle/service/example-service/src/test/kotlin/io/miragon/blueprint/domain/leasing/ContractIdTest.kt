@@ -19,12 +19,14 @@ class ContractIdTest {
         // when/then: a blank value is refused
         assertThatThrownBy { ContractId("   ") }
             .isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessage("ContractId must not be blank")
     }
 
     @Test
     fun `rejects a contract id made of no-break spaces`() {
-        // when/then: no-break spaces count as blank, too
+        // when/then: a value that only looks empty is refused, too
         assertThatThrownBy { ContractId("\u00A0\u2007\u202F") }
             .isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessage("ContractId must not be blank")
     }
 }

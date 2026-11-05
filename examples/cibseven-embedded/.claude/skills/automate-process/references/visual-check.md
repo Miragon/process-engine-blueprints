@@ -22,8 +22,7 @@ npx bpmn metrics service/app/src/main/resources/bpmn/<name>.bpmn
 The baseline a change must not worsen: `bike-leasing.bpmn` validates with 3 warnings (the named
 join `gateway_rejectionJoin`, the unnamed default branch of `gateway_isSolvent`, the two tasks named
 "Send cancellation confirmation") and has 3 layout problems around `event_contractNotSigned` and
-`gateway_rejectionJoin`;
-`cancel-bike-order.bpmn` has none.
+`gateway_rejectionJoin`; `cancel-bike-order.bpmn` has none.
 
 ## 3. The rendered image
 

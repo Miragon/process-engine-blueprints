@@ -22,6 +22,16 @@ class OrderIdTest {
     void rejectsABlankOrderId() {
         // when/then: a blank value is refused
         assertThatThrownBy(() -> new OrderId("   "))
-            .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("OrderId must not be blank");
+    }
+
+    @Test
+    @DisplayName("rejects an order id made of no-break spaces")
+    void rejectsAnOrderIdMadeOfNoBreakSpaces() {
+        // when/then: a value that only looks empty is refused, too
+        assertThatThrownBy(() -> new OrderId("\u00A0\u2007\u202F"))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("OrderId must not be blank");
     }
 }

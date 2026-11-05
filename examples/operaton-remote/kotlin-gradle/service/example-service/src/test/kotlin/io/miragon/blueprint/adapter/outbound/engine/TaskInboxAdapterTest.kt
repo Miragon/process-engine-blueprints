@@ -59,24 +59,25 @@ class TaskInboxAdapterTest {
     @Test
     fun `skips tasks without a process instance`() {
 
-        // given: an open task the engine reports without a process instance (defensive)
+        // given: an open task that is not bound to a process instance (defensive)
         every { taskApi.getTasks(taskDefinitionKey = FlowNodes.UserTaskClarifyAlternative.id.value) } returns
             listOf(TaskWithAttachmentAndCommentDto(id = "task-1", created = OffsetDateTime.now(ZoneOffset.UTC)))
 
-        // when / then: it is dropped without resolving a process instance
+        // when / then: it is dropped without asking the engine for an instance
         assertThat(underTest.findOpenClarifications()).isEmpty()
     }
 
     @Test
     fun `skips tasks without a creation time`() {
 
-        // given: an open task the engine reports without a creation time (defensive)
+        // given: an open task whose creation time is missing (defensive)
+        val applicationId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000")
         every { taskApi.getTasks(taskDefinitionKey = FlowNodes.UserTaskClarifyAlternative.id.value) } returns
             listOf(TaskWithAttachmentAndCommentDto(id = "task-1", processInstanceId = "pi-1"))
         every { processInstanceApi.getProcessInstance("pi-1") } returns
-            ProcessInstanceDto(id = "pi-1", businessKey = UUID.randomUUID().toString())
+            ProcessInstanceDto(id = "pi-1", businessKey = applicationId.toString())
 
-        // when / then: it is dropped rather than surfacing a case without a waiting-since
+        // when / then: it is dropped because the inbox cannot tell how long it has been waiting
         assertThat(underTest.findOpenClarifications()).isEmpty()
     }
 }

@@ -1,9 +1,13 @@
 package io.miragon.blueprint.process.util;
 
 import io.miragon.bpmn.runtime.FlowNode;
+import org.operaton.bpm.engine.ManagementService;
 import org.operaton.bpm.engine.ProcessEngine;
 import org.operaton.bpm.engine.runtime.Job;
 
+/**
+ * Process-test helper for timer events.
+ */
 public final class TimerUtils {
 
     private TimerUtils() {
@@ -14,16 +18,18 @@ public final class TimerUtils {
      * Replaces clock manipulation: the tests verify that the timer path is wired correctly, not the
      * real-world waiting duration.
      */
-    public static void fireTimer(ProcessEngine engine, FlowNode timerEvent) {
-        Job timer = engine
-            .getManagementService()
-            .createJobQuery()
-            .timers()
-            .activityId(timerEvent.getId().getValue())
-            .singleResult();
+    public static void fireTimer(ProcessEngine processEngine, FlowNode timerEvent) {
+        ManagementService managementService = processEngine.getManagementService();
+        Job timer =
+            managementService
+                .createJobQuery()
+                .timers()
+                .activityId(timerEvent.getId().getValue())
+                .singleResult();
         if (timer == null) {
-            throw new IllegalArgumentException("no timer job found for activity '" + timerEvent.getId().getValue() + "'");
+            throw new IllegalArgumentException(
+                "no timer job found for activity '" + timerEvent.getId().getValue() + "'");
         }
-        engine.getManagementService().executeJob(timer.getId());
+        managementService.executeJob(timer.getId());
     }
 }

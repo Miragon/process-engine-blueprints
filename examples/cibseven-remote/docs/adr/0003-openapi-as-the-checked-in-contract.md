@@ -17,7 +17,7 @@ running anything.
 
 The same force runs the *other* direction too: the worker itself is a **consumer** of the remote CIB
 seven engine's REST API, and we refuse to hand-write those calls for exactly the same reason (see the
-generated engine client below and [`common-cibseven-client`](../../service/common-cibseven-client/README.md)).
+generated engine client below and `service/common-cibseven-client`).
 
 ## Decision
 
@@ -69,4 +69,4 @@ generated boundary beats hand-written REST calls.
   `string/date-time` the contract advertises stay in sync regardless of the Jackson default.
 - The generated engine client uses the `jvm-spring-restclient` library, matching the `RestClient` the
   worker already uses to drive the remote engine; see the
-  [`common-cibseven-client`](../../service/common-cibseven-client/README.md) README for the full build flow.
+  `service/common-cibseven-client` README for the full build flow.

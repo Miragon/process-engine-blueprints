@@ -7,6 +7,9 @@ import io.miragon.blueprint.application.port.outbound.LeasingApplicationReposito
 import io.miragon.blueprint.domain.leasing.ApplicationId;
 import io.miragon.blueprint.domain.leasing.LeasingApplication;
 import io.miragon.blueprint.domain.leasing.LeasingStatus;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,9 +18,6 @@ import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
 
 @DataJpaTest
 @ActiveProfiles("test")
@@ -40,7 +40,8 @@ class LeasingApplicationPersistenceAdapterTest {
         LeasingApplication application = aLeasingApplication().id(id).build();
 
         // when: it is saved and re-read from a cleared persistence context
-        underTest.save(application);
+        LeasingApplication saved = underTest.save(application);
+        assertThat(saved).usingRecursiveComparison().isEqualTo(application);
         entityManager.flush();
         entityManager.clear();
 
@@ -53,7 +54,7 @@ class LeasingApplicationPersistenceAdapterTest {
     void findByIdReturnsNullWhenTheApplicationDoesNotExist() {
 
         // given: an empty database
-        // when / then: the lookup returns null
+        // when / then: the lookup finds nothing
         assertThat(underTest.findById(id)).isEmpty();
     }
 
@@ -76,12 +77,20 @@ class LeasingApplicationPersistenceAdapterTest {
 
         // given: three applications created on different days
         LeasingApplication older = aLeasingApplication()
-                .id(new ApplicationId(UUID.randomUUID())).createdAt(LocalDateTime.of(2026, 1, 1, 8, 0)).build();
+                .id(new ApplicationId(UUID.randomUUID()))
+                .createdAt(LocalDateTime.of(2026, 1, 1, 8, 0))
+                .build();
         LeasingApplication newer = aLeasingApplication()
-                .id(new ApplicationId(UUID.randomUUID())).createdAt(LocalDateTime.of(2026, 3, 1, 8, 0)).build();
+                .id(new ApplicationId(UUID.randomUUID()))
+                .createdAt(LocalDateTime.of(2026, 3, 1, 8, 0))
+                .build();
         LeasingApplication newest = aLeasingApplication()
-                .id(new ApplicationId(UUID.randomUUID())).createdAt(LocalDateTime.of(2026, 6, 1, 8, 0)).build();
-        List.of(older, newest, newer).forEach(underTest::save);
+                .id(new ApplicationId(UUID.randomUUID()))
+                .createdAt(LocalDateTime.of(2026, 6, 1, 8, 0))
+                .build();
+        for (LeasingApplication application : List.of(older, newest, newer)) {
+            underTest.save(application);
+        }
         entityManager.flush();
         entityManager.clear();
 
@@ -100,9 +109,18 @@ class LeasingApplicationPersistenceAdapterTest {
     void findAllFiltersByStatusAndPaginates() {
 
         // given: two RECEIVED and one ACTIVE application
-        underTest.save(aLeasingApplication().id(new ApplicationId(UUID.randomUUID())).status(LeasingStatus.RECEIVED).build());
-        underTest.save(aLeasingApplication().id(new ApplicationId(UUID.randomUUID())).status(LeasingStatus.RECEIVED).build());
-        underTest.save(aLeasingApplication().id(new ApplicationId(UUID.randomUUID())).status(LeasingStatus.ACTIVE).build());
+        underTest.save(aLeasingApplication()
+                .id(new ApplicationId(UUID.randomUUID()))
+                .status(LeasingStatus.RECEIVED)
+                .build());
+        underTest.save(aLeasingApplication()
+                .id(new ApplicationId(UUID.randomUUID()))
+                .status(LeasingStatus.RECEIVED)
+                .build());
+        underTest.save(aLeasingApplication()
+                .id(new ApplicationId(UUID.randomUUID()))
+                .status(LeasingStatus.ACTIVE)
+                .build());
         entityManager.flush();
         entityManager.clear();
 
@@ -113,6 +131,6 @@ class LeasingApplicationPersistenceAdapterTest {
         // then: only the single ACTIVE application is returned
         assertThat(page.totalElements()).isEqualTo(1);
         assertThat(page.items()).hasSize(1);
-        assertThat(page.items()).singleElement().extracting(LeasingApplication::status).isEqualTo(LeasingStatus.ACTIVE);
+        assertThat(page.items().get(0).status()).isEqualTo(LeasingStatus.ACTIVE);
     }
 }

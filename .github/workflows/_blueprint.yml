@@ -1,7 +1,7 @@
 name: Blueprint checks
 
-# Checks that exist because an example lives in this monorepo: its variants stay equivalent, and every
-# variant still becomes a starter that builds on its own, outside the monorepo.
+# Checks that exist because an example lives in this monorepo: every variant still becomes a starter that
+# builds on its own, outside the monorepo. Whether both variants stay equivalent is checked by npm run drift.
 on:
   workflow_call:
     inputs:
@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   describe:
-    name: Read blueprint.yaml, both variants ship identical resources
+    name: Read blueprint.yaml
     runs-on: ubuntu-latest
     outputs:
       variants: ${{ steps.read.outputs.variants }}
@@ -22,23 +22,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Read the variants and the resources they share
+      - name: Read the variants
         id: read
         env:
           BLUEPRINT: examples/${{ inputs.example }}/blueprint.yaml
         run: |
           echo "variants=$(yq -o=json -I=0 '.variants | keys' "$BLUEPRINT")" >> "$GITHUB_OUTPUT"
-          echo "identical-resources=$(yq -o=json -I=0 '.identicalResources // []' "$BLUEPRINT")" >> "$GITHUB_OUTPUT"
-
-      - name: Compare the resources of both variants
-        if: steps.read.outputs.identical-resources != '[]'
-        working-directory: examples/${{ inputs.example }}
-        env:
-          RESOURCES: ${{ steps.read.outputs.identical-resources }}
-        run: |
-          for resource in $(jq -r '.[]' <<< "$RESOURCES"); do
-            diff -r "kotlin-gradle/$resource" "java-maven/$resource"
-          done
 
   starter:
     name: Starter builds on its own (${{ matrix.variant }})

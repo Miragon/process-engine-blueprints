@@ -6,10 +6,10 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
 /**
- * Documented escape hatch you should NOT need. This blueprint is headless and serves its own
- * origin, so there is no CORS on the production path. This bean only activates under the `dev`
- * profile — if you ever run a separate browser-based API consumer against the backend cross-origin
- * during development, enable it. See CONTRIBUTING.md.
+ * Documented escape hatch you should NOT need in production. This headless service serves its `/api`
+ * endpoints on a single origin, so there is no CORS on the production path. This bean only activates under the
+ * `dev` profile — enable it if you drive the API from a browser-based consumer running cross-origin in
+ * development (e.g. a local SPA on `http://localhost:5173`). See CONTRIBUTING.md.
  */
 @Configuration
 @Profile("dev")

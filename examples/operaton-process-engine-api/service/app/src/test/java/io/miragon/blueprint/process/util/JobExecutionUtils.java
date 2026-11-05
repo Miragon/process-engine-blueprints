@@ -1,12 +1,26 @@
 package io.miragon.blueprint.process.util;
 
 import java.util.List;
+import org.operaton.bpm.engine.ManagementService;
 import org.operaton.bpm.engine.ProcessEngine;
 import org.operaton.bpm.engine.runtime.Job;
 
+/**
+ * Process-test helper for driving the engine while the job executor is disabled.
+ */
 public final class JobExecutionUtils {
 
+    private static final long DEFAULT_TIMEOUT_MILLIS = 15_000;
+
     private JobExecutionUtils() {
+    }
+
+    /**
+     * Drives the process to its next wait state, giving up after 15 seconds. See
+     * {@link #continueToNextWaitState(ProcessEngine, long)}.
+     */
+    public static void continueToNextWaitState(ProcessEngine processEngine) {
+        continueToNextWaitState(processEngine, DEFAULT_TIMEOUT_MILLIS);
     }
 
     /**
@@ -19,24 +33,21 @@ public final class JobExecutionUtils {
      * <em>and</em> gives the polling workers time to pick up and complete any open external tasks — settling
      * once no message job and no external task remains for a few consecutive checks.
      */
-    public static void continueToNextWaitState(ProcessEngine engine) {
-        continueToNextWaitState(engine, 15_000);
-    }
-
-    public static void continueToNextWaitState(ProcessEngine engine, long timeoutMillis) {
+    public static void continueToNextWaitState(ProcessEngine processEngine, long timeoutMillis) {
+        ManagementService managementService = processEngine.getManagementService();
         long deadline = System.currentTimeMillis() + timeoutMillis;
         int idleIterations = 0;
         while (System.currentTimeMillis() < deadline) {
-            List<Job> jobs = engine.getManagementService().createJobQuery()
+            List<Job> jobs = managementService.createJobQuery()
                 .active()
                 .messages()
                 .listPage(0, 1);
             if (!jobs.isEmpty()) {
-                engine.getManagementService().executeJob(jobs.get(0).getId());
+                managementService.executeJob(jobs.get(0).getId());
                 idleIterations = 0;
                 continue;
             }
-            if (engine.getExternalTaskService().createExternalTaskQuery().count() == 0L) {
+            if (processEngine.getExternalTaskService().createExternalTaskQuery().count() == 0L) {
                 if (++idleIterations >= 3) {
                     return;
                 }

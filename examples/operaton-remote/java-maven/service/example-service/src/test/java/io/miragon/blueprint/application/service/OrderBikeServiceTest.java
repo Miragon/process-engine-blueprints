@@ -119,7 +119,7 @@ class OrderBikeServiceTest {
         // when / then: the lookup fails and nothing is ordered or stored
         assertThatThrownBy(() -> underTest.orderBike(id, new BikeId("BIKE-900")))
             .isInstanceOf(IllegalStateException.class)
-            .hasMessage("Unknown application " + id.value());
+            .hasMessage("Unknown application " + id);
         verify(bikeDealer, never()).order(any());
         verify(repository, never()).save(any());
     }

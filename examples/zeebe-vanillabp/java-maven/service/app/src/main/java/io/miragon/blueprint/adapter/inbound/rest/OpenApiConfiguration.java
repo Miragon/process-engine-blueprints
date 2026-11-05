@@ -11,8 +11,7 @@ import org.springframework.context.annotation.Configuration;
  * <p>This is cross-cutting web configuration and lives in {@code adapter.inbound.rest}, NOT in a
  * separate {@code config} package — the architecture tests ignore only direct members of the root
  * package, so a new {@code io.miragon.blueprint.config} package would fail the suite. The
- * {@code Configuration} suffix is whitelisted for this package in
- * {@code NamingConventionArchitectureTest}.
+ * {@code Configuration} suffix is whitelisted for this package in {@code NamingConventionArchitectureTest}.
  */
 @Configuration
 public class OpenApiConfiguration {

@@ -7,7 +7,6 @@ import io.miragon.blueprint.domain.leasing.ApplicationId;
  * A real integration replaces the logging adapter without touching the application layer.
  */
 public interface InsurancePort {
-
     void issuePolicy(ApplicationId id);
 
     void cancelPolicy(ApplicationId id);

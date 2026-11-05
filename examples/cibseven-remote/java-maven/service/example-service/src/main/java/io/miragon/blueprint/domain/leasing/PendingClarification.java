@@ -9,12 +9,14 @@ import org.jspecify.annotations.Nullable;
  * requested bike was unavailable — the read model behind the back-office inbox. It carries what an
  * agent needs to pick up the case (who, which bike, since when), but deliberately no engine task id:
  * the case is resolved through the domain, correlated by application id.
+ *
+ * <p>{@code requestedBikeModel} may be {@code null} when the bike is not (or no longer) in the
+ * portfolio.
  */
 public record PendingClarification(
         ApplicationId applicationId,
         CustomerName customerName,
         BikeId requestedBikeId,
         @Nullable String requestedBikeModel,
-        LocalDateTime waitingSince
-) {
+        LocalDateTime waitingSince) {
 }

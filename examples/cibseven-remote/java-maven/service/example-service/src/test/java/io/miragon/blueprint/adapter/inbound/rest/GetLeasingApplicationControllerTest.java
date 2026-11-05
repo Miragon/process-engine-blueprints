@@ -79,4 +79,24 @@ class GetLeasingApplicationControllerTest {
         // then: the response is 404 Not Found
         assertThat(response.getResponse().getStatus()).isEqualTo(404);
     }
+
+    @Test
+    @DisplayName("returns null order, contract and bike model for an application that was not ordered yet")
+    void returnsNullOrderContractAndBikeModelForAnApplicationThatWasNotOrderedYet() throws Exception {
+
+        // given: a freshly received application without order or contract, whose bike is unknown to the portfolio
+        LeasingApplication application = TestObjectBuilder.testLeasingApplication();
+        when(query.byId(application.id()))
+                .thenReturn(Optional.of(new GetLeasingApplicationQuery.Result(application, null)));
+        MockHttpServletRequestBuilder operation =
+                get("/api/bike-leasing/{applicationId}", application.id().value().toString());
+
+        // when: the request is performed
+        MvcResult response = mockMvc.perform(operation).andReturn();
+
+        // then: the optional fields are serialised as JSON null
+        assertThat(response.getResponse().getStatus()).isEqualTo(200);
+        assertThat(response.getResponse().getContentAsString())
+                .contains("\"bikeModel\":null", "\"orderId\":null", "\"contractId\":null");
+    }
 }

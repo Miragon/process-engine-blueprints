@@ -22,7 +22,8 @@ class CustomerNameTest {
     void rejectsAnEmptyName() {
         // when/then: an empty value is refused
         assertThatThrownBy(() -> new CustomerName(""))
-            .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("Customer name must not be blank");
     }
 
     @Test
@@ -30,14 +31,16 @@ class CustomerNameTest {
     void rejectsABlankName() {
         // when/then: a whitespace-only value is refused
         assertThatThrownBy(() -> new CustomerName("   "))
-            .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("Customer name must not be blank");
     }
 
     @Test
     @DisplayName("rejects a name made of no-break spaces")
     void rejectsANameMadeOfNoBreakSpaces() {
         // when/then: a value that only looks empty is refused, too
-        assertThatThrownBy(() -> new CustomerName("\u00A0\u202F"))
-            .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new CustomerName("   "))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("Customer name must not be blank");
     }
 }

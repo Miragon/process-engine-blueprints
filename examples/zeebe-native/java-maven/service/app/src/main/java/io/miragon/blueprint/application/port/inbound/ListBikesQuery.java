@@ -9,12 +9,9 @@ import java.util.List;
  * drives the bike-unavailable scenario from the UI.
  */
 public interface ListBikesQuery {
+
     List<Item> all();
 
-    record Item(
-        BikeId bikeId,
-        String model,
-        boolean available
-    ) {
+    record Item(BikeId bikeId, String model, boolean available) {
     }
 }

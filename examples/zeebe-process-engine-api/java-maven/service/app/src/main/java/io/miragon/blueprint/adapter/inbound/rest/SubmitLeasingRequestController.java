@@ -1,10 +1,13 @@
 package io.miragon.blueprint.adapter.inbound.rest;
 
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
+
 import io.miragon.blueprint.application.port.inbound.SubmitLeasingRequestUseCase;
 import io.miragon.blueprint.domain.bike.BikeId;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
 import io.miragon.blueprint.domain.leasing.CustomerName;
 import io.miragon.blueprint.domain.leasing.Email;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Objects;
 import org.slf4j.Logger;
@@ -27,6 +30,7 @@ public class SubmitLeasingRequestController {
         this.useCase = useCase;
     }
 
+    @Operation(operationId = "submitLeasingRequest")
     @PostMapping
     public ResponseEntity<LeasingApplicationCreatedDto> submit(@RequestBody LeasingRequestInput input) {
         log.debug("Received leasing request: {}", input);
@@ -34,16 +38,24 @@ public class SubmitLeasingRequestController {
         return ResponseEntity.ok(new LeasingApplicationCreatedDto(id.value().toString()));
     }
 
-    public record LeasingRequestInput(
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String customerName,
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String email,
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED) int age,
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED) double monthlyNetIncome,
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String bikeId,
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String bikeModel
-    ) {
+    private static SubmitLeasingRequestUseCase.Command toCommand(LeasingRequestInput input) {
+        return new SubmitLeasingRequestUseCase.Command(
+                new CustomerName(input.customerName()),
+                new Email(input.email()),
+                input.age(),
+                input.monthlyNetIncome(),
+                new BikeId(input.bikeId()),
+                input.bikeModel());
+    }
 
-        // A missing property is rejected while the body is read (400 via HttpMessageNotReadableException).
+    public record LeasingRequestInput(
+            @Schema(requiredMode = REQUIRED) String customerName,
+            @Schema(requiredMode = REQUIRED) String email,
+            @Schema(requiredMode = REQUIRED) int age,
+            @Schema(requiredMode = REQUIRED) double monthlyNetIncome,
+            @Schema(requiredMode = REQUIRED) String bikeId,
+            @Schema(requiredMode = REQUIRED) String bikeModel) {
+
         public LeasingRequestInput {
             Objects.requireNonNull(customerName, "customerName");
             Objects.requireNonNull(email, "email");
@@ -52,18 +64,6 @@ public class SubmitLeasingRequestController {
         }
     }
 
-    public record LeasingApplicationCreatedDto(
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String applicationId
-    ) {
-    }
-
-    private static SubmitLeasingRequestUseCase.Command toCommand(LeasingRequestInput input) {
-        return new SubmitLeasingRequestUseCase.Command(
-            new CustomerName(input.customerName()),
-            new Email(input.email()),
-            input.age(),
-            input.monthlyNetIncome(),
-            new BikeId(input.bikeId()),
-            input.bikeModel());
+    public record LeasingApplicationCreatedDto(@Schema(requiredMode = REQUIRED) String applicationId) {
     }
 }

@@ -35,9 +35,7 @@ public class GetPendingClarificationsController {
     @Operation(operationId = "listPendingClarifications")
     @GetMapping("/clarify-alternative")
     public List<PendingClarificationDto> pending() {
-        return query.pending().stream()
-                .map(GetPendingClarificationsController::toDto)
-                .toList();
+        return query.pending().stream().map(GetPendingClarificationsController::toDto).toList();
     }
 
     private static PendingClarificationDto toDto(PendingClarification clarification) {
@@ -49,16 +47,14 @@ public class GetPendingClarificationsController {
                 clarification.waitingSince());
     }
 
-    /**
-     * @param requestedBikeModel the requested bike's model; {@code null} if it is not in the portfolio
-     */
     public record PendingClarificationDto(
             @Schema(requiredMode = REQUIRED) String applicationId,
             @Schema(requiredMode = REQUIRED) String customerName,
             @Schema(requiredMode = REQUIRED) String requestedBikeId,
             @Schema(nullable = true) String requestedBikeModel,
             // ISO-8601 string — see the note in GetLeasingApplicationController.LeasingApplicationDto.
+            @Schema(requiredMode = REQUIRED)
             @JsonFormat(shape = JsonFormat.Shape.STRING)
-            @Schema(requiredMode = REQUIRED) LocalDateTime waitingSince) {
+            LocalDateTime waitingSince) {
     }
 }

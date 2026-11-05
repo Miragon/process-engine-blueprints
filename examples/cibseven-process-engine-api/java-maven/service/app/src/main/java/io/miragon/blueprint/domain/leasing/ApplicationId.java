@@ -4,6 +4,12 @@ import java.util.UUID;
 
 public record ApplicationId(UUID value) {
 
+    public ApplicationId {
+        if (value == null) {
+            throw new IllegalArgumentException("ApplicationId must not be null");
+        }
+    }
+
     public static ApplicationId newId() {
         return new ApplicationId(UUID.randomUUID());
     }
@@ -14,6 +20,6 @@ public record ApplicationId(UUID value) {
 
     @Override
     public String toString() {
-        return "ApplicationId(value=" + value + ")";
+        return value.toString();
     }
 }

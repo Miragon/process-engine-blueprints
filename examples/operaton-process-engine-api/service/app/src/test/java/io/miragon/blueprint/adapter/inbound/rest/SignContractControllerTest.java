@@ -1,5 +1,10 @@
 package io.miragon.blueprint.adapter.inbound.rest;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+
 import io.miragon.blueprint.application.port.inbound.SignContractUseCase;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
 import org.junit.jupiter.api.DisplayName;
@@ -10,10 +15,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.BDDMockito.then;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 @WebMvcTest(SignContractController.class)
 class SignContractControllerTest {
@@ -37,7 +38,7 @@ class SignContractControllerTest {
 
         // then: the use case is invoked and the response is 202 Accepted
         assertThat(response.getResponse().getStatus()).isEqualTo(202);
-        then(useCase).should().signContract(ApplicationId.of(pathVar));
-        then(useCase).shouldHaveNoMoreInteractions();
+        verify(useCase).signContract(ApplicationId.of(pathVar));
+        verifyNoMoreInteractions(useCase);
     }
 }

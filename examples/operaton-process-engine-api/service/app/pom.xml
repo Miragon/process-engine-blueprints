@@ -40,11 +40,6 @@
             <artifactId>micrometer-registry-prometheus</artifactId>
             <scope>runtime</scope>
         </dependency>
-        <!-- Nullability annotations (JSpecify) used across the domain and ports. -->
-        <dependency>
-            <groupId>org.jspecify</groupId>
-            <artifactId>jspecify</artifactId>
-        </dependency>
 
         <!-- Persistence -->
         <dependency>

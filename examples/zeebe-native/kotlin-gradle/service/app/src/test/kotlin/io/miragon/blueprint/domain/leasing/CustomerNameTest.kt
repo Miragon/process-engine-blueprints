@@ -19,6 +19,7 @@ class CustomerNameTest {
         // when/then: an empty value is refused
         assertThatThrownBy { CustomerName("") }
             .isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessage("Customer name must not be blank")
     }
 
     @Test
@@ -26,12 +27,14 @@ class CustomerNameTest {
         // when/then: a whitespace-only value is refused
         assertThatThrownBy { CustomerName("   ") }
             .isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessage("Customer name must not be blank")
     }
 
     @Test
     fun `rejects a name made of no-break spaces`() {
         // when/then: a value that only looks empty is refused, too
-        assertThatThrownBy { CustomerName("\u00A0\u202F") }
+        assertThatThrownBy { CustomerName("\u00A0\u2007\u202F") }
             .isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessage("Customer name must not be blank")
     }
 }

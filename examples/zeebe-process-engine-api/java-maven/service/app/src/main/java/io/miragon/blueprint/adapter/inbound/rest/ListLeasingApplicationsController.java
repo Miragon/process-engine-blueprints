@@ -1,5 +1,7 @@
 package io.miragon.blueprint.adapter.inbound.rest;
 
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.miragon.blueprint.application.port.inbound.ListLeasingApplicationsQuery;
 import io.miragon.blueprint.domain.leasing.LeasingStatus;
@@ -16,8 +18,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * {@code GET /api/bike-leasing?status=&page=&size=} — the customer-portal list. A separate controller from
- * the paging query keeps to the "one inbound port per controller" rule the architecture tests enforce.
+ * {@code GET /api/bike-leasing?status=&page=&size=} — the customer-portal list. A separate controller
+ * from the paging query keeps to the "one inbound port per controller" rule the architecture tests
+ * enforce.
  */
 @RestController
 @RequestMapping("/api/bike-leasing")
@@ -32,64 +35,63 @@ public class ListLeasingApplicationsController {
     @Operation(operationId = "listLeasingApplications")
     @GetMapping
     public LeasingApplicationPageDto list(
-        @RequestParam(required = false) String status,
-        @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "20") int size
-    ) {
+            @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
         ListLeasingApplicationsQuery.Filter filter = new ListLeasingApplicationsQuery.Filter(
-            status == null ? null : parseStatus(status),
-            page,
-            size);
+                status != null ? parseStatus(status) : null,
+                page,
+                size);
         return toDto(query.list(filter));
     }
 
-    private static LeasingStatus parseStatus(String raw) {
+    private LeasingStatus parseStatus(String raw) {
         try {
             return LeasingStatus.valueOf(raw.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
-            String expected = Arrays.stream(LeasingStatus.values()).map(String::valueOf).collect(Collectors.joining(", "));
-            throw new IllegalArgumentException("unknown status '" + raw + "'; expected one of " + expected, e);
+            throw new IllegalArgumentException(
+                    "unknown status '" + raw + "'; expected one of "
+                            + Arrays.stream(LeasingStatus.values()).map(Enum::name).collect(Collectors.joining(", ")),
+                    e);
         }
     }
 
     private static LeasingApplicationPageDto toDto(ListLeasingApplicationsQuery.Page page) {
         return new LeasingApplicationPageDto(
-            page.items().stream().map(ListLeasingApplicationsController::toDto).toList(),
-            page.page(),
-            page.size(),
-            page.totalElements(),
-            page.totalPages());
+                page.items().stream().map(ListLeasingApplicationsController::toDto).toList(),
+                page.page(),
+                page.size(),
+                page.totalElements(),
+                page.totalPages());
     }
 
     private static LeasingApplicationSummaryDto toDto(ListLeasingApplicationsQuery.Item item) {
         return new LeasingApplicationSummaryDto(
-            item.applicationId().value().toString(),
-            item.customerName().value(),
-            item.bikeId().value(),
-            item.bikeModel(),
-            item.status().name(),
-            item.createdAt());
+                item.applicationId().value().toString(),
+                item.customerName().value(),
+                item.bikeId().value(),
+                item.bikeModel(),
+                item.status().name(),
+                item.createdAt());
     }
 
     public record LeasingApplicationPageDto(
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<LeasingApplicationSummaryDto> items,
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED) int page,
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED) int size,
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED) long totalElements,
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED) int totalPages
-    ) {
+            @Schema(requiredMode = REQUIRED) List<LeasingApplicationSummaryDto> items,
+            @Schema(requiredMode = REQUIRED) int page,
+            @Schema(requiredMode = REQUIRED) int size,
+            @Schema(requiredMode = REQUIRED) long totalElements,
+            @Schema(requiredMode = REQUIRED) int totalPages) {
     }
 
     public record LeasingApplicationSummaryDto(
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String applicationId,
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String customerName,
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String bikeId,
-        @Schema(types = {"string", "null"}) String bikeModel,
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String status,
-        // Serialised as an ISO-8601 string so the JSON carries a stable, machine-parseable timestamp.
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
-        @JsonFormat(shape = JsonFormat.Shape.STRING)
-        LocalDateTime createdAt
-    ) {
+            @Schema(requiredMode = REQUIRED) String applicationId,
+            @Schema(requiredMode = REQUIRED) String customerName,
+            @Schema(requiredMode = REQUIRED) String bikeId,
+            @Schema(nullable = true) String bikeModel,
+            @Schema(requiredMode = REQUIRED) String status,
+            // Serialised as an ISO-8601 string so the JSON carries a stable, machine-parseable timestamp.
+            @Schema(requiredMode = REQUIRED)
+            @JsonFormat(shape = JsonFormat.Shape.STRING)
+            LocalDateTime createdAt) {
     }
 }

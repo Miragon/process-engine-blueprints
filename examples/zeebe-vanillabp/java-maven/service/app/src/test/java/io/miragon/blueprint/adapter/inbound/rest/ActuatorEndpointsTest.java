@@ -6,6 +6,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -15,7 +16,7 @@ import org.springframework.test.context.ActiveProfiles;
  * Smoke-tests the operational surface: the actuator probes and the Prometheus scrape endpoint must
  * respond so orchestrators (liveness/readiness) and monitoring can rely on them.
  *
- * <p>Boots a full servlet context the same way {@code OpenApiSpecExportTest} does — the {@code test}
+ * <p>Boots a full servlet context the same way {@link OpenApiSpecExportTest} does — the {@code test}
  * profile is {@code web-application-type=none}, so we override it to {@code servlet}, exclude the
  * Zeebe client autoconfiguration (no broker needed for the ops surface), and let the H2 datasource
  * back the built-in {@code db} health indicator (which reports {@code UP}).
@@ -33,6 +34,7 @@ class ActuatorEndpointsTest {
     private int port;
 
     @Test
+    @DisplayName("health endpoint reports UP")
     void healthEndpointReportsUp() throws Exception {
         HttpResponse<String> response = get("/actuator/health");
         assertThat(response.statusCode()).isEqualTo(200);
@@ -40,6 +42,7 @@ class ActuatorEndpointsTest {
     }
 
     @Test
+    @DisplayName("liveness probe responds")
     void livenessProbeResponds() throws Exception {
         HttpResponse<String> response = get("/actuator/health/liveness");
         assertThat(response.statusCode()).isEqualTo(200);
@@ -47,6 +50,7 @@ class ActuatorEndpointsTest {
     }
 
     @Test
+    @DisplayName("readiness probe responds")
     void readinessProbeResponds() throws Exception {
         HttpResponse<String> response = get("/actuator/health/readiness");
         assertThat(response.statusCode()).isEqualTo(200);
@@ -54,6 +58,7 @@ class ActuatorEndpointsTest {
     }
 
     @Test
+    @DisplayName("prometheus endpoint exposes metrics")
     void prometheusEndpointExposesMetrics() throws Exception {
         HttpResponse<String> response = get("/actuator/prometheus");
         assertThat(response.statusCode()).isEqualTo(200);
@@ -61,7 +66,8 @@ class ActuatorEndpointsTest {
     }
 
     private HttpResponse<String> get(String path) throws Exception {
-        HttpRequest request = HttpRequest.newBuilder(URI.create("http://localhost:" + port + path)).GET().build();
+        HttpRequest request =
+                HttpRequest.newBuilder(URI.create("http://localhost:" + port + path)).GET().build();
         return HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
     }
 }

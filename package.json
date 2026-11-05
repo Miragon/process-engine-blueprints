@@ -21,6 +21,7 @@
     "generate": "node scripts/generate.mjs",
     "generate:check": "node scripts/generate.mjs --check",
     "drift": "node scripts/check-drift.mjs",
+    "drift:update": "node scripts/check-drift.mjs --update",
     "test": "node --test \"tooling/create-blueprint/test/*.test.mjs\" \"scripts/test/*.test.mjs\"",
     "hooks:install": "git config core.hooksPath .githooks"
   },

@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * {@code GET /api/bikes} — the bike catalogue for the submit form's picker. Exists so nobody has to type a
- * bike id by hand; unavailable bikes (e.g. {@code BIKE-OOS}) stay in the list on purpose, so a user can
- * drive the bike-unavailable scenario from the UI.
+ * {@code GET /api/bikes} — the bike catalogue for the submit form's picker. Exists so nobody has to
+ * type a bike id by hand; unavailable bikes (e.g. {@code BIKE-OOS}) stay in the list on purpose, so a
+ * user can drive the bike-unavailable scenario from the UI.
  */
 @RestController
 @RequestMapping("/api/bikes")
@@ -29,7 +29,7 @@ public class ListBikesController {
     @GetMapping
     public List<BikeDto> all() {
         return query.all().stream()
-                .map(item -> new BikeDto(item.bikeId().value(), item.model(), item.available()))
+                .map(it -> new BikeDto(it.bikeId().value(), it.model(), it.available()))
                 .toList();
     }
 

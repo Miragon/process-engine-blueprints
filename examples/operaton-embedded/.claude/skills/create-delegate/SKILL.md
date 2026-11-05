@@ -1,7 +1,7 @@
 ---
 name: create-delegate
 argument-hint: "[element-id or task name] [DelegateClassName]"
-description: "Create, update or test an Operaton (Camunda 7 fork) JavaDelegate or an execution/task listener for a BPMN element, wired as a Spring @Component and invoked by expression (#{beanName}), together with its unit test and the process test of its path. Use when the user asks to create a delegate, wire a service task to code, add a JavaDelegate or listener, or test an existing delegate. A delegate extends BaseDelegate, calls exactly one inbound port, and reads process variables through the typed ProcessApi."
+description: "Create, update or test a JavaDelegate or an execution/task listener for a BPMN element on Operaton (Camunda 7 fork), wired as a Spring @Component and invoked by expression (#{beanName}), together with its unit test and the process test of its path. Use when the user asks to create a delegate, wire a service task to code, add a JavaDelegate or listener, or test an existing delegate. A delegate extends BaseDelegate, calls exactly one inbound port, and reads process variables through the typed ProcessApi."
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Skill
 ---
 
@@ -29,7 +29,7 @@ Copy the shape of the existing classes instead of inventing one:
 - The BPMN references the bean by expression, `#{beanName}` (class name with a lowercase first
   letter): `camunda:delegateExpression` on a service task or message event, `delegateExpression` inside
   `camunda:taskListener` / `camunda:executionListener`. The model test
-  `process/model/ServiceTaskDelegateExpressionRule` only requires service tasks to use an expression; a wrong bean
+  `ServiceTaskDelegateExpressionRule` only requires service tasks to use an expression; a wrong bean
   name surfaces in the process test.
 - Suffix `Delegate`, `Worker` or `Listener`; at most one inbound port (the architecture tests fail
   above one). A delegate calls exactly one; a listener may call none.

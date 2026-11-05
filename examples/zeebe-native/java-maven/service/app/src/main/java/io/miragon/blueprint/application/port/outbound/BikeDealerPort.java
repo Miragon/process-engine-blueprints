@@ -9,6 +9,7 @@ import io.miragon.blueprint.domain.bike.OrderId;
  * dealer rules live outside the domain.
  */
 public interface BikeDealerPort {
+
     boolean checkAvailability(BikeId bikeId);
 
     OrderId order(BikeId bikeId);

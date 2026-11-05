@@ -68,16 +68,16 @@ class SelectAlternativeServiceTest {
     }
 
     @Test
-    void anUnknownApplicationIsReportedByItsPlainId() {
+    void anUnknownApplicationIsReportedWithItsId() {
 
         // given: no application is stored under the id
         ApplicationId id = new ApplicationId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
         when(repository.findById(id)).thenReturn(Optional.empty());
 
-        // when / then: the decision is refused, naming the id as the client sent it
+        // when / then: the decision is refused, naming the id
         assertThatThrownBy(() -> underTest.selectAlternative(new SelectAlternativeUseCase.Command(id, false, null, null)))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessage("Unknown application 123e4567-e89b-12d3-a456-426614174000");
+                .hasMessage("Unknown application " + id);
         verify(repository).findById(id);
         verifyNoMoreInteractions(repository, bikePortfolio, process);
     }

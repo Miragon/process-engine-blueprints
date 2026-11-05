@@ -5,6 +5,7 @@ import io.miragon.blueprint.domain.bike.OrderId;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
 import io.miragon.blueprint.domain.leasing.ContractId;
 import io.miragon.blueprint.domain.leasing.LeasingApplication;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,7 @@ public class GetLeasingApplicationController {
         this.query = query;
     }
 
+    @Operation(operationId = "getLeasingApplication")
     @GetMapping("/{applicationId}")
     public ResponseEntity<LeasingApplicationDto> byId(@PathVariable String applicationId) {
         return query.byId(ApplicationId.of(applicationId))

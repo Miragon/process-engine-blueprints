@@ -21,7 +21,7 @@
       "Edit(/**/adapter/process/ProcessVariables.*)",
       "Edit(/**/adapter/process/Errors.*)",
       "Edit(/**/adapter/process/Escalations.*)",
-      "Edit(/openapi/*.json)",
+      "Edit(/openapi/openapi.json)",
       "Edit(/frontend/src/shared/api/generated/**)"
     ]
   },

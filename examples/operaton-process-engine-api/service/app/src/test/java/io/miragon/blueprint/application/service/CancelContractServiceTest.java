@@ -1,17 +1,19 @@
 package io.miragon.blueprint.application.service;
 
+import static io.miragon.blueprint.domain.leasing.TestObjectBuilder.testLeasingApplication;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+
 import io.miragon.blueprint.application.port.outbound.ContractPort;
 import io.miragon.blueprint.application.port.outbound.LeasingApplicationRepository;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
 import io.miragon.blueprint.domain.leasing.ContractId;
-import org.junit.jupiter.api.DisplayName;
+import io.miragon.blueprint.domain.leasing.LeasingApplication;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
-
-import static io.miragon.blueprint.domain.leasing.TestObjectBuilder.testLeasingApplication;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.mock;
 
 class CancelContractServiceTest {
 
@@ -20,52 +22,48 @@ class CancelContractServiceTest {
     private final CancelContractService underTest = new CancelContractService(repository, contract);
 
     @Test
-    @DisplayName("cancelContract revokes the contract recorded on the application")
-    void cancelContractRevokesTheContractRecordedOnTheApplication() {
+    void cancelContract_revokes_the_contract_recorded_on_the_application() {
 
         // given: an application that already carries an issued contract
-        var application = testLeasingApplication().contractId(new ContractId("CONTRACT-1")).build();
-        given(repository.findById(application.id())).willReturn(application);
+        LeasingApplication application = testLeasingApplication().contractId(new ContractId("CONTRACT-1")).build();
+        when(repository.findById(application.id())).thenReturn(Optional.of(application));
 
         // when: the contract is cancelled as part of the compensation
         underTest.cancelContract(application.id());
 
         // then: the recorded contract id is revoked in the contract system
-        then(repository).should().findById(application.id());
-        then(contract).should().revokeContract(new ContractId("CONTRACT-1"));
-        then(repository).shouldHaveNoMoreInteractions();
-        then(contract).shouldHaveNoMoreInteractions();
+        verify(repository).findById(application.id());
+        verify(contract).revokeContract(new ContractId("CONTRACT-1"));
+        verifyNoMoreInteractions(repository, contract);
     }
 
     @Test
-    @DisplayName("cancelContract fails when the application is unknown")
-    void cancelContractFailsWhenTheApplicationIsUnknown() {
+    void cancelContract_fails_when_the_application_is_unknown() {
 
         // given: an id the repository cannot resolve
-        var id = ApplicationId.of("123e4567-e89b-12d3-a456-426614174000");
-        given(repository.findById(id)).willReturn(null);
+        ApplicationId id = ApplicationId.of("123e4567-e89b-12d3-a456-426614174000");
+        when(repository.findById(id)).thenReturn(Optional.empty());
 
         // when/then: cancellation fails and no contract is touched
         assertThatThrownBy(() -> underTest.cancelContract(id))
-            .isInstanceOf(IllegalStateException.class);
-        then(repository).should().findById(id);
-        then(repository).shouldHaveNoMoreInteractions();
-        then(contract).shouldHaveNoMoreInteractions();
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Unknown application " + id);
+        verify(repository).findById(id);
+        verifyNoMoreInteractions(repository, contract);
     }
 
     @Test
-    @DisplayName("cancelContract fails when no contract was issued for the application")
-    void cancelContractFailsWhenNoContractWasIssuedForTheApplication() {
+    void cancelContract_fails_when_no_contract_was_issued_for_the_application() {
 
         // given: an application that never received a contract
-        var application = testLeasingApplication().contractId(null).build();
-        given(repository.findById(application.id())).willReturn(application);
+        LeasingApplication application = testLeasingApplication().contractId(null).build();
+        when(repository.findById(application.id())).thenReturn(Optional.of(application));
 
         // when/then: cancellation fails and no contract is touched
         assertThatThrownBy(() -> underTest.cancelContract(application.id()))
-            .isInstanceOf(IllegalStateException.class);
-        then(repository).should().findById(application.id());
-        then(repository).shouldHaveNoMoreInteractions();
-        then(contract).shouldHaveNoMoreInteractions();
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("No contract issued for application " + application.id());
+        verify(repository).findById(application.id());
+        verifyNoMoreInteractions(repository, contract);
     }
 }

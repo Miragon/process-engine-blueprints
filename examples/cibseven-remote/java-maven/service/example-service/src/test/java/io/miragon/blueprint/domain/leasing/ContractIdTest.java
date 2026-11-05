@@ -22,14 +22,16 @@ class ContractIdTest {
     void rejectsABlankContractId() {
         // when/then: a blank value is refused
         assertThatThrownBy(() -> new ContractId("   "))
-                .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("ContractId must not be blank");
     }
 
     @Test
     @DisplayName("rejects a contract id made of no-break spaces")
-    void rejectsAContractIdOfNoBreakSpaces() {
-        // when/then: no-break spaces count as blank, too
+    void rejectsAContractIdMadeOfNoBreakSpaces() {
+        // when/then: a value that only looks empty is refused, too
         assertThatThrownBy(() -> new ContractId("\u00A0\u2007\u202F"))
-                .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("ContractId must not be blank");
     }
 }

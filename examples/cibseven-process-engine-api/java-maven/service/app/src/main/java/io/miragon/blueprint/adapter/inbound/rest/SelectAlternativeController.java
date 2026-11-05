@@ -15,8 +15,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * External completion of the {@code Clarify alternative with customer} user task — the counterpart to a
- * human completing the deployed Camunda Form in the CIB seven Tasklist.
+ * External completion of the {@code Clarify alternative with customer} user task — the counterpart to
+ * a human completing the deployed Camunda Form in the CIB seven Tasklist.
  */
 @RestController
 @RequestMapping("/api/bike-leasing")
@@ -37,15 +37,11 @@ public class SelectAlternativeController {
                 new SelectAlternativeUseCase.Command(
                         ApplicationId.of(applicationId),
                         input.alternativeFound(),
-                        input.bikeId() == null ? null : new BikeId(input.bikeId()),
+                        input.bikeId() != null ? new BikeId(input.bikeId()) : null,
                         input.bikeModel()));
         return ResponseEntity.accepted().build();
     }
 
-    /**
-     * @param bikeId    the newly chosen bike; {@code null} (or absent) when no alternative was found
-     * @param bikeModel the newly chosen bike's model; {@code null} (or absent) when no alternative was found
-     */
     public record AlternativeDecisionInput(
             @Schema(requiredMode = REQUIRED) boolean alternativeFound,
             @Schema(nullable = true) String bikeId,

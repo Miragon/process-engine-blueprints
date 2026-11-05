@@ -10,6 +10,7 @@ import io.miragon.blueprint.domain.leasing.LeasingStatus;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
@@ -32,33 +33,35 @@ class LeasingApplicationPersistenceAdapterTest {
     private final ApplicationId id = new ApplicationId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
 
     @Test
-    void saves_and_reloads_an_application() {
+    @DisplayName("saves and reloads an application")
+    void savesAndReloadsAnApplication() {
 
         // given: a leasing application
         LeasingApplication application = testLeasingApplication().id(id).build();
 
         // when: it is saved and re-read from a cleared persistence context
         LeasingApplication saved = underTest.save(application);
+        assertThat(saved).usingRecursiveComparison().isEqualTo(application);
         entityManager.flush();
         entityManager.clear();
 
         // then: the reloaded application equals the original
         assertThat(underTest.findById(id)).get().usingRecursiveComparison().isEqualTo(application);
-        // and: save hands back the persisted application
-        assertThat(saved).usingRecursiveComparison().isEqualTo(application);
     }
 
     @Test
-    void findById_returns_null_when_the_application_does_not_exist() {
+    @DisplayName("findById returns null when the application does not exist")
+    void findByIdReturnsNullWhenTheApplicationDoesNotExist() {
 
         // given: an empty database
-        // when / then: the lookup finds nothing ("null" in the test name = an empty Optional)
+        // when / then: the lookup finds nothing
         assertThat(underTest.findById(id)).isEmpty();
     }
 
     @Test
     @Sql("classpath:sql/leasing-application.sql")
-    void findById_maps_an_existing_row_back_to_the_domain() {
+    @DisplayName("findById maps an existing row back to the domain")
+    void findByIdMapsAnExistingRowBackToTheDomain() {
 
         // given: a pre-inserted row (see sql/leasing-application.sql)
         // when / then: the adapter maps it back to the expected application
@@ -69,7 +72,8 @@ class LeasingApplicationPersistenceAdapterTest {
     }
 
     @Test
-    void findAll_returns_a_page_ordered_by_creation_date_newest_first() {
+    @DisplayName("findAll returns a page ordered by creation date, newest first")
+    void findAllReturnsAPageOrderedByCreationDateNewestFirst() {
 
         // given: three applications created on different days
         LeasingApplication older = testLeasingApplication()
@@ -84,7 +88,9 @@ class LeasingApplicationPersistenceAdapterTest {
                 .id(new ApplicationId(UUID.randomUUID()))
                 .createdAt(LocalDateTime.of(2026, 6, 1, 8, 0))
                 .build();
-        List.of(older, newest, newer).forEach(underTest::save);
+        for (LeasingApplication application : List.of(older, newest, newer)) {
+            underTest.save(application);
+        }
         entityManager.flush();
         entityManager.clear();
 
@@ -94,11 +100,13 @@ class LeasingApplicationPersistenceAdapterTest {
 
         // then: all three come back, newest first
         assertThat(page.totalElements()).isEqualTo(3);
-        assertThat(page.items()).extracting(LeasingApplication::id).containsExactly(newest.id(), newer.id(), older.id());
+        assertThat(page.items().stream().map(LeasingApplication::id).toList())
+                .containsExactly(newest.id(), newer.id(), older.id());
     }
 
     @Test
-    void findAll_filters_by_status_and_paginates() {
+    @DisplayName("findAll filters by status and paginates")
+    void findAllFiltersByStatusAndPaginates() {
 
         // given: two RECEIVED and one ACTIVE application
         underTest.save(testLeasingApplication()
@@ -123,6 +131,6 @@ class LeasingApplicationPersistenceAdapterTest {
         // then: only the single ACTIVE application is returned
         assertThat(page.totalElements()).isEqualTo(1);
         assertThat(page.items()).hasSize(1);
-        assertThat(page.items()).singleElement().extracting(LeasingApplication::status).isEqualTo(LeasingStatus.ACTIVE);
+        assertThat(page.items().get(0).status()).isEqualTo(LeasingStatus.ACTIVE);
     }
 }

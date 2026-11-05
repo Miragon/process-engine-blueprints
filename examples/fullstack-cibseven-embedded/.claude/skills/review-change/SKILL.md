@@ -8,11 +8,12 @@ allowed-tools: Read, Glob, Grep, Bash(git *), Bash(gh pr view *), Bash(gh pr dif
 # Skill: review-change
 
 A review that only ticks boxes is worthless; one finding with a reproducible scenario beats ten
-style notes. The machine gates (architecture rules, contract and process-API drift, bpmnlint,
-mutation 80, steiger, knip, the frontend tests) run in CI; do not restate them, check what they cannot see. Do check that a gate
-actually ran: the mutation gate runs nightly on the domain, so a pull request never
-exercises it. Generic code
-review is what the built-in review tooling does; this skill adds what only this repo knows.
+style notes. The machine gates run in CI:
+architecture rules, contract and process-API drift, bpmnlint, mutation 80, steiger, knip, the frontend tests.
+Do not restate them, check what they cannot see.
+Do check that a gate actually ran: the mutation gate runs nightly on the domain, so a pull request
+never exercises it. Generic code review is what the built-in review tooling does; this skill adds
+what only this repo knows.
 
 The agents `review-process` and `review-vertical-slice` are loaded at session start. If one is not
 available, read its file in `.claude/agents/` and apply it yourself.
@@ -51,7 +52,7 @@ and packages instead: a leftover reference is the typical defect.
 | a user-visible flow | copy in `frontend/src/shared/i18n/de.ts` and `en.ts`, the Bruno scenario, a Playwright spec in `frontend/e2e/` |
 | a frontend slice | the FSD layer rules of `frontend/AGENTS.md`, a Vitest test with MSW |
 | a whole feature | run the agent `review-vertical-slice` |
-| an accepted ADR | rewritten in place with a bumped date, or superseded by a new ADR; no "Update" sections |
+| an accepted ADR | a reversal is a new ADR that supersedes it; no "Update" sections |
 
 A hand-edited generated file is a blocker.
 

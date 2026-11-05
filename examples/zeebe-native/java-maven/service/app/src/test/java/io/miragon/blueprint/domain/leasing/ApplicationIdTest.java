@@ -43,11 +43,11 @@ class ApplicationIdTest {
     }
 
     @Test
-    @DisplayName("renders its value the way error messages show it")
-    void rendersItsValueTheWayErrorMessagesShowIt() {
+    @DisplayName("renders as its plain UUID")
+    void rendersAsItsPlainUuid() {
         // given/when: an application id is turned into text
         ApplicationId id = ApplicationId.of("123e4567-e89b-12d3-a456-426614174000");
         // then: the text is the one the REST API exposes in a 404 detail
-        assertThat(id.toString()).isEqualTo("ApplicationId(value=123e4567-e89b-12d3-a456-426614174000)");
+        assertThat(id.toString()).isEqualTo("123e4567-e89b-12d3-a456-426614174000");
     }
 }

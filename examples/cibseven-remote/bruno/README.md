@@ -32,7 +32,7 @@ npx --yes @usebruno/cli@4.0.0 run 00-demo-data --env local -r
 
 The worker and the engine are eventually consistent, so the requests **poll for a state instead of
 sleeping** ([ADR-0012](../docs/adr/0012-polling-for-eventual-consistency-in-e2e-tests.md)). The helpers
-(`pollApp`, `pollEngine`, `awaitMessageSubscription`) live in `collection.bru`; their budgets are set in
+(`pollApp`, `pollEngine`, `pollMessageSubscription`) live in `collection.bru`; their budgets are set in
 the environment file. Keep the CLI pinned to `@usebruno/cli@4.0.0` — the script sandbox changes between
 majors.
 

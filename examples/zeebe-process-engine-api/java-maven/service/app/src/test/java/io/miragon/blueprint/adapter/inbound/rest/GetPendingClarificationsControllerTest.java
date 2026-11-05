@@ -35,15 +35,14 @@ class GetPendingClarificationsControllerTest {
     @DisplayName("returns the pending clarifications without exposing a task id")
     void returnsThePendingClarificationsWithoutExposingATaskId() throws Exception {
         // given: one application waiting on the clarify-alternative task
-        when(query.pending())
-            .thenReturn(
+        when(query.pending()).thenReturn(
                 List.of(
-                    new PendingClarification(
-                        id,
-                        new CustomerName("Erin Restock"),
-                        new BikeId("BIKE-OOS"),
-                        "Mountain Trail 600",
-                        LocalDateTime.of(2026, 8, 17, 9, 30))));
+                        new PendingClarification(
+                                id,
+                                new CustomerName("Erin Restock"),
+                                new BikeId("BIKE-OOS"),
+                                "Mountain Trail 600",
+                                LocalDateTime.of(2026, 8, 17, 9, 30))));
 
         // when
         MvcResult response = mockMvc.perform(get("/api/tasks/clarify-alternative")).andReturn();

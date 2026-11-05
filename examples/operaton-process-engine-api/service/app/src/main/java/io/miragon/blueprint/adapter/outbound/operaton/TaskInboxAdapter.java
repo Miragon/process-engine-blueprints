@@ -6,12 +6,13 @@ import io.miragon.blueprint.domain.leasing.ApplicationId;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import org.operaton.bpm.engine.RuntimeService;
 import org.operaton.bpm.engine.TaskService;
+import org.operaton.bpm.engine.runtime.ProcessInstance;
 import org.operaton.bpm.engine.task.Task;
 import org.springframework.stereotype.Component;
 
@@ -21,9 +22,15 @@ import org.springframework.stereotype.Component;
  * the inbox lists cases, and cases are resolved through the domain, correlated by id.
  *
  * <p>This is a read-only query at the engine boundary. The process-engine-api has no server-side task
- * query, so the inbox reads the embedded Operaton {@link TaskService} directly — the native interfaces that
- * remain available alongside the API (see {@code docs/execution-and-task-listeners.md}). Task <em>completion</em>
- * still goes through the process-engine-api in {@link LeasingProcessAdapter}.
+ * query, so the inbox reads the embedded Operaton {@code TaskService} directly — the native interfaces that
+ * remain available alongside the API (see {@code docs/execution-and-task-listeners.md}). Task
+ * <em>completion</em> still goes through the process-engine-api in {@link LeasingProcessAdapter}.
+ *
+ * <p>The two private read-only helpers over the Operaton services ({@link #findOpenTasks} and
+ * {@link #businessKeysById}) keep the adapter reading as intent instead of fluent query boilerplate. Both
+ * key on the process business key, which this service sets to the application id. Only the task-inbox
+ * <em>reads</em> live here; message correlation and user-task completion go through the process-engine-api
+ * in {@link LeasingProcessAdapter}.
  */
 @Component
 public class TaskInboxAdapter implements TaskInboxPort {
@@ -38,18 +45,18 @@ public class TaskInboxAdapter implements TaskInboxPort {
 
     @Override
     public List<TaskInboxPort.OpenClarification> findOpenClarifications() {
-        var tasks = findOpenTasks(FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID);
-        var businessKeys = businessKeysById(tasks.stream().map(Task::getProcessInstanceId).toList());
-        var clarifications = new ArrayList<TaskInboxPort.OpenClarification>();
-        for (var task : tasks) {
-            var applicationId = businessKeys.get(task.getProcessInstanceId());
+        List<Task> tasks = findOpenTasks(FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID);
+        Map<String, String> businessKeys =
+                businessKeysById(tasks.stream().map(Task::getProcessInstanceId).toList());
+        List<TaskInboxPort.OpenClarification> clarifications = new ArrayList<>();
+        for (Task task : tasks) {
+            String applicationId = businessKeys.get(task.getProcessInstanceId());
             if (applicationId == null) {
                 continue;
             }
             clarifications.add(new TaskInboxPort.OpenClarification(
-                ApplicationId.of(applicationId),
-                task.getCreateTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()
-            ));
+                    ApplicationId.of(applicationId),
+                    task.getCreateTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()));
         }
         return clarifications;
     }
@@ -57,9 +64,9 @@ public class TaskInboxAdapter implements TaskInboxPort {
     /** All currently-active tasks of the given {@code taskDefinitionKey}, across every process instance. */
     private List<Task> findOpenTasks(String taskDefinitionKey) {
         return taskService.createTaskQuery()
-            .taskDefinitionKey(taskDefinitionKey)
-            .active()
-            .list();
+                .taskDefinitionKey(taskDefinitionKey)
+                .active()
+                .list();
     }
 
     /**
@@ -70,12 +77,12 @@ public class TaskInboxAdapter implements TaskInboxPort {
         if (processInstanceIds.isEmpty()) {
             return Map.of();
         }
-        var businessKeysById = new HashMap<String, String>();
-        for (var instance : runtimeService.createProcessInstanceQuery()
-            .processInstanceIds(new HashSet<>(processInstanceIds))
-            .list()) {
-            businessKeysById.put(instance.getId(), instance.getBusinessKey());
+        Map<String, String> businessKeys = new LinkedHashMap<>();
+        for (ProcessInstance instance : runtimeService.createProcessInstanceQuery()
+                .processInstanceIds(new LinkedHashSet<>(processInstanceIds))
+                .list()) {
+            businessKeys.put(instance.getId(), instance.getBusinessKey());
         }
-        return businessKeysById;
+        return businessKeys;
     }
 }

@@ -29,7 +29,7 @@ public class ListBikesController {
     @GetMapping
     public List<BikeDto> all() {
         return query.all().stream()
-                .map(item -> new BikeDto(item.bikeId().value(), item.model(), item.available()))
+                .map(it -> new BikeDto(it.bikeId().value(), it.model(), it.available()))
                 .toList();
     }
 

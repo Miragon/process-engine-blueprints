@@ -1,16 +1,14 @@
 package io.miragon.blueprint.adapter.inbound.rest;
 
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.miragon.blueprint.application.port.inbound.GetLeasingApplicationQuery;
-import io.miragon.blueprint.domain.bike.OrderId;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
-import io.miragon.blueprint.domain.leasing.ContractId;
 import io.miragon.blueprint.domain.leasing.LeasingApplication;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
-import org.jspecify.annotations.Nullable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,52 +28,44 @@ public class GetLeasingApplicationController {
     @Operation(operationId = "getLeasingApplication")
     @GetMapping("/{applicationId}")
     public ResponseEntity<LeasingApplicationDto> byId(@PathVariable String applicationId) {
-        GetLeasingApplicationQuery.Result result = query.byId(ApplicationId.of(applicationId));
-        if (result == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(toDto(result));
+        return query.byId(ApplicationId.of(applicationId))
+                .map(result -> ResponseEntity.ok(toDto(result)))
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    // `required = true` / `nullable = true` mirror the non-null contract Kotlin once carried in its
-    // type system: swagger-core cannot derive them from JSpecify annotations (swagger-api/swagger-core#5001).
     public record LeasingApplicationDto(
-        @JsonProperty(required = true) String applicationId,
-        @JsonProperty(required = true) String customerName,
-        @JsonProperty(required = true) String email,
-        @JsonProperty(required = true) int age,
-        @JsonProperty(required = true) double monthlyNetIncome,
-        @JsonProperty(required = true) String bikeId,
-        @Schema(nullable = true) @Nullable String bikeModel,
-        @JsonProperty(required = true) String status,
-        @Schema(nullable = true) @Nullable String orderId,
-        @Schema(nullable = true) @Nullable String contractId,
-        // Force ISO-8601 string form: Jackson 3 (SB4) defaults to a numeric array, but the Operaton
-        // webapp serves /api with its own Jackson mapper that ignores our global date-time config, so
-        // the format is pinned at the field to keep the payload in sync with the springdoc contract
-        // any API consumer relies on.
-        @JsonFormat(shape = JsonFormat.Shape.STRING)
-        @JsonProperty(required = true)
-        LocalDateTime createdAt
-    ) {
+            @Schema(requiredMode = REQUIRED) String applicationId,
+            @Schema(requiredMode = REQUIRED) String customerName,
+            @Schema(requiredMode = REQUIRED) String email,
+            @Schema(requiredMode = REQUIRED) int age,
+            @Schema(requiredMode = REQUIRED) double monthlyNetIncome,
+            @Schema(requiredMode = REQUIRED) String bikeId,
+            @Schema(nullable = true) String bikeModel,
+            @Schema(requiredMode = REQUIRED) String status,
+            @Schema(nullable = true) String orderId,
+            @Schema(nullable = true) String contractId,
+            // Force ISO-8601 string form: Jackson 3 (SB4) defaults to a numeric array, but the Operaton
+            // webapp serves /api with its own Jackson mapper that ignores our global date-time config, so
+            // the format is pinned at the field to keep the payload in sync with the springdoc contract.
+            @Schema(requiredMode = REQUIRED)
+            @JsonFormat(shape = JsonFormat.Shape.STRING)
+            LocalDateTime createdAt) {
     }
 
     private static LeasingApplicationDto toDto(GetLeasingApplicationQuery.Result result) {
         LeasingApplication application = result.application();
-        OrderId orderId = application.orderId();
-        ContractId contractId = application.contractId();
         return new LeasingApplicationDto(
-            application.id().value().toString(),
-            application.customerName().value(),
-            application.email().value(),
-            application.age(),
-            application.monthlyNetIncome(),
-            application.bikeId().value(),
-            // resolved from the bike portfolio, not carried on the application
-            result.bikeModel(),
-            application.status().name(),
-            orderId != null ? orderId.value() : null,
-            contractId != null ? contractId.value() : null,
-            application.createdAt());
+                application.id().value().toString(),
+                application.customerName().value(),
+                application.email().value(),
+                application.age(),
+                application.monthlyNetIncome(),
+                application.bikeId().value(),
+                // resolved from the bike portfolio, not carried on the application
+                result.bikeModel(),
+                application.status().name(),
+                application.orderId() != null ? application.orderId().value() : null,
+                application.contractId() != null ? application.contractId().value() : null,
+                application.createdAt());
     }
 }

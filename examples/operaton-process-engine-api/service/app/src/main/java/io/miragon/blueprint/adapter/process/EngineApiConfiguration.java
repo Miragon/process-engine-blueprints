@@ -32,11 +32,10 @@ public class EngineApiConfiguration {
     public UserTaskSupport clarifyAlternativeUserTaskSupport(TaskSubscriptionApi taskSubscriptionApi) {
         UserTaskSupport userTaskSupport = new UserTaskSupport();
         userTaskSupport.subscribe(
-            taskSubscriptionApi,
-            CommonRestrictions.builder().build(),
-            FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID,
-            null
-        );
+                taskSubscriptionApi,
+                CommonRestrictions.builder().build(),
+                FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID,
+                null);
         return userTaskSupport;
     }
 }

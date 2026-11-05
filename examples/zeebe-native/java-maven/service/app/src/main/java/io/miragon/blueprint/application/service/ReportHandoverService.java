@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class ReportHandoverService implements ReportHandoverUseCase {
 
     private final LeasingProcess process;
-
     private final LeasingApplicationRepository repository;
 
     public ReportHandoverService(LeasingProcess process, LeasingApplicationRepository repository) {
@@ -25,7 +24,7 @@ public class ReportHandoverService implements ReportHandoverUseCase {
     public void reportHandover(ApplicationId id) {
         process.correlateHandoverReported(id);
         LeasingApplication application = repository.findById(id)
-            .orElseThrow(() -> new IllegalStateException("Unknown application " + id));
+                .orElseThrow(() -> new IllegalStateException("Unknown application " + id));
         repository.save(application.reportHandover());
     }
 }

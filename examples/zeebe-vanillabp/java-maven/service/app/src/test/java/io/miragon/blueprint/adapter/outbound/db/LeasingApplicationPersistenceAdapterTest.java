@@ -11,6 +11,7 @@ import io.miragon.blueprint.domain.leasing.LeasingStatus;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
@@ -33,13 +34,15 @@ class LeasingApplicationPersistenceAdapterTest {
     private final ApplicationId id = new ApplicationId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
 
     @Test
+    @DisplayName("saves and reloads an application")
     void savesAndReloadsAnApplication() {
 
         // given: a leasing application
         LeasingApplication application = testLeasingApplication().id(id).build();
 
         // when: it is saved and re-read from a cleared persistence context
-        underTest.save(application);
+        LeasingApplication saved = underTest.save(application);
+        assertThat(saved).usingRecursiveComparison().isEqualTo(application);
         entityManager.flush();
         entityManager.clear();
 
@@ -48,6 +51,7 @@ class LeasingApplicationPersistenceAdapterTest {
     }
 
     @Test
+    @DisplayName("saving a known application keeps the state the workflow recorded on its aggregate")
     void savingAKnownApplicationKeepsTheStateTheWorkflowRecordedOnItsAggregate() {
 
         // given: a stored application whose aggregate is parked on an open clarification
@@ -69,15 +73,17 @@ class LeasingApplicationPersistenceAdapterTest {
     }
 
     @Test
-    void findByIdReturnsNothingWhenTheApplicationDoesNotExist() {
+    @DisplayName("findById returns null when the application does not exist")
+    void findByIdReturnsNullWhenTheApplicationDoesNotExist() {
 
         // given: an empty database
-        // when / then: the lookup returns nothing
+        // when / then: the lookup finds nothing
         assertThat(underTest.findById(id)).isEmpty();
     }
 
     @Test
     @Sql("classpath:sql/leasing-application.sql")
+    @DisplayName("findById maps an existing row back to the domain")
     void findByIdMapsAnExistingRowBackToTheDomain() {
 
         // given: a pre-inserted row (see sql/leasing-application.sql)
@@ -89,31 +95,55 @@ class LeasingApplicationPersistenceAdapterTest {
     }
 
     @Test
+    @DisplayName("findAll returns a page ordered by creation date, newest first")
     void findAllReturnsAPageOrderedByCreationDateNewestFirst() {
 
         // given: three applications created on different days
-        LeasingApplication older = applicationCreatedAt(LocalDateTime.of(2026, 1, 1, 8, 0));
-        LeasingApplication newer = applicationCreatedAt(LocalDateTime.of(2026, 3, 1, 8, 0));
-        LeasingApplication newest = applicationCreatedAt(LocalDateTime.of(2026, 6, 1, 8, 0));
-        List.of(older, newest, newer).forEach(underTest::save);
+        LeasingApplication older = testLeasingApplication()
+                .id(new ApplicationId(UUID.randomUUID()))
+                .createdAt(LocalDateTime.of(2026, 1, 1, 8, 0))
+                .build();
+        LeasingApplication newer = testLeasingApplication()
+                .id(new ApplicationId(UUID.randomUUID()))
+                .createdAt(LocalDateTime.of(2026, 3, 1, 8, 0))
+                .build();
+        LeasingApplication newest = testLeasingApplication()
+                .id(new ApplicationId(UUID.randomUUID()))
+                .createdAt(LocalDateTime.of(2026, 6, 1, 8, 0))
+                .build();
+        for (LeasingApplication application : List.of(older, newest, newer)) {
+            underTest.save(application);
+        }
         entityManager.flush();
         entityManager.clear();
 
         // when: the first page is read without a filter
-        LeasingApplicationRepository.Page page = underTest.findAll(new LeasingApplicationRepository.Criteria(null, 0, 10));
+        LeasingApplicationRepository.Page page =
+                underTest.findAll(new LeasingApplicationRepository.Criteria(null, 0, 10));
 
         // then: all three come back, newest first
         assertThat(page.totalElements()).isEqualTo(3);
-        assertThat(page.items()).extracting(LeasingApplication::id).containsExactly(newest.id(), newer.id(), older.id());
+        assertThat(page.items().stream().map(LeasingApplication::id).toList())
+                .containsExactly(newest.id(), newer.id(), older.id());
     }
 
     @Test
+    @DisplayName("findAll filters by status and paginates")
     void findAllFiltersByStatusAndPaginates() {
 
         // given: two RECEIVED and one ACTIVE application
-        underTest.save(applicationInStatus(LeasingStatus.RECEIVED));
-        underTest.save(applicationInStatus(LeasingStatus.RECEIVED));
-        underTest.save(applicationInStatus(LeasingStatus.ACTIVE));
+        underTest.save(testLeasingApplication()
+                .id(new ApplicationId(UUID.randomUUID()))
+                .status(LeasingStatus.RECEIVED)
+                .build());
+        underTest.save(testLeasingApplication()
+                .id(new ApplicationId(UUID.randomUUID()))
+                .status(LeasingStatus.RECEIVED)
+                .build());
+        underTest.save(testLeasingApplication()
+                .id(new ApplicationId(UUID.randomUUID()))
+                .status(LeasingStatus.ACTIVE)
+                .build());
         entityManager.flush();
         entityManager.clear();
 
@@ -124,14 +154,6 @@ class LeasingApplicationPersistenceAdapterTest {
         // then: only the single ACTIVE application is returned
         assertThat(page.totalElements()).isEqualTo(1);
         assertThat(page.items()).hasSize(1);
-        assertThat(page.items().getFirst().status()).isEqualTo(LeasingStatus.ACTIVE);
-    }
-
-    private static LeasingApplication applicationCreatedAt(LocalDateTime createdAt) {
-        return testLeasingApplication().id(new ApplicationId(UUID.randomUUID())).createdAt(createdAt).build();
-    }
-
-    private static LeasingApplication applicationInStatus(LeasingStatus status) {
-        return testLeasingApplication().id(new ApplicationId(UUID.randomUUID())).status(status).build();
+        assertThat(page.items().get(0).status()).isEqualTo(LeasingStatus.ACTIVE);
     }
 }

@@ -15,9 +15,7 @@ public class ReportHandoverService implements ReportHandoverUseCase {
     private final LeasingProcess process;
     private final LeasingApplicationRepository repository;
 
-    public ReportHandoverService(
-            LeasingProcess process,
-            LeasingApplicationRepository repository) {
+    public ReportHandoverService(LeasingProcess process, LeasingApplicationRepository repository) {
         this.process = process;
         this.repository = repository;
     }

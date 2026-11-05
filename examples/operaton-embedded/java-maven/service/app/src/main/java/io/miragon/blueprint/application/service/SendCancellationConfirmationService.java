@@ -31,7 +31,7 @@ public class SendCancellationConfirmationService implements SendCancellationConf
     @Override
     public void sendCancellationConfirmation(ApplicationId id) {
         LeasingApplication application = repository.findById(id)
-                .orElseThrow(() -> new IllegalStateException("Unknown application " + id.value()));
+                .orElseThrow(() -> new IllegalStateException("Unknown application " + id));
         notification.send("Your bike-leasing application has been cancelled", application);
         repository.save(application.cancel());
     }

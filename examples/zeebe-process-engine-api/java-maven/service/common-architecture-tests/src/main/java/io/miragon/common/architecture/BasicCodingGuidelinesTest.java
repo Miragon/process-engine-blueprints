@@ -1,65 +1,69 @@
 package io.miragon.common.architecture;
 
+import static com.tngtech.archunit.core.domain.JavaCall.Predicates.target;
+import static com.tngtech.archunit.core.domain.JavaClass.Predicates.assignableTo;
+import static com.tngtech.archunit.core.domain.properties.HasName.Predicates.name;
+import static com.tngtech.archunit.core.domain.properties.HasOwner.Predicates.With.owner;
+
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
-import com.tngtech.archunit.core.importer.ImportOption.DoNotIncludeTests;
+import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.lang.syntax.ArchRuleDefinition;
-import com.tngtech.archunit.library.GeneralCodingRules;
 import com.tngtech.archunit.library.dependencies.SlicesRuleDefinition;
-import org.junit.jupiter.api.DisplayName;
+import java.io.PrintStream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 /**
- * ArchUnit half of the combined suite: general coding guidelines that rely on the resolved bytecode
- * graph (package structure, freedom of cycles, no {@code System.out}).
+ * General coding guidelines that rely on the resolved bytecode graph (package structure, freedom of
+ * cycles, no {@code println}).
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public abstract class BasicCodingGuidelinesTest {
 
-    private final String pathFromRoot;
+    protected abstract String rootPackage();
 
-    private final JavaClasses allClasses;
+    private JavaClasses allClasses;
+    private JavaClasses productionClasses;
 
-    private final JavaClasses productionClasses;
+    private JavaClasses allClasses() {
+        if (allClasses == null) {
+            allClasses = new ClassFileImporter().importPackages(rootPackage());
+        }
+        return allClasses;
+    }
 
-    protected BasicCodingGuidelinesTest(String pathFromRoot) {
-        this.pathFromRoot = pathFromRoot;
-        this.allClasses = new ClassFileImporter().importPackages(pathFromRoot);
-        this.productionClasses =
-            new ClassFileImporter()
-                .withImportOption(new DoNotIncludeTests())
-                .importPackages(pathFromRoot);
+    private JavaClasses productionClasses() {
+        if (productionClasses == null) {
+            productionClasses = new ClassFileImporter()
+                    .withImportOption(new ImportOption.DoNotIncludeTests())
+                    .importPackages(rootPackage());
+        }
+        return productionClasses;
     }
 
     @Test
-    @DisplayName("each class has package declaration")
     void eachClassHasPackageDeclaration() {
-        ArchRuleDefinition
-            .classes()
-            .should()
-            .resideInAnyPackage(pathFromRoot + "..")
-            .because("All classes should be in the specified package structure")
-            .check(allClasses);
+        ArchRuleDefinition.classes()
+                .should().resideInAnyPackage(rootPackage() + "..")
+                .because("All classes should be in the specified package structure")
+                .check(allClasses());
     }
 
     @Test
-    @DisplayName("classes are free of cycles")
     void classesAreFreeOfCycles() {
-        SlicesRuleDefinition
-            .slices()
-            .matching(pathFromRoot + ".(**)")
-            .should()
-            .beFreeOfCycles()
-            .because("Classes should not have circular dependencies")
-            .check(productionClasses);
+        SlicesRuleDefinition.slices()
+                .matching(rootPackage() + ".(**)")
+                .should().beFreeOfCycles()
+                .because("Classes should not have circular dependencies")
+                .check(productionClasses());
     }
 
     @Test
-    @DisplayName("production code does not use println or System out")
     void productionCodeDoesNotUsePrintlnOrSystemOut() {
-        GeneralCodingRules.NO_CLASSES_SHOULD_ACCESS_STANDARD_STREAMS
-            .because("Use a logger instead of println or System.out for diagnostic output")
-            .check(productionClasses);
+        ArchRuleDefinition.noClasses()
+                .should().callMethodWhere(target(name("println")).and(target(owner(assignableTo(PrintStream.class)))))
+                .because("Use a logger instead of println or System.out for diagnostic output")
+                .check(productionClasses());
     }
 }

@@ -1,5 +1,7 @@
 package io.miragon.blueprint.adapter.outbound.db;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import io.miragon.blueprint.domain.bike.Bike;
 import io.miragon.blueprint.domain.bike.BikeId;
 import java.util.List;
@@ -10,8 +12,6 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @ActiveProfiles("test")
@@ -32,12 +32,13 @@ class BikePortfolioPersistenceAdapterTest {
         Bike bike = new Bike(new BikeId("BIKE-900"), "Gravel Explorer 900");
 
         // when: it is saved and re-read from a cleared persistence context
-        underTest.save(bike);
+        Bike saved = underTest.save(bike);
+        assertThat(saved).isEqualTo(bike);
         entityManager.flush();
         entityManager.clear();
 
         // then: the reloaded bike equals the original
-        assertThat(underTest.findByBikeId(new BikeId("BIKE-900"))).isEqualTo(bike);
+        assertThat(underTest.findByBikeId(new BikeId("BIKE-900"))).contains(bike);
     }
 
     @Test
@@ -45,8 +46,8 @@ class BikePortfolioPersistenceAdapterTest {
     void findByBikeIdReturnsNullWhenTheBikeIsNotInThePortfolio() {
 
         // given: an empty portfolio
-        // when / then: the lookup returns null
-        assertThat(underTest.findByBikeId(new BikeId("BIKE-000"))).isNull();
+        // when / then: the lookup finds nothing
+        assertThat(underTest.findByBikeId(new BikeId("BIKE-000"))).isEmpty();
     }
 
     @Test
@@ -61,10 +62,9 @@ class BikePortfolioPersistenceAdapterTest {
 
         // when / then: both are returned, ordered ascending by id
         assertThat(underTest.findAll())
-            .containsExactly(
-                new Bike(new BikeId("BIKE-800"), "Carbon Road 800"),
-                new Bike(new BikeId("BIKE-900"), "Gravel Explorer 900")
-            );
+                .containsExactly(
+                        new Bike(new BikeId("BIKE-800"), "Carbon Road 800"),
+                        new Bike(new BikeId("BIKE-900"), "Gravel Explorer 900"));
     }
 
     @Test
@@ -82,8 +82,8 @@ class BikePortfolioPersistenceAdapterTest {
         List<Bike> result = underTest.findAllByIds(List.of(new BikeId("BIKE-900"), new BikeId("BIKE-OOS")));
 
         // then: exactly those two come back
-        assertThat(result.stream().map(bike -> bike.bikeId().value()))
-            .containsExactlyInAnyOrder("BIKE-900", "BIKE-OOS");
+        assertThat(result.stream().map(b -> b.bikeId().value()).toList())
+                .containsExactlyInAnyOrder("BIKE-900", "BIKE-OOS");
         // and: an empty request returns an empty list without touching the database
         assertThat(underTest.findAllByIds(List.of())).isEmpty();
     }

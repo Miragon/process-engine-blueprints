@@ -44,14 +44,9 @@ public class LeasingApplicationEntity {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    /** For JPA only. */
     protected LeasingApplicationEntity() {
     }
 
-    /**
-     * @param orderId    the dealer order; {@code null} until a bike was ordered
-     * @param contractId the issued contract; {@code null} until a contract was issued
-     */
     public LeasingApplicationEntity(
             UUID applicationId,
             String customerName,

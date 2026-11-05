@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class RejectApplicationService implements RejectApplicationUseCase {
 
     private final LeasingApplicationRepository repository;
-
     private final NotificationPort notification;
 
     public RejectApplicationService(LeasingApplicationRepository repository, NotificationPort notification) {
@@ -24,7 +23,7 @@ public class RejectApplicationService implements RejectApplicationUseCase {
     @Override
     public void reject(ApplicationId id) {
         LeasingApplication application = repository.findById(id)
-            .orElseThrow(() -> new IllegalStateException("Unknown application " + id));
+                .orElseThrow(() -> new IllegalStateException("Unknown application " + id));
         notification.send("Your bike-leasing application was rejected", application);
         repository.save(application.reject());
     }

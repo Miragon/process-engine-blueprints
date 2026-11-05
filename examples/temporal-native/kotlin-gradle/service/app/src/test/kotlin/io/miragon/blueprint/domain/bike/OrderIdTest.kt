@@ -19,5 +19,14 @@ class OrderIdTest {
         // when/then: a blank value is refused
         assertThatThrownBy { OrderId("   ") }
             .isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessage("OrderId must not be blank")
+    }
+
+    @Test
+    fun `rejects an order id made of no-break spaces`() {
+        // when/then: a value that only looks empty is refused, too
+        assertThatThrownBy { OrderId("\u00A0\u2007\u202F") }
+            .isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessage("OrderId must not be blank")
     }
 }

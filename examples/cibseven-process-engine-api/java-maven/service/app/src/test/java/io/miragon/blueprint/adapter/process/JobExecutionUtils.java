@@ -19,7 +19,7 @@ public final class JobExecutionUtils {
      * Drives the process to its next wait state, giving up after 15 seconds. See
      * {@link #continueToNextWaitState(ProcessEngine, long)}.
      */
-    public static void continueToNextWaitState(ProcessEngine processEngine) throws InterruptedException {
+    public static void continueToNextWaitState(ProcessEngine processEngine) {
         continueToNextWaitState(processEngine, DEFAULT_TIMEOUT_MILLIS);
     }
 
@@ -33,8 +33,7 @@ public final class JobExecutionUtils {
      * <em>and</em> gives the polling workers time to pick up and complete any open external tasks — settling
      * once no message job and no external task remains for a few consecutive checks.
      */
-    public static void continueToNextWaitState(ProcessEngine processEngine, long timeoutMillis)
-        throws InterruptedException {
+    public static void continueToNextWaitState(ProcessEngine processEngine, long timeoutMillis) {
         ManagementService managementService = processEngine.getManagementService();
         long deadline = System.currentTimeMillis() + timeoutMillis;
         int idleIterations = 0;
@@ -55,7 +54,12 @@ public final class JobExecutionUtils {
             } else {
                 idleIterations = 0;
             }
-            Thread.sleep(200);
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IllegalStateException("interrupted while driving the process to its next wait state", e);
+            }
         }
     }
 }

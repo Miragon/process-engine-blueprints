@@ -7,8 +7,8 @@ import io.miragon.bpmn.runtime.path.ProcessPath
 fun ProcessInstanceAssert.hasCompletedElements(vararg elements: FlowNode): ProcessInstanceAssert =
     hasCompletedElements(*elements.map { it.id.value }.toTypedArray())
 
-fun ProcessInstanceAssert.hasCompletedElements(path: ProcessPath<*>): ProcessInstanceAssert =
-    hasCompletedElements(*path.distinctIds)
-
 fun ProcessInstanceAssert.hasCompletedElementsInOrder(path: ProcessPath<*>): ProcessInstanceAssert =
     hasCompletedElementsInOrder(*path.ids)
+
+fun ProcessInstanceAssert.hasCompletedElements(path: ProcessPath<*>): ProcessInstanceAssert =
+    hasCompletedElements(*path.distinctIds)

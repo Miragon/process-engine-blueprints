@@ -113,7 +113,7 @@ public class BikeUnavailableTransactionTest {
         continueToNextWaitState(processEngine); // re-order succeeds -> parallel join -> handover wait state
 
         assertThat(instance).isWaitingAt(FlowNodes.EventHandoverReported.ELEMENT_ID);
-        LeasingApplication stored = repository.findById(application.id());
+        LeasingApplication stored = repository.findById(application.id()).orElseThrow();
         Assertions.assertThat(stored.bikeId()).isEqualTo(new BikeId("BIKE-900"));
         Assertions.assertThat(stored.status()).isEqualTo(LeasingStatus.ORDERED);
     }
@@ -129,7 +129,7 @@ public class BikeUnavailableTransactionTest {
         signContractAndRunIntoTheUnavailableBike(application.id());
 
         assertThat(instance).isWaitingAt(FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID);
-        Assertions.assertThat(repository.findById(application.id()).bikeId()).isEqualTo(new BikeId("BIKE-OOS"));
+        Assertions.assertThat(repository.findById(application.id()).orElseThrow().bikeId()).isEqualTo(new BikeId("BIKE-OOS"));
     }
 
     private void signContractAndRunIntoTheUnavailableBike(ApplicationId id) {

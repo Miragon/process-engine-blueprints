@@ -11,12 +11,13 @@ import org.junit.jupiter.api.Test;
 
 /**
  * Runs the reusable ArchUnit suite against this service's base package.
- * The rules live in the {@code service/common-architecture-tests} module.
+ * The rules live in the {@code common-architecture-tests} module.
  */
 class ArchitectureTest extends ServiceArchitectureTest {
 
-    ArchitectureTest() {
-        super("io.miragon.blueprint");
+    @Override
+    protected String rootPackage() {
+        return "io.miragon.blueprint";
     }
 
     /** What this blueprint shows: the service reaches the engine through the process-engine-api alone. */
@@ -24,8 +25,8 @@ class ArchitectureTest extends ServiceArchitectureTest {
     @DisplayName("the service does not use the Camunda client directly")
     void theServiceDoesNotUseTheCamundaClientDirectly() {
         JavaClasses productionClasses = new ClassFileImporter()
-            .withImportOption(new DoNotIncludeTests())
-            .importPackages("io.miragon.blueprint");
+                .withImportOption(new DoNotIncludeTests())
+                .importPackages("io.miragon.blueprint");
 
         noClasses().should().dependOnClassesThat().resideInAPackage("io.camunda..").check(productionClasses);
     }

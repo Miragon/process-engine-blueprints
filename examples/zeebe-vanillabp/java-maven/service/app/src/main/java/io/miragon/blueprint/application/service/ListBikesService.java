@@ -14,9 +14,7 @@ public class ListBikesService implements ListBikesQuery {
     private final BikePortfolioRepository bikePortfolio;
     private final BikeDealerPort bikeDealer;
 
-    public ListBikesService(
-            BikePortfolioRepository bikePortfolio,
-            BikeDealerPort bikeDealer) {
+    public ListBikesService(BikePortfolioRepository bikePortfolio, BikeDealerPort bikeDealer) {
         this.bikePortfolio = bikePortfolio;
         this.bikeDealer = bikeDealer;
     }

@@ -42,7 +42,7 @@ to the other, then regenerate, wire and test **both**.
   never raw strings. `adapter/process` is generated: never edit it (except
   `HistoryCleanupConfiguration`).
 - **Engine limits:** a service task is a delegate by expression (`#{beanName}`, enforced by
-  the model test `process/model/ServiceTaskDelegateExpressionRule`); asynchronous continuations
+  `process/model/ServiceTaskDelegateExpressionRule`); asynchronous continuations
   (`asyncBefore` and `asyncAfter` on most service tasks, `asyncBefore` alone on
   `serviceTask_orderBike`) are where retries and incidents happen; a compensation handler
   (`isForCompensation`) only runs for an activity that completed.
@@ -61,7 +61,7 @@ to the other, then regenerate, wire and test **both**.
    <!-- /variant:kotlin-gradle -->
    <!-- variant:java-maven -->
    ```bash
-   (cd java-maven && ./mvnw -pl service/app io.miragon:bpmn-to-code-maven:generate-bpmn-api)
+   (cd java-maven && ./mvnw -pl service/app generate-sources)
    ```
    <!-- /variant:java-maven -->
    ```bash

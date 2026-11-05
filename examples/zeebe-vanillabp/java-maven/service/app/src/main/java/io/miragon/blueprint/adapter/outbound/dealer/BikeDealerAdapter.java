@@ -25,11 +25,10 @@ public class BikeDealerAdapter implements BikeDealerPort {
 
     /**
      * Demo mechanism (not a real integration fault): ordering one of these bikes makes the dealer
-     * call fail as if the dealer's API were unreachable. {@code serviceTask_orderBike} runs on its own
-     * retryable job ({@code retries="3"}), so VanillaBP fails it with the modelled 10s backoff until
-     * the retries are exhausted and Zeebe raises an incident — the basis of the reproducible incident
-     * demo. It stays available in {@link #checkAvailability} so the flow reaches the order step (rather
-     * than the out-of-stock branch) before failing.
+     * call fail as if the dealer's API were unreachable, which drives the reproducible outage demo. How
+     * the failed order step is retried is up to the process engine and its inbound adapter. It stays
+     * available in {@link #checkAvailability} so the flow reaches the order step (rather than the out-of-stock branch)
+     * before failing.
      */
     private final Set<String> unavailableDealerBikeIds = Set.of("BIKE-FAIL");
 
@@ -63,10 +62,8 @@ public class BikeDealerAdapter implements BikeDealerPort {
 
     /**
      * Signals that the (simulated) bike dealer could not be reached while placing an order. Thrown for
-     * the {@code BIKE-FAIL} poison id to drive the reproducible incident demo: because
-     * {@code serviceTask_orderBike} runs as its own retryable job, VanillaBP fails that job repeatedly
-     * until Zeebe raises an incident. Nested so it stays colocated with the demo logic without needing
-     * an outbound-adapter naming suffix.
+     * the {@code BIKE-FAIL} poison id to drive the reproducible outage demo. Nested so it stays colocated with
+     * the demo logic without needing an outbound-adapter naming suffix.
      */
     public static class DealerUnavailableException extends RuntimeException {
 

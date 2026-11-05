@@ -46,8 +46,8 @@ never by sleeping a guessed duration.
   incidents, history activity instances) poll `pollEngine` for the exact row they then read and assert.
 - **Division of labour holds:** Bruno asserts the **synchronous request/response contract** (status
   codes, DTO shape) and the observable end-to-end outcome; genuinely engine-internal, deterministic
-  checks (full token flow, timer semantics) stay in the JVM process-test layer (`BikeLeasingProcessTest`,
-  JGiven). See ADR-0004 for the test layering.
+  checks (full token flow, timer semantics) stay in the JVM process-test layer (`operaton-bpm-assert`
+  in `BikeLeasingProcessTest`). See ADR-0004 for the test layering.
 - **The Bruno CLI is pinned** (`@usebruno/cli@4.0.0`): the script sandbox's capabilities (available
   globals, the `require` whitelist the helpers depend on) can change between majors, so an unpinned
   `latest` is a correctness risk, not just a supply-chain one.

@@ -14,8 +14,6 @@ public final class LeasingApplicationEntityMapper {
     }
 
     public static LeasingApplication toDomain(LeasingApplicationEntity entity) {
-        String orderId = entity.getOrderId();
-        String contractId = entity.getContractId();
         return new LeasingApplication(
                 new ApplicationId(entity.getApplicationId()),
                 new CustomerName(entity.getCustomerName()),
@@ -25,14 +23,11 @@ public final class LeasingApplicationEntityMapper {
                 new BikeId(entity.getBikeId()),
                 entity.getStatus(),
                 entity.getCreatedAt(),
-                orderId != null ? new OrderId(orderId) : null,
-                contractId != null ? new ContractId(contractId) : null
-        );
+                entity.getOrderId() != null ? new OrderId(entity.getOrderId()) : null,
+                entity.getContractId() != null ? new ContractId(entity.getContractId()) : null);
     }
 
     public static LeasingApplicationEntity toEntity(LeasingApplication domain) {
-        OrderId orderId = domain.orderId();
-        ContractId contractId = domain.contractId();
         return new LeasingApplicationEntity(
                 domain.id().value(),
                 domain.customerName().value(),
@@ -41,9 +36,8 @@ public final class LeasingApplicationEntityMapper {
                 domain.monthlyNetIncome(),
                 domain.bikeId().value(),
                 domain.status(),
-                orderId != null ? orderId.value() : null,
-                contractId != null ? contractId.value() : null,
-                domain.createdAt()
-        );
+                domain.orderId() != null ? domain.orderId().value() : null,
+                domain.contractId() != null ? domain.contractId().value() : null,
+                domain.createdAt());
     }
 }

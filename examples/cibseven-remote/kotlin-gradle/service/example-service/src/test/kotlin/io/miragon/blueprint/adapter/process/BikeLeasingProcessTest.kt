@@ -102,7 +102,17 @@ class BikeLeasingProcessTest {
         assertThat(instance)
             .isEnded
             .hasPassedInOrder(
-                pathUntilContractSigned()
+                ProcessPath.from(FlowNodes.StartEventLeasingRequestReceived)
+                    .then { it.businessRuleTaskCheckCreditRating }
+                    .then { it.gatewayIsSolvent }
+                    .onto { it.subProcessConcludeContract }
+                    .inside {
+                        enter { it.startEventCustomerEligible }
+                            .then { it.serviceTaskSendContract }
+                            .then { it.gatewayAwaitSignature }
+                            .then { it.eventContractSigned }
+                            .then { it.endEventContractValid }
+                    }
                     .then { it.gatewayFork }
                     .then { it.serviceTaskIssueInsurancePolicy }
                     .then { it.gatewayJoin }
@@ -112,7 +122,18 @@ class BikeLeasingProcessTest {
                     .then { it.endEventLeasingActive },
             )
             .hasPassedInOrder(
-                ProcessPath.from(FlowNodes.GatewayFork)
+                ProcessPath.from(FlowNodes.StartEventLeasingRequestReceived)
+                    .then { it.businessRuleTaskCheckCreditRating }
+                    .then { it.gatewayIsSolvent }
+                    .onto { it.subProcessConcludeContract }
+                    .inside {
+                        enter { it.startEventCustomerEligible }
+                            .then { it.serviceTaskSendContract }
+                            .then { it.gatewayAwaitSignature }
+                            .then { it.eventContractSigned }
+                            .then { it.endEventContractValid }
+                    }
+                    .then { it.gatewayFork }
                     .then { it.gatewayBikeSourceJoin }
                     .then { it.serviceTaskOrderBike }
                     .then { it.gatewayJoin },
@@ -138,7 +159,13 @@ class BikeLeasingProcessTest {
         assertThat(instance)
             .isEnded
             .hasPassedInOrder(
-                pathUntilSignatureAwaited()
+                ProcessPath.from(FlowNodes.StartEventLeasingRequestReceived)
+                    .then { it.businessRuleTaskCheckCreditRating }
+                    .then { it.gatewayIsSolvent }
+                    .onto { it.subProcessConcludeContract }
+                    .enter { it.startEventCustomerEligible }
+                    .then { it.serviceTaskSendContract }
+                    .then { it.gatewayAwaitSignature }
                     .then { it.eventSignatureDeadline }
                     .then { it.endEventNotSigned }
                     .interruptedBy(FlowNodes.SubProcessConcludeContract) { it.eventContractNotSigned }
@@ -161,7 +188,9 @@ class BikeLeasingProcessTest {
         assertThat(instance)
             .isEnded
             .hasPassedInOrder(
-                pathUntilCreditRatingChecked()
+                ProcessPath.from(FlowNodes.StartEventLeasingRequestReceived)
+                    .then { it.businessRuleTaskCheckCreditRating }
+                    .then { it.gatewayIsSolvent }
                     .then { it.gatewayRejectionJoin }
                     .then { it.serviceTaskSendRejection }
                     .then { it.endEventApplicationRejected },
@@ -192,7 +221,22 @@ class BikeLeasingProcessTest {
         assertThat(instance)
             .isEnded
             .hasPassed(
-                ProcessPath.from(FlowNodes.StartEventApplicationWithdrawn)
+                ProcessPath.from(FlowNodes.StartEventLeasingRequestReceived)
+                    .then { it.businessRuleTaskCheckCreditRating }
+                    .then { it.gatewayIsSolvent }
+                    .onto { it.subProcessConcludeContract }
+                    .inside {
+                        enter { it.startEventCustomerEligible }
+                            .then { it.serviceTaskSendContract }
+                            .then { it.gatewayAwaitSignature }
+                            .then { it.eventContractSigned }
+                            .then { it.endEventContractValid }
+                    }
+                    .then { it.gatewayFork }
+                    .then { it.gatewayBikeSourceJoin }
+                    .then { it.serviceTaskOrderBike }
+                    .then { it.gatewayJoin }
+                    .enter(FlowNodes.SubProcessApplicationWithdrawn) { it.startEventApplicationWithdrawn }
                     .then { it.eventReverseApplication }
                     .throwingCompensation(FlowNodes.EventCompensateContract) { it.serviceTaskCancelContract }
                     .throwingCompensation(FlowNodes.EventCompensateInsurance) { it.serviceTaskCancelPolicy }
@@ -228,7 +272,18 @@ class BikeLeasingProcessTest {
         assertThat(instance)
             .isEnded
             .hasPassedInOrder(
-                ProcessPath.from(FlowNodes.GatewayFork)
+                ProcessPath.from(FlowNodes.StartEventLeasingRequestReceived)
+                    .then { it.businessRuleTaskCheckCreditRating }
+                    .then { it.gatewayIsSolvent }
+                    .onto { it.subProcessConcludeContract }
+                    .inside {
+                        enter { it.startEventCustomerEligible }
+                            .then { it.serviceTaskSendContract }
+                            .then { it.gatewayAwaitSignature }
+                            .then { it.eventContractSigned }
+                            .then { it.endEventContractValid }
+                    }
+                    .then { it.gatewayFork }
                     .then { it.gatewayBikeSourceJoin }
                     .then { it.serviceTaskOrderBike }
                     .interruptedBy(FlowNodes.ServiceTaskOrderBike) { it.eventBikeUnavailable }
@@ -262,7 +317,23 @@ class BikeLeasingProcessTest {
         assertThat(instance)
             .isEnded
             .hasPassed(
-                ProcessPath.from(FlowNodes.GatewayAlternativeFound)
+                ProcessPath.from(FlowNodes.StartEventLeasingRequestReceived)
+                    .then { it.businessRuleTaskCheckCreditRating }
+                    .then { it.gatewayIsSolvent }
+                    .onto { it.subProcessConcludeContract }
+                    .inside {
+                        enter { it.startEventCustomerEligible }
+                            .then { it.serviceTaskSendContract }
+                            .then { it.gatewayAwaitSignature }
+                            .then { it.eventContractSigned }
+                            .then { it.endEventContractValid }
+                    }
+                    .then { it.gatewayFork }
+                    .then { it.gatewayBikeSourceJoin }
+                    .then { it.serviceTaskOrderBike }
+                    .interruptedBy(FlowNodes.ServiceTaskOrderBike) { it.eventBikeUnavailable }
+                    .then { it.userTaskClarifyAlternative }
+                    .then { it.gatewayAlternativeFound }
                     .then { it.eventTriggerReversal }
                     .throwingCompensation(FlowNodes.EventCompensateContract) { it.serviceTaskCancelContract }
                     .throwingCompensation(FlowNodes.EventCompensateInsurance) { it.serviceTaskCancelPolicy }
@@ -286,7 +357,23 @@ class BikeLeasingProcessTest {
         assertThat(instance)
             .isEnded
             .hasPassed(
-                ProcessPath.from(FlowNodes.StartEventApplicationWithdrawn)
+                ProcessPath.from(FlowNodes.StartEventLeasingRequestReceived)
+                    .then { it.businessRuleTaskCheckCreditRating }
+                    .then { it.gatewayIsSolvent }
+                    .onto { it.subProcessConcludeContract }
+                    .inside {
+                        enter { it.startEventCustomerEligible }
+                            .then { it.serviceTaskSendContract }
+                            .then { it.gatewayAwaitSignature }
+                            .then { it.eventContractSigned }
+                            .then { it.endEventContractValid }
+                    }
+                    .then { it.gatewayFork }
+                    .then { it.gatewayBikeSourceJoin }
+                    .then { it.serviceTaskOrderBike }
+                    .interruptedBy(FlowNodes.ServiceTaskOrderBike) { it.eventBikeUnavailable }
+                    .then { it.userTaskClarifyAlternative }
+                    .enter(FlowNodes.SubProcessApplicationWithdrawn) { it.startEventApplicationWithdrawn }
                     .then { it.eventReverseApplication }
                     .throwingCompensation(FlowNodes.EventCompensateContract) { it.serviceTaskCancelContract }
                     .throwingCompensation(FlowNodes.EventCompensateInsurance) { it.serviceTaskCancelPolicy }
@@ -340,29 +427,6 @@ class BikeLeasingProcessTest {
         val order = externalTaskService.createExternalTaskQuery().topicName(ServiceTasks.BIKE_LEASING_ORDER_BIKE).singleResult()
         return runtimeService.getVariable(order.executionId, FlowNodes.ServiceTaskOrderBike.Variables.BIKE_ID.value)
     }
-
-    private fun pathUntilCreditRatingChecked() =
-        ProcessPath.from(FlowNodes.StartEventLeasingRequestReceived)
-            .then { it.businessRuleTaskCheckCreditRating }
-            .then { it.gatewayIsSolvent }
-
-    private fun pathUntilSignatureAwaited() =
-        pathUntilCreditRatingChecked()
-            .onto { it.subProcessConcludeContract }
-            .enter { it.startEventCustomerEligible }
-            .then { it.serviceTaskSendContract }
-            .then { it.gatewayAwaitSignature }
-
-    private fun pathUntilContractSigned() =
-        pathUntilCreditRatingChecked()
-            .onto { it.subProcessConcludeContract }
-            .inside {
-                enter { it.startEventCustomerEligible }
-                    .then { it.serviceTaskSendContract }
-                    .then { it.gatewayAwaitSignature }
-                    .then { it.eventContractSigned }
-                    .then { it.endEventContractValid }
-            }
 
     /** Starts the process through its message start event, keyed by a fresh application business key. */
     private fun submit(age: Int, income: Double, bikeId: String = "BIKE-TEST"): String {

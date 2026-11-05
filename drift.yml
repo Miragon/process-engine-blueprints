@@ -111,7 +111,6 @@ differs:
       - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/outbound/workflow/LeasingProcessAdapterTest.java"
       - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/outbound/zeebe/LeasingProcessAdapterTest.java"
       - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/outbound/zeebe/TaskInboxAdapterTest.java"
-      - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/outbound/{engine}/TaskInboxAdapterTest.java"
       - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/BikeLeasingProcessTest.java"
       - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/BikeUnavailableTransactionTest.java"
       - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/JobExecutionUtils.java"
@@ -279,7 +278,6 @@ differs:
       - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/outbound/zeebe/LeasingProcessAdapterTest.kt"
       - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/outbound/zeebe/TaskInboxAdapterTest.kt"
       - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/outbound/{engine}/LeasingProcessAdapterTest.kt"
-      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/outbound/{engine}/TaskInboxAdapterTest.kt"
       - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/BikeLeasingProcessTest.kt"
       - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/BikeUnavailableTransactionTest.kt"
       - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/CreditRatingTest.kt"
@@ -581,7 +579,6 @@ differs:
       - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/rest/ActuatorEndpointsTest.java"
       - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/rest/OpenApiSpecExportTest.java"
       - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/rest/SelectAlternativeControllerTest.java"
-      - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/rest/SubmitLeasingRequestControllerTest.java"
       - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/outbound/db/LeasingApplicationPersistenceAdapterTest.java"
       - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/outbound/db/TaskInboxAdapterTest.java"
       - "java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/ActivateLeasingServiceTest.java"
@@ -647,12 +644,10 @@ differs:
       - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/ListLeasingApplicationsServiceTest.kt"
       - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/OrderBikeServiceTest.kt"
       - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/RejectApplicationServiceTest.kt"
-      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/ReportHandoverServiceTest.kt"
       - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/SelectAlternativeServiceTest.kt"
       - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/SendCancellationConfirmationServiceTest.kt"
       - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/SendContractServiceTest.kt"
       - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/SendSignatureReminderServiceTest.kt"
-      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/WithdrawApplicationServiceTest.kt"
   - reason: "ADR numbering and wording drifted between the examples. To be aligned when the ADRs are consolidated, then remove the path here."
     files:
       - "docs/adr/0002-hexagonal-architecture-for-the-backend.md"
@@ -766,8 +761,3 @@ languageOnly:
   - examples: [cibseven-remote, operaton-remote]
     tests: ["service/example-service/src/test/io/miragon/blueprint/domain/leasing/ApplicationIdTest#rejectsAMissingUuid"]
     reason: "Kotlin's non-null type rules out a missing UUID at compile time; only Java needs the test."
-  - examples: [operaton-remote]
-    tests:
-      - "service/example-service/src/test/io/miragon/blueprint/adapter/outbound/engine/RemoteLeasingProcessAdapterTest#find task id fails when no active task exists"
-      - "service/example-service/src/test/io/miragon/blueprint/adapter/outbound/engine/RemoteLeasingProcessAdapterTest#complete alternative clarification fails when no active task exists"
-    reason: "Coverage gap between the variants. To be ported to the other variant, then remove the entry."

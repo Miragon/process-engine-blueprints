@@ -156,7 +156,9 @@ class RemoteLeasingProcessAdapterTest {
 
         // when / then: completing the clarification surfaces the missing task
         Throwable error = catchThrowable(() -> underTest.completeAlternativeClarification(application.id(), false, null));
-        assertThat(error).isInstanceOf(IllegalStateException.class);
+        assertThat(error)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("No active task");
         server.verify();
     }
 

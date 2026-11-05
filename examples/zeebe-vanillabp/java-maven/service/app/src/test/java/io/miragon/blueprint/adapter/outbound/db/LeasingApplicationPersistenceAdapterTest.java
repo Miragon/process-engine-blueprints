@@ -5,7 +5,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.miragon.blueprint.adapter.process.LeasingApplicationAggregate;
 import io.miragon.blueprint.application.port.outbound.LeasingApplicationRepository;
+import io.miragon.blueprint.domain.bike.OrderId;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
+import io.miragon.blueprint.domain.leasing.ContractId;
 import io.miragon.blueprint.domain.leasing.LeasingApplication;
 import io.miragon.blueprint.domain.leasing.LeasingStatus;
 import java.time.LocalDateTime;
@@ -70,6 +72,27 @@ class LeasingApplicationPersistenceAdapterTest {
         LeasingApplicationAggregate reloaded = entityManager.find(LeasingApplicationAggregate.class, id.value().toString());
         assertThat(reloaded.getStatus()).isEqualTo(LeasingStatus.WITHDRAWN);
         assertThat(reloaded.getClarifyAlternativeTaskId()).isEqualTo("4711");
+    }
+
+    @Test
+    @DisplayName("saves and reloads an application carrying an order and a contract")
+    void savesAndReloadsAnApplicationCarryingAnOrderAndAContract() {
+
+        // given: a leasing application that already has an order and a contract
+        LeasingApplication application = testLeasingApplication()
+                .id(id)
+                .status(LeasingStatus.ACTIVE)
+                .orderId(new OrderId("ORDER-1"))
+                .contractId(new ContractId("CONTRACT-1"))
+                .build();
+
+        // when: it is saved and re-read from a cleared persistence context
+        underTest.save(application);
+        entityManager.flush();
+        entityManager.clear();
+
+        // then: the reloaded application keeps its order and contract ids
+        assertThat(underTest.findById(id)).get().usingRecursiveComparison().isEqualTo(application);
     }
 
     @Test

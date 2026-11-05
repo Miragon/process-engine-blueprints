@@ -324,6 +324,8 @@
     - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/SendContractService.kt
     - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/SendSignatureReminderService.kt
     - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/rest/SelectAlternativeControllerTest.kt
+    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/rest/SubmitLeasingRequestControllerTest.kt
+    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/outbound/db/LeasingApplicationPersistenceAdapterTest.kt
     - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/CancelContractServiceTest.kt
 - examples:
     - cibseven-embedded
@@ -564,7 +566,6 @@
     - zeebe-process-engine-api
   files:
     - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/outbound/db/LeasingApplicationEntityMapperTest.kt
-    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/outbound/db/LeasingApplicationPersistenceAdapterTest.kt
 - examples:
     - cibseven-embedded
     - cibseven-process-engine-api
@@ -629,9 +630,19 @@
     - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/rest/ActuatorEndpointsTest.kt
     - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/rest/GetLeasingApplicationControllerTest.kt
     - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/rest/GlobalExceptionConfigurationTest.kt
+    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/outbound/{engine}/TaskInboxAdapterTest.kt
     - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/ProcessPathAssertions.kt
     - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/TimerUtils.kt
+    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/ActivateLeasingServiceTest.kt
+    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/OrderBikeServiceTest.kt
+    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/RejectApplicationServiceTest.kt
+    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/ReportHandoverServiceTest.kt
     - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/RequestOrderCancellationServiceTest.kt
+    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/SelectAlternativeServiceTest.kt
+    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/SendCancellationConfirmationServiceTest.kt
+    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/SendContractServiceTest.kt
+    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/SendSignatureReminderServiceTest.kt
+    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/WithdrawApplicationServiceTest.kt
 - examples:
     - cibseven-embedded
     - cibseven-process-engine-api
@@ -688,14 +699,6 @@
     - bruno/environments/local.bru
 - examples:
     - cibseven-process-engine-api
-    - fullstack-cibseven-embedded
-    - temporal-native
-    - zeebe-native
-    - zeebe-process-engine-api
-  files:
-    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/rest/SubmitLeasingRequestControllerTest.kt
-- examples:
-    - cibseven-process-engine-api
     - operaton-process-engine-api
     - zeebe-native
     - zeebe-process-engine-api
@@ -718,7 +721,6 @@
     - fullstack-cibseven-embedded
   files:
     - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/outbound/{engine}/TaskInboxAdapter.kt
-    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/outbound/{engine}/TaskInboxAdapterTest.kt
     - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/ProcessInstanceUtils.kt
 - examples:
     - cibseven-embedded
@@ -799,14 +801,6 @@
     - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/JobExecutionUtils.kt
     - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/model/BikeLeasingModelValidationTest.kt
     - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/model/ServiceTaskDelegateExpressionRule.kt
-    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/ActivateLeasingServiceTest.kt
-    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/OrderBikeServiceTest.kt
-    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/RejectApplicationServiceTest.kt
-    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/ReportHandoverServiceTest.kt
-    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/SendCancellationConfirmationServiceTest.kt
-    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/SendContractServiceTest.kt
-    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/SendSignatureReminderServiceTest.kt
-    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/WithdrawApplicationServiceTest.kt
     - kotlin-gradle/service/common-architecture-tests/src/main/kotlin/io/miragon/common/architecture/NamingConventionArchitectureTest.kt
 - examples:
     - cibseven-embedded
@@ -988,7 +982,9 @@
     - java-maven/service/app/src/main/java/io/miragon/blueprint/application/port/outbound/LeasingProcess.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/rest/GetLeasingApplicationControllerTest.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/rest/SelectAlternativeControllerTest.java
+    - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/rest/SubmitLeasingRequestControllerTest.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/outbound/{engine}/LeasingProcessAdapterTest.java
+    - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/outbound/{engine}/TaskInboxAdapterTest.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/BikeLeasingProcessTest.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/BikeUnavailableTransactionTest.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/JobExecutionUtils.java
@@ -1003,6 +999,7 @@
     - java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/RejectApplicationServiceTest.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/ReportHandoverServiceTest.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/RequestOrderCancellationServiceTest.java
+    - java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/SelectAlternativeServiceTest.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/SendCancellationConfirmationServiceTest.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/SendContractServiceTest.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/SendSignatureReminderServiceTest.java
@@ -1096,6 +1093,7 @@
     - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/rest/GetLeasingApplicationControllerTest.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/rest/GlobalExceptionConfigurationTest.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/rest/OpenApiConfigurationTest.java
+    - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/rest/SubmitLeasingRequestControllerTest.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/ReportHandoverServiceTest.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/RequestOrderCancellationServiceTest.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/SubmitLeasingRequestServiceTest.java
@@ -1118,15 +1116,11 @@
   files:
     - bruno/06-incident-demo/03-sign-contract.bru
     - docs/adr/0012-polling-for-eventual-consistency-in-e2e-tests.md
-    - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/rest/SubmitLeasingRequestControllerTest.java
-    - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/outbound/{engine}/TaskInboxAdapterTest.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/application/service/GetPendingClarificationsServiceTest.java
-    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/inbound/rest/SubmitLeasingRequestControllerTest.kt
 - examples:
     - cibseven-embedded
     - fullstack-cibseven-embedded
   files:
-    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/application/service/SelectAlternativeServiceTest.kt
     - kotlin-gradle/service/app/src/test/resources/application-test.yaml
 - examples:
     - cibseven-embedded
@@ -1630,7 +1624,6 @@
     - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/rest/ActuatorEndpointsTest.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/rest/OpenApiSpecExportTest.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/rest/SelectAlternativeControllerTest.java
-    - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/rest/SubmitLeasingRequestControllerTest.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/zeebe/BookCostsWorkerTest.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/zeebe/CancelContractWorkerTest.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/zeebe/CancelPolicyWorkerTest.java

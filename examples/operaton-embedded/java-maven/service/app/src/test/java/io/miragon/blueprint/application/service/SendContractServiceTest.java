@@ -1,20 +1,25 @@
 package io.miragon.blueprint.application.service;
 
 import static io.miragon.blueprint.domain.leasing.TestObjectBuilder.testLeasingApplication;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import io.miragon.blueprint.application.port.outbound.ContractPort;
 import io.miragon.blueprint.application.port.outbound.LeasingApplicationRepository;
 import io.miragon.blueprint.application.port.outbound.NotificationPort;
+import io.miragon.blueprint.domain.leasing.ApplicationId;
 import io.miragon.blueprint.domain.leasing.ContractId;
 import io.miragon.blueprint.domain.leasing.LeasingApplication;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class SendContractServiceTest {
@@ -43,5 +48,23 @@ class SendContractServiceTest {
         verify(repository).save(argThat(app -> new ContractId("CONTRACT-1").equals(app.contractId())));
         verify(notification).send(any(), eq(application));
         verifyNoMoreInteractions(repository, contract, notification);
+    }
+
+    @Test
+    void sendContractFailsForAnUnknownApplication() {
+
+        // given: an application id the repository does not know
+        ApplicationId unknownId = new ApplicationId(UUID.fromString("123e4567-e89b-12d3-a456-426614174999"));
+        when(repository.findById(unknownId)).thenReturn(Optional.empty());
+
+        // when / then: the lookup fails before a contract is issued, persisted or announced
+        assertThatThrownBy(() -> underTest.sendContract(unknownId))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Unknown application " + unknownId);
+
+        verify(repository).findById(unknownId);
+        verify(repository, never()).save(any());
+        verifyNoInteractions(contract, notification);
+        verifyNoMoreInteractions(repository);
     }
 }

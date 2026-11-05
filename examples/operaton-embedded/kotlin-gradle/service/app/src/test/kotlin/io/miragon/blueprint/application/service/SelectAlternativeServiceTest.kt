@@ -16,6 +16,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
+import java.util.UUID
 
 class SelectAlternativeServiceTest {
 
@@ -47,23 +48,6 @@ class SelectAlternativeServiceTest {
     }
 
     @Test
-    fun `an unknown application is reported with its id and leaves the task untouched`() {
-
-        // given: no application for the id
-        val unknownId = ApplicationId.of("123e4567-e89b-12d3-a456-426614174000")
-        every { repository.findById(unknownId) } returns null
-
-        // when / then: the selection fails naming the application
-        assertThatThrownBy {
-            underTest.selectAlternative(SelectAlternativeUseCase.Command(unknownId, alternativeFound = false, bikeId = null, bikeModel = null))
-        }
-            .isInstanceOf(IllegalStateException::class.java)
-            .hasMessage("Unknown application $unknownId")
-        verify { repository.findById(unknownId) }
-        confirmVerified(repository, bikePortfolio, process)
-    }
-
-    @Test
     fun `no alternative completes the user task without touching the bike`() {
 
         // given: an application whose requested bike was unavailable
@@ -77,6 +61,23 @@ class SelectAlternativeServiceTest {
         // then: neither the portfolio nor the application is touched, and the task is completed as declined
         verify { repository.findById(application.id) }
         verify { process.completeAlternativeClarification(application.id, false, null) }
+        confirmVerified(repository, bikePortfolio, process)
+    }
+
+    @Test
+    fun `selectAlternative fails for an unknown application`() {
+
+        // given: a decision for an application the repository does not know
+        val unknownId = ApplicationId(UUID.fromString("123e4567-e89b-12d3-a456-426614174999"))
+        every { repository.findById(unknownId) } returns null
+
+        // when / then: the lookup fails before the portfolio, the application or the task is touched
+        val command =
+            SelectAlternativeUseCase.Command(unknownId, alternativeFound = true, bikeId = BikeId("BIKE-ALT"), bikeModel = "Aero Road 700")
+        assertThatThrownBy { underTest.selectAlternative(command) }
+            .isInstanceOf(IllegalStateException::class.java)
+            .hasMessage("Unknown application $unknownId")
+        verify { repository.findById(unknownId) }
         confirmVerified(repository, bikePortfolio, process)
     }
 }

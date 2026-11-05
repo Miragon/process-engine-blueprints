@@ -3,9 +3,11 @@ package io.miragon.blueprint.application.service;
 import static io.miragon.blueprint.domain.leasing.TestObjectBuilder.testLeasingApplication;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
@@ -71,14 +73,20 @@ class SelectAlternativeServiceTest {
     @DisplayName("selectAlternative fails for an unknown application")
     void selectAlternativeFailsForAnUnknownApplication() {
 
-        // given: no application is stored under the id
-        ApplicationId id = new ApplicationId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
-        when(repository.findById(id)).thenReturn(Optional.empty());
+        // given: a decision for an application the repository does not know
+        ApplicationId unknownId = new ApplicationId(UUID.fromString("123e4567-e89b-12d3-a456-426614174999"));
+        when(repository.findById(unknownId)).thenReturn(Optional.empty());
 
-        // when / then: the lookup fails with an IllegalStateException, which the REST adapter maps to 404
-        assertThatThrownBy(() -> underTest.selectAlternative(new SelectAlternativeUseCase.Command(id, false, null, null)))
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessage("Unknown application " + id);
+        // when / then: the lookup fails before the portfolio, the application or the task is touched
+        assertThatThrownBy(() -> underTest.selectAlternative(
+                new SelectAlternativeUseCase.Command(unknownId, true, new BikeId("BIKE-ALT"), "Aero Road 700")))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Unknown application " + unknownId);
+
+        verify(repository).findById(unknownId);
         verify(repository, never()).save(any());
+        verify(process, never()).completeAlternativeClarification(any(), anyBoolean(), any());
+        verifyNoInteractions(bikePortfolio);
+        verifyNoMoreInteractions(repository, process);
     }
 }

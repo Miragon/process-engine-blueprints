@@ -47,9 +47,12 @@ class GetLeasingApplicationControllerTest {
             application.email.value,
             application.bikeId.value,
             "Gravel Explorer 900",
+            "\"age\":35",
+            "\"monthlyNetIncome\":3500.0",
             "RECEIVED",
             "ORDER-42",
             "CONTRACT-7",
+            "\"createdAt\":\"2024-01-15T10:30:00\"",
         )
         verify { query.byId(application.id) }
         confirmVerified(query)
@@ -70,6 +73,8 @@ class GetLeasingApplicationControllerTest {
         assertThat(response.response.status).isEqualTo(200)
         assertThat(response.response.contentAsString)
             .contains("\"orderId\":null", "\"contractId\":null", "\"bikeModel\":null")
+        verify { query.byId(application.id) }
+        confirmVerified(query)
     }
 
     @Test
@@ -85,5 +90,7 @@ class GetLeasingApplicationControllerTest {
 
         // then: the response is 404 Not Found
         assertThat(response.response.status).isEqualTo(404)
+        verify { query.byId(id) }
+        confirmVerified(query)
     }
 }

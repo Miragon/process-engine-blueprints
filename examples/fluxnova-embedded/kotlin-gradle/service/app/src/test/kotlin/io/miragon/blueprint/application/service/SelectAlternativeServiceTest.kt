@@ -16,6 +16,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
+import java.util.UUID
 
 class SelectAlternativeServiceTest {
 
@@ -64,16 +65,16 @@ class SelectAlternativeServiceTest {
     }
 
     @Test
-    fun `an unknown application is reported with its id and leaves the task untouched`() {
+    fun `selectAlternative fails for an unknown application`() {
 
-        // given: no application with the given id
-        val unknownId = ApplicationId.of("3f0c7c52-9d1b-4a52-8a0e-6a4f6d5b1c11")
+        // given: a decision for an application the repository does not know
+        val unknownId = ApplicationId(UUID.fromString("123e4567-e89b-12d3-a456-426614174999"))
         every { repository.findById(unknownId) } returns null
 
-        // when / then: selecting an alternative fails and names the application
-        assertThatThrownBy {
-            underTest.selectAlternative(SelectAlternativeUseCase.Command(unknownId, alternativeFound = false))
-        }
+        // when / then: the lookup fails before the portfolio, the application or the task is touched
+        val command =
+            SelectAlternativeUseCase.Command(unknownId, alternativeFound = true, bikeId = BikeId("BIKE-ALT"), bikeModel = "Aero Road 700")
+        assertThatThrownBy { underTest.selectAlternative(command) }
             .isInstanceOf(IllegalStateException::class.java)
             .hasMessage("Unknown application $unknownId")
         verify { repository.findById(unknownId) }

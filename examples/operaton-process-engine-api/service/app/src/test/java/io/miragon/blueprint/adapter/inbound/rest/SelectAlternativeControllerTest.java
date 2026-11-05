@@ -101,4 +101,26 @@ class SelectAlternativeControllerTest {
         assertThat(response.getResponse().getContentAsString()).contains("An accepted alternative must name the bike");
         verifyNoMoreInteractions(useCase);
     }
+
+    @Test
+    @DisplayName("a decision without the alternative-found flag is rejected")
+    void a_decision_without_the_alternative_found_flag_is_rejected() throws Exception {
+
+        // given: a decision body that names a bike but not whether an alternative was found
+        String pathVar = "123e4567-e89b-12d3-a456-426614174000";
+        Map<String, Object> body = Map.of("bikeId", "BIKE-ALT", "bikeModel", "Aero Road 700");
+        RequestBuilder operation =
+                post("/api/bike-leasing/{applicationId}/clarify-alternative", pathVar)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(body));
+
+        // when: the request is performed
+        MvcResult response = mockMvc.perform(operation).andReturn();
+
+        // then: it is an unreadable request and never reaches the use case
+        assertThat(response.getResponse().getStatus()).isEqualTo(400);
+        assertThat(response.getResponse().getContentType()).contains("application/problem+json");
+        assertThat(response.getResponse().getContentAsString()).contains("Failed to read request");
+        verifyNoMoreInteractions(useCase);
+    }
 }

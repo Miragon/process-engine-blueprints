@@ -58,6 +58,20 @@ class TaskInboxAdapterTest {
     }
 
     @Test
+    fun `drops a task whose instance carries no business key`() {
+        // given: an open task on an instance that was started without a business key
+        val task = mockk<Task> {
+            every { processInstanceId } returns "proc-1"
+            every { createTime } returns Date(0)
+        }
+        stubTaskQuery(returns = listOf(task))
+        stubProcessInstanceQuery(id = "proc-1", businessKey = null)
+
+        // when / then: the task without an application is skipped
+        assertThat(underTest.findOpenClarifications()).isEmpty()
+    }
+
+    @Test
     fun `returns nothing and skips the instance query when no task is open`() {
         // given: no open tasks
         stubTaskQuery(returns = emptyList())
@@ -75,7 +89,7 @@ class TaskInboxAdapterTest {
         return query
     }
 
-    private fun stubProcessInstanceQuery(id: String, businessKey: String) {
+    private fun stubProcessInstanceQuery(id: String, businessKey: String?) {
         val instance = mockk<ProcessInstance> {
             every { this@mockk.id } returns id
             every { this@mockk.businessKey } returns businessKey

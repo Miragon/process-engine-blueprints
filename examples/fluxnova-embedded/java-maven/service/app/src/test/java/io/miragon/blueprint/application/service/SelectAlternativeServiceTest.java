@@ -3,8 +3,11 @@ package io.miragon.blueprint.application.service;
 import static io.miragon.blueprint.domain.leasing.TestObjectBuilder.testLeasingApplication;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
@@ -17,6 +20,7 @@ import io.miragon.blueprint.domain.bike.BikeId;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
 import io.miragon.blueprint.domain.leasing.LeasingApplication;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class SelectAlternativeServiceTest {
@@ -63,18 +67,22 @@ class SelectAlternativeServiceTest {
     }
 
     @Test
-    void anUnknownApplicationIsReportedWithItsIdAndLeavesTheTaskUntouched() {
+    void selectAlternativeFailsForAnUnknownApplication() {
 
-        // given: no application with the given id
-        ApplicationId unknownId = ApplicationId.of("3f0c7c52-9d1b-4a52-8a0e-6a4f6d5b1c11");
+        // given: a decision for an application the repository does not know
+        ApplicationId unknownId = new ApplicationId(UUID.fromString("123e4567-e89b-12d3-a456-426614174999"));
         when(repository.findById(unknownId)).thenReturn(Optional.empty());
 
-        // when / then: selecting an alternative fails and names the application
-        assertThatThrownBy(() ->
-                underTest.selectAlternative(new SelectAlternativeUseCase.Command(unknownId, false, null, null)))
+        // when / then: the lookup fails before the portfolio, the application or the task is touched
+        assertThatThrownBy(() -> underTest.selectAlternative(
+                new SelectAlternativeUseCase.Command(unknownId, true, new BikeId("BIKE-ALT"), "Aero Road 700")))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("Unknown application " + unknownId);
+
         verify(repository).findById(unknownId);
-        verifyNoMoreInteractions(repository, bikePortfolio, process);
+        verify(repository, never()).save(any());
+        verify(process, never()).completeAlternativeClarification(any(), anyBoolean(), any());
+        verifyNoInteractions(bikePortfolio);
+        verifyNoMoreInteractions(repository, process);
     }
 }

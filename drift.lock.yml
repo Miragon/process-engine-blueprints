@@ -508,6 +508,7 @@
     - operaton-process-engine-api
     - operaton-remote
   files:
+    - bruno/01-happy-path/08-assert-leasing-active.bru
     - bruno/01-happy-path/09-get-application.bru
     - bruno/03-abort/08-assert-contract-compensated.bru
 - examples:
@@ -839,7 +840,6 @@
     - operaton-remote
   files:
     - bruno/00-demo-data/07-withdrawn-return-open/04-withdraw.bru
-    - bruno/01-happy-path/08-assert-leasing-active.bru
     - bruno/03-abort/07-assert-cancelled.bru
     - bruno/04-not-solvent/02-assert-rejected.bru
     - bruno/05-bike-unavailable/08-assert-leasing-active.bru
@@ -969,7 +969,6 @@
   files:
     - bruno/01-happy-path/04-sign-contract.bru
     - bruno/01-happy-path/05-report-handover.bru
-    - bruno/01-happy-path/08-assert-leasing-active.bru
     - bruno/02-escalation/05-assert-rejected.bru
     - bruno/03-abort/03-sign-contract.bru
     - bruno/03-abort/04-withdraw.bru

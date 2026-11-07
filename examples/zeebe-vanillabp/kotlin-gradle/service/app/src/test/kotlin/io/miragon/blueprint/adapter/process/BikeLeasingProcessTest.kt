@@ -275,8 +275,40 @@ class BikeLeasingProcessTest {
     }
 
     @Test
+    fun `reminder - an unsigned contract gets one reminder before the deadline rejects it`() {
+        val id = submit(age = 35, income = 3500.0)
+        val instanceKey = awaitProcessInstance()
+        val instance = ProcessInstanceSelectors.byKey(instanceKey)
+
+        // park on the await-signature gateway, then let the 7-day reminder elapse
+        CamundaAssert.assertThatProcessInstance(instance).hasCompletedElements(FlowNodes.ServiceTaskSendContract)
+        processTestContext.increaseTime(Duration.ofDays(7).plusHours(1))
+        CamundaAssert.assertThatProcessInstance(instance)
+            .hasCompletedElements(FlowNodes.ServiceTaskSendReminderMail, FlowNodes.EndEventProspectReminded)
+            .hasActiveElements(FlowNodes.GatewayAwaitSignature.ELEMENT_ID)
+
+        // the 14-day signature deadline elapses as well
+        processTestContext.increaseTime(Duration.ofDays(7))
+
+        CamundaAssert.assertThatProcessInstance(instance).isCompleted()
+        CamundaAssert.assertThatProcessInstance(instance)
+            .hasCompletedElementsInOrder(
+                ProcessPath.from(FlowNodes.StartEventLeasingRequestReceived)
+                    .then { it.businessRuleTaskCheckCreditRating }
+                    .then { it.gatewayIsSolvent }
+                    .onto { it.subProcessConcludeContract }
+                    .interruptedBy(FlowNodes.SubProcessConcludeContract) { it.eventSignatureReminder }
+                    .then { it.serviceTaskSendReminderMail }
+                    .then { it.endEventProspectReminded },
+            )
+            .hasCompletedElements(FlowNodes.EndEventApplicationRejected)
+        verify(exactly = 1) { sendSignatureReminderUseCase.sendSignatureReminder(match { it.id == id }) }
+        verify(exactly = 1) { rejectApplicationUseCase.reject(match { it.id == id }) }
+    }
+
+    @Test
     fun `abort - withdrawing the application compensates the completed steps`() {
-        every { requestOrderCancellationUseCase.requestCancellation(any()) } returns true
+        every { requestOrderCancellationUseCase.requestCancellation(any()) } returns false
 
         val id = submit(age = 35, income = 3500.0)
         val instanceKey = awaitProcessInstance()
@@ -330,7 +362,7 @@ class BikeLeasingProcessTest {
         // the tasks of the called process worked on the very same workflow aggregate
         val aggregate = aggregateOf(id)
         assertThat(aggregate.status).isEqualTo(LeasingStatus.CANCELLED)
-        assertThat(aggregate.cancellationPossible).isTrue()
+        assertThat(aggregate.cancellationPossible).isFalse()
     }
 
     @Test
@@ -501,16 +533,19 @@ class BikeLeasingProcessTest {
         acceptAlternative(id)
         CamundaAssert.assertThatProcessInstance(instance).hasCompletedElements(FlowNodes.ServiceTaskOrderBike)
 
+        // the dealer cancels the order -> order reversed without a return to clarify
         inTransaction { process.correlateApplicationWithdrawn(id) }
-        awaitUserTaskCreated(CancelBikeOrderProcessApi.FlowNodes.UserTaskClarifyReturn.ELEMENT_ID)
-        processTestContext.completeUserTask(CancelBikeOrderProcessApi.FlowNodes.UserTaskClarifyReturn.ELEMENT_ID)
 
         CamundaAssert.assertThatProcessInstance(instance).isCompleted()
         CamundaAssert.assertThatProcessInstance(instance)
             .hasCompletedElements(FlowNodes.EndEventApplicationCancelled)
             .hasCompletedElement(FlowNodes.CallActivityCancelBikeOrder.ELEMENT_ID, 1)
+        CamundaAssert.assertThatProcessInstance(ProcessInstanceSelectors.byParentProcessInstanceKey(instanceKey))
+            .hasCompletedElements(CancelBikeOrderProcessApi.FlowNodes.EndEventOrderReversed.ELEMENT_ID)
+            .hasNotActivatedElements(CancelBikeOrderProcessApi.FlowNodes.UserTaskClarifyReturn.ELEMENT_ID)
         assertThat(orderCancellationsOf(instanceKey)).isEqualTo(1)
         verify(exactly = 1) { requestOrderCancellationUseCase.requestCancellation(OrderId("ORDER-2")) }
+        verify(exactly = 0) { bookCancellationCostsUseCase.bookCosts(any()) }
         assertThat(aggregateOf(id).status).isEqualTo(LeasingStatus.CANCELLED)
     }
 

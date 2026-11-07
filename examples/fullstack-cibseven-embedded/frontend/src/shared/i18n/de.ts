@@ -107,7 +107,7 @@ export const de = {
     withdrawSuccess: "antrag wurde zurückgezogen.",
     withdrawRequestedTitle: "widerruf angefordert",
     withdrawRequestedNote:
-      "der storno wird bearbeitet. schließe dazu die offene aufgabe in der tasklist ab, dann wechselt der status auf storniert.",
+      "der storno wird bearbeitet. kann der händler die bestellung nicht stornieren, schließe die offene aufgabe in der tasklist ab, dann wechselt der status auf storniert.",
     error: "die aktion konnte nicht ausgeführt werden.",
     terminalActive: "das leasing ist aktiv. es sind keine weiteren schritte nötig.",
     terminalRejected: "der antrag wurde abgelehnt. es sind keine aktionen möglich.",

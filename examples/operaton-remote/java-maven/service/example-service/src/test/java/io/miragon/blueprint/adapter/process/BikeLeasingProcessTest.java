@@ -50,11 +50,14 @@ class BikeLeasingProcessTest {
 
     /**
      * Compensation handlers run in an engine-defined order, so the tests drive that chain generically.
-     * Only the {@code requestCancellation} external task produces a variable the flow routes on.
+     * Only the {@code requestCancellation} external task produces a variable the flow routes on: whether the
+     * dealer cancels the order.
      */
-    private final Map<String, Map<String, Object>> compensationOutputs = Map.of(
-            ServiceTasks.BIKE_LEASING_REQUEST_CANCELLATION,
-            Map.of(CancelBikeOrderProcessApi.FlowNodes.ServiceTaskRequestCancellation.Variables.CANCELLATION_POSSIBLE.getValue(), true));
+    private static Map<String, Map<String, Object>> compensationOutputs(boolean cancellationPossible) {
+        return Map.of(
+                ServiceTasks.BIKE_LEASING_REQUEST_CANCELLATION,
+                Map.of(CancelBikeOrderProcessApi.FlowNodes.ServiceTaskRequestCancellation.Variables.CANCELLATION_POSSIBLE.getValue(), cancellationPossible));
+    }
 
     @BeforeEach
     void setUp() {
@@ -211,6 +214,35 @@ class BikeLeasingProcessTest {
     }
 
     @Test
+    void reminderAnUnsignedContractGetsOneReminderBeforeTheDeadlineRejectsIt() {
+        String businessKey = submit(35, 3500.0);
+        ProcessInstance instance = findInstance(engine, businessKey);
+
+        completeExternalTask(engine, ServiceTasks.BIKE_LEASING_SEND_CONTRACT); // -> signature wait state
+
+        fireTimer(engine, FlowNodes.EventSignatureReminder.INSTANCE); // non-interrupting -> reminder mail
+        completeExternalTask(engine, ServiceTasks.BIKE_LEASING_SEND_REMINDER_MAIL);
+        assertThat(instance).isWaitingAt(FlowNodes.GatewayAwaitSignature.ELEMENT_ID);
+
+        fireTimer(engine, FlowNodes.EventSignatureDeadline.INSTANCE); // deadline -> escalation -> boundary -> rejection
+        completeExternalTask(engine, ServiceTasks.BIKE_LEASING_SEND_REJECTION); // -> end
+
+        assertThat(instance)
+                .isEnded()
+                .hasPassedInOrder(PathWalk.from(FlowNodes.StartEventLeasingRequestReceived.INSTANCE)
+                        .then(next -> next.businessRuleTaskCheckCreditRating())
+                        .then(next -> next.gatewayIsSolvent())
+                        .onto(next -> next.subProcessConcludeContract())
+                        .interruptedBy(
+                                FlowNodes.SubProcessConcludeContract.INSTANCE,
+                                next -> next.eventSignatureReminder())
+                        .then(next -> next.serviceTaskSendReminderMail())
+                        .end(next -> next.endEventProspectReminded())
+                        .getIds())
+                .hasPassed(FlowNodes.EndEventApplicationRejected.ELEMENT_ID);
+    }
+
+    @Test
     void abortWithdrawingTheApplicationCompensatesTheCompletedSteps() {
         String businessKey = submit(35, 3500.0);
         ProcessInstance instance = findInstance(engine, businessKey);
@@ -221,14 +253,15 @@ class BikeLeasingProcessTest {
         completeExternalTask(engine, ServiceTasks.BIKE_LEASING_ISSUE_INSURANCE_POLICY);
         completeExternalTask(engine, ServiceTasks.BIKE_LEASING_ORDER_BIKE, orderPlaced);
 
-        // withdrawing triggers compensation; it parks on the cancelBikeOrder sub-process' user task
+        // withdrawing triggers compensation; the dealer refuses to cancel the order, so it parks on the
+        // cancelBikeOrder sub-process' user task
         correlateMessage(engine, Messages.MIRAVELO_APPLICATION_WITHDRAWN, businessKey);
-        drainToWaitState(engine, compensationOutputs);
+        drainToWaitState(engine, compensationOutputs(false));
         completeUserTask(
                 engine,
                 CancelBikeOrderProcessApi.FlowNodes.UserTaskClarifyReturn.ELEMENT_ID,
                 Map.of("returnClarified", true));
-        drainToWaitState(engine, compensationOutputs); // -> sendCancellationConfirmation -> end cancelled
+        drainToWaitState(engine, compensationOutputs(false)); // -> bookCosts -> sendCancellationConfirmation -> end cancelled
 
         assertThat(instance)
                 .isEnded()
@@ -264,6 +297,7 @@ class BikeLeasingProcessTest {
                                 .end(next -> next.endEventApplicationCancelled())
                                 .getDistinctIds())
                 .hasNotPassed(FlowNodes.EndEventLeasingActive.ELEMENT_ID);
+        Assertions.assertThat(cancellationCostBookings(instance)).isEqualTo(1);
     }
 
     @Test
@@ -420,9 +454,7 @@ class BikeLeasingProcessTest {
         completeExternalTask(engine, ServiceTasks.BIKE_LEASING_ORDER_BIKE, orderPlaced); // -> handover wait state
 
         correlateMessage(engine, Messages.MIRAVELO_APPLICATION_WITHDRAWN, businessKey);
-        drainToWaitState(engine, compensationOutputs);
-        completeUserTask(engine, CancelBikeOrderProcessApi.FlowNodes.UserTaskClarifyReturn.ELEMENT_ID, Map.of("returnClarified", true));
-        drainToWaitState(engine, compensationOutputs);
+        drainToWaitState(engine, compensationOutputs(true)); // the dealer cancels the order -> order reversed without a return to clarify
 
         assertThat(instance).isEnded().hasPassed(FlowNodes.EndEventApplicationCancelled.ELEMENT_ID);
         long orderCancellations = engine.getHistoryService()
@@ -430,6 +462,7 @@ class BikeLeasingProcessTest {
                 .processDefinitionKey(CancelBikeOrderProcessApi.PROCESS_ID.getValue())
                 .count();
         Assertions.assertThat(orderCancellations).isEqualTo(1);
+        Assertions.assertThat(cancellationCostBookings(instance)).isZero();
     }
 
     /** Drives a signed, insured application to the clarify-alternative task: the dealer has no bike. */
@@ -449,6 +482,21 @@ class BikeLeasingProcessTest {
                 Map.of(
                         FlowNodes.UserTaskClarifyAlternative.Variables.ALTERNATIVE_FOUND.getValue(), true,
                         FlowNodes.UserTaskClarifyAlternative.Variables.BIKE_ID.getValue(), "BIKE-ALT"));
+    }
+
+    /** How often the order cancellations called by {@code instance} booked the dealer's cancellation costs. */
+    private long cancellationCostBookings(ProcessInstance instance) {
+        return engine.getHistoryService()
+                .createHistoricProcessInstanceQuery()
+                .superProcessInstanceId(instance.getId())
+                .list()
+                .stream()
+                .mapToLong(orderCancellation -> engine.getHistoryService()
+                        .createHistoricActivityInstanceQuery()
+                        .processInstanceId(orderCancellation.getId())
+                        .activityId(CancelBikeOrderProcessApi.FlowNodes.ServiceTaskBookCosts.ELEMENT_ID)
+                        .count())
+                .sum();
     }
 
     /** The bike the waiting {@code orderBike} external task hands to its worker. */

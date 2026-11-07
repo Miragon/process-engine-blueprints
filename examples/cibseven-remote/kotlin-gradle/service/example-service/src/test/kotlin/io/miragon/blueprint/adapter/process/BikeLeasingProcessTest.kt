@@ -12,6 +12,7 @@ import org.assertj.core.api.Assertions
 import org.cibseven.bpm.engine.ProcessEngine
 import org.cibseven.bpm.engine.delegate.ExecutionListener
 import org.cibseven.bpm.engine.delegate.TaskListener
+import org.cibseven.bpm.engine.runtime.ProcessInstance
 import org.cibseven.bpm.engine.test.Deployment
 import org.cibseven.bpm.engine.test.assertions.bpmn.BpmnAwareTests.assertThat
 import org.cibseven.bpm.engine.test.assertions.bpmn.BpmnAwareTests.init
@@ -47,11 +48,12 @@ class BikeLeasingProcessTest {
 
     /**
      * Compensation handlers run in an engine-defined order, so the tests drive that chain generically.
-     * Only the `requestCancellation` external task produces a variable the flow routes on.
+     * Only the `requestCancellation` external task produces a variable the flow routes on: whether the
+     * dealer cancels the order.
      */
-    private val compensationOutputs = mapOf(
+    private fun compensationOutputs(cancellationPossible: Boolean) = mapOf(
         ServiceTasks.BIKE_LEASING_REQUEST_CANCELLATION to
-            mapOf(CancelBikeOrderProcessApi.FlowNodes.ServiceTaskRequestCancellation.Variables.CANCELLATION_POSSIBLE.value to true),
+            mapOf(CancelBikeOrderProcessApi.FlowNodes.ServiceTaskRequestCancellation.Variables.CANCELLATION_POSSIBLE.value to cancellationPossible),
     )
 
     @BeforeEach
@@ -206,6 +208,34 @@ class BikeLeasingProcessTest {
     }
 
     @Test
+    fun `reminder - an unsigned contract gets one reminder before the deadline rejects it`() {
+        val businessKey = submit(age = 35, income = 3500.0)
+        val instance = engine.findInstance(businessKey)
+
+        engine.completeExternalTask(ServiceTasks.BIKE_LEASING_SEND_CONTRACT) // -> signature wait state
+
+        engine.fireTimer(FlowNodes.EventSignatureReminder) // non-interrupting -> reminder mail
+        engine.completeExternalTask(ServiceTasks.BIKE_LEASING_SEND_REMINDER_MAIL)
+        assertThat(instance).isWaitingAt(FlowNodes.GatewayAwaitSignature.ELEMENT_ID)
+
+        engine.fireTimer(FlowNodes.EventSignatureDeadline) // deadline -> escalation -> boundary -> rejection
+        engine.completeExternalTask(ServiceTasks.BIKE_LEASING_SEND_REJECTION) // -> end
+
+        assertThat(instance)
+            .isEnded
+            .hasPassedInOrder(
+                ProcessPath.from(FlowNodes.StartEventLeasingRequestReceived)
+                    .then { it.businessRuleTaskCheckCreditRating }
+                    .then { it.gatewayIsSolvent }
+                    .onto { it.subProcessConcludeContract }
+                    .interruptedBy(FlowNodes.SubProcessConcludeContract) { it.eventSignatureReminder }
+                    .then { it.serviceTaskSendReminderMail }
+                    .then { it.endEventProspectReminded },
+            )
+            .hasPassed(FlowNodes.EndEventApplicationRejected.ELEMENT_ID)
+    }
+
+    @Test
     fun `abort - withdrawing the application compensates the completed steps`() {
         val businessKey = submit(age = 35, income = 3500.0)
         val instance = engine.findInstance(businessKey)
@@ -216,11 +246,12 @@ class BikeLeasingProcessTest {
         engine.completeExternalTask(ServiceTasks.BIKE_LEASING_ISSUE_INSURANCE_POLICY)
         engine.completeExternalTask(ServiceTasks.BIKE_LEASING_ORDER_BIKE, orderPlaced)
 
-        // withdrawing triggers compensation; it parks on the cancelBikeOrder sub-process' user task
+        // withdrawing triggers compensation; the dealer refuses to cancel the order, so it parks on the
+        // cancelBikeOrder sub-process' user task
         engine.correlateMessage(Messages.MIRAVELO_APPLICATION_WITHDRAWN, businessKey)
-        engine.drainToWaitState(compensationOutputs)
+        engine.drainToWaitState(compensationOutputs(cancellationPossible = false))
         engine.completeUserTask(CancelBikeOrderProcessApi.FlowNodes.UserTaskClarifyReturn.ELEMENT_ID, mapOf("returnClarified" to true))
-        engine.drainToWaitState(compensationOutputs) // -> sendCancellationConfirmation -> end cancelled
+        engine.drainToWaitState(compensationOutputs(cancellationPossible = false)) // -> bookCosts -> sendCancellationConfirmation -> end cancelled
 
         assertThat(instance)
             .isEnded
@@ -249,6 +280,7 @@ class BikeLeasingProcessTest {
                     .then { it.endEventApplicationCancelled },
             )
             .hasNotPassed(FlowNodes.EndEventLeasingActive.ELEMENT_ID)
+        Assertions.assertThat(engine.cancellationCostBookings(instance)).isEqualTo(1)
     }
 
     @Test
@@ -396,15 +428,14 @@ class BikeLeasingProcessTest {
         engine.completeExternalTask(ServiceTasks.BIKE_LEASING_ORDER_BIKE, orderPlaced) // -> handover wait state
 
         engine.correlateMessage(Messages.MIRAVELO_APPLICATION_WITHDRAWN, businessKey)
-        engine.drainToWaitState(compensationOutputs)
-        engine.completeUserTask(CancelBikeOrderProcessApi.FlowNodes.UserTaskClarifyReturn.ELEMENT_ID, mapOf("returnClarified" to true))
-        engine.drainToWaitState(compensationOutputs)
+        engine.drainToWaitState(compensationOutputs(cancellationPossible = true)) // the dealer cancels the order -> order reversed without a return to clarify
 
         assertThat(instance).isEnded.hasPassed(FlowNodes.EndEventApplicationCancelled.ELEMENT_ID)
         val orderCancellations = engine.historyService.createHistoricProcessInstanceQuery()
             .processDefinitionKey(CancelBikeOrderProcessApi.PROCESS_ID.value)
             .count()
         Assertions.assertThat(orderCancellations).isEqualTo(1)
+        Assertions.assertThat(engine.cancellationCostBookings(instance)).isZero()
     }
 
     /** Drives a signed, insured application to the clarify-alternative task: the dealer has no bike. */
@@ -425,6 +456,18 @@ class BikeLeasingProcessTest {
                 FlowNodes.UserTaskClarifyAlternative.Variables.BIKE_ID.value to "BIKE-ALT",
             ),
         )
+
+    /** How often the order cancellations called by [instance] booked the dealer's cancellation costs. */
+    private fun ProcessEngine.cancellationCostBookings(instance: ProcessInstance): Long =
+        historyService.createHistoricProcessInstanceQuery()
+            .superProcessInstanceId(instance.id)
+            .list()
+            .sumOf { orderCancellation ->
+                historyService.createHistoricActivityInstanceQuery()
+                    .processInstanceId(orderCancellation.id)
+                    .activityId(CancelBikeOrderProcessApi.FlowNodes.ServiceTaskBookCosts.ELEMENT_ID)
+                    .count()
+            }
 
     /** The bike the waiting `orderBike` external task hands to its worker. */
     private fun ProcessEngine.bikeRequestedByWaitingOrder(): Any? {

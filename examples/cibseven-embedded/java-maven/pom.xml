@@ -31,6 +31,7 @@
         <!-- Third-party versions not managed by the Spring Boot BOM -->
         <cibseven.version>2.2.0</cibseven.version>
         <cibseven-process-test-coverage.version>2.2.0</cibseven-process-test-coverage.version>
+        <process-test-coverage.minimum>1.0</process-test-coverage.minimum>
         <springdoc.version>3.2.0</springdoc.version>
         <bpmn-to-code.version>7.0.1</bpmn-to-code.version>
         <archunit.version>1.5.1</archunit.version>
@@ -136,6 +137,12 @@
                             <version>${checkstyle.version}</version>
                         </dependency>
                     </dependencies>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.cibseven.community.process_test_coverage</groupId>
+                    <artifactId>cibseven-process-test-coverage-report-aggregator-maven-plugin</artifactId>
+                    <version>${cibseven-process-test-coverage.version}</version>
                 </plugin>
 
                 <!-- PIT mutation testing (gate 80). See docs/adr/0004. -->

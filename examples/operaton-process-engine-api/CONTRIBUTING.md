@@ -44,7 +44,9 @@ cd bruno && npx --yes @usebruno/cli@4.0.0 run . --env local -r --exclude-tags=de
 ```
 
 They start a case over the domain REST endpoints, complete user tasks and fire timer jobs via the
-Operaton `/engine-rest` API, and assert the whole flow — happy path, escalation, abort, DMN
+Operaton `/engine-rest` API, and assert the whole flow — happy path, escalation, abort (for the custom
+build `BIKE-CUSTOM`, whose order the simulated dealer cannot cancel, so the return is clarified and the
+costs booked), an abort whose order the dealer cancels right away (`11-abort-order-cancelled`), DMN
 rejection, the bike-unavailable → alternative-selection loop, the incident demo, a declined
 alternative (contract and policy are compensated, no order is cancelled), and a request without income
 that is refused with a 400 before any process starts.

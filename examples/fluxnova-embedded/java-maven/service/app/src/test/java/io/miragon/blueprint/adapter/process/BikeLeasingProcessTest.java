@@ -239,8 +239,41 @@ class BikeLeasingProcessTest {
     }
 
     @Test
+    void reminderAnUnsignedContractGetsOneReminderBeforeTheDeadlineRejectsIt() {
+        ApplicationId id = submit(35, 3500.0);
+        ProcessInstance instance = findProcessInstance(runtimeService, id);
+
+        executeJobFor(processEngine, FlowNodes.StartEventLeasingRequestReceived.INSTANCE);
+        executeJobFor(processEngine, FlowNodes.ServiceTaskSendContract.INSTANCE);
+
+        fireTimer(processEngine, FlowNodes.EventSignatureReminder.INSTANCE);
+        executeJobFor(processEngine, FlowNodes.ServiceTaskSendReminderMail.INSTANCE);
+        assertThat(instance).isWaitingAt(FlowNodes.GatewayAwaitSignature.ELEMENT_ID);
+
+        fireTimer(processEngine, FlowNodes.EventSignatureDeadline.INSTANCE);
+        executeJobFor(processEngine, FlowNodes.ServiceTaskSendRejection.INSTANCE);
+
+        assertThat(instance)
+                .isEnded()
+                .hasPassedInOrder(inWalkOrder(
+                        PathWalk.from(FlowNodes.StartEventLeasingRequestReceived.INSTANCE)
+                                .then(next -> next.businessRuleTaskCheckCreditRating())
+                                .then(next -> next.gatewayIsSolvent())
+                                .onto(next -> next.subProcessConcludeContract())
+                                .interruptedBy(
+                                        FlowNodes.SubProcessConcludeContract.INSTANCE,
+                                        next -> next.eventSignatureReminder())
+                                .then(next -> next.serviceTaskSendReminderMail())
+                                .end(next -> next.endEventProspectReminded())))
+                .hasPassed(FlowNodes.EndEventApplicationRejected.ELEMENT_ID);
+
+        verify(sendSignatureReminderUseCase, times(1)).sendSignatureReminder(id);
+        verify(rejectApplicationUseCase, times(1)).reject(id);
+    }
+
+    @Test
     void abortWithdrawingTheApplicationCompensatesTheCompletedSteps() {
-        when(requestOrderCancellationUseCase.requestCancellation(any())).thenReturn(true);
+        when(requestOrderCancellationUseCase.requestCancellation(any())).thenReturn(false);
 
         ApplicationId id = submit(35, 3500.0);
         ProcessInstance instance = findProcessInstance(runtimeService, id);
@@ -299,6 +332,7 @@ class BikeLeasingProcessTest {
         verify(cancelContractUseCase, times(1)).cancelContract(id);
         verify(cancelInsurancePolicyUseCase, times(1)).cancelPolicy(id);
         verify(sendCancellationConfirmationUseCase, times(1)).sendCancellationConfirmation(id);
+        verify(bookCancellationCostsUseCase, times(1)).bookCosts(new OrderId("ORDER-1"));
     }
 
     @Test
@@ -467,13 +501,7 @@ class BikeLeasingProcessTest {
         continueToNextWaitState(processEngine); // re-order succeeds -> parallel join -> handover wait state
 
         process.correlateApplicationWithdrawn(id);
-        continueToNextWaitState(processEngine);
-        Task task = taskService
-                .createTaskQuery()
-                .taskDefinitionKey(CancelBikeOrderProcessApi.FlowNodes.UserTaskClarifyReturn.ELEMENT_ID)
-                .singleResult();
-        taskService.complete(task.getId(), Map.of("returnClarified", true));
-        continueToNextWaitState(processEngine);
+        continueToNextWaitState(processEngine); // the dealer cancels the order -> order reversed without a return to clarify
 
         assertThat(instance).isEnded().hasPassed(FlowNodes.EndEventApplicationCancelled.ELEMENT_ID);
         long orderCancellations = historyService
@@ -482,6 +510,7 @@ class BikeLeasingProcessTest {
                 .superProcessInstanceId(instance.getId())
                 .count();
         Assertions.assertThat(orderCancellations).isEqualTo(1);
+        verify(bookCancellationCostsUseCase, never()).bookCosts(any());
     }
 
     /** Drives a signed, insured application to the clarify-alternative task: the dealer has no bike. */

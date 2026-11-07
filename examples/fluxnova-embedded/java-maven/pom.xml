@@ -31,6 +31,7 @@
         <!-- Third-party versions not managed by the Spring Boot BOM -->
         <fluxnova.version>3.1.1</fluxnova.version>
         <fluxnova-process-test-coverage.version>2.0.0</fluxnova-process-test-coverage.version>
+        <process-test-coverage.minimum>1.0</process-test-coverage.minimum>
         <springdoc.version>3.2.0</springdoc.version>
         <bpmn-to-code.version>7.0.1</bpmn-to-code.version>
         <archunit.version>1.5.1</archunit.version>

@@ -1,0 +1,1 @@
+org.springframework.test.context.ContextCustomizerFactory=io.miragon.blueprint.adapter.process.ProcessTestCoverageContextCustomizerFactory

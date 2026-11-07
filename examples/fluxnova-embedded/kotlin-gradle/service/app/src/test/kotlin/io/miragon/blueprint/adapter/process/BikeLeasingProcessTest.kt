@@ -235,8 +235,40 @@ class BikeLeasingProcessTest {
     }
 
     @Test
+    fun `reminder - an unsigned contract gets one reminder before the deadline rejects it`() {
+        val id = submit(age = 35, income = 3500.0)
+        val instance = runtimeService.findProcessInstance(id)
+
+        processEngine.executeJobFor(FlowNodes.StartEventLeasingRequestReceived)
+        processEngine.executeJobFor(FlowNodes.ServiceTaskSendContract)
+
+        processEngine.fireTimer(FlowNodes.EventSignatureReminder)
+        processEngine.executeJobFor(FlowNodes.ServiceTaskSendReminderMail)
+        assertThat(instance).isWaitingAt(FlowNodes.GatewayAwaitSignature.ELEMENT_ID)
+
+        processEngine.fireTimer(FlowNodes.EventSignatureDeadline)
+        processEngine.executeJobFor(FlowNodes.ServiceTaskSendRejection)
+
+        assertThat(instance)
+            .isEnded
+            .hasPassedInOrder(
+                ProcessPath.from(FlowNodes.StartEventLeasingRequestReceived)
+                    .then { it.businessRuleTaskCheckCreditRating }
+                    .then { it.gatewayIsSolvent }
+                    .onto { it.subProcessConcludeContract }
+                    .interruptedBy(FlowNodes.SubProcessConcludeContract) { it.eventSignatureReminder }
+                    .then { it.serviceTaskSendReminderMail }
+                    .then { it.endEventProspectReminded },
+            )
+            .hasPassed(FlowNodes.EndEventApplicationRejected.ELEMENT_ID)
+
+        verify(exactly = 1) { sendSignatureReminderUseCase.sendSignatureReminder(id) }
+        verify(exactly = 1) { rejectApplicationUseCase.reject(id) }
+    }
+
+    @Test
     fun `abort - withdrawing the application compensates the completed steps`() {
-        every { requestOrderCancellationUseCase.requestCancellation(any()) } returns true
+        every { requestOrderCancellationUseCase.requestCancellation(any()) } returns false
 
         val id = submit(age = 35, income = 3500.0)
         val instance = runtimeService.findProcessInstance(id)
@@ -292,6 +324,7 @@ class BikeLeasingProcessTest {
         verify(exactly = 1) { cancelContractUseCase.cancelContract(id) }
         verify(exactly = 1) { cancelInsurancePolicyUseCase.cancelPolicy(id) }
         verify(exactly = 1) { sendCancellationConfirmationUseCase.sendCancellationConfirmation(id) }
+        verify(exactly = 1) { bookCancellationCostsUseCase.bookCosts(OrderId("ORDER-1")) }
     }
 
     @Test
@@ -456,14 +489,7 @@ class BikeLeasingProcessTest {
         processEngine.continueToNextWaitState() // re-order succeeds -> parallel join -> handover wait state
 
         process.correlateApplicationWithdrawn(id)
-        processEngine.continueToNextWaitState()
-        val task =
-            taskService
-                .createTaskQuery()
-                .taskDefinitionKey(CancelBikeOrderProcessApi.FlowNodes.UserTaskClarifyReturn.ELEMENT_ID)
-                .singleResult()
-        taskService.complete(task.id, mapOf("returnClarified" to true))
-        processEngine.continueToNextWaitState()
+        processEngine.continueToNextWaitState() // the dealer cancels the order -> order reversed without a return to clarify
 
         assertThat(instance).isEnded.hasPassed(FlowNodes.EndEventApplicationCancelled.ELEMENT_ID)
         val orderCancellations =
@@ -473,6 +499,7 @@ class BikeLeasingProcessTest {
                 .superProcessInstanceId(instance.id)
                 .count()
         Assertions.assertThat(orderCancellations).isEqualTo(1)
+        verify(exactly = 0) { bookCancellationCostsUseCase.bookCosts(any()) }
     }
 
     /** Drives a signed, insured application to the clarify-alternative task: the dealer has no bike. */

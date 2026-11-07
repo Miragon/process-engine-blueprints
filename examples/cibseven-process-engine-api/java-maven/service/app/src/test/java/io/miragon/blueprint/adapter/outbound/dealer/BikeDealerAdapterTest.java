@@ -57,10 +57,21 @@ class BikeDealerAdapterTest {
     }
 
     @Test
-    @DisplayName("requestCancellation reports the order as cancellable")
-    void requestCancellationReportsTheOrderAsCancellable() {
-        // given: a placed order / when-then: the demo dealer always allows cancellation
-        assertThat(underTest.requestCancellation(new OrderId("ORDER-900"))).isTrue();
+    @DisplayName("requestCancellation reports an order of a stocked bike as cancellable")
+    void requestCancellationReportsAnOrderOfAStockedBikeAsCancellable() {
+        // given: an order of a regularly stocked bike
+        OrderId orderId = underTest.order(new BikeId("BIKE-900"));
+        // when-then: the dealer allows its cancellation
+        assertThat(underTest.requestCancellation(orderId)).isTrue();
+    }
+
+    @Test
+    @DisplayName("requestCancellation refuses to cancel an order of the custom-build demo bike")
+    void requestCancellationRefusesToCancelAnOrderOfTheCustomBuildDemoBike() {
+        // given: an order of the custom build
+        OrderId orderId = underTest.order(new BikeId("BIKE-CUSTOM"));
+        // when-then: the dealer refuses its cancellation, so the return has to be clarified
+        assertThat(underTest.requestCancellation(orderId)).isFalse();
     }
 
     @Test

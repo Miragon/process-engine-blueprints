@@ -76,6 +76,7 @@ h2 = { module = "com.h2database:h2", version = "2.5.252" }
 cib7-bpm-assert = { module = "org.cibseven.bpm:cibseven-bpm-assert", version.ref = "cib7_version" }
 cib7-bpm-junit5 = { module = "org.cibseven.bpm:cibseven-bpm-junit5", version.ref = "cib7_version" }
 cib7-process-test-coverage = { module = "org.cibseven.community.process_test_coverage:cibseven-process-test-coverage-junit5-platform-7", version.ref = "cib7_process_test_coverage_version" }
+cib7-process-test-coverage-aggregator = { module = "org.cibseven.community.process_test_coverage:cibseven-process-test-coverage-report-aggregator-gradle-plugin", version.ref = "cib7_process_test_coverage_version" }
 # The engine core — cibseven-bpm-assert declares it as `provided`, so a service without an engine
 # starter (the remote worker) must bring it explicitly for its standalone in-memory process tests.
 cib7-engine = { module = "org.cibseven.bpm:cibseven-engine", version.ref = "cib7_version" }

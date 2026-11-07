@@ -76,7 +76,7 @@ are executed by the engine alone.
 `zeebe:taskDefinition`, `zeebe:ioMapping`, `zeebe:calledDecision`, `zeebe:calledElement`,
 `zeebe:subscription correlationKey="=applicationId"`, `zeebe:userTask`, `zeebe:formDefinition` and the
 FEEL conditions `=not(solvent)`, `=not(bikeAvailable)`, `=not(alternativeFound)`,
-`=cancellationPossible` **[C]**.
+`=not(cancellationPossible)` **[C]**.
 
 ### Tests on `main`
 

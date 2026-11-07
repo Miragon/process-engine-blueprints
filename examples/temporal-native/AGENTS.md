@@ -62,7 +62,7 @@ The BPMN examples carry these; they have nothing to work on here:
 | `designiq.yml` | designIQ opens process models |
 | agent `review-process`, bpmn plugins in `.claude/settings.json` | they audit models against their glue |
 | bpmn-to-code | it generates the process API from a model |
-| `bruno/06-incident-demo`, `bruno/10-alternative-via-tasklist` | no incidents and no Tasklist in Temporal |
+| `bruno/06-incident-demo` | no incidents in Temporal |
 
 ## Development Setup
 

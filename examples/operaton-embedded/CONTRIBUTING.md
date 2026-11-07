@@ -163,7 +163,7 @@ hand in the same PR.
   <!-- variant:blueprint -->
 - **Change both variants together.** A change in behaviour goes into `kotlin-gradle/` *and*
   `java-maven/` in the same PR, with equivalent tests. Changes that only concern one language's idioms
-  stay on that side. Models, DMN, forms, migrations and `application.yaml` exist in both variants and
+  stay on that side. Models, DMN, migrations and `application.yaml` exist in both variants and
   must be byte-identical — copy your change over; the `Blueprint Checks` workflow fails otherwise.
   `openapi/`, `bruno/` and `stack/` exist once and apply to both. See
   [ADR-0013](docs/adr/0013-two-stack-variants-side-by-side-on-main.md).

@@ -144,6 +144,24 @@ class LeasingProcessAdapterTest {
     }
 
     @Test
+    fun `completeReturnClarification completes the clarify-return task of the application without variables`() {
+        // given: a stale clarify-alternative task and the open clarify-return task of this application in the pool
+        every { userTaskSupport.getAllTasks() } returns
+            listOf(task("task-1"), task("task-2", activityId = "userTask_clarifyReturn"))
+        every { userTaskSupport.getPayload(any()) } returns mapOf("applicationId" to id.value.toString())
+        val cmd = slot<CompleteTaskCmd>()
+        every { userTaskCompletionApi.completeTask(capture(cmd)) } returns CompletableFuture.completedFuture(Empty)
+
+        // when: the back office confirms the return
+        underTest.completeReturnClarification(id)
+
+        // then: only the clarify-return task is completed, without variables
+        verify(exactly = 1) { userTaskCompletionApi.completeTask(any()) }
+        assertThat(cmd.captured.taskId).isEqualTo("task-2")
+        assertThat(cmd.captured.get()).isEmpty()
+    }
+
+    @Test
     fun `correlateContractSigned publishes the message with the application id as correlation key`() {
         assertCorrelation(Messages.MIRAVELO_CONTRACT_SIGNED.value) { underTest.correlateContractSigned(id) }
     }
@@ -170,5 +188,6 @@ class LeasingProcessAdapterTest {
         assertThat(cmd.captured.restrictions).isEmpty()
     }
 
-    private fun task(taskId: String) = TaskInformation(taskId = taskId, meta = emptyMap())
+    private fun task(taskId: String, activityId: String = "userTask_clarifyAlternative") =
+        TaskInformation(taskId = taskId, meta = mapOf("activityId" to activityId))
 }

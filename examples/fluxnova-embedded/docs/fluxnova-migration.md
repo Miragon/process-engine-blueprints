@@ -95,24 +95,24 @@ URLs:
 | Cockpit | below `/camunda` | **`/fluxnova/app/monitoring/`** — Fluxnova renamed Cockpit to *Monitoring* |
 | Tasklist · Admin | below `/camunda` | `/fluxnova/app/tasklist/` · `/fluxnova/app/admin/` |
 
-## 4. BPMN, DMN and form changes
+## 4. BPMN and DMN changes
 
 **No executable element changed.** Flow, element ids, messages, timers, error and escalation codes,
-delegate expressions, listeners, the call activity, the DMN table and the form fields are byte-identical
+delegate expressions, listeners, the call activity and the DMN table are byte-identical
 to the baseline. Only model metadata and prose moved:
 
 | File | Change |
 |---|---|
 | `bike-leasing.bpmn`, `cancel-bike-order.bpmn` | added `xmlns:fluxnova="http://fluxnova.finos.org/schema/1.0/bpmn"`; `xmlns:modeler` → `http://fluxnova.finos.org/schema/modeler/1.0`; `modeler:executionPlatform` → `Fluxnova Platform` `3.0.0`; `exporter` → `Fluxnova Modeler` `1.3.2` |
-| `bike-leasing.bpmn`, `cancel-bike-order.bpmn` | prose only, in XML comments and `bpmn:documentation`: "Cockpit" → "Monitoring app", "Camunda Form" → "Fluxnova Form" |
+| `bike-leasing.bpmn`, `cancel-bike-order.bpmn` | prose only, in XML comments and `bpmn:documentation`: "Cockpit" → "Monitoring app" |
 | `check-credit-rating.dmn` | added the same modeler metadata; the decision's own `namespace` is kept |
-| `clarify-alternative.form`, `clarify-return.form` | `executionPlatform` → `Fluxnova Platform`, `executionPlatformVersion` → `3.0.0` |
 
 These are the values the official migrator (`migrator/src/main/resources/recipes/07_xmlBpmnMigration.yml`,
-`08_xmlDmnMigration.yml`, `17_formMigration.yml` in `finos/fluxnova-bpm-platform`) and the Fluxnova
+`08_xmlDmnMigration.yml` in `finos/fluxnova-bpm-platform`) and the Fluxnova
 Modeler's own conversion write. `3.0.0` is the newest platform version Fluxnova Modeler 1.3.2 knows.
 
-The `camunda:` extension attributes stay — see section 7.
+The `camunda:` extension attributes stay — see section 7. The user tasks have no forms
+([ADR-0014](adr/0014-user-tasks-without-forms.md)), so there is no `.form` file to migrate.
 
 ## 5. Test changes
 
@@ -120,7 +120,7 @@ The `camunda:` extension attributes stay — see section 7.
 |---|---|
 | All 140 baseline tests | kept; only engine imports and the adapter package name changed |
 | `BikeLeasingProcessTest` (happy path, escalation, DMN rejection, abort with compensation, bike unavailable) | unchanged assertions, now on embedded Fluxnova |
-| `ProcessDeploymentTest` | **new** — asserts the engine is Fluxnova and that both BPMN models, the DMN and the two forms are deployed |
+| `ProcessDeploymentTest` | **new** — asserts the engine is Fluxnova and that both BPMN models and the DMN are deployed |
 | `verifyFluxnovaIsTheOnlyEngine` | **new** Gradle check, part of `./gradlew build` — fails when an `org.cibseven`, `org.camunda` or `org.operaton` artifact reaches the runtime or test classpath |
 | `openapi/openapi.json` | re-exported; semantically identical, only the key order differs — it is now the order the Operaton blueprint has, too |
 | Bruno collection | requests and assertions unchanged; only names and doc texts mention Fluxnova |
@@ -136,7 +136,7 @@ Verification runs for this migration (2026-10-01, JDK 21, macOS, Postgres 18.6):
 | `./gradlew :service:app:pitest` | — (not re-run) | 86 % mutation score (gate 80) |
 | `npm run lint:bpmn` | — (not re-run) | green |
 | Restart with a waiting instance | — (not run) | instance survives the restart and completes |
-| Webapps in a browser | — (not run) | Monitoring lists both definitions; Tasklist renders the `clarify-alternative` form |
+| Webapps in a browser | — (not run) | Monitoring lists both definitions |
 | OCI image (`bootBuildImage`, via Podman) | — (not run) | image builds; the container starts against Postgres, reports engine 3.0.1 and health `UP` |
 | GitHub Actions workflows | — | **not run** — the repository was not pushed; every command the workflows execute was run locally |
 

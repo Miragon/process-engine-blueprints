@@ -65,6 +65,9 @@ public class LeasingApplicationAggregate {
     @Column(name = "clarification_requested_at")
     private LocalDateTime clarificationRequestedAt;
 
+    @Column(name = "clarify_return_task_id")
+    private String clarifyReturnTaskId;
+
     @Column(name = "alternative_found")
     private Boolean alternativeFound;
 
@@ -146,6 +149,23 @@ public class LeasingApplicationAggregate {
         return taskId;
     }
 
+    public void returnClarificationRequested(String taskId) {
+        clarifyReturnTaskId = taskId;
+    }
+
+    public void returnClarificationCancelled() {
+        clarifyReturnTaskId = null;
+    }
+
+    public String resolveReturnClarification() {
+        String taskId = clarifyReturnTaskId;
+        if (taskId == null) {
+            throw new NoSuchElementException("No open return clarification for application " + applicationId);
+        }
+        clarifyReturnTaskId = null;
+        return taskId;
+    }
+
     @JsonProperty
     public String getApplicationId() {
         return applicationId;
@@ -195,6 +215,10 @@ public class LeasingApplicationAggregate {
 
     public LocalDateTime getClarificationRequestedAt() {
         return clarificationRequestedAt;
+    }
+
+    public String getClarifyReturnTaskId() {
+        return clarifyReturnTaskId;
     }
 
     @JsonProperty

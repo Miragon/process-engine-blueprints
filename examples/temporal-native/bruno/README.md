@@ -12,7 +12,7 @@ npx --yes @usebruno/cli@4.0.0 run . --env local -r --exclude-tags=demo-data
 |---|---|
 | `00-demo-data` | six cases left open for a demo, one per state: waiting for the signature, waiting for the handover, in the withdrawal period, rejected, an alternative waiting in the inbox, withdrawn with the return clarification open. ACTIVE is left out: Zeebe timers cannot be fast-forwarded over REST, see `01-happy-path`. CI skips it (tag `demo-data`) |
 | `01-happy-path` | submit → sign the contract → report the handover |
-| `03-abort` | the customer withdraws after signing for a custom build the dealer cannot cancel; the case stays `WITHDRAWN` until the return is clarified in Temporal |
+| `03-abort` | the customer withdraws after signing for a custom build the dealer cannot cancel; the case stays `WITHDRAWN` until the return is clarified, then the costs are booked and the case ends `CANCELLED` |
 | `04-not-solvent` | the credit rule rejects the applicant |
 | `05-bike-unavailable` | the bike is out of stock and the customer picks an alternative |
 | `07-list-and-inbox` | the list and task-inbox endpoints |

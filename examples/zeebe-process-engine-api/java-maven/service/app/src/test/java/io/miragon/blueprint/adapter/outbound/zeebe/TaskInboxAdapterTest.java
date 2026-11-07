@@ -59,14 +59,30 @@ class TaskInboxAdapterTest {
     @Test
     void skips_a_task_without_a_creation_date() {
         // given
-        when(userTaskSupport.getAllTasks()).thenReturn(List.of(new TaskInformation("task-1", Map.of())));
+        when(userTaskSupport.getAllTasks())
+                .thenReturn(List.of(new TaskInformation("task-1", Map.of("activityId", "userTask_clarifyAlternative"))));
         when(userTaskSupport.getPayload("task-1")).thenReturn(Map.of("applicationId", applicationId));
 
         // when / then
         assertThat(underTest.findOpenClarifications()).isEmpty();
     }
 
+    @Test
+    void skips_a_task_of_another_user_task() {
+        // given: an open clarify-return task of the same application in the pool
+        when(userTaskSupport.getAllTasks())
+                .thenReturn(List.of(task("task-1", "2026-06-23T09:00:00Z", "userTask_clarifyReturn")));
+        when(userTaskSupport.getPayload("task-1")).thenReturn(Map.of("applicationId", applicationId));
+
+        // when / then: the inbox lists clarify-alternative tasks only
+        assertThat(underTest.findOpenClarifications()).isEmpty();
+    }
+
     private static TaskInformation task(String taskId, String creationDate) {
-        return new TaskInformation(taskId, Map.of("creationDate", creationDate));
+        return task(taskId, creationDate, "userTask_clarifyAlternative");
+    }
+
+    private static TaskInformation task(String taskId, String creationDate, String activityId) {
+        return new TaskInformation(taskId, Map.of("activityId", activityId, "creationDate", creationDate));
     }
 }

@@ -1,5 +1,6 @@
 package io.miragon.blueprint.adapter.outbound.zeebe;
 
+import dev.bpmcrafters.processengineapi.CommonRestrictions;
 import dev.bpmcrafters.processengineapi.task.TaskInformation;
 import dev.bpmcrafters.processengineapi.task.support.UserTaskSupport;
 import io.miragon.blueprint.adapter.process.BikeLeasingProcessProcessApi.FlowNodes;
@@ -38,6 +39,9 @@ public class TaskInboxAdapter implements TaskInboxPort {
     public List<OpenClarification> findOpenClarifications() {
         List<OpenClarification> clarifications = new ArrayList<>();
         for (TaskInformation task : userTaskSupport.getAllTasks()) {
+            if (!FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID.equals(task.getMeta().get(CommonRestrictions.ACTIVITY_ID))) {
+                continue;
+            }
             String applicationId = readApplicationId(task);
             OffsetDateTime creationDate = task.getMetaValueAsOffsetDate(CREATION_DATE);
             if (applicationId != null && creationDate != null) {

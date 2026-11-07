@@ -12,7 +12,6 @@ import org.springframework.context.annotation.Import
     resources = [
         "classpath:bpmn/*.bpmn",
         "classpath:dmn/*.dmn",
-        "classpath:forms/*.form",
     ],
 )
 @Import(ZeebeEnvironmentConfiguration::class)

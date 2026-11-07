@@ -22,7 +22,7 @@ repository's README table, still offered by the starter CLI, Kotlin only.
 | business key, correlation | workflow id = application id |
 | message catch event | signal |
 | user task `clarifyAlternative` | update with a validator that rejects a call without an open clarification |
-| user task `clarifyReturn` | signal `returnClarified` to the child workflow, sent from the Temporal UI or CLI |
+| user task `clarifyReturn` | signal `returnClarified` to the child workflow, sent by `POST /api/bike-leasing/{id}/clarify-return` |
 | timer, non-interrupting boundary timer | `Workflow.await` / `sleep`, a cancellable `Async` branch |
 | event-based gateway | `Workflow.await` with a timeout |
 | parallel gateway | `Async` |

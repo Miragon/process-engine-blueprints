@@ -24,7 +24,7 @@ import java.util.Objects;
  * auto-deployment.
  *
  * <p>This realises the "the service owns and deploys its process" ownership pattern: the engine host stays
- * model-agnostic and this outbound adapter pushes its BPMN/DMN/forms to
+ * model-agnostic and this outbound adapter pushes its BPMN/DMN to
  * {@code POST /engine-rest/deployment/create}. The deployment is <b>idempotent</b> ({@code enable-duplicate-filtering}
  * + {@code deploy-changed-only}), so restarts and multiple worker instances never create duplicate
  * deployments. It retries briefly so the worker can start alongside a not-yet-ready engine.
@@ -46,7 +46,7 @@ public class ProcessModelDeploymentAdapter {
 
     private static final String DEPLOYMENT_NAME = "bike-leasing";
     private static final List<String> MODEL_PATTERNS =
-            List.of("classpath*:**/*.bpmn", "classpath*:**/*.dmn", "classpath*:**/*.form");
+            List.of("classpath*:**/*.bpmn", "classpath*:**/*.dmn");
     private static final int MAX_ATTEMPTS = 20;
     private static final long RETRY_DELAY_MS = 3_000L;
 

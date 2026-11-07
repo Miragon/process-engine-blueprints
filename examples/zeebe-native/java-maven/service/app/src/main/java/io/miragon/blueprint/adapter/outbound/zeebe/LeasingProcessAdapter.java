@@ -5,6 +5,7 @@ import io.camunda.client.api.search.enums.UserTaskState;
 import io.camunda.client.api.search.response.UserTask;
 import io.camunda.client.api.search.response.Variable;
 import io.miragon.blueprint.adapter.process.BikeLeasingProcessProcessApi.FlowNodes;
+import io.miragon.blueprint.adapter.process.CancelBikeOrderProcessApi;
 import io.miragon.blueprint.adapter.process.Messages;
 import io.miragon.blueprint.application.port.outbound.LeasingProcess;
 import io.miragon.blueprint.domain.bike.BikeId;
@@ -22,9 +23,9 @@ import org.springframework.stereotype.Component;
 /**
  * Drives the Camunda 8 / Zeebe engine. Zeebe has no business key, so the application id travels as a
  * process variable and is declared as the message subscription correlation key on every catch event;
- * messages are published with that id as their correlation key, and the user task is looked up by its
+ * messages are published with that id as their correlation key, and a user task is looked up by its
  * element id plus the instance's {@code applicationId} variable. The variable and element names come from
- * the typed process API generated from {@code bike-leasing.bpmn}.
+ * the typed process APIs generated from {@code bike-leasing.bpmn} and {@code cancel-bike-order.bpmn}.
  */
 @Component
 public class LeasingProcessAdapter implements LeasingProcess {
@@ -64,13 +65,9 @@ public class LeasingProcessAdapter implements LeasingProcess {
         engineApi.sendMessage(Messages.MIRAVELO_APPLICATION_WITHDRAWN, id.value().toString());
     }
 
-    /**
-     * Completes the {@code Clarify alternative with customer} user task via the Camunda client — the same
-     * task a human could complete through its deployed Camunda Form in the Tasklist.
-     */
     @Override
     public void completeAlternativeClarification(ApplicationId id, boolean alternativeFound, BikeId bikeId) {
-        long userTaskKey = findActiveClarifyAlternativeTask(id);
+        long userTaskKey = findActiveUserTask(FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID, id);
         Map<String, Object> variables = new LinkedHashMap<>();
         variables.put(FlowNodes.UserTaskClarifyAlternative.Variables.ALTERNATIVE_FOUND.getValue(), alternativeFound);
         if (bikeId != null) {
@@ -79,7 +76,13 @@ public class LeasingProcessAdapter implements LeasingProcess {
         camundaClient.newCompleteUserTaskCommand(userTaskKey).variables(variables).send().join();
     }
 
-    private long findActiveClarifyAlternativeTask(ApplicationId id) {
+    @Override
+    public void completeReturnClarification(ApplicationId id) {
+        long userTaskKey = findActiveUserTask(CancelBikeOrderProcessApi.FlowNodes.UserTaskClarifyReturn.ELEMENT_ID, id);
+        camundaClient.newCompleteUserTaskCommand(userTaskKey).send().join();
+    }
+
+    private long findActiveUserTask(String elementId, ApplicationId id) {
         // Match by reading each open task's applicationId variable rather than filtering the search by
         // process-instance variables: on an Elasticsearch-backed cluster that variable filter is not
         // reliably in sync with the task index (the task is searchable before the filter matches), so
@@ -88,7 +91,7 @@ public class LeasingProcessAdapter implements LeasingProcess {
         List<UserTask> openTasks = camundaClient.newUserTaskSearchRequest()
             .filter(filter -> {
                 filter.state(UserTaskState.CREATED);
-                filter.elementId(FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID);
+                filter.elementId(elementId);
             })
             .send()
             .join()
@@ -99,7 +102,7 @@ public class LeasingProcessAdapter implements LeasingProcess {
             .findFirst()
             .map(UserTask::getUserTaskKey)
             .orElseThrow(() -> new NoSuchElementException(
-                "No active '" + FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID + "' task for application " + id.value()));
+                "No active '" + elementId + "' task for application " + id.value()));
     }
 
     /** Zeebe returns variable values as JSON, so a string comes back quoted — strip the quotes. */

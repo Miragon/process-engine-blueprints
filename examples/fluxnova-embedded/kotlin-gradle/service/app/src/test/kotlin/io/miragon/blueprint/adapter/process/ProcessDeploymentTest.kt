@@ -41,17 +41,4 @@ class ProcessDeploymentTest {
 
         assertThat(deployedDecisionKeys).containsExactly("checkCreditRating")
     }
-
-    @Test
-    fun `the user task forms are deployed with the models`() {
-        val deployedFormFiles =
-            repositoryService
-                .createDeploymentQuery()
-                .list()
-                .flatMap { repositoryService.getDeploymentResources(it.id) }
-                .map { it.name.substringAfterLast('/') }
-                .filter { it.endsWith(".form") }
-
-        assertThat(deployedFormFiles).containsExactlyInAnyOrder("clarify-alternative.form", "clarify-return.form")
-    }
 }

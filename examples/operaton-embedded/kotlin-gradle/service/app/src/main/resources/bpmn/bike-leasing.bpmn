@@ -122,12 +122,11 @@
       <bpmn:incoming>flow_orderedToJoin</bpmn:incoming>
       <bpmn:outgoing>flow_joinToHandover</bpmn:outgoing>
     </bpmn:parallelGateway>
-    <bpmn:userTask id="userTask_clarifyAlternative" name="Clarify alternative with customer" camunda:asyncAfter="true" camunda:formRef="clarifyAlternativeForm" camunda:formRefBinding="deployment">
-      <bpmn:documentation>Completable two ways: a human via the deployed Camunda Form (Tasklist), or a client via POST /api/bike-leasing/{id}/clarify-alternative. Both paths hand the chosen alternative to the process as the bikeId variable, which the re-order reads and persists on the aggregate, so the captured data reaches the domain model either way. The REST path additionally registers the bike's model in the portfolio. An accepted alternative always names its bike: the form requires the field and the endpoint answers 400 without it. See "Clarify return with supplier" in cancel-bike-order.bpmn for the form-only anti-pattern where data never leaves the process.</bpmn:documentation>
+    <bpmn:userTask id="userTask_clarifyAlternative" name="Clarify alternative with customer" camunda:asyncAfter="true">
+      <bpmn:documentation>Completed through POST /api/bike-leasing/{id}/clarify-alternative. The chosen alternative reaches the process as the bikeId variable, which the re-order reads and persists on the aggregate, and the endpoint registers the bike's model in the portfolio. An accepted alternative always names its bike: the endpoint answers 400 without it. The task has no form: the application owns the UI and finds the task by its id and the business key.</bpmn:documentation>
       <bpmn:extensionElements>
         <!-- The decision the task produces and the alternative bike the re-order picks up; declared
-             for bpmn-to-code. The Camunda Form (camunda:formRef) still renders them in the Tasklist
-             for the human completion path. -->
+             for bpmn-to-code. -->
         <camunda:properties>
           <camunda:property name="additionalOutputVariables" value="alternativeFound, bikeId" />
         </camunda:properties>

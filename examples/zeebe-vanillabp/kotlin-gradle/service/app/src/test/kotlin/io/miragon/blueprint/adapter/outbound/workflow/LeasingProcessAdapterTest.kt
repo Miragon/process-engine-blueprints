@@ -124,6 +124,34 @@ class LeasingProcessAdapterTest {
         confirmVerified(processService)
     }
 
+    @Test
+    fun `completeReturnClarification completes the remembered user task`() {
+
+        // given: an aggregate parked on the return clarification user task
+        aggregate.returnClarificationRequested("4712")
+        knownAggregate()
+        every { processService.completeUserTask(any(), any()) } answers { firstArg() }
+
+        // when: the back office confirms the return
+        underTest.completeReturnClarification(application.id)
+
+        // then: the remembered task is completed and forgotten
+        assertThat(aggregate.clarifyReturnTaskId).isNull()
+        verify { processService.completeUserTask(aggregate, "4712") }
+    }
+
+    @Test
+    fun `completeReturnClarification is not available while no return clarification is open`() {
+
+        // given: an aggregate that is not parked on the return clarification user task
+        knownAggregate()
+
+        // when / then: the action is refused without touching the engine
+        assertThatThrownBy { underTest.completeReturnClarification(application.id) }
+            .isInstanceOf(NoSuchElementException::class.java)
+        confirmVerified(processService)
+    }
+
     private fun knownAggregate() {
         every { aggregates.findById(application.id.value.toString()) } returns Optional.of(aggregate)
     }

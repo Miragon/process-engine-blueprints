@@ -7,14 +7,15 @@ imports it (see [ADR-0005](docs/adr/0005-agents-md-as-the-single-source.md)).
 
 A headless **MiraVelo bike-leasing** example: one complete BPMN process automated on an embedded
 Operaton engine, with an enforced hexagonal architecture and a committed REST contract. Headless —
-there is no UI; the engine's Cockpit/Tasklist webapps and the REST API are the only entry points.
+there is no UI; the REST API is the entry point, user tasks included, and the engine's Cockpit
+webapp is there to operate the engine.
 
 - **Backend** — Spring Boot 4, hexagonal, Operaton 2.x embedded engine (JavaDelegates). Package root
   `io.miragon.blueprint`.
   <!-- variant:blueprint -->
 - **Two equivalent variants on `main`** — `kotlin-gradle/` (Kotlin, **the recommended stack**) and
   `java-maven/` (Java 21, for teams bound to it and for trainings). Each is self-contained and
-  carries its own copy of the process models, DMN, forms, migrations and `application.yaml`; the
+  carries its own copy of the process models, DMN, migrations and `application.yaml`; the
   `Blueprint Checks` workflow fails when the two `src/main/resources` trees differ, so **edit a model
   in one variant and copy it to the other**. `openapi/`, `bruno/` and `stack/` exist once and apply to
   both. The variants must stay functionally identical: **make every change in behaviour in both
@@ -52,7 +53,7 @@ service/
     adapter/process             generated *ProcessApi (bpmn-to-code) + engine config
     application/{port,service}  use-case ports and their services
     domain/{leasing,bike}       pure domain model
-    resources/{bpmn,dmn,forms}  the process models and Camunda Forms
+    resources/{bpmn,dmn}        the process models
     resources/db/migration      Flyway versioned schema migrations
 ```
 
@@ -229,8 +230,8 @@ Two CLIs come as Claude Code plugins (`.claude/settings.json`) and are pinned in
   (`inspect --business-key <applicationId>`, `status`, `incident`, history, `retry`). It never
   deploys: the service deploys the models from its classpath, and a hand deploy is a version the
   generated process API does not know. It never moves a case either (correlating a message,
-  completing a user task): that is a business action, taken by a client of the app's API or by a
-  human in the Tasklist, not by an agent.
+  completing a user task): that is a business action, taken by a client of the app's API, not by an
+  agent.
 
 Two more plugins bring recipes, no CLI: **bpmn-to-code** (skills `bpmn-to-code:*`, e.g.
 `bpmn-to-code:test-process`, `bpmn-to-code:create-process-adapter`) for the generated process API and

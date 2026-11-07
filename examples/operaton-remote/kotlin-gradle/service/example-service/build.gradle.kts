@@ -21,7 +21,7 @@ springBoot {
 
 /**
  * The remote worker + business logic (hexagonal), and — since there is no separate contract module —
- * the **owner of the process contract** too. It carries the `.bpmn`/`.dmn`/`.form` models and generates
+ * the **owner of the process contract** too. It carries the `.bpmn`/`.dmn` models and generates
  * the typed `*ProcessApi` objects (topics, messages, element ids, variables) from them with
  * `bpmn-to-code`, keeps its own JPA/Postgres store, subscribes to the engine's external service-tasks
  * via the Operaton external-task client, deploys the model into the engine over REST at start-up, and

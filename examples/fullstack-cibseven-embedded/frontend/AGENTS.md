@@ -60,4 +60,4 @@ Icons: Lucide, `strokeWidth={1.75}`.
 `npm run verify` runs `format:check → lint → lint:fsd → lint:deadcode → typecheck → test`. Other
 scripts: `dev build typecheck test api:generate api:check e2e`. e2e specs are in `frontend/e2e/`
 (inside the package so Node resolves `@playwright/test`); they drive the real app against a running
-backend, with `e2e/helpers/engine-rest.ts` for timers and the form-only task.
+backend, with `e2e/helpers/engine-rest.ts` for timers and waits on the engine.

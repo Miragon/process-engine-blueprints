@@ -16,8 +16,8 @@ package `io.miragon.blueprint` under `service/app/src/main/` and `service/app/sr
 `.claude/agents/review-process.md` and apply it yourself.
 
 <!-- variant:blueprint -->
-**Two variants.** `kotlin-gradle/` and `java-maven/` each carry a copy of the models, the DMN and the
-forms, and `Blueprint Checks` fails when the copies differ. Edit the model in one variant, copy the file
+**Two variants.** `kotlin-gradle/` and `java-maven/` each carry a copy of the models and the DMN, and
+`Blueprint Checks` fails when the copies differ. Edit the model in one variant, copy the file
 to the other, then regenerate, wire and test **both**.
 <!-- /variant:blueprint -->
 
@@ -28,13 +28,12 @@ to the other, then regenerate, wire and test **both**.
 | `bpmn/bike-leasing.bpmn` | process `bikeLeasingProcess`: credit check, contract subprocess, insurance and bike order in parallel, handover, compensation, the withdrawal event subprocess |
 | `bpmn/cancel-bike-order.bpmn` | process `cancelBikeOrder`, called by the compensation of the bike order (`callActivity_cancelBikeOrder`) |
 | `dmn/check-credit-rating.dmn` | decision `checkCreditRating`, read by `businessRuleTask_checkCreditRating` |
-| `forms/clarify-alternative.form`, `forms/clarify-return.form` | Fluxnova Forms of the two user tasks, worked in the Tasklist |
 
 ## Rules
 
 - **Edit a `.bpmn` only through bpmn-cli** (skill `bpmn-cli:bpmn`), never as XML: `bpmn show` to read,
-  one `bpmn apply` batch to change, `bpmn validate` to check (it also runs `.bpmnlintrc`). The DMN and
-  the forms are edited as files; the decision id `checkCreditRating` is referenced by the model.
+  one `bpmn apply` batch to change, `bpmn validate` to check (it also runs `.bpmnlintrc`). The DMN is
+  edited as a file; the decision id `checkCreditRating` is referenced by the model.
   Executable attributes stay in the `camunda:` namespace, which Fluxnova 3.0 reads.
 - **Business decisions are questions.** A new gateway condition, deadline, error path or user task
   owner comes from the issue; otherwise ask before editing.

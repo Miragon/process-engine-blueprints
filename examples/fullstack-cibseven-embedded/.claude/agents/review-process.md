@@ -24,7 +24,7 @@ Extract per element:
 - **listeners**: `camunda:executionListener` / `camunda:taskListener` and their expressions
 - **messages, errors, escalations**: `<bpmn:message name>`, `<bpmn:error errorCode>`,
   `<bpmn:escalation escalationCode>` and the events that throw or catch them
-- **user tasks**: id and `camunda:formRef`; **business rule tasks**: `decisionRef`, `resultVariable`
+- **user tasks**: id, and no form attribute (`camunda:formRef`, `camunda:formKey`, `camunda:formData`); **business rule tasks**: `decisionRef`, `resultVariable`
 - **gateways** with the name and the `conditionExpression` of every outgoing flow
 - **timers**, **event subprocesses** (trigger, interrupting or not), **compensation** boundary events
   and their handlers
@@ -57,12 +57,11 @@ event use the same code.
 ### 5. Messages, user tasks and decisions → adapters
 For each message the app correlates and each user task it completes or lists, confirm
 `adapter/outbound/cibseven/` (`LeasingProcessAdapter`, `TaskInboxAdapter` and their helpers) uses the
-typed constant and correlates by business key (the application id). Each `formRef` must match the
-`id` inside a `.form` file under `service/app/src/main/resources/forms/` (the file name differs).
+typed constant and correlates by business key (the application id). Every user task is completed by
+the process adapter behind a domain endpoint; a form on a user task is a finding
+([ADR-0016](../../docs/adr/0016-user-tasks-without-forms.md)).
 The variables the DMN reads must be set when the process starts.
 
-Known and intended, not a finding: `userTask_clarifyReturn` is completed only through its form (no
-adapter; documented in the model).
 The dealer refuses on purpose to cancel an order of the bike id `BIKE-CUSTOM`, so withdrawing it takes
 the clarify-return branch of `bruno/03-abort`.
 

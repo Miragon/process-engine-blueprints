@@ -26,8 +26,8 @@ identical. Building on one? [Turn the repo into a single-stack starter](docs/sta
 **MiraVelo** is a fictional bike brand that sells on a leasing model. The service takes a leasing
 application from the first request to an active lease and deliberately covers the BPMN elements you
 meet in real processes: message start, JavaDelegate service tasks and a DMN rule, an embedded
-sub-process with an event-based gateway and reminder timer, a parallel fork/join, a user task with a
-Camunda Form, execution and task listeners, compensation guarded by error and escalation events, a
+sub-process with an event-based gateway and reminder timer, a parallel fork/join, user tasks
+completed through domain endpoints, execution and task listeners, compensation guarded by error and escalation events, a
 call activity, a withdrawal event sub-process and a terminate end event.
 
 ## Quick start

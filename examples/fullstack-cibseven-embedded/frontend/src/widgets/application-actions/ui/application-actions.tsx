@@ -12,6 +12,7 @@ import { isTerminal, type LeasingStatus } from "@/entities/leasing-application";
 import { SignContractButton } from "@/features/sign-contract";
 import { ReportHandoverButton } from "@/features/report-handover";
 import { WithdrawApplicationButton } from "@/features/withdraw-application";
+import { ClarifyReturnButton } from "@/features/clarify-return";
 import { availableActions } from "../model/available-actions";
 
 /** Composes the write features into the detail action bar; terminal cases explain instead of act. */
@@ -42,6 +43,9 @@ export function ApplicationActions({
             <Alert variant="warning">
               <AlertTitle>{copy.actions.withdrawRequestedTitle}</AlertTitle>
               <AlertDescription>{copy.actions.withdrawRequestedNote}</AlertDescription>
+              <div className="mt-3">
+                <ClarifyReturnButton applicationId={applicationId} />
+              </div>
             </Alert>
           ) : isTerminal(status) || actions.length === 0 ? (
             <p className="text-body text-schwarz/70">

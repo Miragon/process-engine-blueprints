@@ -1,5 +1,5 @@
 meta {
-  name: Find the clarify-return task (in the cancelBikeOrder call activity)
+  name: Wait for the clarify-return task (in the cancelBikeOrder call activity)
   type: http
   seq: 4
 }
@@ -33,8 +33,4 @@ script:pre-request {
 assert {
   res.status: eq 200
   res.body.items[0].userTaskKey: isDefined
-}
-
-vars:post-response {
-  userTaskKey: res.body.items[0].userTaskKey
 }

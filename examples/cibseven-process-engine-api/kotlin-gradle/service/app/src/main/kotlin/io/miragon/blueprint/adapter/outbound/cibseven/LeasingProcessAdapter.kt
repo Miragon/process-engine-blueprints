@@ -10,6 +10,7 @@ import dev.bpmcrafters.processengineapi.task.CompleteTaskCmd
 import dev.bpmcrafters.processengineapi.task.UserTaskCompletionApi
 import dev.bpmcrafters.processengineapi.task.support.UserTaskSupport
 import io.miragon.blueprint.adapter.process.BikeLeasingProcessProcessApi.FlowNodes
+import io.miragon.blueprint.adapter.process.CancelBikeOrderProcessApi
 import io.miragon.blueprint.adapter.process.Messages
 import io.miragon.blueprint.application.port.outbound.LeasingProcess
 import io.miragon.blueprint.domain.bike.BikeId
@@ -24,7 +25,7 @@ import java.util.concurrent.CompletionException
  * correlation key (so later messages correlate to the right instance). The variable names come from
  * the typed process API generated from `bike-leasing.bpmn`.
  *
- * The `clarifyAlternative` user task is looked up in the [UserTaskSupport] pool (fed by the adapter's
+ * The user tasks are looked up in the [UserTaskSupport] pool (fed by the adapter's
  * user-task delivery) and then completed via the [UserTaskCompletionApi] — the process-engine-api
  * has no server-side task query, so completion always goes through a resolved task id.
  */
@@ -87,16 +88,12 @@ class LeasingProcessAdapter(
         }
     }
 
-    /**
-     * Completes the `Clarify alternative with customer` user task via the engine client — the same
-     * task a human could complete through its deployed Camunda Form in the Tasklist.
-     */
     override fun completeAlternativeClarification(
         id: ApplicationId,
         alternativeFound: Boolean,
         bikeId: BikeId?,
     ) {
-        val taskId = awaitClarifyAlternativeTaskId(id)
+        val taskId = awaitTaskId(id, FlowNodes.UserTaskClarifyAlternative.id.value)
         val variables = buildMap<String, Any?> {
             put(FlowNodes.UserTaskClarifyAlternative.Variables.ALTERNATIVE_FOUND.value, alternativeFound)
             bikeId?.let { put(FlowNodes.UserTaskClarifyAlternative.Variables.BIKE_ID.value, it.value) }
@@ -104,16 +101,21 @@ class LeasingProcessAdapter(
         userTaskCompletionApi.completeTask(CompleteTaskCmd(taskId, variables)).join()
     }
 
+    override fun completeReturnClarification(id: ApplicationId) {
+        val taskId = awaitTaskId(id, CancelBikeOrderProcessApi.FlowNodes.UserTaskClarifyReturn.id.value)
+        userTaskCompletionApi.completeTask(CompleteTaskCmd(taskId, emptyMap())).join()
+    }
+
     /**
-     * Resolves the open `clarifyAlternative` task id for [id] from the [UserTaskSupport] pool, waiting
+     * Resolves the open task id of [taskDefinitionKey] for [id] from the [UserTaskSupport] pool, waiting
      * briefly for the adapter's user-task delivery to hand it over. Fails loudly if none appears.
      */
-    private fun awaitClarifyAlternativeTaskId(id: ApplicationId): String {
+    private fun awaitTaskId(id: ApplicationId, taskDefinitionKey: String): String {
         val applicationId = id.value.toString()
         val applicationIdKey = FlowNodes.StartEventLeasingRequestReceived.Variables.APPLICATION_ID.value
         repeat(TASK_LOOKUP_ATTEMPTS) {
             userTaskSupport.getAllTasks()
-                .filter { it.meta[CommonRestrictions.ACTIVITY_ID] == FlowNodes.UserTaskClarifyAlternative.id.value }
+                .filter { it.meta[CommonRestrictions.ACTIVITY_ID] == taskDefinitionKey }
                 .firstOrNull { task ->
                     runCatching { userTaskSupport.getPayload(task.taskId)[applicationIdKey] == applicationId }
                         .getOrDefault(false)
@@ -121,7 +123,7 @@ class LeasingProcessAdapter(
                 ?.let { return it.taskId }
             Thread.sleep(TASK_LOOKUP_INTERVAL_MS)
         }
-        error("No open '${FlowNodes.UserTaskClarifyAlternative.id.value}' task for application $applicationId")
+        error("No open '$taskDefinitionKey' task for application $applicationId")
     }
 
     private companion object {

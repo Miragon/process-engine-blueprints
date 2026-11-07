@@ -151,7 +151,7 @@ bumps those versions but not the refs: bump each ref by hand together with its v
   <!-- variant:blueprint -->
 - **Change both variants together.** A change in behaviour goes into `kotlin-gradle/` *and*
   `java-maven/` in the same PR, with equivalent tests. Changes that only concern one language's idioms
-  stay on that side. Models, forms, migrations and `application.yaml` exist in both variants and must
+  stay on that side. Models, migrations and `application.yaml` exist in both variants and must
   be byte-identical — copy your change over; the `Blueprint Checks` workflow fails otherwise. See
   [ADR-0013](docs/adr/0013-two-stack-variants-side-by-side-on-main.md).
   <!-- /variant:blueprint -->

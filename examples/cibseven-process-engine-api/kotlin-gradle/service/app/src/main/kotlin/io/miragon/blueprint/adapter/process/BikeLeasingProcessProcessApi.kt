@@ -120,12 +120,19 @@ object BikeLeasingProcessProcessApi {
       override val variables: Variables = Variables
 
       object Variables : RegisteredVariableDefinitions() {
+        val APPLICATION_ID: VariableName.Input = input(ProcessVariables.APPLICATION_ID)
+
         val BIKE_ID: VariableName.Input = input(ProcessVariables.BIKE_ID)
 
         val ORDER_ID: VariableName.Input = input(ProcessVariables.ORDER_ID)
       }
 
       object Inputs {
+        val APPLICATION_ID: InputOutputMapping = InputOutputMapping(
+          target = "applicationId",
+          source = "applicationId",
+        )
+
         val BIKE_ID: InputOutputMapping = InputOutputMapping(
           target = "bikeId",
           source = "bikeId",

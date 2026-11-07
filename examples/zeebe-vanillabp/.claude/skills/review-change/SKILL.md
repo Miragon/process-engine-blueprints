@@ -44,7 +44,8 @@ and packages instead: a leftover reference is the typical defect.
 | a JPA entity or `LeasingApplicationAggregate` | a new `V<n>__*.sql` migration; no edited migration |
 | a controller method or a DTO | `@Operation(operationId)` on the method, the re-exported `openapi/openapi.json`, a Bruno request |
 | a `.bpmn` | the regenerated `adapter/process`, a process test per new path, Bruno updated for renamed element ids; run the agent `review-process` |
-| the DMN or a user task | a process test for the decision or the user task; the `externalReference` of its `zeebe:formDefinition` still matching the `@WorkflowTask(taskDefinition)` that binds it |
+| the DMN | a process test for the decision |
+| a user task | a domain endpoint that completes it (no form, ADR-0014), a process test for the path it serves; the `externalReference` of its `zeebe:formDefinition` still matching the `@WorkflowTask(taskDefinition)` that binds it |
 | a workflow task, the workflow aggregate or the process adapter | its unit test, a process test for the path it serves; run the agent `review-process` |
 | a whole feature | run the agent `review-vertical-slice` |
 | a domain exception a workflow task maps to a `TaskException` | a boundary event with its error code; `BikeLeasingWorkflow` keeps `noRollbackFor = TaskException` |

@@ -43,7 +43,7 @@ service/
     adapter/process             generated *ProcessApi + shared constants (bpmn-to-code)
     application/{port,service}  use-case ports and their services
     domain/{leasing,bike}       pure domain model
-    resources/{bpmn,dmn,forms}  the process models and Camunda Forms
+    resources/{bpmn,dmn}        the process models
     resources/db/migration      Flyway versioned schema migrations
 ```
 
@@ -58,7 +58,7 @@ The resources are kept identical to the other variant's; CI fails when they diff
   (bytecode: layering, dependency direction, naming) and **Konsist** (source: one declaration per file,
   no wildcard imports); a service opts in with `class ArchitectureTest : ServiceArchitectureTest(...)`.
 - **Reusable Zeebe glue.** `common-zeebe` contributes the connection (self-managed, auth off for local
-  dev) and classpath auto-deployment of every `.bpmn`, `.dmn` and `.form` on startup.
+  dev) and classpath auto-deployment of every `.bpmn` and `.dmn` on startup.
 - **The process-engine-api, not the Camunda client.** Each BPMN service task is a `@ProcessEngineWorker`
   in `adapter/inbound/zeebe`. Workers hold no business logic — they call use cases; `orderBike` throws
   `BpmnErrorOccurred` with `bikeUnavailable` when the dealer has no bike, so the error boundary event

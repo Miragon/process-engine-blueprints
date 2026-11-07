@@ -45,7 +45,8 @@ and packages instead: a leftover reference is the typical defect.
 | a controller method or a DTO | `@Operation(operationId)` on the method, the re-exported `openapi/openapi.json`, the regenerated client (`api:check`), a Bruno request |
 | a domain field shown to users | DTO, mapper, `openapi.json`, client, the FSD entity, a Bruno assertion |
 | a `.bpmn` | the regenerated `adapter/process`, a process test per new path, Bruno and `frontend/e2e` updated for renamed element ids; run the agent `review-process` |
-| the DMN or a form | a process test for the decision or the user task; the form `id` still matching the `formRef` |
+| the DMN | a process test for the decision |
+| a user task | a domain endpoint that completes it (no form, ADR-0016), a process test for the path it serves |
 | a delegate | its MockK unit test (skill `create-delegate`) and a process test for the path it serves; run the agent `review-process` |
 | a listener or process adapter | a process test for the path it serves; run the agent `review-process` |
 | a service throwing what a delegate maps to `BpmnError` | `noRollbackFor` on `@Transactional` |

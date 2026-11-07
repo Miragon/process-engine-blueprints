@@ -4,8 +4,8 @@ import io.miragon.blueprint.domain.bike.BikeId;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
 
 /**
- * Resolves the {@code Clarify alternative with customer} user task through our own client. When an
- * alternative bike was found, the newly chosen bike is carried into the re-order.
+ * Resolves the {@code Clarify alternative with customer} user task. When an alternative bike was found, the
+ * newly chosen bike is carried into the re-order.
  */
 public interface SelectAlternativeUseCase {
 

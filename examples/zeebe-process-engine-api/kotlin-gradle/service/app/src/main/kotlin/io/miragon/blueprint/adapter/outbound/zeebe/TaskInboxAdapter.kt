@@ -1,5 +1,6 @@
 package io.miragon.blueprint.adapter.outbound.zeebe
 
+import dev.bpmcrafters.processengineapi.CommonRestrictions
 import dev.bpmcrafters.processengineapi.task.TaskInformation
 import dev.bpmcrafters.processengineapi.task.support.UserTaskSupport
 import io.miragon.blueprint.adapter.process.BikeLeasingProcessProcessApi.FlowNodes
@@ -24,14 +25,16 @@ class TaskInboxAdapter(
     private val applicationIdVariable = FlowNodes.StartEventLeasingRequestReceived.Variables.APPLICATION_ID.value
 
     override fun findOpenClarifications(): List<TaskInboxPort.OpenClarification> =
-        userTaskSupport.getAllTasks().mapNotNull { task ->
-            val applicationId = readApplicationId(task) ?: return@mapNotNull null
-            val creationDate = task.getMetaValueAsOffsetDate(CREATION_DATE) ?: return@mapNotNull null
-            TaskInboxPort.OpenClarification(
-                applicationId = ApplicationId.of(applicationId),
-                waitingSince = creationDate.toLocalDateTime(),
-            )
-        }
+        userTaskSupport.getAllTasks()
+            .filter { it.meta[CommonRestrictions.ACTIVITY_ID] == FlowNodes.UserTaskClarifyAlternative.id.value }
+            .mapNotNull { task ->
+                val applicationId = readApplicationId(task) ?: return@mapNotNull null
+                val creationDate = task.getMetaValueAsOffsetDate(CREATION_DATE) ?: return@mapNotNull null
+                TaskInboxPort.OpenClarification(
+                    applicationId = ApplicationId.of(applicationId),
+                    waitingSince = creationDate.toLocalDateTime(),
+                )
+            }
 
     private fun readApplicationId(task: TaskInformation): String? =
         runCatching { userTaskSupport.getPayload(task.taskId)[applicationIdVariable] as? String }.getOrNull()

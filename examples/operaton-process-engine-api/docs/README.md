@@ -31,6 +31,7 @@ copied from [`adr/0000-adr-template.md`](adr/0000-adr-template.md).
 | [0012](adr/0012-polling-for-eventual-consistency-in-e2e-tests.md) | Poll for eventual consistency in end-to-end tests. |
 | [0013](adr/0013-operaton-as-the-process-engine.md) | Operaton as the embedded process engine. |
 | [0014](adr/0014-architecture-tests-after-the-java-port.md) | Architecture tests after the Java port: ArchUnit + Checkstyle (supersedes 0007). |
+| [0015](adr/0015-user-tasks-without-forms.md) | User tasks without forms, completed through domain endpoints; other form types in process-engine-recipes. |
 
 ## Notes
 

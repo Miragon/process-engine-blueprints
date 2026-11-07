@@ -219,6 +219,48 @@ class LeasingApplicationAggregateTest {
     }
 
     @Nested
+    inner class ReturnClarification {
+
+        @Test
+        fun `resolving hands out the remembered user task and closes the return clarification`() {
+            // given: an open return clarification
+            val aggregate = LeasingApplicationAggregate.of(testLeasingApplication())
+            aggregate.returnClarificationRequested("4712")
+
+            // when: the return is confirmed
+            val taskId = aggregate.resolveReturnClarification()
+
+            // then: the task to complete is returned and the return clarification is closed
+            assertThat(taskId).isEqualTo("4712")
+            assertThat(aggregate.clarifyReturnTaskId).isNull()
+        }
+
+        @Test
+        fun `resolving fails while no return clarification is open`() {
+            // given: an aggregate without an open return clarification
+            val aggregate = LeasingApplicationAggregate.of(testLeasingApplication())
+
+            // when / then: there is nothing to resolve
+            assertThatThrownBy { aggregate.resolveReturnClarification() }
+                .isInstanceOf(NoSuchElementException::class.java)
+                .hasMessageContaining(aggregate.applicationId)
+        }
+
+        @Test
+        fun `a cancelled return clarification is closed`() {
+            // given: an open return clarification
+            val aggregate = LeasingApplicationAggregate.of(testLeasingApplication())
+            aggregate.returnClarificationRequested("4712")
+
+            // when: the engine cancels the user task
+            aggregate.returnClarificationCancelled()
+
+            // then: nothing is open
+            assertThat(aggregate.clarifyReturnTaskId).isNull()
+        }
+    }
+
+    @Nested
     inner class EngineVisibleState {
 
         private val engineJson = JsonMapper.builder().build()

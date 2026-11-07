@@ -44,7 +44,8 @@ and packages instead: a leftover reference is the typical defect.
 | a JPA entity | a new `V<n>__*.sql` migration; no edited migration |
 | a controller method or a DTO | `@Operation(operationId)` on the method, the re-exported `openapi/openapi.json`, a Bruno request |
 | a `.bpmn` | the regenerated `adapter/process`, a process test per new path, Bruno updated for renamed element ids; run the agent `review-process` |
-| the DMN or a form | a process test for the decision or the user task; the form `id` still matching the `formRef` |
+| the DMN | a process test for the decision |
+| a user task | a domain endpoint that completes it (no form, ADR-0014), a process test for the path it serves |
 | a worker | a process test for every path it serves (the process tests cover the workers); run the agent `review-process` |
 | a process adapter method | its unit test (`LeasingProcessAdapterTest`, `TaskInboxAdapterTest`) and a process test for the path it drives; run the agent `review-process` |
 | a whole feature | run the agent `review-vertical-slice` |
@@ -57,7 +58,7 @@ A hand-edited generated file is a blocker.
 
 <!-- variant:blueprint -->
 While both variants live side by side, a change in behaviour also needs the same change with
-equivalent tests in **both** `kotlin-gradle/` and `java-maven/` (models, forms, migrations and
+equivalent tests in **both** `kotlin-gradle/` and `java-maven/` (models, migrations and
 `application.yaml` byte-identical; the agent `review-process` compares the glue), and stack-specific
 content in a shared file needs `variant:` markers on lines of their own, so
 `scripts/create-starter.sh` can strip it.

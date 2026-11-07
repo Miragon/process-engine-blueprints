@@ -1,5 +1,6 @@
 package io.miragon.blueprint.adapter.outbound.zeebe
 
+import dev.bpmcrafters.processengineapi.CommonRestrictions
 import dev.bpmcrafters.processengineapi.correlation.CorrelateMessageCmd
 import dev.bpmcrafters.processengineapi.correlation.Correlation
 import dev.bpmcrafters.processengineapi.correlation.CorrelationApi
@@ -9,6 +10,7 @@ import dev.bpmcrafters.processengineapi.task.CompleteTaskCmd
 import dev.bpmcrafters.processengineapi.task.UserTaskCompletionApi
 import dev.bpmcrafters.processengineapi.task.support.UserTaskSupport
 import io.miragon.blueprint.adapter.process.BikeLeasingProcessProcessApi.FlowNodes
+import io.miragon.blueprint.adapter.process.CancelBikeOrderProcessApi
 import io.miragon.blueprint.adapter.process.Messages
 import io.miragon.blueprint.application.port.outbound.LeasingProcess
 import io.miragon.blueprint.domain.bike.BikeId
@@ -22,7 +24,7 @@ import org.springframework.stereotype.Component
  * key on every catch event; messages are published with that id as their correlation key. The variable
  * and element names come from the typed process API generated from `bike-leasing.bpmn`.
  *
- * The `clarifyAlternative` user task is looked up in the [UserTaskSupport] pool (fed by the adapter's
+ * The user tasks are looked up in the [UserTaskSupport] pool (fed by the adapter's
  * user-task delivery) and then completed via the [UserTaskCompletionApi] — the process-engine-api
  * has no server-side task query, so completion always goes through a resolved task id.
  */
@@ -69,16 +71,12 @@ class LeasingProcessAdapter(
         ).join()
     }
 
-    /**
-     * Completes the `Clarify alternative with customer` user task via the process-engine-api — the same
-     * task a human could complete through its deployed Camunda Form in the Tasklist.
-     */
     override fun completeAlternativeClarification(
         id: ApplicationId,
         alternativeFound: Boolean,
         bikeId: BikeId?,
     ) {
-        val taskId = awaitClarifyAlternativeTaskId(id)
+        val taskId = awaitTaskId(id, FlowNodes.UserTaskClarifyAlternative.id.value)
         val variables = buildMap<String, Any?> {
             put(FlowNodes.UserTaskClarifyAlternative.Variables.ALTERNATIVE_FOUND.value, alternativeFound)
             bikeId?.let { put(FlowNodes.UserTaskClarifyAlternative.Variables.BIKE_ID.value, it.value) }
@@ -86,16 +84,22 @@ class LeasingProcessAdapter(
         userTaskCompletionApi.completeTask(CompleteTaskCmd(taskId, variables)).join()
     }
 
+    override fun completeReturnClarification(id: ApplicationId) {
+        val taskId = awaitTaskId(id, CancelBikeOrderProcessApi.FlowNodes.UserTaskClarifyReturn.id.value)
+        userTaskCompletionApi.completeTask(CompleteTaskCmd(taskId, emptyMap())).join()
+    }
+
     /**
-     * Resolves the open `clarifyAlternative` task id for [id] from the [UserTaskSupport] pool, waiting
+     * Resolves the open [taskDefinitionKey] task id for [id] from the [UserTaskSupport] pool, waiting
      * briefly for the adapter's user-task delivery to hand it over. Fails with
      * [NoSuchElementException], which the REST advice maps to a 409: the token is not at this task.
      */
-    private fun awaitClarifyAlternativeTaskId(id: ApplicationId): String {
+    private fun awaitTaskId(id: ApplicationId, taskDefinitionKey: String): String {
         val applicationId = id.value.toString()
         val applicationIdKey = FlowNodes.StartEventLeasingRequestReceived.Variables.APPLICATION_ID.value
         repeat(TASK_LOOKUP_ATTEMPTS) {
             userTaskSupport.getAllTasks()
+                .filter { it.meta[CommonRestrictions.ACTIVITY_ID] == taskDefinitionKey }
                 .firstOrNull { task ->
                     runCatching { userTaskSupport.getPayload(task.taskId)[applicationIdKey] == applicationId }
                         .getOrDefault(false)
@@ -107,11 +111,11 @@ class LeasingProcessAdapter(
                 // Keep the interrupt visible and fail with an unchecked exception, which also rolls back the
                 // surrounding @Transactional use case; Spring's default rule would commit a checked one.
                 Thread.currentThread().interrupt()
-                throw IllegalStateException("Interrupted while waiting for the clarify-alternative task", e)
+                throw IllegalStateException("Interrupted while waiting for the '$taskDefinitionKey' task", e)
             }
         }
         throw NoSuchElementException(
-            "No active '${FlowNodes.UserTaskClarifyAlternative.id.value}' task for application $applicationId",
+            "No active '$taskDefinitionKey' task for application $applicationId",
         )
     }
 

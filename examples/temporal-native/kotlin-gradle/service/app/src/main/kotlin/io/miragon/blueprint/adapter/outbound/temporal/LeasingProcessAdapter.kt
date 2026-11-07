@@ -3,6 +3,7 @@ package io.miragon.blueprint.adapter.outbound.temporal
 import io.miragon.blueprint.adapter.process.AlternativeDecision
 import io.miragon.blueprint.adapter.process.BIKE_LEASING_TASK_QUEUE
 import io.miragon.blueprint.adapter.process.BikeLeasingWorkflow
+import io.miragon.blueprint.adapter.process.CancelBikeOrderWorkflow
 import io.miragon.blueprint.adapter.process.LeasingRequest
 import io.miragon.blueprint.application.port.outbound.LeasingProcess
 import io.miragon.blueprint.domain.bike.BikeId
@@ -55,6 +56,14 @@ class LeasingProcessAdapter(
         }
     }
 
+    override fun completeReturnClarification(id: ApplicationId) {
+        try {
+            cancelOrderWorkflow(id).returnClarified()
+        } catch (e: WorkflowNotFoundException) {
+            throw noOpenClarification(id, e)
+        }
+    }
+
     private fun signal(id: ApplicationId, send: (BikeLeasingWorkflow) -> Unit) {
         try {
             send(workflow(id))
@@ -65,6 +74,12 @@ class LeasingProcessAdapter(
 
     private fun workflow(id: ApplicationId) =
         client.newWorkflowStub(BikeLeasingWorkflow::class.java, id.value.toString())
+
+    private fun cancelOrderWorkflow(id: ApplicationId) =
+        client.newWorkflowStub(
+            CancelBikeOrderWorkflow::class.java,
+            CancelBikeOrderWorkflow.workflowId(id.value.toString()),
+        )
 
     private fun noOpenClarification(id: ApplicationId, cause: Exception) =
         NoSuchElementException("No open clarification for application ${id.value}").apply { initCause(cause) }

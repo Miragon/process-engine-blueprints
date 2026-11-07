@@ -45,7 +45,7 @@ service/
     process                     generated *ProcessApi (bpmn-to-code)
     application/{port,service}  use-case ports and their services
     domain/{leasing,bike}       pure domain model
-    resources/{bpmn,dmn,forms}  the process models and Camunda Forms the worker owns
+    resources/{bpmn,dmn}        the process models the worker owns
     resources/db/migration      Flyway versioned schema migrations
 ```
 
@@ -60,12 +60,12 @@ The resources are kept identical to the other variant's; CI fails when they diff
   that fetch, lock and complete them over the engine's REST API and delegate to the domain use cases.
   A worker that produces variables passes them on `complete(...)`; `orderBike` raises the
   `bikeUnavailable` **BPMN error** via `handleBpmnError` when the dealer has no bike.
-- **The worker owns and deploys the model.** `ProcessModelDeploymentAdapter` deploys the BPMN, DMN and
-  forms into the engine at start-up (idempotent via duplicate filtering), so the engine stays a
+- **The worker owns and deploys the model.** `ProcessModelDeploymentAdapter` deploys the BPMN and DMN
+  into the engine at start-up (idempotent via duplicate filtering), so the engine stays a
   generic host. This is the right default when a single service owns the process.
 - **Driving the process goes through a generated client.** `RemoteLeasingProcessAdapter` starts the
   process by message, correlates the messages that release the wait states and completes the
-  `clarify-alternative` user task — all against `/engine-rest`, all correlated by the `ApplicationId`
+  user tasks — all against `/engine-rest`, all correlated by the `ApplicationId`
   business key. See [`service/common-operaton-client`](service/common-operaton-client/README.md).
 - **Listeners run in the engine.** A listener has no external-task equivalent, so the two examples are
   Spring beans in `engine-service`, referenced by expression from the deployed model. They address

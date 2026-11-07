@@ -41,6 +41,12 @@ class LeasingProcessAdapter(
         processService.completeUserTask(aggregate, taskId)
     }
 
+    override fun completeReturnClarification(id: ApplicationId) {
+        val aggregate = aggregateOf(id)
+        val taskId = aggregate.resolveReturnClarification()
+        processService.completeUserTask(aggregate, taskId)
+    }
+
     private fun correlate(id: ApplicationId, message: MessageName) {
         processService.correlateMessage(aggregateOf(id), message.value)
     }

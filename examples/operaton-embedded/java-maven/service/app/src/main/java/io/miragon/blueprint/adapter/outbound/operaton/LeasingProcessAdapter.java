@@ -1,6 +1,7 @@
 package io.miragon.blueprint.adapter.outbound.operaton;
 
 import io.miragon.blueprint.adapter.process.BikeLeasingProcessProcessApi.FlowNodes;
+import io.miragon.blueprint.adapter.process.CancelBikeOrderProcessApi;
 import io.miragon.blueprint.adapter.process.Messages;
 import io.miragon.blueprint.application.port.outbound.LeasingProcess;
 import io.miragon.blueprint.domain.bike.BikeId;
@@ -60,10 +61,6 @@ public class LeasingProcessAdapter implements LeasingProcess {
         correlateByBusinessKey(Messages.MIRAVELO_APPLICATION_WITHDRAWN.getValue(), id.value().toString());
     }
 
-    /**
-     * Completes the {@code Clarify alternative with customer} user task via the engine client — the
-     * same task a human could complete through its deployed Camunda Form in the Tasklist.
-     */
     @Override
     public void completeAlternativeClarification(ApplicationId id, boolean alternativeFound, BikeId bikeId) {
         Map<String, Object> variables = new HashMap<>();
@@ -72,6 +69,11 @@ public class LeasingProcessAdapter implements LeasingProcess {
             variables.put(FlowNodes.UserTaskClarifyAlternative.Variables.BIKE_ID.getValue(), bikeId.value());
         }
         completeTask(id.value().toString(), FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID, variables);
+    }
+
+    @Override
+    public void completeReturnClarification(ApplicationId id) {
+        completeTask(id.value().toString(), CancelBikeOrderProcessApi.FlowNodes.UserTaskClarifyReturn.ELEMENT_ID, Map.of());
     }
 
     /** Correlates {@code messageName} to the single running instance carrying {@code businessKey}. */

@@ -151,6 +151,24 @@ class LeasingProcessAdapterTest {
     }
 
     @Test
+    void completeReturnClarification_completes_the_clarify_return_task_of_the_application_without_variables() {
+        // given: a stale clarify-alternative task and the open clarify-return task of this application in the pool
+        when(userTaskSupport.getAllTasks())
+                .thenReturn(List.of(task("task-1"), task("task-2", "userTask_clarifyReturn")));
+        when(userTaskSupport.getPayload(any())).thenReturn(Map.of("applicationId", id.value().toString()));
+        when(userTaskCompletionApi.completeTask(any())).thenReturn(CompletableFuture.completedFuture(Empty.INSTANCE));
+
+        // when: the back office confirms the return
+        underTest.completeReturnClarification(id);
+
+        // then: only the clarify-return task is completed, without variables
+        ArgumentCaptor<CompleteTaskCmd> cmd = ArgumentCaptor.forClass(CompleteTaskCmd.class);
+        verify(userTaskCompletionApi, times(1)).completeTask(cmd.capture());
+        assertThat(cmd.getValue().getTaskId()).isEqualTo("task-2");
+        assertThat(cmd.getValue().get()).isEmpty();
+    }
+
+    @Test
     void correlateContractSigned_publishes_the_message_with_the_application_id_as_correlation_key() {
         assertCorrelation(Messages.MIRAVELO_CONTRACT_SIGNED.getValue(), () -> underTest.correlateContractSigned(id));
     }
@@ -179,6 +197,10 @@ class LeasingProcessAdapterTest {
     }
 
     private static TaskInformation task(String taskId) {
-        return new TaskInformation(taskId, Map.of());
+        return task(taskId, "userTask_clarifyAlternative");
+    }
+
+    private static TaskInformation task(String taskId, String activityId) {
+        return new TaskInformation(taskId, Map.of("activityId", activityId));
     }
 }

@@ -36,7 +36,6 @@ import org.assertj.core.api.Assertions
 import org.cibseven.bpm.engine.HistoryService
 import org.cibseven.bpm.engine.ProcessEngine
 import org.cibseven.bpm.engine.RuntimeService
-import org.cibseven.bpm.engine.TaskService
 import org.cibseven.bpm.engine.test.assertions.bpmn.BpmnAwareTests.assertThat
 import org.cibseven.bpm.engine.test.assertions.bpmn.BpmnAwareTests.init
 import org.junit.jupiter.api.BeforeEach
@@ -62,9 +61,6 @@ class BikeLeasingProcessTest {
 
     @Autowired
     private lateinit var runtimeService: RuntimeService
-
-    @Autowired
-    private lateinit var taskService: TaskService
 
     @Autowired
     private lateinit var historyService: HistoryService
@@ -283,12 +279,7 @@ class BikeLeasingProcessTest {
         process.correlateApplicationWithdrawn(id)
         processEngine.continueToNextWaitState()
 
-        val task =
-            taskService
-                .createTaskQuery()
-                .taskDefinitionKey(CancelBikeOrderProcessApi.FlowNodes.UserTaskClarifyReturn.ELEMENT_ID)
-                .singleResult()
-        taskService.complete(task.id, mapOf("returnClarified" to true))
+        process.completeReturnClarification(id)
         processEngine.continueToNextWaitState()
 
         assertThat(instance)

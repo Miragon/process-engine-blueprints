@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.queryParam;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
@@ -139,6 +140,29 @@ class RemoteLeasingProcessAdapterTest {
 
         // when: the alternative is confirmed with a replacement bike
         underTest.completeAlternativeClarification(application.id(), true, new BikeId("BIKE-100"));
+
+        // then: both the lookup and completion happened
+        server.verify();
+    }
+
+    @Test
+    @DisplayName("completeReturnClarification looks up the task by business key and completes it without variables")
+    void completeReturnClarificationLooksUpTheTaskByBusinessKeyAndCompletesItWithoutVariables() {
+
+        // given: one active clarify-return task for the application
+        LeasingApplication application = testLeasingApplication().build();
+        server.expect(requestTo(containsString("/task?")))
+                .andExpect(method(HttpMethod.GET))
+                .andExpect(queryParam("processInstanceBusinessKey", application.id().value().toString()))
+                .andExpect(queryParam("taskDefinitionKey", "userTask_clarifyReturn"))
+                .andRespond(withSuccess("[{\"id\":\"task-2\"}]", MediaType.APPLICATION_JSON));
+        server.expect(requestTo("http://engine/engine-rest/task/task-2/complete"))
+                .andExpect(method(HttpMethod.POST))
+                .andExpect(jsonPath("$.variables").isEmpty())
+                .andRespond(withSuccess());
+
+        // when: the back office confirms the return
+        underTest.completeReturnClarification(application.id());
 
         // then: both the lookup and completion happened
         server.verify();

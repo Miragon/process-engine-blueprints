@@ -28,9 +28,9 @@ Both run the same process behind the same REST contract; [turn the repo into a s
 leasing application from the first request to an active lease and deliberately walks through the broad
 palette of BPMN elements you meet in real processes: a message start event, service tasks (job workers)
 and a DMN business-rule task, an embedded sub-process with an event-based gateway and a non-interrupting
-reminder timer, a parallel fork/join, a user task with a Camunda Form (completable in the Tasklist or via
-REST), compensation / SAGA handlers guarded by error and escalation boundary events, a call activity, a
-message event sub-process (withdrawal) and a terminate end event.
+reminder timer, a parallel fork/join, user tasks completed through domain REST endpoints, compensation /
+SAGA handlers guarded by error and escalation boundary events, a call activity, a message event
+sub-process (withdrawal) and a terminate end event.
 
 ## Quick start
 

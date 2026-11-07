@@ -443,6 +443,74 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       return useMutation(getReportHandoverMutationOptions(options), queryClient);
     }
 
+export const getClarifyReturnUrl = (applicationId: string,) => {
+
+
+
+
+  return `/api/bike-leasing/${applicationId}/clarify-return`
+}
+
+export const clarifyReturn = async (applicationId: string, options?: Parameters<typeof httpClient>[1]): Promise<void> => {
+
+  return httpClient<void>(getClarifyReturnUrl(applicationId),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getClarifyReturnMutationKey = () => ['clarifyReturn'] as const;
+
+export const getClarifyReturnMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof clarifyReturn>>, TError,ClarifyReturnMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
+): UseMutationOptions<Awaited<ReturnType<typeof clarifyReturn>>, TError,ClarifyReturnMutationVariables, TContext> => {
+
+const mutationKey = getClarifyReturnMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof clarifyReturn>>, ClarifyReturnMutationVariables> = (props) => {
+          const {applicationId} = props ?? {};
+
+          return  clarifyReturn(applicationId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ClarifyReturnMutationResult = NonNullable<Awaited<ReturnType<typeof clarifyReturn>>>
+
+    export type ClarifyReturnMutationError = unknown
+    export type ClarifyReturnMutationVariables = {applicationId: string}
+
+    export const useClarifyReturn = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof clarifyReturn>>, TError,ClarifyReturnMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof clarifyReturn>>,
+        TError,
+        ClarifyReturnMutationVariables,
+        TContext
+      > => {
+      return useMutation(getClarifyReturnMutationOptions(options), queryClient);
+    }
+
 export const getSelectAlternativeUrl = (applicationId: string,) => {
 
 

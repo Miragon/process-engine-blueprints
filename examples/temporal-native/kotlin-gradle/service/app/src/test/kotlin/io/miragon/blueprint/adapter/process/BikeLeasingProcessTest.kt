@@ -104,7 +104,7 @@ class BikeLeasingProcessTest {
     fun setUp() {
         env.registerSearchAttribute(CLARIFICATION_WAITING_SINCE.name, IndexedValueType.INDEXED_VALUE_TYPE_DATETIME)
         every { orderBikeUseCase.orderBike(any(), any()) } returns orderId
-        every { requestOrderCancellationUseCase.requestCancellation(any()) } returns false
+        every { requestOrderCancellationUseCase.requestCancellation(any()) } returns true
     }
 
     @Test
@@ -174,6 +174,20 @@ class BikeLeasingProcessTest {
 
         verify(exactly = 1) { sendSignatureReminderUseCase.sendSignatureReminder(id) }
         verify(exactly = 1) { activateLeasingUseCase.activate(id) }
+    }
+
+    @Test
+    fun `reminder - an unsigned contract gets one reminder before the deadline rejects it`() {
+        submit()
+
+        awaitCompletion()
+
+        verifyOrder {
+            sendSignatureReminderUseCase.sendSignatureReminder(id)
+            rejectApplicationUseCase.reject(id)
+        }
+        verify(exactly = 1) { sendSignatureReminderUseCase.sendSignatureReminder(id) }
+        verify(exactly = 0) { orderBikeUseCase.orderBike(id, any()) }
     }
 
     @Test
@@ -310,6 +324,7 @@ class BikeLeasingProcessTest {
 
         verify(exactly = 1) { requestOrderCancellationUseCase.requestCancellation(orderId) }
         verify(exactly = 1) { sendCancellationConfirmationUseCase.sendCancellationConfirmation(id) }
+        verify(exactly = 0) { bookCancellationCostsUseCase.bookCosts(any()) }
     }
 
     @Test
@@ -358,8 +373,8 @@ class BikeLeasingProcessTest {
     }
 
     @Test
-    fun `order cancellation possible - waits for the return clarification and books the costs`() {
-        every { requestOrderCancellationUseCase.requestCancellation(orderId) } returns true
+    fun `order cancellation not possible - waits for the return clarification and books the costs`() {
+        every { requestOrderCancellationUseCase.requestCancellation(orderId) } returns false
         submit()
         process.correlateContractSigned(id)
         verify(timeout = TIMEOUT_MILLIS) { orderBikeUseCase.orderBike(id, BIKE) }
@@ -384,7 +399,7 @@ class BikeLeasingProcessTest {
     }
 
     @Test
-    fun `order cancellation not possible - ends without booking costs`() {
+    fun `order cancellation possible - the order is reversed without booking costs`() {
         submit()
         process.correlateContractSigned(id)
         verify(timeout = TIMEOUT_MILLIS) { orderBikeUseCase.orderBike(id, BIKE) }

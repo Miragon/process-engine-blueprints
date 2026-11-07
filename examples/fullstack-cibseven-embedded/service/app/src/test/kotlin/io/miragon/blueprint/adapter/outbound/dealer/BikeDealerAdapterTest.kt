@@ -33,9 +33,19 @@ class BikeDealerAdapterTest {
     }
 
     @Test
-    fun `requestCancellation reports the order as cancellable`() {
-        // given: a placed order / when-then: the demo dealer always allows cancellation
-        assertThat(underTest.requestCancellation(OrderId("ORDER-900"))).isTrue()
+    fun `requestCancellation reports an order of a stocked bike as cancellable`() {
+        // given: an order of a regularly stocked bike
+        val orderId = underTest.order(BikeId("BIKE-900"))
+        // when-then: the dealer allows its cancellation
+        assertThat(underTest.requestCancellation(orderId)).isTrue()
+    }
+
+    @Test
+    fun `requestCancellation refuses to cancel an order of the custom-build demo bike`() {
+        // given: an order of the custom build
+        val orderId = underTest.order(BikeId("BIKE-CUSTOM"))
+        // when-then: the dealer refuses its cancellation, so the return has to be clarified
+        assertThat(underTest.requestCancellation(orderId)).isFalse()
     }
 
     @Test

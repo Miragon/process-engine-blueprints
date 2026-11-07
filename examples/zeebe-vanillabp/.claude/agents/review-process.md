@@ -73,6 +73,8 @@ finding.
 Known and intended, not findings: `userTask_clarifyReturn` is completed only through the Camunda REST
 API (no adapter; documented in the model), and `serviceTask_orderBike` fails on purpose for the bike
 id `BIKE-FAIL` until its retries run out, to raise the incident of `bruno/06-incident-demo`.
+The dealer refuses on purpose to cancel an order of the bike id `BIKE-CUSTOM`, so withdrawing it takes
+the clarify-return branch of `bruno/03-abort`.
 
 ### 6. Tests
 The process tests sit in the test tree under `adapter/process/` and run on an in-container engine

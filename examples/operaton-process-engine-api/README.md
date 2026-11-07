@@ -163,6 +163,10 @@ deliberate contrast:
   completing it via the Camunda Form or `/engine-rest` never touches the domain, so its data lands only
   in process variables (see the `bpmn:documentation` on each task).
 
+Which withdrawal clarifies a return: the simulated dealer refuses to cancel the order of the custom
+build `BIKE-CUSTOM` (`bruno/03-abort`), so the return is clarified and the costs booked; it cancels every
+other order right away (`bruno/11-abort-order-cancelled`).
+
 Bike availability itself is decided by a `BikeDealerPort` outbound adapter (`checkAvailability` /
 `order`) whose small out-of-stock deny-list drives the branch: an out-of-stock bike leaves the order
 task through the `bikeUnavailable` **error boundary event**, so no order compensation is registered.

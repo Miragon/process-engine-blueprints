@@ -1,0 +1,21 @@
+meta {
+  name: Assert no return had to be clarified
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{engineRest}}/history/task?processInstanceBusinessKey={{applicationId}}&taskDefinitionKey=userTask_clarifyReturn
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body: length 0
+}
+
+docs {
+  The dealer cancels the order of a stocked bike, so the cancel sub-process reverses the order
+  straight away. Contrast with `03-abort`, whose custom build the dealer cannot cancel.
+}

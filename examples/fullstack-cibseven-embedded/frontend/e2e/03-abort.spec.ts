@@ -2,14 +2,15 @@ import { test } from "@playwright/test";
 import { expectStatus, submitApplication } from "./helpers/ui";
 import { completeTask, waitForWaitState } from "./helpers/engine-rest";
 
-// Mirrors bruno/03-abort: submit -> sign -> withdraw -> complete the form-only clarify-return -> storniert.
+// Mirrors bruno/03-abort: submit a custom build -> sign -> withdraw -> the dealer cannot cancel the order
+// -> complete the form-only clarify-return -> storniert.
 test("abort: withdrawing after signing cancels the leasing", async ({ page, request }) => {
   const applicationId = await submitApplication(page, {
     name: "Wanda Withdraw",
     email: "wanda@example.com",
     age: 33,
     income: 3200,
-    bikeModel: "Gravel Explorer 900",
+    bikeModel: "Custom Build",
   });
 
   await page.getByRole("button", { name: /vertrag unterschreiben/i }).click();

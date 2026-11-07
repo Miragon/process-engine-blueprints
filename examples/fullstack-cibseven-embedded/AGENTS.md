@@ -129,7 +129,7 @@ TDD. Match the test style to the layer:
 | process end-to-end | CIB seven process tests (JGiven), paths asserted via `ProcessPath` |
 | frontend slices | vitest + MSW (generated handlers) |
 
-The process tests also write a **process test coverage** report per test class, with the CIB seven community extension Process Test Coverage: an HTML page per class that draws the paths the tests took on the model and gives the share of flow nodes and sequence flows they reached. Open `service/app/build/reports/process-test-coverage/` after `./gradlew build`. No minimum is enforced.
+The process tests also write a **process test coverage** report per test class, with the CIB seven community extension Process Test Coverage: an HTML page per class that draws the paths the tests took on the model and gives the share of flow nodes and sequence flows they reached. After the tests, the report aggregator of the same extension combines them into one report over all test classes, `all/report.html` in the report folder. Open `service/app/build/reports/process-test-coverage/` after `./gradlew build`. Every `*ProcessTest` class must reach 100 %, or it fails: the minimum is the system property `org.cibseven.community.process_test_coverage.ASSERT_AT_LEAST` of the test run, and `ProcessTestCoverageContextCustomizerFactory` applies it to those classes only. Other classes that run the process, such as `BikeUnavailableTransactionTest`, are reported but not gated. A run of single test methods covers less and fails the gate; lower the minimum for it with `-PprocessTestCoverageMinimum=0`.
 
 **Mutation testing gates the domain at 80, nightly** (`:service:app:pitest`): a test that executes without asserting
 will fail

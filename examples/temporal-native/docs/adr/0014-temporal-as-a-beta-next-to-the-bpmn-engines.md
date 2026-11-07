@@ -1,7 +1,7 @@
 # 0014 — Temporal as a beta next to the BPMN engines
 
 - **Status:** Accepted
-- **Date:** 2026-10-30
+- **Date:** 2026-11-07
 
 ## Context
 
@@ -57,8 +57,8 @@ steps in one place.
   after three attempts. The outage shows as a pending activity in the Temporal UI and the application
   stays withdrawable. There is no `06-incident-demo`.
 - **`clarifyReturn` has no Tasklist.** The workflow waits on a signal. `cancellationPossible` is ported
-  literally from the model: `true` leads to the clarification and the booked costs, `false` ends it.
-  The model reads as inverted; that question belongs to the model, not to this port.
+  as `cancel-bike-order.bpmn` models it: `true` reverses the order right away, `false` waits for the
+  return clarification and books the costs.
 - **Early signals.** A Zeebe message expires after 10 seconds; a signal stays until the workflow
   handles it. A `contractSigned` that arrives before the contract went out is therefore not lost.
 - **Withdrawal during a running step.** `issueInsurancePolicy` and `orderBike` wait for the running

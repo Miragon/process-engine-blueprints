@@ -729,6 +729,13 @@ differs:
   - examples: [temporal-native]
     files: [.gitignore]
     reason: "Single-variant example whose starter script keeps no variant markers, so its .gitignore lists only the Kotlin/Gradle entries."
+  - examples: [temporal-native]
+    files: [bruno/03-abort/05-assert-still-withdrawn.bru]
+    reason: "Temporal has no task API to see the open return clarification, so the scenario checks that the application stays WITHDRAWN where the BPMN examples complete the clarify-return task."
+  - files:
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/ProcessTestCoverageContextCustomizerFactory.java"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/ProcessTestCoverageContextCustomizerFactory.kt"
+    reason: "Builds the coverage properties of its engine's Process Test Coverage extension, which CIB seven and Fluxnova ship in different packages."
 languageOnly:
   - examples: [cibseven-embedded, cibseven-process-engine-api, cibseven-remote, fluxnova-embedded, operaton-embedded, operaton-remote, zeebe-native, zeebe-process-engine-api, zeebe-vanillabp]
     sources: [service/common-architecture-tests/src/main/io/miragon/common/architecture/KotlinSourceGuidelinesTest]

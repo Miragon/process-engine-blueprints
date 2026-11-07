@@ -194,7 +194,7 @@ TDD. Match the test style to the layer:
 | `adapter.outbound.db` | `@DataJpaTest` |
 | process end-to-end | Fluxnova process tests (`fluxnova-bpm-assert`), paths asserted via `ProcessPath` |
 
-The process tests also write a **process test coverage** report per test class, with Fluxnova's `fluxnova-bpm-testing-process-coverage`: an HTML page per class that draws the paths the tests took on the model and gives the share of flow nodes and sequence flows they reached. No minimum is enforced.
+The process tests also write a **process test coverage** report per test class, with Fluxnova's `fluxnova-bpm-testing-process-coverage`: an HTML page per class that draws the paths the tests took on the model and gives the share of flow nodes and sequence flows they reached. There is no aggregated report over all test classes. Every `*ProcessTest` class must reach 100 %, or it fails: the minimum is the system property `process_test_coverage.ASSERT_AT_LEAST` of the test run, and `ProcessTestCoverageContextCustomizerFactory` applies it to those classes only. Other classes that run the process, such as `BikeUnavailableTransactionTest`, are reported but not gated. A run of single test methods covers less and fails the gate; lower the minimum for it with `-PprocessTestCoverageMinimum=0` (Gradle) or `-Dprocess-test-coverage.minimum=0` (Maven).
 
 <!-- variant:kotlin-gradle -->
 Report folder: `service/app/build/reports/process-test-coverage/`

@@ -57,6 +57,7 @@ tasks.test {
     useJUnitPlatform()
     forkEvery = 1
     systemProperty("process-test-coverage.target-dir-root", "${layout.buildDirectory.get()}/reports/process-test-coverage/")
+    systemProperty("process_test_coverage.ASSERT_AT_LEAST", providers.gradleProperty("processTestCoverageMinimum").getOrElse("1.0"))
 }
 
 val foreignEngineGroups = listOf("org.cibseven", "org.camunda", "org.operaton")

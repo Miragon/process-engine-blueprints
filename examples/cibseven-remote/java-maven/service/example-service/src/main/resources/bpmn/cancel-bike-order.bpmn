@@ -18,7 +18,7 @@
     </bpmn:exclusiveGateway>
     <bpmn:sequenceFlow id="flow_requestToPossibleGateway" sourceRef="serviceTask_requestCancellation" targetRef="gateway_cancellationPossible" />
     <bpmn:sequenceFlow id="flow_cancellationNotPossible" name="No" sourceRef="gateway_cancellationPossible" targetRef="userTask_clarifyReturn">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${cancellationPossible}</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${!cancellationPossible}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:endEvent id="endEvent_orderReversed" name="Order reversed">
       <bpmn:incoming>flow_joinToReversed</bpmn:incoming>

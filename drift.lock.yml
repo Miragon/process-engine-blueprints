@@ -28,6 +28,7 @@
     - bruno/07-list-and-inbox/02-submit-out-of-stock.bru
     - bruno/07-list-and-inbox/03-list-received.bru
     - bruno/09-invalid-request/01-submit-without-income.bru
+    - bruno/11-abort-order-cancelled/01-submit.bru
     - docs/adr/0000-adr-template.md
     - docs/adr/0001-record-architecture-decisions.md
 - examples:
@@ -294,6 +295,11 @@
     - bruno/08-alternative-declined/08-assert-no-incident.bru
     - bruno/08-alternative-declined/09-get-application.bru
     - bruno/10-alternative-via-tasklist/01-submit.bru
+    - bruno/11-abort-order-cancelled/02-get-instance.bru
+    - bruno/11-abort-order-cancelled/03-sign-contract.bru
+    - bruno/11-abort-order-cancelled/04-withdraw.bru
+    - bruno/11-abort-order-cancelled/05-assert-cancelled.bru
+    - bruno/11-abort-order-cancelled/06-assert-no-return-to-clarify.bru
     - bruno/bruno.json
 - examples:
     - cibseven-embedded
@@ -722,6 +728,7 @@
   files:
     - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/outbound/{engine}/TaskInboxAdapter.kt
     - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/ProcessInstanceUtils.kt
+    - kotlin-gradle/service/app/src/test/resources/META-INF/spring.factories
 - examples:
     - cibseven-embedded
     - cibseven-process-engine-api
@@ -898,6 +905,9 @@
     - bruno/08-alternative-declined/01-submit.bru
     - bruno/08-alternative-declined/03-sign-contract.bru
     - bruno/08-alternative-declined/09-assert-cancelled.bru
+    - bruno/11-abort-order-cancelled/02-sign-contract.bru
+    - bruno/11-abort-order-cancelled/03-withdraw.bru
+    - bruno/11-abort-order-cancelled/04-assert-cancelled.bru
     - docs/adr/0003-openapi-as-the-checked-in-contract.md
     - docs/assets/bike-leasing.png
     - kotlin-gradle/gradle.properties
@@ -917,8 +927,15 @@
 - examples:
     - cibseven-embedded
     - cibseven-process-engine-api
+    - fluxnova-embedded
+  files:
+    - java-maven/service/app/src/test/resources/META-INF/spring.factories
+- examples:
+    - cibseven-embedded
+    - cibseven-process-engine-api
     - fullstack-cibseven-embedded
   files:
+    - kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/ProcessTestCoverageContextCustomizerFactory.kt
     - kotlin-gradle/service/app/src/test/resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports
 - examples:
     - cibseven-embedded
@@ -1081,6 +1098,8 @@
     - bruno/08-alternative-declined/06-assert-contract-compensated.bru
     - bruno/08-alternative-declined/07-assert-no-order-cancellation.bru
     - bruno/08-alternative-declined/08-assert-no-incident.bru
+    - bruno/11-abort-order-cancelled/05-assert-order-reversed.bru
+    - bruno/11-abort-order-cancelled/06-assert-no-return-to-clarify.bru
     - bruno/bruno.json
     - bruno/collection.bru
     - bruno/environments/local.bru
@@ -1115,6 +1134,7 @@
     - cibseven-process-engine-api
   files:
     - docs/adr/0010-flyway-for-database-migrations.md
+    - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/ProcessTestCoverageContextCustomizerFactory.java
     - java-maven/service/app/src/test/resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports
     - openapi/openapi.json
 - examples:

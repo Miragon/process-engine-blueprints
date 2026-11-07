@@ -1,9 +1,19 @@
 import io.miragon.bpmn.adapter.GenerateBpmnModelsTask
 import io.miragon.bpmn.domain.shared.OutputLanguage
 import io.miragon.bpmn.domain.shared.ProcessEngine
+import org.cibseven.community.process_test_coverage.report.aggregator.ReportAggregatorPluginExtension
 import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 import java.math.BigDecimal
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath(libs.cib7.process.test.coverage.aggregator)
+    }
+}
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
@@ -14,6 +24,12 @@ plugins {
     alias(libs.plugins.spring.dependency)
     alias(libs.plugins.bpmnToCode)
     alias(libs.plugins.pitest)
+}
+
+apply(plugin = "org.cibseven.community.process_test_coverage.report-aggregator")
+
+configure<ReportAggregatorPluginExtension> {
+    reportDirectory = "build/reports/process-test-coverage"
 }
 
 springBoot {
@@ -68,6 +84,8 @@ tasks.test {
     useJUnitPlatform()
     forkEvery = 1
     systemProperty("cibseven-process-test-coverage.target-dir-root", "${layout.buildDirectory.get()}/reports/process-test-coverage/")
+    systemProperty("org.cibseven.community.process_test_coverage.ASSERT_AT_LEAST", providers.gradleProperty("processTestCoverageMinimum").getOrElse("1.0"))
+    finalizedBy("aggregateProcessTestCoverage")
 }
 
 pitest {

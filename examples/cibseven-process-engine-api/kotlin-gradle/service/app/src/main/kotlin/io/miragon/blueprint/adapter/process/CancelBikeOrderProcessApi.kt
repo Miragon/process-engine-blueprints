@@ -69,7 +69,7 @@ object CancelBikeOrderProcessApi {
           get() = SequenceFlows.single(
             flowId = ElementId("flow_cancellationNotPossible"),
             name = "No",
-            conditionExpression = "\${cancellationPossible}",
+            conditionExpression = "\${!cancellationPossible}",
             target = UserTaskClarifyReturn,
           )
       }

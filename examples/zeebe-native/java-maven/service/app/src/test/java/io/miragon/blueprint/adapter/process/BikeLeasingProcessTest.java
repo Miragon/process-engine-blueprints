@@ -234,9 +234,41 @@ class BikeLeasingProcessTest {
     }
 
     @Test
+    @DisplayName("reminder - an unsigned contract gets one reminder before the deadline rejects it")
+    void reminderAnUnsignedContractGetsOneReminderBeforeTheDeadlineRejectsIt() {
+        ApplicationId id = submit(35, 3500.0);
+        long instanceKey = awaitProcessInstance();
+        ProcessInstanceSelector instance = ProcessInstanceSelectors.byKey(instanceKey);
+
+        // park on the await-signature gateway, then let the 7-day reminder elapse
+        CamundaAssert.assertThatProcessInstance(instance).hasCompletedElements(FlowNodes.ServiceTaskSendContract.ELEMENT_ID);
+        processTestContext.increaseTime(Duration.ofDays(7).plusHours(1));
+        CamundaAssert.assertThatProcessInstance(instance)
+            .hasCompletedElements(FlowNodes.ServiceTaskSendReminderMail.ELEMENT_ID, FlowNodes.EndEventProspectReminded.ELEMENT_ID)
+            .hasActiveElements(FlowNodes.GatewayAwaitSignature.ELEMENT_ID);
+
+        // the 14-day signature deadline elapses as well
+        processTestContext.increaseTime(Duration.ofDays(7));
+
+        CamundaAssert.assertThatProcessInstance(instance).isCompleted();
+        CamundaAssert.assertThatProcessInstance(instance)
+            .hasCompletedElementsInOrder(
+                    PathWalk.from(FlowNodes.StartEventLeasingRequestReceived.INSTANCE)
+                        .then(n -> n.businessRuleTaskCheckCreditRating())
+                        .then(n -> n.gatewayIsSolvent())
+                        .onto(n -> n.subProcessConcludeContract())
+                        .interruptedBy(FlowNodes.SubProcessConcludeContract.INSTANCE, n -> n.eventSignatureReminder())
+                        .then(n -> n.serviceTaskSendReminderMail())
+                        .end(n -> n.endEventProspectReminded()).getIds())
+            .hasCompletedElements(FlowNodes.EndEventApplicationRejected.ELEMENT_ID);
+        verify(sendSignatureReminderUseCase, times(1)).sendSignatureReminder(id);
+        verify(rejectApplicationUseCase, times(1)).reject(id);
+    }
+
+    @Test
     @DisplayName("abort - withdrawing the application compensates the completed steps")
     void abortWithdrawingTheApplicationCompensatesTheCompletedSteps() {
-        when(requestOrderCancellationUseCase.requestCancellation(any())).thenReturn(true);
+        when(requestOrderCancellationUseCase.requestCancellation(any())).thenReturn(false);
 
         ApplicationId id = submit(35, 3500.0);
         long instanceKey = awaitProcessInstance();
@@ -280,6 +312,7 @@ class BikeLeasingProcessTest {
         verify(cancelContractUseCase, times(1)).cancelContract(id);
         verify(cancelInsurancePolicyUseCase, times(1)).cancelPolicy(id);
         verify(sendCancellationConfirmationUseCase, times(1)).sendCancellationConfirmation(id);
+        verify(bookCancellationCostsUseCase, times(1)).bookCosts(new OrderId("ORDER-1"));
     }
 
     @Test
@@ -429,16 +462,19 @@ class BikeLeasingProcessTest {
         acceptAlternative();
         CamundaAssert.assertThatProcessInstance(instance).hasCompletedElements(FlowNodes.ServiceTaskOrderBike.ELEMENT_ID);
 
+        // the dealer cancels the order -> order reversed without a return to clarify
         process.correlateApplicationWithdrawn(id);
-        awaitUserTaskCreated(CancelBikeOrderProcessApi.FlowNodes.UserTaskClarifyReturn.ELEMENT_ID);
-        processTestContext.completeUserTask(CancelBikeOrderProcessApi.FlowNodes.UserTaskClarifyReturn.ELEMENT_ID);
 
         CamundaAssert.assertThatProcessInstance(instance).isCompleted();
         CamundaAssert.assertThatProcessInstance(instance)
             .hasCompletedElements(FlowNodes.EndEventApplicationCancelled.ELEMENT_ID)
             .hasCompletedElement(FlowNodes.CallActivityCancelBikeOrder.ELEMENT_ID, 1);
+        CamundaAssert.assertThatProcessInstance(ProcessInstanceSelectors.byParentProcessInstanceKey(submission.instanceKey()))
+            .hasCompletedElements(CancelBikeOrderProcessApi.FlowNodes.EndEventOrderReversed.ELEMENT_ID)
+            .hasNotActivatedElements(CancelBikeOrderProcessApi.FlowNodes.UserTaskClarifyReturn.ELEMENT_ID);
         assertThat(orderCancellationsOf(submission.instanceKey())).isEqualTo(1);
         verify(requestOrderCancellationUseCase, times(1)).requestCancellation(any());
+        verify(bookCancellationCostsUseCase, never()).bookCosts(any());
     }
 
     @Test

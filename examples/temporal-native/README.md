@@ -43,7 +43,8 @@ Setup, ports and containers are in [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ### Clarify a return
 
-After a withdrawal the order cancellation waits for the supplier's answer. There is no endpoint for it:
+After a withdrawal the order cancellation waits for the supplier's answer when the dealer cannot cancel
+the order, which the simulated dealer does for the custom build `BIKE-CUSTOM`. There is no endpoint for it:
 send the signal in the Temporal UI on the workflow `<applicationId>-cancel-order`, or with the CLI:
 
 ```bash

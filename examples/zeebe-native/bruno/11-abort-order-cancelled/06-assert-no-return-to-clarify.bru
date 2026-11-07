@@ -1,0 +1,32 @@
+meta {
+  name: No return had to be clarified
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{camundaRest}}/user-tasks/search
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "filter": {
+      "elementId": "userTask_clarifyReturn",
+      "processInstanceVariables": [
+        { "name": "applicationId", "value": "\"{{applicationId}}\"" }
+      ]
+    }
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.items: length 0
+}
+
+docs {
+  The dealer cancels the order of a stocked bike, so the cancel sub-process reverses the order
+  straight away. Contrast with `03-abort`, whose custom build the dealer cannot cancel.
+}

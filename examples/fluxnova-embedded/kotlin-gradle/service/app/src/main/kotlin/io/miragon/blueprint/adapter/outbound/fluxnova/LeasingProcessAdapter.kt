@@ -1,6 +1,7 @@
 package io.miragon.blueprint.adapter.outbound.fluxnova
 
 import io.miragon.blueprint.adapter.process.BikeLeasingProcessProcessApi.FlowNodes
+import io.miragon.blueprint.adapter.process.CancelBikeOrderProcessApi
 import io.miragon.blueprint.adapter.process.Messages
 import io.miragon.blueprint.application.port.outbound.LeasingProcess
 import io.miragon.blueprint.domain.leasing.ApplicationId
@@ -45,10 +46,6 @@ class LeasingProcessAdapter(
     override fun correlateApplicationWithdrawn(id: ApplicationId) =
         runtimeService.correlateByBusinessKey(Messages.MIRAVELO_APPLICATION_WITHDRAWN.value, id.value.toString())
 
-    /**
-     * Completes the `Clarify alternative with customer` user task via the engine client — the same
-     * task a human could complete through its deployed Fluxnova Form in the Tasklist.
-     */
     override fun completeAlternativeClarification(
         id: ApplicationId,
         alternativeFound: Boolean,
@@ -61,4 +58,10 @@ class LeasingProcessAdapter(
             bikeId?.let { put(FlowNodes.UserTaskClarifyAlternative.Variables.BIKE_ID.value, it.value) }
         },
     )
+
+    override fun completeReturnClarification(id: ApplicationId) =
+        taskService.completeTask(
+            businessKey = id.value.toString(),
+            taskDefinitionKey = CancelBikeOrderProcessApi.FlowNodes.UserTaskClarifyReturn.id.value,
+        )
 }

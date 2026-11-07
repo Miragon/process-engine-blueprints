@@ -22,7 +22,6 @@ package `io.miragon.blueprint` under `service/app/src/main/` and `service/app/sr
 | `bpmn/bike-leasing.bpmn` | process `bikeLeasingProcess`: credit check, contract subprocess, insurance and bike order in parallel, handover, compensation, the withdrawal event subprocess |
 | `bpmn/cancel-bike-order.bpmn` | process `cancelBikeOrder`, called by the compensation of the bike order (`callActivity_cancelBikeOrder`) |
 | `dmn/check-credit-rating.dmn` | decision `checkCreditRating`, read by `businessRuleTask_checkCreditRating` |
-| `forms/clarify-alternative.form`, `forms/clarify-return.form` | Camunda Forms of the two user tasks; *Clarify alternative* is also worked in the frontend inbox (`/aufgaben`) |
 
 ## Rules
 

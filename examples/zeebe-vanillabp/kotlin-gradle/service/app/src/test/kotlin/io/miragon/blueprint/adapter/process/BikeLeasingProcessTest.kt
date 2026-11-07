@@ -61,8 +61,8 @@ import java.time.LocalDateTime
  * with what VanillaBP persists on the workflow aggregate. Because Zeebe drives itself asynchronously,
  * `CamundaAssert` (which polls until a timeout) doubles as the synchronisation mechanism: asserting a
  * wait-state element has completed is how we wait for it. Timers are advanced with
- * `processTestContext.increaseTime` and messages and the clarification user task go through the real
- * process adapter, inside a transaction like the application services provide.
+ * `processTestContext.increaseTime` and messages and the user tasks go through the real process
+ * adapter, inside a transaction like the application services provide.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @CamundaSpringProcessTest
@@ -324,7 +324,8 @@ class BikeLeasingProcessTest {
         // process instance and parks on its clarify-return task, so we look it up by element id only.
         inTransaction { process.correlateApplicationWithdrawn(id) }
         awaitUserTaskCreated(CancelBikeOrderProcessApi.FlowNodes.UserTaskClarifyReturn.ELEMENT_ID)
-        processTestContext.completeUserTask(CancelBikeOrderProcessApi.FlowNodes.UserTaskClarifyReturn.ELEMENT_ID)
+        assertThat(aggregateOf(id).clarifyReturnTaskId).isNotNull()
+        inTransaction { process.completeReturnClarification(id) }
 
         CamundaAssert.assertThatProcessInstance(instance).isCompleted()
         CamundaAssert.assertThatProcessInstance(instance).hasCompletedElements(
@@ -363,6 +364,7 @@ class BikeLeasingProcessTest {
         val aggregate = aggregateOf(id)
         assertThat(aggregate.status).isEqualTo(LeasingStatus.CANCELLED)
         assertThat(aggregate.cancellationPossible).isFalse()
+        assertThat(aggregate.clarifyReturnTaskId).isNull()
     }
 
     @Test

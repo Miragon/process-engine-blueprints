@@ -30,8 +30,8 @@ identical. Building on one? [Turn the repo into a single-stack starter](docs/sta
 **MiraVelo** is a fictional bike brand that sells on a leasing model. The service takes a leasing
 application from the first request to an active lease and deliberately covers the BPMN elements you
 meet in real processes: message start, VanillaBP workflow tasks and a DMN rule, an embedded
-sub-process with an event-based gateway and reminder timer, a parallel fork/join, a user task
-completed through a REST endpoint, compensation guarded by error and escalation events, a call
+sub-process with an event-based gateway and reminder timer, a parallel fork/join, user tasks
+completed through REST endpoints, compensation guarded by error and escalation events, a call
 activity, a withdrawal event sub-process and a terminate end event.
 
 ## Quick start
@@ -61,7 +61,7 @@ Tests, ports and containers are in [CONTRIBUTING.md](CONTRIBUTING.md).
 | Path | Content |
 |---|---|
 | [`openapi/`](openapi/openapi.json) | the checked-in, drift-gated REST contract |
-| [`bruno/`](bruno/README.md) | REST scenarios, the two ways to complete a user task, the incident demo |
+| [`bruno/`](bruno/README.md) | REST scenarios, how the user tasks are completed, the incident demo |
 | [`stack/`](stack/docker-compose.yml) | the Camunda 8 self-managed dev stack |
 | [`docs/`](docs/README.md) | the Architecture Decision Records and the VanillaBP spike write-up |
 

@@ -10,10 +10,12 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import io.miragon.blueprint.adapter.process.BikeLeasingProcessProcessApi.FlowNodes;
+import io.miragon.blueprint.adapter.process.CancelBikeOrderProcessApi;
 import io.miragon.blueprint.adapter.process.Messages;
 import io.miragon.blueprint.domain.bike.BikeId;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
 import io.miragon.blueprint.domain.leasing.LeasingApplication;
+import java.util.Map;
 import java.util.UUID;
 import org.cibseven.bpm.engine.RuntimeService;
 import org.cibseven.bpm.engine.TaskService;
@@ -72,6 +74,29 @@ class LeasingProcessAdapterTest {
                 eq("task-1"),
                 argThat(vars -> Boolean.TRUE.equals(vars.get("alternativeFound"))
                         && "BIKE-42".equals(vars.get("bikeId"))));
+        verifyNoMoreInteractions(taskService);
+    }
+
+    @Test
+    void completeReturnClarificationCompletesTheClarifyReturnTaskOfTheInstance() {
+
+        // given: an open return-clarification task for the instance keyed by the application id
+        Task task = mock(Task.class);
+        when(task.getId()).thenReturn("task-2");
+        TaskQuery query = mock(TaskQuery.class);
+        when(taskService.createTaskQuery()).thenReturn(query);
+        when(query.processInstanceBusinessKey(any())).thenReturn(query);
+        when(query.taskDefinitionKey(any())).thenReturn(query);
+        when(query.singleResult()).thenReturn(task);
+
+        // when: the back office confirms the return
+        underTest.completeReturnClarification(id);
+
+        // then: the clarify-return task is located by business key and completed without variables
+        verify(taskService).createTaskQuery();
+        verify(query).processInstanceBusinessKey(id.value().toString());
+        verify(query).taskDefinitionKey(CancelBikeOrderProcessApi.FlowNodes.UserTaskClarifyReturn.ELEMENT_ID);
+        verify(taskService).complete("task-2", Map.of());
         verifyNoMoreInteractions(taskService);
     }
 

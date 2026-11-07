@@ -68,6 +68,9 @@ class LeasingApplicationAggregate(
     @Column(name = "clarification_requested_at")
     var clarificationRequestedAt: LocalDateTime? = null,
 
+    @Column(name = "clarify_return_task_id")
+    var clarifyReturnTaskId: String? = null,
+
     @Column(name = "alternative_found")
     @get:JsonProperty
     var alternativeFound: Boolean? = null,
@@ -121,6 +124,21 @@ class LeasingApplicationAggregate(
         this.alternativeFound = alternativeFound
         clarifyAlternativeTaskId = null
         clarificationRequestedAt = null
+        return taskId
+    }
+
+    fun returnClarificationRequested(taskId: String) {
+        clarifyReturnTaskId = taskId
+    }
+
+    fun returnClarificationCancelled() {
+        clarifyReturnTaskId = null
+    }
+
+    fun resolveReturnClarification(): String {
+        val taskId = clarifyReturnTaskId
+            ?: throw NoSuchElementException("No open return clarification for application $applicationId")
+        clarifyReturnTaskId = null
         return taskId
     }
 

@@ -1,5 +1,5 @@
 meta {
-  name: Clarify an acceptable alternative bike
+  name: Clarify an alternative bike
   type: http
   seq: 3
 }
@@ -33,9 +33,8 @@ assert {
 }
 
 docs {
-  The recommended, domain-routed completion path: this endpoint persists the chosen
-  alternative on the aggregate before completing the user task, so the captured data
-  reaches the domain model.
+  This endpoint persists the chosen alternative on the aggregate before completing the
+  user task, so the captured data reaches the domain model.
 
   The inbox lists the case as soon as VanillaBP has reported the user task to the
   workflow aggregate. VanillaBP only completes a task Camunda's search already knows,

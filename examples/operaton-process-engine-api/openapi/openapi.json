@@ -317,6 +317,25 @@
         "tags" : [ "select-alternative-controller" ]
       }
     },
+    "/api/bike-leasing/{applicationId}/clarify-return" : {
+      "post" : {
+        "operationId" : "clarifyReturn",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "applicationId",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "clarify-return-controller" ]
+      }
+    },
     "/api/bike-leasing/{applicationId}/report-handover" : {
       "post" : {
         "operationId" : "reportHandover",

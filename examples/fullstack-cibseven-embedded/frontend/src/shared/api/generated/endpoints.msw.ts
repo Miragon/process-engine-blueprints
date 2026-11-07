@@ -95,6 +95,16 @@ export const getReportHandoverMockHandler = (overrideResponse?: unknown | ((info
   }, options)
 }
 
+export const getClarifyReturnMockHandler = (overrideResponse?: void | ((info: Parameters<HttpResponseResolver<{ applicationId: string }>>[0]) => Promise<void> | void), options?: RequestHandlerOptions) => {
+  return http.post<{ applicationId: string }>('*/api/bike-leasing/:applicationId/clarify-return', async (info: Parameters<HttpResponseResolver<{ applicationId: string }>>[0]) => {
+  if (typeof overrideResponse === 'function') {await overrideResponse(info); }
+
+    return new HttpResponse(null,
+      { status: 200
+      })
+  }, options)
+}
+
 export const getSelectAlternativeMockHandler = (overrideResponse?: unknown | ((info: Parameters<HttpResponseResolver<{ applicationId: string }, AlternativeDecisionInput>>[0]) => Promise<unknown> | unknown), options?: RequestHandlerOptions) => {
   return http.post<{ applicationId: string }, AlternativeDecisionInput>('*/api/bike-leasing/:applicationId/clarify-alternative', async (info: Parameters<HttpResponseResolver<{ applicationId: string }, AlternativeDecisionInput>>[0]) => {
   if (typeof overrideResponse === 'function') {await overrideResponse(info); }
@@ -146,6 +156,7 @@ export const getMiraVeloBikeLeasingAPIMock = () => [
   getWithdrawApplicationMockHandler(),
   getSignContractMockHandler(),
   getReportHandoverMockHandler(),
+  getClarifyReturnMockHandler(),
   getSelectAlternativeMockHandler(),
   getListPendingClarificationsMockHandler(),
   getListBikesMockHandler(),

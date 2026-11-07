@@ -1,0 +1,20 @@
+meta {
+  name: Confirm the return clarified with the supplier
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/api/bike-leasing/{{applicationId}}/clarify-return
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 202
+}
+
+docs {
+  The dealer could not cancel the order, so the back office arranges the return with the
+  supplier and confirms it through the domain endpoint. The process then books the costs.
+}

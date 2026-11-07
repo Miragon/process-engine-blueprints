@@ -257,10 +257,7 @@ class BikeLeasingProcessTest {
         // cancelBikeOrder sub-process' user task
         correlateMessage(engine, Messages.MIRAVELO_APPLICATION_WITHDRAWN, businessKey);
         drainToWaitState(engine, compensationOutputs(false));
-        completeUserTask(
-                engine,
-                CancelBikeOrderProcessApi.FlowNodes.UserTaskClarifyReturn.ELEMENT_ID,
-                Map.of("returnClarified", true));
+        completeUserTask(engine, CancelBikeOrderProcessApi.FlowNodes.UserTaskClarifyReturn.ELEMENT_ID);
         drainToWaitState(engine, compensationOutputs(false)); // -> bookCosts -> sendCancellationConfirmation -> end cancelled
 
         assertThat(instance)

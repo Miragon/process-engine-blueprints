@@ -385,11 +385,9 @@ class BikeLeasingProcessTest {
         verify(exactly = 0) { bookCancellationCostsUseCase.bookCosts(orderId) }
         verify(exactly = 0) { sendCancellationConfirmationUseCase.sendCancellationConfirmation(id) }
 
-        val cancellation = env.workflowClient.newWorkflowStub(
-            CancelBikeOrderWorkflow::class.java,
-            CancelBikeOrderWorkflow.workflowId(workflowId),
-        )
-        await().atMost(TIMEOUT).untilAsserted { cancellation.returnClarified() }
+        await().atMost(TIMEOUT).ignoreException(NoSuchElementException::class.java).untilAsserted {
+            process.completeReturnClarification(id)
+        }
         awaitCompletion()
 
         verifyOrder {

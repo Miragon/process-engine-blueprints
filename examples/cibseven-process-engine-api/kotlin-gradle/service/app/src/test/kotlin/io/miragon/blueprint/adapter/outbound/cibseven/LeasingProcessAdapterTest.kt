@@ -12,6 +12,7 @@ import dev.bpmcrafters.processengineapi.task.TaskInformation
 import dev.bpmcrafters.processengineapi.task.UserTaskCompletionApi
 import dev.bpmcrafters.processengineapi.task.support.UserTaskSupport
 import io.miragon.blueprint.adapter.process.BikeLeasingProcessProcessApi.FlowNodes
+import io.miragon.blueprint.adapter.process.CancelBikeOrderProcessApi
 import io.miragon.blueprint.adapter.process.Messages
 import io.miragon.blueprint.domain.leasing.ApplicationId
 import io.miragon.blueprint.domain.bike.BikeId
@@ -169,6 +170,28 @@ class LeasingProcessAdapterTest {
         }
         verify(exactly = 1) { userTaskSupport.getAllTasks() }
         verify(exactly = 0) { userTaskCompletionApi.completeTask(any()) }
+    }
+
+    @Test
+    fun `completeReturnClarification completes the clarify-return task of the application without variables`() {
+
+        // given: a clarify-alternative task and the clarify-return task of this application in the pool
+        val clarifyReturnTask = TaskInformation(
+            taskId = "task-2",
+            meta = mapOf(CommonRestrictions.ACTIVITY_ID to CancelBikeOrderProcessApi.FlowNodes.UserTaskClarifyReturn.id.value),
+        )
+        every { userTaskSupport.getAllTasks() } returns listOf(clarifyAlternativeTask("task-1"), clarifyReturnTask)
+        every { userTaskSupport.getPayload(any()) } returns mapOf("applicationId" to id.value.toString())
+        val cmd = slot<CompleteTaskCmd>()
+        every { userTaskCompletionApi.completeTask(capture(cmd)) } returns CompletableFuture.completedFuture(Empty)
+
+        // when: the back office confirms the return
+        underTest.completeReturnClarification(id)
+
+        // then: only the clarify-return task is completed, without variables
+        verify(exactly = 1) { userTaskCompletionApi.completeTask(any()) }
+        assertThat(cmd.captured.taskId).isEqualTo("task-2")
+        assertThat(cmd.captured.get()).isEmpty()
     }
 
     @Test

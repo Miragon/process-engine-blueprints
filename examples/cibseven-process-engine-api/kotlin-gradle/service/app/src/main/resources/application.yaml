@@ -22,8 +22,8 @@ spring:
 
 # process-engine-api (bpm-crafters): runs the cib-seven-embedded adapter, which polls external
 # service tasks / user tasks on a schedule and hands them to the @ProcessEngineWorker beans and the
-# UserTaskSupport subscription pool. Model deployment stays with CIB seven (see camunda.bpm below,
-# which also deploys the .form files), so the worker library's own deployment is disabled.
+# UserTaskSupport subscription pool. Model deployment stays with CIB seven (see camunda.bpm below),
+# so the worker library's own deployment is disabled.
 dev:
   bpm-crafters:
     process-api:
@@ -72,11 +72,10 @@ camunda:
     admin-user:
       id: admin
       password: admin
-    # Deploy BPMN, DMN and Camunda Forms from the classpath so the .form files resolve in the Tasklist.
+    # Deploy BPMN and DMN from the classpath.
     deployment-resource-pattern:
       - classpath*:**/*.bpmn
       - classpath*:**/*.dmn
-      - classpath*:**/*.form
     webapp:
       application-path: /webapp
     database:

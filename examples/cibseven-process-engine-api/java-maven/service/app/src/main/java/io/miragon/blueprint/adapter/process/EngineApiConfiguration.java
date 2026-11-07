@@ -25,16 +25,22 @@ public class EngineApiConfiguration {
     }
 
     /**
-     * In-memory pool that collects the {@code clarifyAlternative} user tasks delivered by the adapter, so
-     * the outbound adapter can resolve a task's id and complete it via the UserTaskCompletionApi.
+     * In-memory pool that collects the {@code clarifyAlternative} and {@code clarifyReturn} user tasks
+     * delivered by the adapter, so the outbound adapter can resolve a task's id and complete it via the
+     * UserTaskCompletionApi.
      */
     @Bean
-    public UserTaskSupport clarifyAlternativeUserTaskSupport(TaskSubscriptionApi taskSubscriptionApi) {
+    public UserTaskSupport userTaskSupport(TaskSubscriptionApi taskSubscriptionApi) {
         UserTaskSupport userTaskSupport = new UserTaskSupport();
         userTaskSupport.subscribe(
                 taskSubscriptionApi,
                 CommonRestrictions.builder().build(),
                 FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID,
+                null);
+        userTaskSupport.subscribe(
+                taskSubscriptionApi,
+                CommonRestrictions.builder().build(),
+                CancelBikeOrderProcessApi.FlowNodes.UserTaskClarifyReturn.ELEMENT_ID,
                 null);
         return userTaskSupport;
     }

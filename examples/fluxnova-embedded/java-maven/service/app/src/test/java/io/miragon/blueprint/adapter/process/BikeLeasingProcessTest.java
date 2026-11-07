@@ -38,14 +38,11 @@ import io.miragon.blueprint.domain.leasing.LeasingApplication;
 import io.miragon.blueprint.domain.leasing.LeasingStatus;
 import io.miragon.bpmn.runtime.path.PathWalk;
 import java.time.LocalDateTime;
-import java.util.Map;
 import org.assertj.core.api.Assertions;
 import org.finos.fluxnova.bpm.engine.HistoryService;
 import org.finos.fluxnova.bpm.engine.ProcessEngine;
 import org.finos.fluxnova.bpm.engine.RuntimeService;
-import org.finos.fluxnova.bpm.engine.TaskService;
 import org.finos.fluxnova.bpm.engine.runtime.ProcessInstance;
-import org.finos.fluxnova.bpm.engine.task.Task;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
@@ -63,9 +60,6 @@ class BikeLeasingProcessTest {
 
     @Autowired
     private RuntimeService runtimeService;
-
-    @Autowired
-    private TaskService taskService;
 
     @Autowired
     private HistoryService historyService;
@@ -291,11 +285,7 @@ class BikeLeasingProcessTest {
         process.correlateApplicationWithdrawn(id);
         continueToNextWaitState(processEngine);
 
-        Task task = taskService
-                .createTaskQuery()
-                .taskDefinitionKey(CancelBikeOrderProcessApi.FlowNodes.UserTaskClarifyReturn.ELEMENT_ID)
-                .singleResult();
-        taskService.complete(task.getId(), Map.of("returnClarified", true));
+        process.completeReturnClarification(id);
         continueToNextWaitState(processEngine);
 
         assertThat(instance)

@@ -105,7 +105,10 @@ export const en: Copy = {
     withdrawSuccess: "the application was withdrawn.",
     withdrawRequestedTitle: "withdrawal requested",
     withdrawRequestedNote:
-      "the cancellation is being processed. if the dealer cannot cancel the order, complete the open task in the tasklist to move the status to cancelled.",
+      "the cancellation is being processed. if the dealer cannot cancel the order, clarify the return with the supplier and confirm it here.",
+    clarifyReturn: "return clarified",
+    clarifyingReturn: "confirming",
+    clarifyReturnSuccess: "the return was confirmed.",
     error: "the action could not be performed.",
     terminalActive: "the leasing is active. no further steps are needed.",
     terminalRejected: "the application was rejected. no actions are possible.",

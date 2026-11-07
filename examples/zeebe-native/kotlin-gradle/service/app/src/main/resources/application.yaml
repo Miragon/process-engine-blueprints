@@ -21,7 +21,7 @@ spring:
     problemdetails:
       enabled: true
 
-# The Zeebe connection (self-managed, gRPC 26500 / REST 8080, auth none) and the BPMN/DMN/form
+# The Zeebe connection (self-managed, gRPC 26500 / REST 8080, auth none) and the BPMN/DMN
 # auto-deployment are contributed by the common-zeebe module (zeebe-application.yaml +
 # EngineAutoConfiguration). Nothing engine-specific needs to live here.
 

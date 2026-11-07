@@ -22,6 +22,7 @@ import dev.bpmcrafters.processengineapi.task.TaskInformation;
 import dev.bpmcrafters.processengineapi.task.UserTaskCompletionApi;
 import dev.bpmcrafters.processengineapi.task.support.UserTaskSupport;
 import io.miragon.blueprint.adapter.process.BikeLeasingProcessProcessApi.FlowNodes;
+import io.miragon.blueprint.adapter.process.CancelBikeOrderProcessApi;
 import io.miragon.blueprint.adapter.process.Messages;
 import io.miragon.blueprint.domain.bike.BikeId;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
@@ -171,7 +172,7 @@ class LeasingProcessAdapterTest {
             // when / then: the wait aborts at once with an unchecked exception wrapping the interrupt
             assertThatThrownBy(() -> underTest.completeAlternativeClarification(id, true, null))
                     .isExactlyInstanceOf(RuntimeException.class)
-                    .hasMessage("Interrupted while waiting for the clarify-alternative task")
+                    .hasMessage("Interrupted while waiting for the 'userTask_clarifyAlternative' task")
                     .hasCauseInstanceOf(InterruptedException.class);
             // and: the interrupt flag is restored for the caller
             assertThat(Thread.currentThread().isInterrupted()).isTrue();
@@ -180,6 +181,27 @@ class LeasingProcessAdapterTest {
             Thread.interrupted();
         }
         verifyNoInteractions(userTaskCompletionApi);
+    }
+
+    @Test
+    void completeReturnClarification_completes_the_clarify_return_task_of_the_application_without_variables() {
+
+        // given: a clarify-alternative task and the clarify-return task of this application in the pool
+        TaskInformation clarifyReturnTask = new TaskInformation(
+                "task-2",
+                Map.of(CommonRestrictions.ACTIVITY_ID, CancelBikeOrderProcessApi.FlowNodes.UserTaskClarifyReturn.ELEMENT_ID));
+        when(userTaskSupport.getAllTasks()).thenReturn(List.of(clarifyAlternativeTask("task-1"), clarifyReturnTask));
+        when(userTaskSupport.getPayload(any())).thenReturn(Map.of("applicationId", id.value().toString()));
+        when(userTaskCompletionApi.completeTask(any())).thenReturn(CompletableFuture.completedFuture(Empty.INSTANCE));
+
+        // when: the back office confirms the return
+        underTest.completeReturnClarification(id);
+
+        // then: only the clarify-return task is completed, without variables
+        ArgumentCaptor<CompleteTaskCmd> cmd = ArgumentCaptor.forClass(CompleteTaskCmd.class);
+        verify(userTaskCompletionApi).completeTask(cmd.capture());
+        assertThat(cmd.getValue().getTaskId()).isEqualTo("task-2");
+        assertThat(cmd.getValue().get()).isEmpty();
     }
 
     @Test

@@ -32,8 +32,7 @@ identical. Building on one? [Turn the repo into a single-stack starter](docs/sta
 application from the first request to an active lease and deliberately covers the BPMN elements you
 meet in real processes: a message start event, JavaDelegate service tasks and a DMN business-rule task,
 an embedded sub-process with an event-based gateway and a non-interrupting reminder timer, a parallel
-fork/join, a user task with a Fluxnova Form (completable in the Tasklist or via REST), execution and
-task listeners, compensation guarded by error and escalation boundary events, a call activity, a
+fork/join, user tasks completed through domain endpoints, execution and task listeners, compensation guarded by error and escalation boundary events, a call activity, a
 withdrawal message event sub-process and a terminate end event.
 
 ## Quick start

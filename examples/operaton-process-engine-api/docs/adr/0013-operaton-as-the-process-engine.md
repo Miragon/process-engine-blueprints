@@ -37,8 +37,8 @@ Run the example on **Operaton 2.1.3**, embedded, with **no CIB seven dependencie
   `org.operaton.bpm.engine.*` (a straight package rename; Operaton kept the Camunda 7 API shape).
 - **Adapter packages renamed** `adapter/{inbound,outbound}/cibseven` → `…/operaton`, so the naming
   architecture test (`NamingConventionArchitectureTest`) and the folder layout stay honest.
-- **Models are left on the `camunda:` namespace.** Operaton reads Camunda 7 BPMN/DMN/Forms natively, so
-  the `.bpmn` / `.dmn` / `.form` files, the `ServiceTaskExternalTopicRule` (which asserts
+- **Models are left on the `camunda:` namespace.** Operaton reads Camunda 7 BPMN/DMN natively, so
+  the `.bpmn` / `.dmn` files, the `ServiceTaskExternalTopicRule` (which asserts
   `camunda:type="external"` + topic), and the bpmnlint config (`camunda-platform-7-24`) are untouched.
   Consequently `bpmn-to-code` generation stays on **`ProcessEngine.CAMUNDA_7`**: its `OPERATON` target
   demands `operaton:`-namespaced models and rejects `camunda:` ones, and the generated constants are

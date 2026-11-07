@@ -7,7 +7,7 @@ visible on the same example — not to be merged as is.
 
 > **The process has changed since this spike (#10).** This document records the model and the code as
 > they were when the spike was written, and its observations and measurements are left as recorded.
-> Three things it describes no longer exist:
+> Four things it describes no longer exist:
 >
 > - `validateApplication` is not a process step any more. An application without income is refused on
 >   submit with a 400, so there is no `ValidateApplicationWorker` / `ValidateApplicationUseCase` and no
@@ -17,6 +17,11 @@ visible on the same example — not to be merged as is.
 >   aggregate has no derived `bikeAvailable` property. The engine-visible properties are therefore one
 >   fewer than listed in section 4.
 > - Declining an alternative now sends the cancellation confirmation before `Contract cancelled`.
+> - `userTask_clarifyReturn` is no longer an engine-only task, and no user task is completed through
+>   Tasklist or the Camunda REST API. `ClarifyReturnTask` remembers the task on the workflow aggregate
+>   (`clarify_return_task_id`, migration V3), and `POST /api/bike-leasing/{id}/clarify-return`
+>   completes it through `LeasingProcessAdapter`; `returnClarified` is gone. The open question on
+>   losing Camunda Forms (section 7) is decided by [ADR-0014](adr/0014-user-tasks-without-forms.md).
 
 Every statement below is marked with where it comes from:
 

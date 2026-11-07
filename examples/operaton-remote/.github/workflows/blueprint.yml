@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Each variant carries its own copy of the process models, forms, migrations and configuration so it
+  # Each variant carries its own copy of the process models, migrations and configuration so it
   # stays self-contained. The copies must not drift apart. See docs/adr/0014.
   identical-resources:
     name: Both variants ship identical resources

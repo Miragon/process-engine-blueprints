@@ -233,6 +233,48 @@ class LeasingApplicationAggregateTest {
     }
 
     @Nested
+    class ReturnClarification {
+
+        @Test
+        void resolvingHandsOutTheRememberedUserTaskAndClosesTheReturnClarification() {
+            // given: an open return clarification
+            LeasingApplicationAggregate aggregate = LeasingApplicationAggregate.of(testLeasingApplication().build());
+            aggregate.returnClarificationRequested("4712");
+
+            // when: the return is confirmed
+            String taskId = aggregate.resolveReturnClarification();
+
+            // then: the task to complete is returned and the return clarification is closed
+            assertThat(taskId).isEqualTo("4712");
+            assertThat(aggregate.getClarifyReturnTaskId()).isNull();
+        }
+
+        @Test
+        void resolvingFailsWhileNoReturnClarificationIsOpen() {
+            // given: an aggregate without an open return clarification
+            LeasingApplicationAggregate aggregate = LeasingApplicationAggregate.of(testLeasingApplication().build());
+
+            // when / then: there is nothing to resolve
+            assertThatThrownBy(aggregate::resolveReturnClarification)
+                    .isInstanceOf(NoSuchElementException.class)
+                    .hasMessageContaining(aggregate.getApplicationId());
+        }
+
+        @Test
+        void aCancelledReturnClarificationIsClosed() {
+            // given: an open return clarification
+            LeasingApplicationAggregate aggregate = LeasingApplicationAggregate.of(testLeasingApplication().build());
+            aggregate.returnClarificationRequested("4712");
+
+            // when: the engine cancels the user task
+            aggregate.returnClarificationCancelled();
+
+            // then: nothing is open
+            assertThat(aggregate.getClarifyReturnTaskId()).isNull();
+        }
+    }
+
+    @Nested
     class EngineVisibleState {
 
         private final JsonMapper engineJson = JsonMapper.builder().build();

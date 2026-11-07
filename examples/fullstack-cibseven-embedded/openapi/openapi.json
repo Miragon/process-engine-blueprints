@@ -136,6 +136,25 @@
         }
       }
     },
+    "/api/bike-leasing/{applicationId}/clarify-return" : {
+      "post" : {
+        "tags" : [ "clarify-return-controller" ],
+        "operationId" : "clarifyReturn",
+        "parameters" : [ {
+          "name" : "applicationId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
     "/api/bike-leasing/{applicationId}/clarify-alternative" : {
       "post" : {
         "tags" : [ "select-alternative-controller" ],

@@ -1,30 +1,20 @@
 meta {
-  name: Complete the clarify-return task via the Camunda 8 REST API
+  name: Confirm the return clarified with the supplier
   type: http
   seq: 5
 }
 
 post {
-  url: {{camundaRest}}/user-tasks/{{userTaskKey}}/completion
-  body: json
+  url: {{baseUrl}}/api/bike-leasing/{{applicationId}}/clarify-return
+  body: none
   auth: none
 }
 
-body:json {
-  {
-    "variables": {
-      "returnClarified": true
-    }
-  }
-}
-
 assert {
-  res.status: eq 204
+  res.status: eq 202
 }
 
 docs {
-  This is the engine-only counter-example: the clarify-return task carries no domain
-  REST endpoint, so it is completed straight through the Camunda 8 REST API and its
-  data never reaches the domain model. Contrast with clarify-alternative in
-  05-bike-unavailable, which is completed through a domain endpoint.
+  The dealer could not cancel the order, so the back office arranges the return with the
+  supplier and confirms it through the domain endpoint. The process then books the costs.
 }

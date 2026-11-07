@@ -21,13 +21,13 @@ spring:
     problemdetails:
       enabled: true
 
-# The Zeebe connection (self-managed, gRPC 26500 / REST 8080, auth none) and the BPMN/DMN/form
+# The Zeebe connection (self-managed, gRPC 26500 / REST 8080, auth none) and the BPMN/DMN
 # auto-deployment are contributed by the common-zeebe module (zeebe-application.yaml +
 # EngineAutoConfiguration).
 
 # process-engine-api (bpm-crafters): runs the Camunda 8 adapter, which opens job workers for the
 # @ProcessEngineWorker beans and polls the user tasks for the UserTaskSupport pool. The worker library's
-# own deployment stays off: it covers BPMN and DMN only, and the models reference deployed forms.
+# own deployment stays off: common-zeebe deploys the models.
 dev:
   bpm-crafters:
     process-api:

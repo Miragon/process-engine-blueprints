@@ -44,7 +44,8 @@ and packages instead: a leftover reference is the typical defect.
 | a JPA entity | a new `V<n>__*.sql` migration; no edited migration |
 | a controller method or a DTO | `@Operation(operationId)` on the method, the re-exported `openapi/openapi.json`, a Bruno request |
 | a `.bpmn` | the regenerated `adapter/process`, a process test per new path, Bruno updated for renamed element ids; run the agent `review-process` |
-| the DMN or a form | a process test for the decision or the user task; the form `id` still matching the `formRef` |
+| the DMN | a process test for the decision |
+| a user task | a domain endpoint that completes it (no form, ADR-0015), a process test for the path it serves |
 | a worker | a process test for every path it serves (the process tests cover the workers); run the agent `review-process` |
 | a process adapter method | its unit test (`LeasingProcessAdapterTest`, `TaskInboxAdapterTest`) and a process test for the path it drives; run the agent `review-process` |
 | a whole feature | run the agent `review-vertical-slice` |

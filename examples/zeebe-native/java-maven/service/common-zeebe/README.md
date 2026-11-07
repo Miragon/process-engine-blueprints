@@ -12,7 +12,7 @@ and interact with the Zeebe engine running in your stack.
 - **Zeebe Client Connection**: `zeebe-application.yaml` contributes the self-managed connection defaults
   (gRPC `localhost:26500`, REST `localhost:8080`, no auth) through `ZeebeEnvironmentConfiguration`.
 - **Auto-deployment**: `EngineAutoConfiguration` (registered via `META-INF/spring/…AutoConfiguration.imports`)
-  deploys every `bpmn/*.bpmn`, `dmn/*.dmn` and `forms/*.form` on the classpath at start-up.
+  deploys every `bpmn/*.bpmn` and `dmn/*.dmn` on the classpath at start-up.
 - **ProcessEngineApi**: a small facade over the `CamundaClient` to start processes, publish messages and
   search process instances, speaking bpmn-to-code's typed `ProcessId` / `MessageName` / `VariableName`.
 

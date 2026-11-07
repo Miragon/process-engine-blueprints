@@ -161,8 +161,8 @@ Two CLIs come as Claude Code plugins (`.claude/settings.json`) and are pinned in
   (`inspect --business-key <applicationId>`, `status`, `incident`, history, `retry`). It never
   deploys: the service deploys the models from its classpath, and a hand deploy is a version the
   generated process API does not know. It never moves a case either (correlating a message,
-  completing a user task): that is a business action, taken through the app's UI or API or by a
-  human in the Tasklist, not by an agent.
+  completing a user task): that is a business action, taken through the app's UI or API, not by an
+  agent.
 
 Two more plugins bring recipes, no CLI: **bpmn-to-code** (skills `bpmn-to-code:*`, e.g.
 `bpmn-to-code:test-process`, `bpmn-to-code:create-process-adapter`) for the generated process API and

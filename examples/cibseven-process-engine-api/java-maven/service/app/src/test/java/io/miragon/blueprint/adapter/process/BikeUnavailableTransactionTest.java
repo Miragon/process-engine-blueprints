@@ -15,13 +15,10 @@ import io.miragon.blueprint.domain.leasing.Email;
 import io.miragon.blueprint.domain.leasing.LeasingApplication;
 import io.miragon.blueprint.domain.leasing.LeasingStatus;
 import java.time.LocalDateTime;
-import java.util.Map;
 import org.assertj.core.api.Assertions;
 import org.cibseven.bpm.engine.ProcessEngine;
 import org.cibseven.bpm.engine.RuntimeService;
-import org.cibseven.bpm.engine.TaskService;
 import org.cibseven.bpm.engine.runtime.ProcessInstance;
-import org.cibseven.bpm.engine.task.Task;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -49,9 +46,6 @@ class BikeUnavailableTransactionTest {
 
     @Autowired
     private RuntimeService runtimeService;
-
-    @Autowired
-    private TaskService taskService;
 
     @Autowired
     private ProcessEngine processEngine;
@@ -91,8 +85,8 @@ class BikeUnavailableTransactionTest {
     }
 
     @Test
-    @DisplayName("alternative via tasklist - the bike the form submits is ordered and stored on the application")
-    void alternativeViaTasklistTheBikeTheFormSubmitsIsOrderedAndStoredOnTheApplication()
+    @DisplayName("alternative selected - the chosen bike is ordered and stored on the application")
+    void alternativeSelectedTheChosenBikeIsOrderedAndStoredOnTheApplication()
         throws InterruptedException {
         LeasingApplication application = receivedApplication(new BikeId("BIKE-OOS"));
         repository.save(application);
@@ -100,18 +94,7 @@ class BikeUnavailableTransactionTest {
         ProcessInstance instance = findProcessInstance(runtimeService, application.id());
         signContractAndRunIntoTheUnavailableBike(application.id());
 
-        // the Tasklist completes the task with the variables its Camunda Form submits, bypassing the domain endpoint
-        Task task =
-            taskService
-                .createTaskQuery()
-                .processInstanceId(instance.getId())
-                .taskDefinitionKey(FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID)
-                .singleResult();
-        taskService.complete(
-            task.getId(),
-            Map.of(
-                FlowNodes.UserTaskClarifyAlternative.Variables.ALTERNATIVE_FOUND.getValue(), true,
-                FlowNodes.UserTaskClarifyAlternative.Variables.BIKE_ID.getValue(), "BIKE-900"));
+        process.completeAlternativeClarification(application.id(), true, new BikeId("BIKE-900"));
         continueToNextWaitState(processEngine); // re-order succeeds -> parallel join -> handover wait state
 
         assertThat(instance).isWaitingAt(FlowNodes.EventHandoverReported.ELEMENT_ID);

@@ -59,13 +59,25 @@ class TaskInboxAdapterTest {
     @Test
     fun `skips a task without a creation date`() {
         // given
-        every { userTaskSupport.getAllTasks() } returns listOf(TaskInformation("task-1", emptyMap()))
+        every { userTaskSupport.getAllTasks() } returns
+            listOf(TaskInformation("task-1", mapOf("activityId" to "userTask_clarifyAlternative")))
         every { userTaskSupport.getPayload("task-1") } returns mapOf("applicationId" to applicationId)
 
         // when / then
         assertThat(underTest.findOpenClarifications()).isEmpty()
     }
 
-    private fun task(taskId: String, creationDate: String) =
-        TaskInformation(taskId = taskId, meta = mapOf("creationDate" to creationDate))
+    @Test
+    fun `skips a task of another user task`() {
+        // given: an open clarify-return task of the same application in the pool
+        every { userTaskSupport.getAllTasks() } returns
+            listOf(task("task-1", "2026-06-23T09:00:00Z", activityId = "userTask_clarifyReturn"))
+        every { userTaskSupport.getPayload("task-1") } returns mapOf("applicationId" to applicationId)
+
+        // when / then: the inbox lists clarify-alternative tasks only
+        assertThat(underTest.findOpenClarifications()).isEmpty()
+    }
+
+    private fun task(taskId: String, creationDate: String, activityId: String = "userTask_clarifyAlternative") =
+        TaskInformation(taskId = taskId, meta = mapOf("activityId" to activityId, "creationDate" to creationDate))
 }

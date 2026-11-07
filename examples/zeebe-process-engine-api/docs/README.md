@@ -30,6 +30,7 @@ copied from [`adr/0000-adr-template.md`](adr/0000-adr-template.md).
 | [0011](adr/0011-build-and-deployment-approach.md) | Build & deployment: `bootBuildImage` OCI image via buildpacks. |
 | [0013](adr/0013-two-stack-variants-side-by-side-on-main.md) | Kotlin + Gradle (recommended) and Java + Maven side by side on `main`, each self-contained. |
 | [0014](adr/0014-process-engine-api-on-camunda-8.md) | The process-engine-api on Camunda 8: what it needs, what it costs, when to pick it. |
+| [0015](adr/0015-user-tasks-without-forms.md) | User tasks without forms, completed through domain endpoints; other form types in process-engine-recipes. |
 
 ## Diagrams
 

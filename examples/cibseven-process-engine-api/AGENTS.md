@@ -18,7 +18,7 @@ an architecture enforced by tests.
   <!-- variant:blueprint -->
 - **Two equivalent variants on `main`** — `kotlin-gradle/` (Kotlin, **the recommended stack**) and
   `java-maven/` (Java 21, for teams bound to it and for trainings). Each is self-contained and
-  carries its own copy of the process models, forms, migrations and `application.yaml`; the
+  carries its own copy of the process models, migrations and `application.yaml`; the
   `Blueprint Checks` workflow fails when the two `src/main/resources` trees differ, so **edit a model in
   one variant and copy it to the other**. The variants must stay functionally identical: **make every
   change in behaviour in both variants in the same PR.** Changes that only concern one language's
@@ -55,7 +55,7 @@ service/
     adapter/process             generated *ProcessApi (bpmn-to-code) + engine config
     application/{port,service}  use-case ports and their services
     domain/{leasing,bike}       pure domain model
-    resources/{bpmn,dmn,forms}  the process models and Camunda Forms
+    resources/{bpmn,dmn}        the process models
     resources/db/migration      Flyway forward-only migrations
 ```
 
@@ -237,8 +237,8 @@ Two CLIs come as Claude Code plugins (`.claude/settings.json`) and are pinned in
   (`inspect --business-key <applicationId>`, `status`, `incident`, history, `retry`). It never
   deploys: the service deploys the models from its classpath, and a hand deploy is a version the
   generated process API does not know. It never moves a case either (correlating a message,
-  completing a user task): that is a business action, taken by a client of the app's API or by a
-  human in the Tasklist, not by an agent.
+  completing a user task): that is a business action, taken by a client of the app's API, not by an
+  agent.
 
 Two more plugins follow the libraries the build uses: **bpmn-to-code** (skills `bpmn-to-code:*`) writes
 the workers, the process adapter and their tests against the generated process API

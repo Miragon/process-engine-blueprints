@@ -146,7 +146,7 @@
       <bpmn:outgoing>flow_joinToHandover</bpmn:outgoing>
     </bpmn:parallelGateway>
     <bpmn:userTask id="userTask_clarifyAlternative" name="Clarify alternative with customer">
-      <bpmn:documentation>Completed by a client via POST /api/bike-leasing/{id}/clarify-alternative. The endpoint routes through the domain (persisting the chosen alternative bike on the aggregate) before completing the task, so the captured data actually reaches the domain model. The task carries an external form reference instead of a Camunda Form: VanillaBP binds a Camunda user task by that reference, so the Tasklist no longer renders a form for it. See "Clarify return with supplier" in cancel-bike-order.bpmn for the anti-pattern where the completion bypasses the domain.</bpmn:documentation>
+      <bpmn:documentation>Completed through POST /api/bike-leasing/{id}/clarify-alternative. The endpoint persists the chosen alternative bike on the aggregate and registers the bike's model in the portfolio before the task is completed. The task has no form: the application owns the UI and finds the task by its id and the business key. The external reference links no form; VanillaBP binds the @WorkflowTask by it.</bpmn:documentation>
       <bpmn:extensionElements>
         <zeebe:userTask />
         <zeebe:formDefinition externalReference="clarifyAlternative" />

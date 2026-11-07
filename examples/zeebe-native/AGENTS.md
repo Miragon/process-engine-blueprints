@@ -13,7 +13,7 @@ implement, on Camunda 8 / Zeebe, with an enforced hexagonal architecture and a R
   <!-- variant:blueprint -->
 - **Two equivalent variants on `main`** — `kotlin-gradle/` (Kotlin, **the recommended stack**) and
   `java-maven/` (Java 21, for teams bound to it and for trainings). Each is self-contained and
-  carries its own copy of the process models, forms, migrations and `application.yaml`; the
+  carries its own copy of the process models, migrations and `application.yaml`; the
   `Blueprint Checks` workflow fails when the two `src/main/resources` trees differ, so **edit a model in
   one variant and copy it to the other**. The variants must stay functionally identical: **make every
   change in behaviour in both variants in the same PR.** Changes that only concern one language's idioms
@@ -52,7 +52,7 @@ service/
     adapter/process             generated *ProcessApi + shared constants (bpmn-to-code)
     application/{port,service}  use-case ports and their services
     domain/{leasing,bike}       pure domain model
-    resources/{bpmn,dmn,forms}  the process models and Camunda Forms
+    resources/{bpmn,dmn}        the process models
     resources/db/migration      Flyway versioned schema migrations
 ```
 
@@ -238,7 +238,7 @@ repo uses:
 No engine CLI comes with the repo. Diagnose a running case in Operate (<http://localhost:8080>) or over the Zeebe
 REST API on `:8080/v2` (process-instance and incident search, as in `bruno/06-incident-demo`). Moving a
 case on (publishing a message, completing a user task) is a business action, taken by a client of the
-app's API or by a human in the Tasklist, not by an agent.
+app's API, not by an agent.
 
 A PostToolUse hook (`.claude/hooks/lint-bpmn.sh`) runs bpmnlint after every edit of an executable
 `.bpmn` and hands the findings back.

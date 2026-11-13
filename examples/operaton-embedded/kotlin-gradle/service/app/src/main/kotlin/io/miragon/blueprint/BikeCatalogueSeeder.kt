@@ -9,12 +9,12 @@ import org.springframework.boot.ApplicationRunner
 import org.springframework.stereotype.Component
 
 /**
- * Seeds MiraVelo's bike catalogue on start-up so the submit form's picker is never empty and the
+ * Seeds MiraVelo's bike catalogue on start-up so the picker (`GET /api/bikes`) is never empty and the
  * Bruno scenarios always find their ids. Idempotent — `save` upserts by id.
  *
- * `BIKE-OOS` is seeded deliberately: it is the dealer's out-of-stock bike, so selecting it from the
- * UI drives the bike-unavailable → alternative-selection scenario end to end. Availability itself is
- * decided by the dealer, not stored here.
+ * `BIKE-OOS` is seeded deliberately: it is the dealer's out-of-stock bike, so selecting it drives the
+ * bike-unavailable → alternative-selection scenario end to end. Availability itself is decided by the
+ * dealer, not stored here.
  *
  * It lives in the root package next to the application class — application bootstrap, outside the
  * hexagonal layers — and is excluded from mutation testing for the same reason.

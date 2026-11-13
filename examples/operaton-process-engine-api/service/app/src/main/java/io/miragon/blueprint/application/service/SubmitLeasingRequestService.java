@@ -22,11 +22,10 @@ public class SubmitLeasingRequestService implements SubmitLeasingRequestUseCase 
     private final Clock clock;
 
     public SubmitLeasingRequestService(
-        LeasingApplicationRepository repository,
-        BikePortfolioRepository bikePortfolio,
-        LeasingProcess process,
-        Clock clock
-    ) {
+            LeasingApplicationRepository repository,
+            BikePortfolioRepository bikePortfolio,
+            LeasingProcess process,
+            Clock clock) {
         this.repository = repository;
         this.bikePortfolio = bikePortfolio;
         this.process = process;
@@ -37,14 +36,15 @@ public class SubmitLeasingRequestService implements SubmitLeasingRequestUseCase 
     public ApplicationId submit(SubmitLeasingRequestUseCase.Command command) {
         // The bike's model is kept in the portfolio; the application only references the bike by id.
         bikePortfolio.save(new Bike(command.bikeId(), command.bikeModel()));
-        LeasingApplication application = LeasingApplication.receive(
-            ApplicationId.newId(),
-            command.customerName(),
-            command.email(),
-            command.age(),
-            command.monthlyNetIncome(),
-            command.bikeId(),
-            LocalDateTime.now(clock));
+        LeasingApplication application =
+                LeasingApplication.receive(
+                        ApplicationId.newId(),
+                        command.customerName(),
+                        command.email(),
+                        command.age(),
+                        command.monthlyNetIncome(),
+                        command.bikeId(),
+                        LocalDateTime.now(clock));
         repository.save(application);
         process.submitRequest(application);
         return application.id();

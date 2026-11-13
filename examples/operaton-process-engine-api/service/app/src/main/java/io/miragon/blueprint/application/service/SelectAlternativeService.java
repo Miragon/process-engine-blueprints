@@ -6,7 +6,6 @@ import io.miragon.blueprint.application.port.outbound.LeasingApplicationReposito
 import io.miragon.blueprint.application.port.outbound.LeasingProcess;
 import io.miragon.blueprint.domain.bike.Bike;
 import io.miragon.blueprint.domain.bike.BikeId;
-import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,10 +18,9 @@ public class SelectAlternativeService implements SelectAlternativeUseCase {
     private final LeasingProcess process;
 
     public SelectAlternativeService(
-        LeasingApplicationRepository repository,
-        BikePortfolioRepository bikePortfolio,
-        LeasingProcess process
-    ) {
+            LeasingApplicationRepository repository,
+            BikePortfolioRepository bikePortfolio,
+            LeasingProcess process) {
         this.repository = repository;
         this.bikePortfolio = bikePortfolio;
         this.process = process;
@@ -30,14 +28,15 @@ public class SelectAlternativeService implements SelectAlternativeUseCase {
 
     @Override
     public void selectAlternative(SelectAlternativeUseCase.Command command) {
-        if (repository.findById(command.applicationId()) == null) {
-            throw new IllegalStateException("Unknown application " + command.applicationId());
+        repository.findById(command.applicationId())
+                .orElseThrow(() -> new IllegalStateException("Unknown application " + command.applicationId()));
+        BikeId alternativeBike = command.bikeId();
+        if (command.alternativeFound() && alternativeBike != null && command.bikeModel() != null) {
+            bikePortfolio.save(new Bike(alternativeBike, command.bikeModel()));
         }
-        @Nullable BikeId alternativeBike = command.bikeId();
-        @Nullable String bikeModel = command.bikeModel();
-        if (command.alternativeFound() && alternativeBike != null && bikeModel != null) {
-            bikePortfolio.save(new Bike(alternativeBike, bikeModel));
-        }
-        process.completeAlternativeClarification(command.applicationId(), command.alternativeFound(), command.bikeId());
+        process.completeAlternativeClarification(
+                command.applicationId(),
+                command.alternativeFound(),
+                command.bikeId());
     }
 }

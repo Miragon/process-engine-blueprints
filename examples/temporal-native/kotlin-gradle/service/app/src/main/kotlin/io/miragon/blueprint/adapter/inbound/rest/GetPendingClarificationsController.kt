@@ -15,8 +15,7 @@ import java.time.LocalDateTime
  *
  * The DTO carries NO task id on purpose. Completing a clarification goes through the domain
  * (`POST /api/bike-leasing/{id}/clarify-alternative`), which correlates by business key — so this
- * read model cannot be used to bypass the domain and complete a task directly. That is exactly the
- * lesson the form-only `clarify-return` task contrasts against.
+ * read model cannot be used to bypass the domain and complete a task directly.
  */
 @RestController
 @RequestMapping("/api/tasks")
@@ -43,7 +42,7 @@ class GetPendingClarificationsController(
         val customerName: String,
         val requestedBikeId: String,
         val requestedBikeModel: String?,
-        // Serialised as an ISO-8601 string so the JSON carries a stable, machine-parseable timestamp.
+        // ISO-8601 string — see the note in GetLeasingApplicationController.LeasingApplicationDto.
         @field:JsonFormat(shape = JsonFormat.Shape.STRING)
         val waitingSince: LocalDateTime,
     )

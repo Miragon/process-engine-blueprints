@@ -16,7 +16,6 @@ class BikeDealerAdapterTest {
     @Test
     @DisplayName("a bike outside the out-of-stock list is available")
     void aBikeOutsideTheOutOfStockListIsAvailable() {
-
         // given: a regularly stocked bike / when-then: the dealer reports it as available
         assertThat(underTest.checkAvailability(new BikeId("BIKE-900"))).isTrue();
     }
@@ -24,7 +23,6 @@ class BikeDealerAdapterTest {
     @Test
     @DisplayName("the out-of-stock demo bike is unavailable")
     void theOutOfStockDemoBikeIsUnavailable() {
-
         // given: the sentinel out-of-stock bike / when-then: the dealer reports it as unavailable
         assertThat(underTest.checkAvailability(new BikeId("BIKE-OOS"))).isFalse();
     }
@@ -32,11 +30,9 @@ class BikeDealerAdapterTest {
     @Test
     @DisplayName("order mints a fresh, unique order id")
     void orderMintsAFreshUniqueOrderId() {
-
         // given: the same bike ordered twice
         OrderId first = underTest.order(new BikeId("BIKE-900"));
         OrderId second = underTest.order(new BikeId("BIKE-900"));
-
         // then: each order gets its own opaque reference, independent of the bike id
         assertThat(first.value()).startsWith("ORDER-");
         assertThat(first).isNotEqualTo(second);
@@ -45,7 +41,6 @@ class BikeDealerAdapterTest {
     @Test
     @DisplayName("the incident-demo bike stays available so the flow reaches the order step")
     void theIncidentDemoBikeStaysAvailableSoTheFlowReachesTheOrderStep() {
-
         // given: the poison bike used by the incident demo / when-then: it is not on the out-of-stock
         // list, so the process reaches serviceTask_orderBike (where the dealer then fails) instead of
         // taking the out-of-stock branch
@@ -55,24 +50,33 @@ class BikeDealerAdapterTest {
     @Test
     @DisplayName("ordering the incident-demo bike fails as a simulated dealer outage")
     void orderingTheIncidentDemoBikeFailsAsASimulatedDealerOutage() {
-
-        // given: the poison bike / when-then: the dealer call throws so the external task fails → incident
+        // given: the poison bike / when-then: the dealer call throws so the order job fails → incident
         assertThatThrownBy(() -> underTest.order(new BikeId("BIKE-FAIL")))
-                .isInstanceOf(BikeDealerAdapter.DealerUnavailableException.class);
+                .isInstanceOf(BikeDealerAdapter.DealerUnavailableException.class)
+                .hasMessage("Bike dealer API unavailable for BIKE-FAIL (simulated demo outage)");
     }
 
     @Test
-    @DisplayName("requestCancellation reports the order as cancellable")
-    void requestCancellationReportsTheOrderAsCancellable() {
+    @DisplayName("requestCancellation reports an order of a stocked bike as cancellable")
+    void requestCancellationReportsAnOrderOfAStockedBikeAsCancellable() {
+        // given: an order of a regularly stocked bike
+        OrderId orderId = underTest.order(new BikeId("BIKE-900"));
+        // when-then: the dealer allows its cancellation
+        assertThat(underTest.requestCancellation(orderId)).isTrue();
+    }
 
-        // given: a placed order / when-then: the demo dealer always allows cancellation
-        assertThat(underTest.requestCancellation(new OrderId("ORDER-900"))).isTrue();
+    @Test
+    @DisplayName("requestCancellation refuses to cancel an order of the custom-build demo bike")
+    void requestCancellationRefusesToCancelAnOrderOfTheCustomBuildDemoBike() {
+        // given: an order of the custom build
+        OrderId orderId = underTest.order(new BikeId("BIKE-CUSTOM"));
+        // when-then: the dealer refuses its cancellation, so the return has to be clarified
+        assertThat(underTest.requestCancellation(orderId)).isFalse();
     }
 
     @Test
     @DisplayName("bookCancellationCosts runs without error")
     void bookCancellationCostsRunsWithoutError() {
-
         // given: a placed order / when-then: booking the dealer's costs runs without error
         assertThatCode(() -> underTest.bookCancellationCosts(new OrderId("ORDER-900"))).doesNotThrowAnyException();
     }

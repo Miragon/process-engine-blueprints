@@ -6,6 +6,7 @@ import io.miragon.bpmn.testing.BpmnRules;
 import io.miragon.bpmn.testing.BpmnValidator;
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -16,7 +17,8 @@ import org.junit.jupiter.api.Test;
 class BikeLeasingModelValidationTest {
 
     @Test
-    void the_bpmn_models_satisfy_all_rules_and_only_use_external_task_topics() {
+    @DisplayName("the bpmn models satisfy all rules and only use external task topics")
+    void theBpmnModelsSatisfyAllRulesAndOnlyUseExternalTaskTopics() {
         List<ValidationRule> rules = new ArrayList<>(BpmnRules.all());
         rules.add(new ServiceTaskExternalTopicRule());
 

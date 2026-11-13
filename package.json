@@ -2,7 +2,7 @@
   "name": "process-engine-blueprints-tooling",
   "version": "1.0.0",
   "private": true,
-  "description": "Start a project from one of the process-engine blueprints (npx github:<owner>/process-engine-blueprints), and the maintainer tooling: generates the root CI, Dependabot, README blocks, Conductor targets and the starter catalog from examples/*/blueprint.yaml, and checks drift between the examples.",
+  "description": "Start a project from one of the process-engine blueprints (npx github:<owner>/process-engine-blueprints), and the maintainer tooling: generates the root CI, Dependabot, README blocks and the starter catalog from examples/*/blueprint.yaml, and checks drift between the examples.",
   "type": "module",
   "repository": {
     "type": "git",
@@ -21,6 +21,7 @@
     "generate": "node scripts/generate.mjs",
     "generate:check": "node scripts/generate.mjs --check",
     "drift": "node scripts/check-drift.mjs",
+    "drift:update": "node scripts/check-drift.mjs --update",
     "test": "node --test \"tooling/create-blueprint/test/*.test.mjs\" \"scripts/test/*.test.mjs\"",
     "hooks:install": "git config core.hooksPath .githooks"
   },

@@ -140,7 +140,29 @@ class RemoteLeasingProcessAdapterTest {
     }
 
     @Test
-    void completeAlternativeClarificationFailsWhenNoActiveTaskExists() {
+    void completeReturnClarificationLooksUpTheTaskByBusinessKeyAndCompletesItWithoutVariables() {
+
+        // given: one active clarify-return task for the application
+        LeasingApplication application = testLeasingApplication().build();
+        server.expect(requestTo("http://engine/engine-rest/task"))
+                .andExpect(method(HttpMethod.POST))
+                .andExpect(jsonPath("$.processInstanceBusinessKey").value(application.id().value().toString()))
+                .andExpect(jsonPath("$.taskDefinitionKey").value("userTask_clarifyReturn"))
+                .andRespond(withSuccess("[{\"id\":\"task-2\"}]", MediaType.APPLICATION_JSON));
+        server.expect(requestTo("http://engine/engine-rest/task/task-2/complete"))
+                .andExpect(method(HttpMethod.POST))
+                .andExpect(jsonPath("$.variables").isEmpty())
+                .andRespond(withSuccess());
+
+        // when: the back office confirms the return
+        underTest.completeReturnClarification(application.id());
+
+        // then: both the lookup and completion happened
+        server.verify();
+    }
+
+    @Test
+    void findTaskIdFailsWhenNoActiveTaskExists() {
 
         // given: the engine reports no active task
         LeasingApplication application = testLeasingApplication().build();

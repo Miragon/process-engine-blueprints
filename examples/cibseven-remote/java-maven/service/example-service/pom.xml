@@ -16,7 +16,7 @@
 
     <!--
         The remote worker + business logic (hexagonal), and — since there is no separate contract module —
-        the **owner of the process contract** too. It carries the `.bpmn`/`.dmn`/`.form` models and
+        the **owner of the process contract** too. It carries the `.bpmn`/`.dmn` models and
         generates the typed `*ProcessApi` classes (topics, messages, element ids, variables) from them with
         `bpmn-to-code`, keeps its own JPA/Postgres store, subscribes to the engine's external service-tasks
         via the CIB seven external-task client, deploys the model into the engine over REST at start-up,
@@ -38,11 +38,6 @@
         <dependency>
             <groupId>io.miragon</groupId>
             <artifactId>bpmn-to-code-runtime</artifactId>
-        </dependency>
-        <!-- Nullability annotations (`@Nullable`), the same JSpecify flavour Spring itself uses -->
-        <dependency>
-            <groupId>org.jspecify</groupId>
-            <artifactId>jspecify</artifactId>
         </dependency>
 
         <dependency>
@@ -134,6 +129,16 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.cibseven.community.process_test_coverage</groupId>
+            <artifactId>cibseven-process-test-coverage-junit5-platform-7</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-reflect</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.cibseven.bpm</groupId>
             <artifactId>cibseven-engine</artifactId>
             <scope>test</scope>
@@ -189,6 +194,9 @@
                          the process tests never carries state between classes. -->
                     <forkCount>1</forkCount>
                     <reuseForks>false</reuseForks>
+                    <systemPropertyVariables>
+                        <org.cibseven.community.process_test_coverage.ASSERT_AT_LEAST>${process-test-coverage.minimum}</org.cibseven.community.process_test_coverage.ASSERT_AT_LEAST>
+                    </systemPropertyVariables>
                 </configuration>
             </plugin>
 
@@ -270,6 +278,18 @@
                     <timestampedReports>false</timestampedReports>
                     <mutationThreshold>80</mutationThreshold>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.cibseven.community.process_test_coverage</groupId>
+                <artifactId>cibseven-process-test-coverage-report-aggregator-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>aggregate</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

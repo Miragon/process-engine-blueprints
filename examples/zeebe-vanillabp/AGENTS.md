@@ -20,7 +20,7 @@ implement, on Camunda 8 / Zeebe, with an enforced hexagonal architecture and a R
   change in behaviour in both variants in the same PR.** Changes that only concern one language's
   idioms stay on that side. See [ADR-0013](docs/adr/0013-two-stack-variants-side-by-side-on-main.md).
   The OpenAPI contract below is drift-gated against **both** variants.
-  Stack-specific content in shared files (docs, Dependabot, Conductor settings) is wrapped in
+  Stack-specific content in shared files (docs, Dependabot) is wrapped in
   `variant:<name>` markers so `scripts/create-starter.sh` can strip it — see
   [docs/starter.md](docs/starter.md).
   <!-- /variant:blueprint -->
@@ -48,7 +48,7 @@ cd java-maven && ./mvnw -DskipTests install && ./mvnw -pl service/app spring-boo
 ```
 <!-- /variant:java-maven -->
 
-### Ports (one source of truth — keep README, this file, `.conductor/settings.toml` in sync)
+### Ports (one source of truth — keep README and this file in sync)
 
 | What | Port |
 |---|---|
@@ -140,6 +140,15 @@ TDD. Match the test style to the layer:
 | `adapter.inbound.workflow` | plain unit tests on a `LeasingApplicationAggregate` (mock the use case) |
 | `adapter.outbound.db` | Spring Data JPA slice tests |
 | process end-to-end | Camunda 8 process tests (`@CamundaSpringProcessTest` + `WorkflowDeploymentTestConfiguration`, in-container Zeebe), paths asserted via `ProcessPath` |
+
+The process tests also write a **process test coverage** report, with Camunda Process Test, which has it built in: one HTML page for the test run that draws the paths the tests took on the model and gives the share of flow nodes and sequence flows they reached. No minimum is enforced.
+
+<!-- variant:kotlin-gradle -->
+Report folder: `service/app/build/reports/process-test-coverage/`
+<!-- /variant:kotlin-gradle -->
+<!-- variant:java-maven -->
+Report folder: `service/app/target/coverage-report/`
+<!-- /variant:java-maven -->
 
 **Mutation testing gates the domain at 80, nightly**: a test that executes without asserting
 will fail

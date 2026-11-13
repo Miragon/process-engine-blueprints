@@ -5,11 +5,12 @@
 
 ## Context
 
-The Kotlin backend exposes a REST boundary that any API consumer — another service, a test collection,
-a generated client, a human with `curl` — depends on. That boundary can be described two ways: hand-write
-a spec and hope the code matches it, or derive the spec from the code. A hand-written spec drifts
-silently — the first symptom is a runtime 400 at the caller. We want the contract to be *impossible* to
-desync, and we want a new contributor to be able to read it without running anything.
+The Kotlin backend exposes a REST API that other parties consume — API clients, generated SDKs,
+documentation tooling, and integration tests. That boundary can be described three ways: (a) hand-write
+a spec and hope the code matches it; (b) let each consumer hand-write its own types and hope they match
+the backend; (c) derive the contract from the code. Options (a) and (b) drift silently — the first
+symptom is a runtime 400 at the caller. We want the contract to be *impossible* to desync, and we want
+a new contributor to be able to read it without running anything.
 
 ## Decision
 
@@ -21,22 +22,26 @@ The **backend is the single source of truth**, and the contract is **generated b
    re-serialises it **deterministically** (keys sorted, fixed two-space LF indenter, trailing newline,
    `servers` block dropped so the random test port can't cause churn) and writes
    **`openapi/openapi.json`** at the repo root. It runs inside `./gradlew build`.
-3. CI regenerates the spec and runs **`git diff --exit-code -- openapi/openapi.json`** — a **drift
+3. CI regenerates the spec and runs **`git diff --exit-code`** on `openapi/openapi.json` — a **drift
    gate**. If a controller changed and the committed spec wasn't updated, the build fails.
+
+The committed JSON is the **artifact any consumer builds against**: an API client or generated SDK, a
+docs renderer, or a contract/mock for integration tests. Consumers regenerate from the checked-in file,
+so they never need a running backend to build, and every API change is visible in the PR diff.
 
 ## Why generated-but-committed beats the alternatives
 
-- **vs. a hand-written spec:** eliminates the drift class entirely — the gate fails the PR, not the
-  caller.
+- **vs. hand-written spec/types:** eliminates the drift class entirely — the gate fails the PR, not the
+  caller at runtime.
 - **vs. generated-at-build (not committed):** the committed JSON is reviewable in every PR diff (an API
-  change is *visible*), any consumer can read or generate against it without booting the backend, and
-  offline/agent workflows keep working. The cost — a checked-in generated file — is paid down by the
-  drift gate that keeps it honest.
+  change is *visible*), consumers can build without booting the backend, and offline/agent workflows
+  keep working. The cost — a checked-in generated file — is paid down by the drift gate that keeps it
+  honest.
 
 ## Consequences
 
-- **Positive:** one contract, gated against the code; API changes are visible in review; consumers are
-  decoupled from a running backend.
+- **Positive:** one contract, a single gated source of truth; API changes are visible in review; every
+  consumer is decoupled from a running backend.
 - **Negative / trade-offs:** a generated file lives in git; forgetting to regenerate is an *expected*
   failure mode — the gate is what makes that safe, so it must never be disabled.
 - **Neutral:** determinism is a hard requirement of the export test — any non-deterministic serialisation

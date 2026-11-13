@@ -1,7 +1,7 @@
 ---
 name: create-delegate
 argument-hint: "[element-id or task name] [DelegateClassName]"
-description: "Create, update or test an Operaton (Camunda 7 fork) JavaDelegate or an execution/task listener for a BPMN element, wired as a Spring @Component and invoked by expression (#{beanName}), together with its unit test and the process test of its path. Use when the user asks to create a delegate, wire a service task to code, add a JavaDelegate or listener, or test an existing delegate. A delegate extends BaseDelegate, calls exactly one inbound port, and reads process variables through the typed ProcessApi."
+description: "Create, update or test a JavaDelegate or an execution/task listener for a BPMN element on Operaton (Camunda 7 fork), wired as a Spring @Component and invoked by expression (#{beanName}), together with its unit test and the process test of its path. Use when the user asks to create a delegate, wire a service task to code, add a JavaDelegate or listener, or test an existing delegate. A delegate extends BaseDelegate, calls exactly one inbound port, and reads process variables through the typed ProcessApi."
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Skill
 ---
 
@@ -29,7 +29,7 @@ Copy the shape of the existing classes instead of inventing one:
 - The BPMN references the bean by expression, `#{beanName}` (class name with a lowercase first
   letter): `camunda:delegateExpression` on a service task or message event, `delegateExpression` inside
   `camunda:taskListener` / `camunda:executionListener`. The model test
-  `process/model/ServiceTaskDelegateExpressionRule` only requires service tasks to use an expression; a wrong bean
+  `ServiceTaskDelegateExpressionRule` only requires service tasks to use an expression; a wrong bean
   name surfaces in the process test.
 - Suffix `Delegate`, `Worker` or `Listener`; at most one inbound port (the architecture tests fail
   above one). A delegate calls exactly one; a listener may call none.
@@ -159,7 +159,7 @@ class OrderBikeDelegateTest {
 Mockito's `mock()` is lenient; the strictness comes from `verifyNoMoreInteractions`.
 <!-- /variant:java-maven -->
 
-**2. A process test** for the path through the engine in the test tree's `process/` (see
+**2. A process test** for the path through the engine in the test tree's `adapter/process/` (see
 `BikeLeasingProcessTest`): it walks the path the element sits on and verifies the port call there.
 The unit test proves the mapping, the process test proves the wiring (bean name, variables, boundary
 events). Delegates are outside the mutation gate, which covers the domain only, so the
@@ -176,7 +176,7 @@ unit test is the only isolated check of the mapping.
 4. **Write the unit test first**, then the delegate; for an existing class add only what is missing.
 5. **Add or extend the process test** for the path.
 6. **Run** both (`AGENTS.md` → Verify After Each Task): the unit test by name, then the
-   `io.miragon.blueprint.process` tests.
+   `io.miragon.blueprint.adapter.process` tests.
 <!-- variant:blueprint -->
 7. **Both variants:** the same delegate and the same tests in `kotlin-gradle/` and `java-maven/`.
 <!-- /variant:blueprint -->

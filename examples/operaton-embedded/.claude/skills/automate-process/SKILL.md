@@ -16,8 +16,8 @@ package `io.miragon.blueprint` under `service/app/src/main/` and `service/app/sr
 `.claude/agents/review-process.md` and apply it yourself.
 
 <!-- variant:blueprint -->
-**Two variants.** `kotlin-gradle/` and `java-maven/` each carry a copy of the models, the DMN and the
-forms, and `Blueprint Checks` fails when the copies differ. Edit the model in one variant, copy the file
+**Two variants.** `kotlin-gradle/` and `java-maven/` each carry a copy of the models and the DMN, and
+`Blueprint Checks` fails when the copies differ. Edit the model in one variant, copy the file
 to the other, then regenerate, wire and test **both**.
 <!-- /variant:blueprint -->
 
@@ -28,13 +28,12 @@ to the other, then regenerate, wire and test **both**.
 | `bpmn/bike-leasing.bpmn` | process `bikeLeasingProcess`: credit check, contract subprocess, insurance and bike order in parallel, handover, compensation, the withdrawal event subprocess |
 | `bpmn/cancel-bike-order.bpmn` | process `cancelBikeOrder`, called by the compensation of the bike order (`callActivity_cancelBikeOrder`) |
 | `dmn/check-credit-rating.dmn` | decision `checkCreditRating`, read by `businessRuleTask_checkCreditRating` |
-| `forms/clarify-alternative.form`, `forms/clarify-return.form` | Camunda Forms of the two user tasks, worked in the Tasklist |
 
 ## Rules
 
 - **Edit a `.bpmn` only through bpmn-cli** (skill `bpmn-cli:bpmn`), never as XML: `bpmn show` to read,
-  one `bpmn apply` batch to change, `bpmn validate` to check (it also runs `.bpmnlintrc`). The DMN and
-  the forms are edited as files; the decision id `checkCreditRating` is referenced by the model.
+  one `bpmn apply` batch to change, `bpmn validate` to check (it also runs `.bpmnlintrc`). The DMN is
+  edited as a file; the decision id `checkCreditRating` is referenced by the model.
 - **Business decisions are questions.** A new gateway condition, deadline, error path or user task
   owner comes from the issue; otherwise ask before editing.
 - **Constants come from the generated API** (`BikeLeasingProcessProcessApi.FlowNodes.<Node>` with
@@ -42,7 +41,7 @@ to the other, then regenerate, wire and test **both**.
   never raw strings. `adapter/process` is generated: never edit it (except
   `HistoryCleanupConfiguration`).
 - **Engine limits:** a service task is a delegate by expression (`#{beanName}`, enforced by
-  the model test `process/model/ServiceTaskDelegateExpressionRule`); asynchronous continuations
+  `adapter/process/model/ServiceTaskDelegateExpressionRule`); asynchronous continuations
   (`asyncBefore` and `asyncAfter` on most service tasks, `asyncBefore` alone on
   `serviceTask_orderBike`) are where retries and incidents happen; a compensation handler
   (`isForCompensation`) only runs for an activity that completed.
@@ -61,7 +60,7 @@ to the other, then regenerate, wire and test **both**.
    <!-- /variant:kotlin-gradle -->
    <!-- variant:java-maven -->
    ```bash
-   (cd java-maven && ./mvnw -pl service/app io.miragon:bpmn-to-code-maven:generate-bpmn-api)
+   (cd java-maven && ./mvnw -pl service/app generate-sources)
    ```
    <!-- /variant:java-maven -->
    ```bash
@@ -84,10 +83,11 @@ to the other, then regenerate, wire and test **both**.
    (skill `create-persistence-adapter`).
 5. **Process tests.** Derive the scenarios from the model's paths: every new outgoing flow of a
    gateway, every boundary event, every event subprocess path gets a test in the test tree's
-   `process/` that asserts the walked path as a typed path from the generated API (see
-   `BikeLeasingProcessTest`). A gateway's branch label must match its condition.
-   The job executor is off in tests: `process/util/JobExecutionUtils` fires async continuations,
-   `TimerUtils` fires a timer job directly. Run the `io.miragon.blueprint.process` tests (`AGENTS.md` →
+   `adapter/process/` that asserts the walked path through `ProcessPathAssertions`, a typed path from
+   the generated API (see `BikeLeasingProcessTest`). A gateway's branch label must match its
+   condition.
+   The job executor is off in tests: `JobExecutionUtils` fires async continuations, `TimerUtils`
+   fires a timer job directly. Run the `io.miragon.blueprint.adapter.process` tests (`AGENTS.md` →
    Verify After Each Task).
 6. **Bruno.** A path visible over REST gets a numbered scenario folder in `bruno/`. The `.bru` files
    name element ids as strings: a renamed id is updated there too.

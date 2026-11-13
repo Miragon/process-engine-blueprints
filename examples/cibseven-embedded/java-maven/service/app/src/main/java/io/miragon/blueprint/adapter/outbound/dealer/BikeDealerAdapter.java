@@ -13,24 +13,36 @@ import org.springframework.stereotype.Component;
  * Simulated bike dealer. Availability is decided by a small deny-list of bike ids so the
  * bike-unavailable → alternative branch can be triggered deterministically. The ids mirror the Bruno
  * scenario data: {@code BIKE-OOS} is the out-of-stock bike the {@code 05-bike-unavailable} collection
- * submits, and {@code BIKE-FAIL} is the poison id the {@code 06-incident-demo} collection uses to make
- * the dealer "outage" throw — see {@link #order}.
+ * submits, {@code BIKE-FAIL} is the poison id the {@code 06-incident-demo} collection uses to make
+ * the dealer "outage" throw — see {@link #order} — and {@code BIKE-CUSTOM} is the custom build whose
+ * order the dealer refuses to cancel, see {@link #requestCancellation}.
  */
 @Component
 public class BikeDealerAdapter implements BikeDealerPort {
 
     private static final Logger log = LoggerFactory.getLogger(BikeDealerAdapter.class);
 
+    private static final String ORDER_PREFIX = "ORDER-";
+
+    private static final String NON_CANCELLABLE_ORDER_PREFIX = "ORDER-CUSTOM-";
+
     private final Set<String> outOfStockBikeIds = Set.of("BIKE-OOS");
 
     /**
      * Demo mechanism (not a real integration fault): ordering one of these bikes makes the dealer
-     * call fail as if the dealer's API were unreachable. {@code serviceTask_orderBike} runs on the job
-     * executor (asyncAfter), so the failure exhausts its retries and raises an incident — the basis
-     * of the reproducible incident demo. It stays available in {@link #checkAvailability} so the flow
-     * reaches the order step (rather than the out-of-stock branch) before failing.
+     * call fail as if the dealer's API were unreachable, which drives the reproducible outage demo. How
+     * the failed order step is retried is up to the process engine and its inbound adapter. It stays
+     * available in {@link #checkAvailability} so the flow reaches the order step (rather than the out-of-stock branch)
+     * before failing.
      */
     private final Set<String> unavailableDealerBikeIds = Set.of("BIKE-FAIL");
+
+    /**
+     * Demo mechanism: an order for one of these bikes cannot be cancelled, so withdrawing the
+     * application takes the clarify-return branch of the cancel-bike-order process. Its order id
+     * carries {@link #NON_CANCELLABLE_ORDER_PREFIX}, which keeps {@link #requestCancellation} free of state.
+     */
+    private final Set<String> nonCancellableBikeIds = Set.of("BIKE-CUSTOM");
 
     @Override
     public boolean checkAvailability(BikeId bikeId) {
@@ -42,16 +54,16 @@ public class BikeDealerAdapter implements BikeDealerPort {
         if (unavailableDealerBikeIds.contains(bikeId.value())) {
             throw new DealerUnavailableException(bikeId);
         }
-        OrderId orderId = new OrderId("ORDER-" + UUID.randomUUID());
+        String prefix = nonCancellableBikeIds.contains(bikeId.value()) ? NON_CANCELLABLE_ORDER_PREFIX : ORDER_PREFIX;
+        OrderId orderId = new OrderId(prefix + UUID.randomUUID());
         log.info("Placed order {} for bike {}", orderId.value(), bikeId.value());
         return orderId;
     }
 
     @Override
     public boolean requestCancellation(OrderId orderId) {
-        // Demo dealer response: cancellation is always possible in this blueprint.
         log.info("Requesting cancellation of order {}", orderId.value());
-        return true;
+        return !orderId.value().startsWith(NON_CANCELLABLE_ORDER_PREFIX);
     }
 
     @Override
@@ -62,10 +74,8 @@ public class BikeDealerAdapter implements BikeDealerPort {
 
     /**
      * Signals that the (simulated) bike dealer could not be reached while placing an order. Thrown for
-     * the {@code BIKE-FAIL} poison id to drive the reproducible incident demo: because
-     * {@code serviceTask_orderBike} runs on the job executor, this surfaces as a failed job that
-     * retries and then raises an incident. Nested so it stays colocated with the demo logic without
-     * needing an outbound-adapter naming suffix.
+     * the {@code BIKE-FAIL} poison id to drive the reproducible outage demo. Nested so it stays colocated with
+     * the demo logic without needing an outbound-adapter naming suffix.
      */
     public static class DealerUnavailableException extends RuntimeException {
 

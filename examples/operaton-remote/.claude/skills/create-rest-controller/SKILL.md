@@ -25,13 +25,12 @@ Copy the shape of the existing controllers instead of inventing one:
 
 - **One inbound port** as the only constructor parameter; a read and a command are two controllers.
 - Commands on a case are `POST /api/bike-leasing/{applicationId}/<action>` and answer **202**,
-  because the remote engine continues asynchronously. Reads are `GET` with a `*Query` and a nested
-  `*Dto`; a single read answers `ResponseEntity.notFound()` when the query finds nothing.
+  because the engine continues asynchronously. Reads are `GET` with a `*Query` and a nested `*Dto`; a
+  single read answers `ResponseEntity.notFound()` when the query finds nothing.
 - Wrap every request field that has a domain value object (`ApplicationId.of(…)`, `BikeId(…)`) before
   calling the port; plain values pass through.
-- **Set `@Operation(operationId = "…")` on a new endpoint** (camelCase, as in
-  `ListLeasingApplicationsController`). Without it springdoc falls back to the method name, which is
-  how the older controllers got `submit` and `byId`; don't copy that. Only paths under `/api/**`
+- **Always set `@Operation(operationId = "…")`** (camelCase). Without it springdoc falls back to the
+  method name (`byId`, `list`) as the operationId. Only paths under `/api/**`
   (`springdoc.paths-to-match`) reach the spec.
 - Errors become problem details in `GlobalExceptionConfiguration`: `IllegalArgumentException` → 400,
   `IllegalStateException` → 404, a 4xx `RestClientResponseException` from the engine → 409 (the case

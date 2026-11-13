@@ -17,7 +17,7 @@ import org.springframework.web.client.RestClient
  * auto-deployment.
  *
  * This realises the "the service owns and deploys its process" ownership pattern: the engine host stays
- * model-agnostic and this outbound adapter pushes its BPMN/DMN/forms to
+ * model-agnostic and this outbound adapter pushes its BPMN/DMN to
  * `POST /engine-rest/deployment/create`. The deployment is **idempotent** (`enable-duplicate-filtering`
  * + `deploy-changed-only`), so restarts and multiple worker instances never create duplicate
  * deployments. It retries briefly so the worker can start alongside a not-yet-ready engine.
@@ -81,7 +81,7 @@ class ProcessModelDeploymentAdapter(
 
     private companion object {
         const val DEPLOYMENT_NAME = "bike-leasing"
-        val MODEL_PATTERNS = listOf("classpath*:**/*.bpmn", "classpath*:**/*.dmn", "classpath*:**/*.form")
+        val MODEL_PATTERNS = listOf("classpath*:**/*.bpmn", "classpath*:**/*.dmn")
         const val MAX_ATTEMPTS = 20
         const val RETRY_DELAY_MS = 3_000L
     }

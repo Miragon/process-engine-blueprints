@@ -14,11 +14,12 @@ class LoggingNotificationAdapterTest {
     @Test
     @DisplayName("send logs the notification without error")
     void sendLogsTheNotificationWithoutError() {
+
         // given: a subject and an application
         LeasingApplication application = testLeasingApplication().build();
 
         // when / then: sending the notification completes without throwing
         assertThatCode(() -> underTest.send("Please review and sign your leasing contract", application))
-            .doesNotThrowAnyException();
+                .doesNotThrowAnyException();
     }
 }

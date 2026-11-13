@@ -42,16 +42,16 @@ public class GetPendingClarificationsService implements GetPendingClarifications
                 .toList();
         Map<BikeId, String> models = new HashMap<>();
         for (Bike bike : bikePortfolio.findAllByIds(
-                cases.stream().map(openCase -> openCase.getValue().bikeId()).toList())) {
+                cases.stream().map(c -> c.getValue().bikeId()).toList())) {
             models.put(bike.bikeId(), bike.model());
         }
         return cases.stream()
-                .map(openCase -> new PendingClarification(
-                        openCase.getValue().id(),
-                        openCase.getValue().customerName(),
-                        openCase.getValue().bikeId(),
-                        models.get(openCase.getValue().bikeId()),
-                        openCase.getKey().waitingSince()))
+                .map(c -> new PendingClarification(
+                        c.getValue().id(),
+                        c.getValue().customerName(),
+                        c.getValue().bikeId(),
+                        models.get(c.getValue().bikeId()),
+                        c.getKey().waitingSince()))
                 .toList();
     }
 }

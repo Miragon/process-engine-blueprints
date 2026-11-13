@@ -8,12 +8,12 @@ allowed-tools: Read, Glob, Grep, Bash(git *), Bash(gh pr view *), Bash(gh pr dif
 # Skill: review-change
 
 A review that only ticks boxes is worthless; one finding with a reproducible scenario beats ten
-style notes. The machine gates (architecture rules, contract and process-API drift, the external-topic
-model rule, bpmnlint, mutation 80) run in CI; do not restate them, check what they cannot see. Do check
-that a gate actually ran: the mutation gate runs nightly on the domain, so a pull request never
-exercises it.
-Generic code review is what the built-in review tooling does; this skill adds what only this repo
-knows.
+style notes. The machine gates run in CI:
+architecture rules, contract and process-API drift, the external-topic model rule, bpmnlint, mutation 80.
+Do not restate them, check what they cannot see.
+Do check that a gate actually ran: the mutation gate runs nightly on the domain, so a pull request
+never exercises it. Generic code review is what the built-in review tooling does; this skill adds
+what only this repo knows.
 
 The agents `review-process` and `review-vertical-slice` are loaded at session start. If one is not
 available, read its file in `.claude/agents/` and apply it yourself.
@@ -42,9 +42,10 @@ and packages instead: a leftover reference is the typical defect.
 | The change touches | It also needs |
 |---|---|
 | a JPA entity | a new `V<n>__*.sql` migration; no edited migration |
-| a controller method or a DTO | `@Operation(operationId)` on a new method, the re-exported `openapi/openapi.json`, a Bruno request |
+| a controller method or a DTO | `@Operation(operationId)` on the method, the re-exported `openapi/openapi.json`, a Bruno request |
 | a `.bpmn` | the regenerated `adapter/process`, a worker for every new topic, a process test per new path, Bruno updated for renamed element ids; run the agent `review-process` |
-| the DMN or a form | a process test for the decision or the user task; the form `id` still matching the `formRef` |
+| the DMN | a process test for the decision |
+| a user task | a domain endpoint that completes it (no form, ADR `docs/adr/*-user-tasks-without-forms.md`), a process test for the path it serves |
 | an external-task worker, a listener in `service/engine-service` or a process adapter | its unit test, a process test for the path it serves; run the agent `review-process` |
 | a whole feature | run the agent `review-vertical-slice` |
 | a service throwing what a worker maps to a BPMN error (`handleBpmnError`) | `noRollbackFor` on `@Transactional` |
@@ -56,7 +57,7 @@ A hand-edited generated file is a blocker.
 
 <!-- variant:blueprint -->
 While both variants live side by side, a change in behaviour also needs the same change with
-equivalent tests in **both** `kotlin-gradle/` and `java-maven/` (models, forms, migrations and
+equivalent tests in **both** `kotlin-gradle/` and `java-maven/` (models, migrations and
 `application.yaml` byte-identical; the agent `review-process` compares the glue), and stack-specific
 content in a shared file needs `variant:` markers on lines of their own, so
 `scripts/create-starter.sh` can strip it.

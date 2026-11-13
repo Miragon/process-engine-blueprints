@@ -6,7 +6,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
-import org.jspecify.annotations.Nullable;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -37,10 +36,10 @@ public class LeasingApplicationEntity {
     private LeasingStatus status;
 
     @Column(name = "order_id")
-    private @Nullable String orderId;
+    private String orderId;
 
     @Column(name = "contract_id")
-    private @Nullable String contractId;
+    private String contractId;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -56,10 +55,9 @@ public class LeasingApplicationEntity {
             double monthlyNetIncome,
             String bikeId,
             LeasingStatus status,
-            @Nullable String orderId,
-            @Nullable String contractId,
-            LocalDateTime createdAt
-    ) {
+            String orderId,
+            String contractId,
+            LocalDateTime createdAt) {
         this.applicationId = applicationId;
         this.customerName = customerName;
         this.email = email;
@@ -100,11 +98,11 @@ public class LeasingApplicationEntity {
         return status;
     }
 
-    public @Nullable String getOrderId() {
+    public String getOrderId() {
         return orderId;
     }
 
-    public @Nullable String getContractId() {
+    public String getContractId() {
         return contractId;
     }
 

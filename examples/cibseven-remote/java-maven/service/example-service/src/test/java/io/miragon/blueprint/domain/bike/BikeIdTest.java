@@ -22,14 +22,16 @@ class BikeIdTest {
     void rejectsABlankBikeId() {
         // when/then: a blank value is refused
         assertThatThrownBy(() -> new BikeId("   "))
-                .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("BikeId must not be blank");
     }
 
     @Test
     @DisplayName("rejects a bike id made of no-break spaces")
-    void rejectsABikeIdOfNoBreakSpaces() {
-        // when/then: no-break spaces count as blank, too
+    void rejectsABikeIdMadeOfNoBreakSpaces() {
+        // when/then: a value that only looks empty is refused, too
         assertThatThrownBy(() -> new BikeId("\u00A0\u2007\u202F"))
-                .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("BikeId must not be blank");
     }
 }

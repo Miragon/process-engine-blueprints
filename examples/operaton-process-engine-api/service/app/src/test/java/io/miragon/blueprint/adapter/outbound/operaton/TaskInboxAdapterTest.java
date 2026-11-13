@@ -1,24 +1,29 @@
 package io.miragon.blueprint.adapter.outbound.operaton;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
 import io.miragon.blueprint.adapter.process.BikeLeasingProcessProcessApi.FlowNodes;
+import io.miragon.blueprint.application.port.outbound.TaskInboxPort;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 import org.operaton.bpm.engine.RuntimeService;
 import org.operaton.bpm.engine.TaskService;
 import org.operaton.bpm.engine.runtime.ProcessInstance;
 import org.operaton.bpm.engine.runtime.ProcessInstanceQuery;
 import org.operaton.bpm.engine.task.Task;
 import org.operaton.bpm.engine.task.TaskQuery;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.mock;
+import org.junit.jupiter.api.Test;
 
 class TaskInboxAdapterTest {
 
@@ -29,31 +34,28 @@ class TaskInboxAdapterTest {
     private final String applicationId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000").toString();
 
     @Test
-    @DisplayName("translates open clarify-alternative tasks into their application business keys")
-    void translatesOpenClarifyAlternativeTasksIntoTheirApplicationBusinessKeys() {
+    void translates_open_clarify_alternative_tasks_into_their_application_business_keys() {
         // given: one active clarify-alternative task on an instance keyed by the application id
-        var task = mock(Task.class);
-        given(task.getProcessInstanceId()).willReturn("proc-1");
-        given(task.getCreateTime()).willReturn(new Date(0));
-        var taskQuery = stubTaskQuery(List.of(task));
-        stubProcessInstanceQuery("proc-1", applicationId);
+        Task task = task("proc-1", new Date(0));
+        TaskQuery taskQuery = stubTaskQuery(List.of(task));
+        ProcessInstanceQuery instanceQuery = stubProcessInstanceQuery("proc-1", applicationId);
 
         // when: the inbox is read
-        var result = underTest.findOpenClarifications();
+        List<TaskInboxPort.OpenClarification> result = underTest.findOpenClarifications();
 
         // then: the open task surfaces as its application id, queried by the clarify-alternative key
         assertThat(result).hasSize(1);
-        assertThat(result.getFirst().applicationId()).isEqualTo(ApplicationId.of(applicationId));
-        then(taskQuery).should().taskDefinitionKey(FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID);
+        assertThat(result.get(0).applicationId()).isEqualTo(ApplicationId.of(applicationId));
+        assertThat(result.get(0).waitingSince())
+                .isEqualTo(LocalDateTime.ofInstant(Instant.EPOCH, ZoneId.systemDefault()));
+        verify(taskQuery).taskDefinitionKey(FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID);
+        verify(instanceQuery).processInstanceIds(Set.of("proc-1"));
     }
 
     @Test
-    @DisplayName("drops a task whose instance has no resolvable business key")
-    void dropsATaskWhoseInstanceHasNoResolvableBusinessKey() {
+    void drops_a_task_whose_instance_has_no_resolvable_business_key() {
         // given: an open task whose process instance is not returned by the lookup
-        var task = mock(Task.class);
-        given(task.getProcessInstanceId()).willReturn("proc-missing");
-        given(task.getCreateTime()).willReturn(new Date(0));
+        Task task = task("proc-missing", new Date(0));
         stubTaskQuery(List.of(task));
         stubProcessInstanceQuery("proc-other", applicationId);
 
@@ -62,31 +64,51 @@ class TaskInboxAdapterTest {
     }
 
     @Test
-    @DisplayName("returns nothing and skips the instance query when no task is open")
-    void returnsNothingAndSkipsTheInstanceQueryWhenNoTaskIsOpen() {
+    void drops_a_task_whose_instance_carries_no_business_key() {
+        // given: an open task on an instance that was started without a business key
+        Task task = task("proc-1", new Date(0));
+        stubTaskQuery(List.of(task));
+        stubProcessInstanceQuery("proc-1", null);
+
+        // when / then: the task without an application is skipped
+        assertThat(underTest.findOpenClarifications()).isEmpty();
+    }
+
+    @Test
+    void returns_nothing_and_skips_the_instance_query_when_no_task_is_open() {
         // given: no open tasks
         stubTaskQuery(List.of());
 
         // when / then: the result is empty; the (empty) instance lookup returns an empty map
         assertThat(underTest.findOpenClarifications()).isEmpty();
+        // and: no process-instance query is issued at all
+        verifyNoInteractions(runtimeService);
+    }
+
+    private Task task(String processInstanceId, Date createTime) {
+        Task task = mock(Task.class);
+        when(task.getProcessInstanceId()).thenReturn(processInstanceId);
+        when(task.getCreateTime()).thenReturn(createTime);
+        return task;
     }
 
     private TaskQuery stubTaskQuery(List<Task> returns) {
-        var query = mock(TaskQuery.class);
-        given(taskService.createTaskQuery()).willReturn(query);
-        given(query.taskDefinitionKey(any())).willReturn(query);
-        given(query.active()).willReturn(query);
-        given(query.list()).willReturn(returns);
+        TaskQuery query = mock(TaskQuery.class);
+        when(taskService.createTaskQuery()).thenReturn(query);
+        when(query.taskDefinitionKey(any())).thenReturn(query);
+        when(query.active()).thenReturn(query);
+        when(query.list()).thenReturn(returns);
         return query;
     }
 
-    private void stubProcessInstanceQuery(String id, String businessKey) {
-        var instance = mock(ProcessInstance.class);
-        given(instance.getId()).willReturn(id);
-        given(instance.getBusinessKey()).willReturn(businessKey);
-        var query = mock(ProcessInstanceQuery.class);
-        given(runtimeService.createProcessInstanceQuery()).willReturn(query);
-        given(query.processInstanceIds(any())).willReturn(query);
-        given(query.list()).willReturn(List.of(instance));
+    private ProcessInstanceQuery stubProcessInstanceQuery(String id, String businessKey) {
+        ProcessInstance instance = mock(ProcessInstance.class);
+        when(instance.getId()).thenReturn(id);
+        when(instance.getBusinessKey()).thenReturn(businessKey);
+        ProcessInstanceQuery query = mock(ProcessInstanceQuery.class);
+        when(runtimeService.createProcessInstanceQuery()).thenReturn(query);
+        when(query.processInstanceIds(any())).thenReturn(query);
+        when(query.list()).thenReturn(List.of(instance));
+        return query;
     }
 }

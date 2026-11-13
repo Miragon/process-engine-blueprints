@@ -7,20 +7,20 @@ imports it (see [ADR-0005](docs/adr/0005-agents-md-as-the-single-source.md)).
 
 A headless **MiraVelo bike-leasing** blueprint: a BPMN process running on an embedded CIB seven
 engine, behind an enforced hexagonal architecture. There is **no frontend** — the service is driven
-over REST, and the CIB seven webapps (Cockpit / Tasklist) handle any human-in-the-loop steps.
+over REST, user tasks included: each one is completed through a domain endpoint.
 
 - **Backend** — Spring Boot 4, hexagonal, CIB seven 2.2 embedded engine (JavaDelegates invoked by
   expression, **not** Zeebe workers). Package root `io.miragon.blueprint`.
   <!-- variant:blueprint -->
 - **Two equivalent variants on `main`** — `kotlin-gradle/` (Kotlin, **the recommended stack**) and
   `java-maven/` (Java 21, for teams bound to it and for trainings). Each is self-contained and
-  carries its own copy of the process models, forms, migrations and `application.yaml`; the
+  carries its own copy of the process models, migrations and `application.yaml`; the
   `Blueprint Checks` workflow fails when the two `src/main/resources` trees differ, so **edit a model in
   one variant and copy it to the other**. The variants must stay functionally identical: **make every change in behaviour in both variants in the same
   PR.** Changes that only concern one language's idioms stay on that side. See
   [ADR-0013](docs/adr/0013-two-stack-variants-side-by-side-on-main.md). The OpenAPI contract below is
   drift-gated against **both** variants.
-  Stack-specific content in shared files (docs, Dependabot, Conductor settings) is wrapped in
+  Stack-specific content in shared files (docs, Dependabot) is wrapped in
   `variant:<name>` markers so `scripts/create-starter.sh` can strip it — see
   [docs/starter.md](docs/starter.md).
   <!-- /variant:blueprint -->
@@ -52,7 +52,7 @@ service/
     adapter/process             generated *ProcessApi (bpmn-to-code) + engine config
     application/{port,service}  use-case ports and their services
     domain/{leasing,bike}       pure domain model
-    resources/{bpmn,dmn,forms}  the process models and Camunda Forms
+    resources/{bpmn,dmn}        the process models
     resources/db/migration      Flyway versioned schema migrations
 ```
 
@@ -101,7 +101,7 @@ cd java-maven && ./mvnw -DskipTests install && ./mvnw -pl service/app spring-boo
 ```
 <!-- /variant:java-maven -->
 
-### Ports (one source of truth — keep README, this file and `.conductor/settings.toml` in sync)
+### Ports (one source of truth — keep README and this file in sync)
 
 | What | Port |
 |---|---|
@@ -112,7 +112,7 @@ cd java-maven && ./mvnw -DskipTests install && ./mvnw -pl service/app spring-boo
 | OpenAPI spec · Swagger UI | 8081/v3/api-docs · 8081/swagger-ui.html |
 | Actuator (health/liveness/readiness · prometheus) | 8081/actuator |
 
-Under Conductor the ports are fixed and the workspace runs `nonconcurrent`
+The ports are fixed
 (see [ADR-0006](docs/adr/0006-fixed-ports-for-v1-portless-as-the-upgrade.md)).
 
 ## Build Commands
@@ -226,6 +226,15 @@ TDD. Match the test style to the layer:
   clear before reading back.
 - Tests run against H2 with Flyway off; no Postgres needed.
 
+The process tests also write a **process test coverage** report per test class, with the CIB seven community extension Process Test Coverage: an HTML page per class that draws the paths the tests took on the model and gives the share of flow nodes and sequence flows they reached. After the tests, the report aggregator of the same extension combines them into one report over all test classes, `all/report.html` in the report folder. Every `*ProcessTest` class must reach 100 %, or it fails: the minimum is the system property `org.cibseven.community.process_test_coverage.ASSERT_AT_LEAST` of the test run, and `ProcessTestCoverageContextCustomizerFactory` applies it to those classes only. Other classes that run the process, such as `BikeUnavailableTransactionTest`, are reported but not gated. A run of single test methods covers less and fails the gate; lower the minimum for it with `-PprocessTestCoverageMinimum=0` (Gradle) or `-Dprocess-test-coverage.minimum=0` (Maven).
+
+<!-- variant:kotlin-gradle -->
+Report folder: `service/app/build/reports/process-test-coverage/`
+<!-- /variant:kotlin-gradle -->
+<!-- variant:java-maven -->
+Report folder: `service/app/target/process-test-coverage/`
+<!-- /variant:java-maven -->
+
 **Mutation testing gates the domain at 80, nightly**: a test that executes without asserting
 will fail
 the nightly run. Coverage says a line ran; mutation says a test would have noticed. It mutates `io.miragon.blueprint.domain.*` only and does not block pull requests. See [ADR-0004](docs/adr/0004-mutation-testing-as-a-blocking-pr-gate.md).
@@ -270,8 +279,8 @@ Two CLIs come as Claude Code plugins (`.claude/settings.json`) and are pinned in
   (`inspect --business-key <applicationId>`, `status`, `incident`, history, `retry`). It never
   deploys: the service deploys the models from its classpath, and a hand deploy is a version the
   generated process API does not know. It never moves a case either (correlating a message,
-  completing a user task): that is a business action, taken by a client of the app's API or by a
-  human in the Tasklist, not by an agent.
+  completing a user task): that is a business action, taken by a client of the app's API, not by an
+  agent.
 
 Two more plugins bring recipes, no CLI: **bpmn-to-code** (skills `bpmn-to-code:*`, e.g.
 `bpmn-to-code:test-process`, `bpmn-to-code:create-process-adapter`) for the generated process API and

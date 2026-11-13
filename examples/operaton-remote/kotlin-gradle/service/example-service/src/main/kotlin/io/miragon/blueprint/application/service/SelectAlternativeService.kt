@@ -17,7 +17,7 @@ class SelectAlternativeService(
 ) : SelectAlternativeUseCase {
 
     override fun selectAlternative(command: SelectAlternativeUseCase.Command) {
-        repository.findById(command.applicationId) ?: error("Unknown application ${command.applicationId.value}")
+        repository.findById(command.applicationId) ?: error("Unknown application ${command.applicationId}")
         val alternativeBike = command.bikeId
         if (command.alternativeFound && alternativeBike != null) {
             command.bikeModel?.let { bikePortfolio.save(Bike(alternativeBike, it)) }

@@ -3,7 +3,6 @@ package io.miragon.blueprint.application.service;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -39,29 +38,27 @@ class SubmitLeasingRequestServiceTest {
     void submitRegistersTheBikePersistsAReceivedApplicationAndStartsTheProcess() {
 
         // given: a leasing-request command and stubbed out-ports
-        SubmitLeasingRequestUseCase.Command command =
-                new SubmitLeasingRequestUseCase.Command(
-                        new CustomerName("John Doe"),
-                        new Email("john.doe@test.com"),
-                        35,
-                        3500.0,
-                        new BikeId("BIKE-900"),
-                        "Gravel Explorer 900");
+        SubmitLeasingRequestUseCase.Command command = new SubmitLeasingRequestUseCase.Command(
+                new CustomerName("John Doe"),
+                new Email("john.doe@test.com"),
+                35,
+                3500.0,
+                new BikeId("BIKE-900"),
+                "Gravel Explorer 900");
         when(bikePortfolio.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
         when(repository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
-        doNothing().when(process).submitRequest(any());
 
         // when: the use case is invoked
         ApplicationId id = underTest.submit(command);
 
-        // then: the bike is stored in the portfolio, a RECEIVED application referencing it is saved, and the process starts
+        // then: the bike is stored, a RECEIVED application referencing it is saved, and the process starts
         verify(bikePortfolio).save(new Bike(new BikeId("BIKE-900"), "Gravel Explorer 900"));
-        verify(repository).save(argThat(app ->
-                app.id().equals(id)
-                        && app.status() == LeasingStatus.RECEIVED
-                        && app.bikeId().equals(new BikeId("BIKE-900"))
-                        && app.createdAt().equals(LocalDateTime.now(clock))));
-        verify(process).submitRequest(argThat(app -> app.id().equals(id)));
+        verify(repository).save(argThat(application ->
+                application.id().equals(id)
+                        && application.status() == LeasingStatus.RECEIVED
+                        && application.bikeId().equals(new BikeId("BIKE-900"))
+                        && application.createdAt().equals(LocalDateTime.now(clock))));
+        verify(process).submitRequest(argThat(application -> application.id().equals(id)));
         verifyNoMoreInteractions(repository, bikePortfolio, process);
     }
 
@@ -69,14 +66,13 @@ class SubmitLeasingRequestServiceTest {
     void submitRejectsARequestWithoutIncomeAndStartsNoProcess() {
 
         // given: a leasing-request command without any income
-        SubmitLeasingRequestUseCase.Command command =
-                new SubmitLeasingRequestUseCase.Command(
-                        new CustomerName("John Doe"),
-                        new Email("john.doe@test.com"),
-                        35,
-                        0.0,
-                        new BikeId("BIKE-900"),
-                        "Gravel Explorer 900");
+        SubmitLeasingRequestUseCase.Command command = new SubmitLeasingRequestUseCase.Command(
+                new CustomerName("John Doe"),
+                new Email("john.doe@test.com"),
+                35,
+                0.0,
+                new BikeId("BIKE-900"),
+                "Gravel Explorer 900");
         when(bikePortfolio.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
         // when / then: the request is refused before anything is persisted or started

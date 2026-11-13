@@ -33,11 +33,6 @@ public class GetLeasingApplicationController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    /**
-     * @param bikeModel  the bike's model; {@code null} if the bike is not in the portfolio
-     * @param orderId    the dealer order id; {@code null} until a bike was ordered
-     * @param contractId the issued contract id; {@code null} until a contract was issued
-     */
     public record LeasingApplicationDto(
             @Schema(requiredMode = REQUIRED) String applicationId,
             @Schema(requiredMode = REQUIRED) String customerName,
@@ -51,10 +46,10 @@ public class GetLeasingApplicationController {
             @Schema(nullable = true) String contractId,
             // Force ISO-8601 string form: Jackson 3 (SB4) defaults to a numeric array, but the CIB seven
             // webapp serves /api with its own Jackson mapper that ignores our global date-time config, so
-            // the format is pinned at the field to keep the payload in sync with the springdoc contract
-            // any API consumer relies on.
+            // the format is pinned at the field to keep the payload in sync with the springdoc contract.
+            @Schema(requiredMode = REQUIRED)
             @JsonFormat(shape = JsonFormat.Shape.STRING)
-            @Schema(requiredMode = REQUIRED) LocalDateTime createdAt) {
+            LocalDateTime createdAt) {
     }
 
     private static LeasingApplicationDto toDto(GetLeasingApplicationQuery.Result result) {
@@ -69,8 +64,8 @@ public class GetLeasingApplicationController {
                 // resolved from the bike portfolio, not carried on the application
                 result.bikeModel(),
                 application.status().name(),
-                application.orderId() == null ? null : application.orderId().value(),
-                application.contractId() == null ? null : application.contractId().value(),
+                application.orderId() != null ? application.orderId().value() : null,
+                application.contractId() != null ? application.contractId().value() : null,
                 application.createdAt());
     }
 }

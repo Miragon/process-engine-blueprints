@@ -31,6 +31,7 @@ copied from [`adr/0000-adr-template.md`](adr/0000-adr-template.md).
 | [0012](adr/0012-polling-for-eventual-consistency-in-e2e-tests.md) | Poll for eventual consistency in the end-to-end (Bruno) tests instead of fixed sleeps. |
 | [0013](adr/0013-operaton-as-the-target-engine.md) | Operaton as the target engine, on the Camunda-7 model namespace. |
 | [0014](adr/0014-two-stack-variants-side-by-side-on-main.md) | Kotlin + Gradle and Java + Maven side by side on `main`, Kotlin recommended. |
+| [0015](adr/0015-user-tasks-without-forms.md) | User tasks without forms, completed through domain endpoints; other form types in process-engine-recipes. |
 
 ## Diagrams
 

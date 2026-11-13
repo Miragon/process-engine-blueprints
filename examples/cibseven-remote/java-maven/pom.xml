@@ -38,6 +38,8 @@
 
         <!-- CIB seven (Camunda 7 fork) — engine, starters, external-task client and the REST OpenAPI spec -->
         <cibseven.version>2.2.0</cibseven.version>
+        <cibseven-process-test-coverage.version>2.2.0</cibseven-process-test-coverage.version>
+        <process-test-coverage.minimum>1.0</process-test-coverage.minimum>
         <!-- BPMN-to-code: generates the typed process API from the *.bpmn models; testing = model validation -->
         <bpmn-to-code.version>7.0.1</bpmn-to-code.version>
         <!-- OpenAPI: springdoc generates the worker's contract; the generator builds the engine client -->
@@ -106,6 +108,11 @@
                 <groupId>org.cibseven.bpm</groupId>
                 <artifactId>cibseven-bpm-junit5</artifactId>
                 <version>${cibseven.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.cibseven.community.process_test_coverage</groupId>
+                <artifactId>cibseven-process-test-coverage-junit5-platform-7</artifactId>
+                <version>${cibseven-process-test-coverage.version}</version>
             </dependency>
             <!-- cibseven-bpm-assert declares the engine as `provided`, so a service without an engine
                  starter (the remote worker) must bring it explicitly for its in-memory process tests. -->
@@ -204,6 +211,11 @@
                             <version>${checkstyle.version}</version>
                         </dependency>
                     </dependencies>
+                </plugin>
+                <plugin>
+                    <groupId>org.cibseven.community.process_test_coverage</groupId>
+                    <artifactId>cibseven-process-test-coverage-report-aggregator-maven-plugin</artifactId>
+                    <version>${cibseven-process-test-coverage.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>

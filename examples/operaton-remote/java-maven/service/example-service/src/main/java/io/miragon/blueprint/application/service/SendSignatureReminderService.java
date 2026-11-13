@@ -13,9 +13,7 @@ public class SendSignatureReminderService implements SendSignatureReminderUseCas
     private final LeasingApplicationRepository repository;
     private final NotificationPort notification;
 
-    public SendSignatureReminderService(
-            LeasingApplicationRepository repository,
-            NotificationPort notification) {
+    public SendSignatureReminderService(LeasingApplicationRepository repository, NotificationPort notification) {
         this.repository = repository;
         this.notification = notification;
     }
@@ -23,7 +21,7 @@ public class SendSignatureReminderService implements SendSignatureReminderUseCas
     @Override
     public void sendSignatureReminder(ApplicationId id) {
         LeasingApplication application = repository.findById(id)
-                .orElseThrow(() -> new IllegalStateException("Unknown application " + id.value()));
+                .orElseThrow(() -> new IllegalStateException("Unknown application " + id));
         notification.send("Reminder: your leasing contract is still awaiting signature", application);
     }
 }

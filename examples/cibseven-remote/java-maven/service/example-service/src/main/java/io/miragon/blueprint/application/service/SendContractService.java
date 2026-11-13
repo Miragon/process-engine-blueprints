@@ -21,8 +21,7 @@ public class SendContractService implements SendContractUseCase {
     public SendContractService(
             LeasingApplicationRepository repository,
             ContractPort contract,
-            NotificationPort notification
-    ) {
+            NotificationPort notification) {
         this.repository = repository;
         this.contract = contract;
         this.notification = notification;

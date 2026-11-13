@@ -36,15 +36,7 @@ class SubmitLeasingRequestControllerTest {
     fun `user submits a leasing request`() {
 
         // given: valid input data & rest-operation
-        val input =
-            mapOf(
-                "customerName" to "John Doe",
-                "email" to "john.doe@test.com",
-                "age" to 35,
-                "monthlyNetIncome" to 3500.0,
-                "bikeId" to "BIKE-900",
-                "bikeModel" to "Gravel Explorer 900",
-            )
+        val input = validInput()
         val applicationId = ApplicationId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"))
         val expectedCommand =
             SubmitLeasingRequestUseCase.Command(
@@ -72,17 +64,22 @@ class SubmitLeasingRequestControllerTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = ["customerName", "email", "bikeId", "bikeModel"])
-    fun `a request without a required text field is rejected as unreadable`(missingField: String) {
+    @ValueSource(strings = ["customerName", "email", "age", "monthlyNetIncome", "bikeId", "bikeModel"])
+    fun `a request without a required field is rejected`(missingField: String) {
 
         // given: an otherwise valid request that lacks one required field
         val input = validInput() - missingField
+        val operation =
+            post("/api/bike-leasing")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(input))
 
         // when: the request is performed
-        val response = mockMvc.perform(submission(input)).andReturn()
+        val response = mockMvc.perform(operation).andReturn()
 
-        // then: it is a bad request that never reaches the use case
+        // then: it is an unreadable request and never reaches the use case
         assertThat(response.response.status).isEqualTo(400)
+        assertThat(response.response.contentType).contains("application/problem+json")
         assertThat(response.response.contentAsString).contains("Failed to read request")
         confirmVerified(useCase)
     }
@@ -93,17 +90,22 @@ class SubmitLeasingRequestControllerTest {
 
         // given: an otherwise valid request that carries null for one required field
         val input = validInput() + (nullField to null)
+        val operation =
+            post("/api/bike-leasing")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(input))
 
         // when: the request is performed
-        val response = mockMvc.perform(submission(input)).andReturn()
+        val response = mockMvc.perform(operation).andReturn()
 
-        // then: it is a bad request that never reaches the use case
+        // then: it is an unreadable request and never reaches the use case
         assertThat(response.response.status).isEqualTo(400)
+        assertThat(response.response.contentType).contains("application/problem+json")
         assertThat(response.response.contentAsString).contains("Failed to read request")
         confirmVerified(useCase)
     }
 
-    private fun validInput(): Map<String, Any?> =
+    private fun validInput(): Map<String, Any> =
         mapOf(
             "customerName" to "John Doe",
             "email" to "john.doe@test.com",
@@ -112,9 +114,4 @@ class SubmitLeasingRequestControllerTest {
             "bikeId" to "BIKE-900",
             "bikeModel" to "Gravel Explorer 900",
         )
-
-    private fun submission(input: Map<String, Any?>) =
-        post("/api/bike-leasing")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(mapper.writeValueAsString(input))
 }

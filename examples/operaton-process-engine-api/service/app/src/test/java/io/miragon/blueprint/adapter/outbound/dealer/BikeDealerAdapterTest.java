@@ -1,13 +1,13 @@
 package io.miragon.blueprint.adapter.outbound.dealer;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import io.miragon.blueprint.domain.bike.BikeId;
 import io.miragon.blueprint.domain.bike.OrderId;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class BikeDealerAdapterTest {
 
@@ -31,8 +31,8 @@ class BikeDealerAdapterTest {
     @DisplayName("order mints a fresh, unique order id")
     void orderMintsAFreshUniqueOrderId() {
         // given: the same bike ordered twice
-        var first = underTest.order(new BikeId("BIKE-900"));
-        var second = underTest.order(new BikeId("BIKE-900"));
+        OrderId first = underTest.order(new BikeId("BIKE-900"));
+        OrderId second = underTest.order(new BikeId("BIKE-900"));
         // then: each order gets its own opaque reference, independent of the bike id
         assertThat(first.value()).startsWith("ORDER-");
         assertThat(first).isNotEqualTo(second);
@@ -50,16 +50,28 @@ class BikeDealerAdapterTest {
     @Test
     @DisplayName("ordering the incident-demo bike fails as a simulated dealer outage")
     void orderingTheIncidentDemoBikeFailsAsASimulatedDealerOutage() {
-        // given: the poison bike / when-then: the dealer call throws so the external task fails → incident
+        // given: the poison bike / when-then: the dealer call throws so the order job fails → incident
         assertThatThrownBy(() -> underTest.order(new BikeId("BIKE-FAIL")))
-            .isInstanceOf(BikeDealerAdapter.DealerUnavailableException.class);
+                .isInstanceOf(BikeDealerAdapter.DealerUnavailableException.class)
+                .hasMessage("Bike dealer API unavailable for BIKE-FAIL (simulated demo outage)");
     }
 
     @Test
-    @DisplayName("requestCancellation reports the order as cancellable")
-    void requestCancellationReportsTheOrderAsCancellable() {
-        // given: a placed order / when-then: the demo dealer always allows cancellation
-        assertThat(underTest.requestCancellation(new OrderId("ORDER-900"))).isTrue();
+    @DisplayName("requestCancellation reports an order of a stocked bike as cancellable")
+    void requestCancellationReportsAnOrderOfAStockedBikeAsCancellable() {
+        // given: an order of a regularly stocked bike
+        OrderId orderId = underTest.order(new BikeId("BIKE-900"));
+        // when-then: the dealer allows its cancellation
+        assertThat(underTest.requestCancellation(orderId)).isTrue();
+    }
+
+    @Test
+    @DisplayName("requestCancellation refuses to cancel an order of the custom-build demo bike")
+    void requestCancellationRefusesToCancelAnOrderOfTheCustomBuildDemoBike() {
+        // given: an order of the custom build
+        OrderId orderId = underTest.order(new BikeId("BIKE-CUSTOM"));
+        // when-then: the dealer refuses its cancellation, so the return has to be clarified
+        assertThat(underTest.requestCancellation(orderId)).isFalse();
     }
 
     @Test

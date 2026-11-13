@@ -38,6 +38,8 @@
 
         <!-- CIB seven (Camunda 7 fork) — Spring Boot 4 starters -->
         <cib7.version>2.2.0</cib7.version>
+        <cib7-process-test-coverage.version>2.2.0</cib7-process-test-coverage.version>
+        <process-test-coverage.minimum>1.0</process-test-coverage.minimum>
 
         <!-- process-engine-api (bpm-crafters) — the abstraction layer used to talk to the engine
              (start/correlate/complete via APIs, and @ProcessEngineWorker beans for the service tasks) -->
@@ -173,6 +175,11 @@
                 <artifactId>cibseven-bpm-junit5</artifactId>
                 <version>${cib7.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.cibseven.community.process_test_coverage</groupId>
+                <artifactId>cibseven-process-test-coverage-spring-test-platform-7</artifactId>
+                <version>${cib7-process-test-coverage.version}</version>
+            </dependency>
 
             <!-- JGiven — CIB seven -->
             <dependency>
@@ -270,6 +277,11 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-wrapper-plugin</artifactId>
                     <version>3.3.4</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.cibseven.community.process_test_coverage</groupId>
+                    <artifactId>cibseven-process-test-coverage-report-aggregator-maven-plugin</artifactId>
+                    <version>${cib7-process-test-coverage.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>

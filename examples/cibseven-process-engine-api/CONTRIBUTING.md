@@ -48,7 +48,7 @@ cd java-maven && ./mvnw -pl service/app -am spring-boot:run
 | OpenAPI spec · Swagger UI | 8080/v3/api-docs · 8080/swagger-ui.html |
 | Actuator (health · liveness/readiness · prometheus) | 8080/actuator |
 
-Under Conductor the ports are fixed and the workspace runs `nonconcurrent` (see
+The ports are fixed (see
 [ADR-0006](docs/adr/0006-fixed-ports-for-v1-portless-as-the-upgrade.md)).
 
 ### Smoke test
@@ -152,7 +152,7 @@ of its marketplace in `.claude/settings.json` by hand together with it.
   <!-- variant:blueprint -->
 - **Change both variants together.** A change in behaviour goes into `kotlin-gradle/` *and*
   `java-maven/` in the same PR, with equivalent tests. Changes that only concern one language's idioms
-  stay on that side. Models, forms, migrations and `application.yaml` exist in both variants and must
+  stay on that side. Models, migrations and `application.yaml` exist in both variants and must
   be byte-identical — copy your change over; the `Blueprint Checks` workflow fails otherwise. See
   [ADR-0013](docs/adr/0013-two-stack-variants-side-by-side-on-main.md).
   <!-- /variant:blueprint -->

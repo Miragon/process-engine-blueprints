@@ -3,11 +3,12 @@ package io.miragon.blueprint.domain.leasing;
 import io.miragon.blueprint.domain.bike.BikeId;
 import io.miragon.blueprint.domain.bike.OrderId;
 import java.time.LocalDateTime;
-import org.jspecify.annotations.Nullable;
 
 /**
  * Aggregate root of the bike-leasing domain. All state transitions return a copy, so an instance is
  * never mutated in place — the calling service persists the returned copy.
+ *
+ * <p>{@code orderId} and {@code contractId} may be {@code null} until the process produces them.
  */
 public record LeasingApplication(
         ApplicationId id,
@@ -18,25 +19,8 @@ public record LeasingApplication(
         BikeId bikeId,
         LeasingStatus status,
         LocalDateTime createdAt,
-        @Nullable OrderId orderId,
-        @Nullable ContractId contractId
-) {
-
-    public static LeasingApplication receive(
-            ApplicationId id,
-            CustomerName customerName,
-            Email email,
-            int age,
-            double monthlyNetIncome,
-            BikeId bikeId,
-            LocalDateTime createdAt
-    ) {
-        if (monthlyNetIncome <= 0.0) {
-            throw new IllegalArgumentException("Monthly net income must be greater than zero");
-        }
-        return new LeasingApplication(
-                id, customerName, email, age, monthlyNetIncome, bikeId, LeasingStatus.RECEIVED, createdAt, null, null);
-    }
+        OrderId orderId,
+        ContractId contractId) {
 
     /** Records the contract the contract system issued for this application. */
     public LeasingApplication withContract(ContractId contractId) {
@@ -47,7 +31,8 @@ public record LeasingApplication(
     /** Records the placed order on the application and moves it to ORDERED. */
     public LeasingApplication documentOrder(OrderId orderId) {
         return new LeasingApplication(
-                id, customerName, email, age, monthlyNetIncome, bikeId, LeasingStatus.ORDERED, createdAt, orderId, contractId);
+                id, customerName, email, age, monthlyNetIncome, bikeId, LeasingStatus.ORDERED, createdAt, orderId,
+                contractId);
     }
 
     /** Records that the customer accepted a different bike after the requested one was unavailable. */
@@ -56,16 +41,17 @@ public record LeasingApplication(
                 id, customerName, email, age, monthlyNetIncome, bikeId, status, createdAt, orderId, contractId);
     }
 
-    /** Records that the bike was handed to the customer; the withdrawal period now runs. */
+    /** Records that the bike was handed to the customer, opening the withdrawal period. */
     public LeasingApplication reportHandover() {
         return withStatus(LeasingStatus.HANDED_OVER);
     }
 
+    /** Marks the leasing as live once the withdrawal period elapsed. */
     public LeasingApplication activate() {
         return withStatus(LeasingStatus.ACTIVE);
     }
 
-    /** In-progress cancellation: the customer withdrew; compensation runs before the terminal CANCELLED. */
+    /** Marks the application as withdrawn while the asynchronous cancellation runs. */
     public LeasingApplication withdraw() {
         return withStatus(LeasingStatus.WITHDRAWN);
     }
@@ -81,5 +67,20 @@ public record LeasingApplication(
     private LeasingApplication withStatus(LeasingStatus status) {
         return new LeasingApplication(
                 id, customerName, email, age, monthlyNetIncome, bikeId, status, createdAt, orderId, contractId);
+    }
+
+    public static LeasingApplication receive(
+            ApplicationId id,
+            CustomerName customerName,
+            Email email,
+            int age,
+            double monthlyNetIncome,
+            BikeId bikeId,
+            LocalDateTime createdAt) {
+        if (monthlyNetIncome <= 0.0) {
+            throw new IllegalArgumentException("Monthly net income must be greater than zero");
+        }
+        return new LeasingApplication(
+                id, customerName, email, age, monthlyNetIncome, bikeId, LeasingStatus.RECEIVED, createdAt, null, null);
     }
 }

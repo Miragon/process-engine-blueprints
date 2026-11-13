@@ -16,7 +16,7 @@ class ReportHandoverService(
 
     override fun reportHandover(id: ApplicationId) {
         process.correlateHandoverReported(id)
-        val application = repository.findById(id) ?: error("Unknown application ${id.value}")
+        val application = repository.findById(id) ?: error("Unknown application $id")
         repository.save(application.reportHandover())
     }
 }

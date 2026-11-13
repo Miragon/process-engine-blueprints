@@ -31,7 +31,7 @@ On a **fresh clone** (or after changing `common-architecture-tests`), run `./mvn
 install` once first — module-scoped commands resolve the arch-tests jar from the local Maven
 repository.
 
-### Ports (one source of truth — keep README, this file and `.conductor/settings.toml` in sync)
+### Ports (one source of truth — keep README and this file in sync)
 
 | What | Port |
 |---|---|
@@ -107,7 +107,7 @@ the nightly run. Coverage says a line ran; mutation says a test would have notic
 ## Verify After Each Task (targeted, not a full build)
 
 - Backend service/controller: `./mvnw -pl service/app -am test "-Dtest=*<Name>Test" -Dsurefire.failIfNoSpecifiedTests=false`
-- Architecture only: `./mvnw -pl service/app -am test "-Dtest=io.miragon.blueprint.architecture.*"`
+- Architecture only: `./mvnw -pl service/app -am test -Dtest="ArchitectureTest" -Dsurefire.failIfNoSpecifiedTests=false`
 - Contract changed: regenerate the spec, then `git diff --exit-code openapi/openapi.json`
 
 ## Agent Tooling
@@ -122,8 +122,8 @@ Two CLIs come as Claude Code plugins (`.claude/settings.json`) and are pinned in
   (`inspect --business-key <applicationId>`, `status`, `incident`, history, `retry`). It never
   deploys: the service deploys the models from its classpath, and a hand deploy is a version the
   generated process API does not know. It never moves a case either (correlating a message,
-  completing a user task): that is a business action, taken by a client of the app's API or by a
-  human in the Tasklist, not by an agent.
+  completing a user task): that is a business action, taken by a client of the app's API, not by an
+  agent.
 
 Two more plugins follow the libraries the build uses: **bpmn-to-code** (skills `bpmn-to-code:*`) writes
 the workers, the process adapter and their tests against the generated process API
@@ -154,7 +154,7 @@ Use the `gh` CLI. Write everything (issues, PRs, commit messages) in **English**
 
 ## ADRs
 
-Architecture decisions are recorded in `docs/adr/` (0001–0014). Read them to understand *why* the
+Architecture decisions are recorded in `docs/adr/` (0001–0015). Read them to understand *why* the
 repo is shaped this way before proposing structural changes.
 
 ## Personality

@@ -4,18 +4,15 @@ import io.miragon.blueprint.domain.bike.BikeId;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
 
 /**
- * Resolves the {@code Clarify alternative with customer} user task from the outside — the "external"
- * completion path via our own client, next to a human completing the deployed Camunda Form in the
- * Tasklist. When an alternative bike was found, the newly chosen bike is carried into the re-order.
+ * Resolves the {@code Clarify alternative with customer} user task. When an alternative bike was found, the
+ * newly chosen bike is carried into the re-order.
  */
 public interface SelectAlternativeUseCase {
+
     void selectAlternative(Command command);
 
-    record Command(
-            ApplicationId applicationId,
-            boolean alternativeFound,
-            BikeId bikeId,
-            String bikeModel) {
+    /** {@code bikeId} and {@code bikeModel} may be {@code null} when no alternative was found. */
+    record Command(ApplicationId applicationId, boolean alternativeFound, BikeId bikeId, String bikeModel) {
         public Command {
             if (alternativeFound && bikeId == null) {
                 throw new IllegalArgumentException("An accepted alternative must name the bike");

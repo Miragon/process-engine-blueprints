@@ -19,10 +19,9 @@ public class SendContractService implements SendContractUseCase {
     private final NotificationPort notification;
 
     public SendContractService(
-        LeasingApplicationRepository repository,
-        ContractPort contract,
-        NotificationPort notification
-    ) {
+            LeasingApplicationRepository repository,
+            ContractPort contract,
+            NotificationPort notification) {
         this.repository = repository;
         this.contract = contract;
         this.notification = notification;
@@ -30,10 +29,8 @@ public class SendContractService implements SendContractUseCase {
 
     @Override
     public void sendContract(ApplicationId id) {
-        LeasingApplication application = repository.findById(id);
-        if (application == null) {
-            throw new IllegalStateException("Unknown application " + id);
-        }
+        LeasingApplication application = repository.findById(id)
+                .orElseThrow(() -> new IllegalStateException("Unknown application " + id));
         // Issue the contract in the contract system and record its id on the application.
         ContractId contractId = contract.issueContract(id);
         repository.save(application.withContract(contractId));

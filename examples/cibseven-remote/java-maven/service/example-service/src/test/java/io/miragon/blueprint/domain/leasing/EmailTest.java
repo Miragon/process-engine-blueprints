@@ -22,7 +22,8 @@ class EmailTest {
     void rejectsAMalformedAddress() {
         // when/then: a value that is not an email is refused
         assertThatThrownBy(() -> new Email("not-an-email"))
-                .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("'not-an-email' is not a valid email address");
     }
 
     @Test
@@ -30,6 +31,7 @@ class EmailTest {
     void rejectsAnEmptyAddress() {
         // when/then: an empty value is refused
         assertThatThrownBy(() -> new Email(""))
-                .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("'' is not a valid email address");
     }
 }

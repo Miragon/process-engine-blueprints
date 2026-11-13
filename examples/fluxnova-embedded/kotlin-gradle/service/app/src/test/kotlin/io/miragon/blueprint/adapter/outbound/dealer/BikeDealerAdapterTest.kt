@@ -43,15 +43,25 @@ class BikeDealerAdapterTest {
 
     @Test
     fun `ordering the incident-demo bike fails as a simulated dealer outage`() {
-        // given: the poison bike / when-then: the dealer call throws so the async job fails → incident
+        // given: the poison bike / when-then: the dealer call throws so the order job fails → incident
         assertThatThrownBy { underTest.order(BikeId("BIKE-FAIL")) }
             .isInstanceOf(BikeDealerAdapter.DealerUnavailableException::class.java)
     }
 
     @Test
-    fun `requestCancellation reports the order as cancellable`() {
-        // given: a placed order / when-then: the demo dealer always allows cancellation
-        assertThat(underTest.requestCancellation(OrderId("ORDER-900"))).isTrue()
+    fun `requestCancellation reports an order of a stocked bike as cancellable`() {
+        // given: an order of a regularly stocked bike
+        val orderId = underTest.order(BikeId("BIKE-900"))
+        // when-then: the dealer allows its cancellation
+        assertThat(underTest.requestCancellation(orderId)).isTrue()
+    }
+
+    @Test
+    fun `requestCancellation refuses to cancel an order of the custom-build demo bike`() {
+        // given: an order of the custom build
+        val orderId = underTest.order(BikeId("BIKE-CUSTOM"))
+        // when-then: the dealer refuses its cancellation, so the return has to be clarified
+        assertThat(underTest.requestCancellation(orderId)).isFalse()
     }
 
     @Test

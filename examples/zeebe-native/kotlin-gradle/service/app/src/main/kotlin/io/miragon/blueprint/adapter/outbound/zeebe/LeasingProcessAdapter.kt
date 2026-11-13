@@ -3,6 +3,7 @@ package io.miragon.blueprint.adapter.outbound.zeebe
 import io.camunda.client.CamundaClient
 import io.camunda.client.api.search.enums.UserTaskState
 import io.miragon.blueprint.adapter.process.BikeLeasingProcessProcessApi.FlowNodes
+import io.miragon.blueprint.adapter.process.CancelBikeOrderProcessApi
 import io.miragon.blueprint.adapter.process.Messages
 import io.miragon.blueprint.application.port.outbound.LeasingProcess
 import io.miragon.blueprint.domain.bike.BikeId
@@ -14,9 +15,9 @@ import org.springframework.stereotype.Component
 /**
  * Drives the Camunda 8 / Zeebe engine. Zeebe has no business key, so the application id travels as a
  * process variable and is declared as the message subscription correlation key on every catch event;
- * messages are published with that id as their correlation key, and the user task is looked up by its
+ * messages are published with that id as their correlation key, and a user task is looked up by its
  * element id plus the instance's `applicationId` variable. The variable and element names come from
- * the typed process API generated from `bike-leasing.bpmn`.
+ * the typed process APIs generated from `bike-leasing.bpmn` and `cancel-bike-order.bpmn`.
  */
 @Component
 class LeasingProcessAdapter(
@@ -48,16 +49,12 @@ class LeasingProcessAdapter(
     override fun correlateApplicationWithdrawn(id: ApplicationId) =
         engineApi.sendMessage(Messages.MIRAVELO_APPLICATION_WITHDRAWN, id.value.toString())
 
-    /**
-     * Completes the `Clarify alternative with customer` user task via the Camunda client — the same
-     * task a human could complete through its deployed Camunda Form in the Tasklist.
-     */
     override fun completeAlternativeClarification(
         id: ApplicationId,
         alternativeFound: Boolean,
         bikeId: BikeId?,
     ) {
-        val userTaskKey = findActiveClarifyAlternativeTask(id)
+        val userTaskKey = findActiveUserTask(FlowNodes.UserTaskClarifyAlternative.id.value, id)
         val variables = buildMap<String, Any> {
             put(FlowNodes.UserTaskClarifyAlternative.Variables.ALTERNATIVE_FOUND.value, alternativeFound)
             bikeId?.let { put(FlowNodes.UserTaskClarifyAlternative.Variables.BIKE_ID.value, it.value) }
@@ -65,7 +62,12 @@ class LeasingProcessAdapter(
         camundaClient.newCompleteUserTaskCommand(userTaskKey).variables(variables).send().join()
     }
 
-    private fun findActiveClarifyAlternativeTask(id: ApplicationId): Long {
+    override fun completeReturnClarification(id: ApplicationId) {
+        val userTaskKey = findActiveUserTask(CancelBikeOrderProcessApi.FlowNodes.UserTaskClarifyReturn.id.value, id)
+        camundaClient.newCompleteUserTaskCommand(userTaskKey).send().join()
+    }
+
+    private fun findActiveUserTask(elementId: String, id: ApplicationId): Long {
         // Match by reading each open task's applicationId variable rather than filtering the search by
         // process-instance variables: on an Elasticsearch-backed cluster that variable filter is not
         // reliably in sync with the task index (the task is searchable before the filter matches), so
@@ -74,7 +76,7 @@ class LeasingProcessAdapter(
         val openTasks = camundaClient.newUserTaskSearchRequest()
             .filter { filter ->
                 filter.state(UserTaskState.CREATED)
-                filter.elementId(FlowNodes.UserTaskClarifyAlternative.id.value)
+                filter.elementId(elementId)
             }
             .send()
             .join()
@@ -83,7 +85,7 @@ class LeasingProcessAdapter(
             .firstOrNull { readApplicationId(it.userTaskKey) == id.value.toString() }
             ?.userTaskKey
             ?: throw NoSuchElementException(
-                "No active '${FlowNodes.UserTaskClarifyAlternative.id.value}' task for application ${id.value}",
+                "No active '$elementId' task for application ${id.value}",
             )
     }
 

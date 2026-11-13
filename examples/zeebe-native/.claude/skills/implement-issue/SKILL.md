@@ -28,9 +28,9 @@ task) become questions, not choices.
 
 ## 3. Plan, then stop
 
-If the issue changes a model, read it now with skill `bpmn-cli:bpmn` and let the agent
-`review-process` report the state of the model and its glue; restate the change and collect its
-business questions. The model is edited after the approval.
+If the issue changes a model, run the agent `review-process` on the current models now and restate
+the change in business terms (which element, which path, which outcome) with the business questions;
+the model edit comes after the approval.
 
 Write the plan as a checklist along the chain, skipping hops the issue does not touch:
 
@@ -47,7 +47,7 @@ Write the plan as a checklist along the chain, skipping hops the issue does not 
    is taken (skill `create-adr`)
 <!-- variant:blueprint -->
 
-Every behaviour item lands in **both** variants with equivalent tests; models, forms, migrations and
+Every behaviour item lands in **both** variants with equivalent tests; models, migrations and
 `application.yaml` are copied byte-identically.
 <!-- /variant:blueprint -->
 

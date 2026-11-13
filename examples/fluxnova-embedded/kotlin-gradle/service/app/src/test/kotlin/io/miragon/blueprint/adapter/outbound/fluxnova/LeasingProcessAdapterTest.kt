@@ -1,6 +1,7 @@
 package io.miragon.blueprint.adapter.outbound.fluxnova
 
 import io.miragon.blueprint.adapter.process.BikeLeasingProcessProcessApi.FlowNodes
+import io.miragon.blueprint.adapter.process.CancelBikeOrderProcessApi
 import io.miragon.blueprint.adapter.process.Messages
 import io.miragon.blueprint.domain.leasing.ApplicationId
 import io.miragon.blueprint.domain.bike.BikeId
@@ -75,6 +76,29 @@ class LeasingProcessAdapterTest {
                 match<Map<String, Any?>> { it["alternativeFound"] == true && it["bikeId"] == "BIKE-42" },
             )
         }
+        confirmVerified(taskService)
+    }
+
+    @Test
+    fun `completeReturnClarification completes the clarify-return task of the instance`() {
+
+        // given: an open return-clarification task for the instance keyed by the application id
+        val task = mockk<Task> { every { id } returns "task-2" }
+        val query = mockk<TaskQuery>()
+        every { taskService.createTaskQuery() } returns query
+        every { query.processInstanceBusinessKey(any()) } returns query
+        every { query.taskDefinitionKey(any()) } returns query
+        every { query.singleResult() } returns task
+        every { taskService.complete(any(), any()) } returns Unit
+
+        // when: the back office confirms the return
+        underTest.completeReturnClarification(id)
+
+        // then: the clarify-return task is located by business key and completed without variables
+        verify { taskService.createTaskQuery() }
+        verify { query.processInstanceBusinessKey(id.value.toString()) }
+        verify { query.taskDefinitionKey(CancelBikeOrderProcessApi.FlowNodes.UserTaskClarifyReturn.id.value) }
+        verify { taskService.complete("task-2", emptyMap()) }
         confirmVerified(taskService)
     }
 

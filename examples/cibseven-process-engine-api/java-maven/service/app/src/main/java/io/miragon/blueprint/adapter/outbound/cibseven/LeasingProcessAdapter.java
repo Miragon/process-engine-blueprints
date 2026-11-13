@@ -11,6 +11,7 @@ import dev.bpmcrafters.processengineapi.task.TaskInformation;
 import dev.bpmcrafters.processengineapi.task.UserTaskCompletionApi;
 import dev.bpmcrafters.processengineapi.task.support.UserTaskSupport;
 import io.miragon.blueprint.adapter.process.BikeLeasingProcessProcessApi.FlowNodes;
+import io.miragon.blueprint.adapter.process.CancelBikeOrderProcessApi;
 import io.miragon.blueprint.adapter.process.Messages;
 import io.miragon.blueprint.application.port.outbound.LeasingProcess;
 import io.miragon.blueprint.domain.bike.BikeId;
@@ -29,8 +30,8 @@ import org.springframework.stereotype.Component;
  * correlation key (so later messages correlate to the right instance). The variable names come from
  * the typed process API generated from {@code bike-leasing.bpmn}.
  *
- * <p>The {@code clarifyAlternative} user task is looked up in the {@link UserTaskSupport} pool (fed by the
- * adapter's user-task delivery) and then completed via the {@link UserTaskCompletionApi} — the
+ * <p>The user tasks are looked up in the {@link UserTaskSupport} pool (fed by the adapter's user-task
+ * delivery) and then completed via the {@link UserTaskCompletionApi} — the
  * process-engine-api has no server-side task query, so completion always goes through a resolved task id.
  */
 @Component
@@ -119,13 +120,9 @@ public class LeasingProcessAdapter implements LeasingProcess {
         }
     }
 
-    /**
-     * Completes the {@code Clarify alternative with customer} user task via the engine client — the same
-     * task a human could complete through its deployed Camunda Form in the Tasklist.
-     */
     @Override
     public void completeAlternativeClarification(ApplicationId id, boolean alternativeFound, BikeId bikeId) {
-        String taskId = awaitClarifyAlternativeTaskId(id);
+        String taskId = awaitTaskId(id, FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID);
         Map<String, Object> variables = new LinkedHashMap<>();
         variables.put(FlowNodes.UserTaskClarifyAlternative.Variables.ALTERNATIVE_FOUND.getValue(), alternativeFound);
         if (bikeId != null) {
@@ -134,19 +131,25 @@ public class LeasingProcessAdapter implements LeasingProcess {
         userTaskCompletionApi.completeTask(new CompleteTaskCmd(taskId, variables)).join();
     }
 
+    @Override
+    public void completeReturnClarification(ApplicationId id) {
+        String taskId = awaitTaskId(id, CancelBikeOrderProcessApi.FlowNodes.UserTaskClarifyReturn.ELEMENT_ID);
+        userTaskCompletionApi.completeTask(new CompleteTaskCmd(taskId, Map.of())).join();
+    }
+
     /**
-     * Resolves the open {@code clarifyAlternative} task id for {@code id} from the {@link UserTaskSupport}
+     * Resolves the open task id of {@code taskDefinitionKey} for {@code id} from the {@link UserTaskSupport}
      * pool, waiting briefly for the adapter's user-task delivery to hand it over. Fails loudly if none
      * appears.
      */
-    private String awaitClarifyAlternativeTaskId(ApplicationId id) {
+    private String awaitTaskId(ApplicationId id, String taskDefinitionKey) {
         String applicationId = id.value().toString();
         String applicationIdKey = FlowNodes.StartEventLeasingRequestReceived.Variables.APPLICATION_ID.getValue();
         for (int attempt = 0; attempt < TASK_LOOKUP_ATTEMPTS; attempt++) {
             Optional<TaskInformation> task = userTaskSupport.getAllTasks().stream()
                     .filter(it -> Objects.equals(
                             it.getMeta().get(CommonRestrictions.ACTIVITY_ID),
-                            FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID))
+                            taskDefinitionKey))
                     .filter(it -> hasApplicationId(it, applicationIdKey, applicationId))
                     .findFirst();
             if (task.isPresent()) {
@@ -161,12 +164,11 @@ public class LeasingProcessAdapter implements LeasingProcess {
                 // application saves); Spring's default rule would have committed a checked
                 // InterruptedException.
                 Thread.currentThread().interrupt();
-                throw new RuntimeException("Interrupted while waiting for the clarify-alternative task", e);
+                throw new RuntimeException("Interrupted while waiting for the '" + taskDefinitionKey + "' task", e);
             }
         }
         throw new IllegalStateException(
-                "No open '" + FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID + "' task for application "
-                        + applicationId);
+                "No open '" + taskDefinitionKey + "' task for application " + applicationId);
     }
 
     /** Whether the pooled task's payload carries the application id; a failing payload lookup is no match. */

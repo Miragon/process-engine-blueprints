@@ -1,0 +1,126 @@
+package io.miragon.blueprint.adapter.outbound.zeebe
+
+import dev.bpmcrafters.processengineapi.CommonRestrictions
+import dev.bpmcrafters.processengineapi.correlation.CorrelateMessageCmd
+import dev.bpmcrafters.processengineapi.correlation.Correlation
+import dev.bpmcrafters.processengineapi.correlation.CorrelationApi
+import dev.bpmcrafters.processengineapi.process.StartProcessApi
+import dev.bpmcrafters.processengineapi.process.StartProcessByMessageCmd
+import dev.bpmcrafters.processengineapi.task.CompleteTaskCmd
+import dev.bpmcrafters.processengineapi.task.UserTaskCompletionApi
+import dev.bpmcrafters.processengineapi.task.support.UserTaskSupport
+import io.miragon.blueprint.adapter.process.BikeLeasingProcessProcessApi.FlowNodes
+import io.miragon.blueprint.adapter.process.CancelBikeOrderProcessApi
+import io.miragon.blueprint.adapter.process.Messages
+import io.miragon.blueprint.application.port.outbound.LeasingProcess
+import io.miragon.blueprint.domain.bike.BikeId
+import io.miragon.blueprint.domain.leasing.ApplicationId
+import io.miragon.blueprint.domain.leasing.LeasingApplication
+import org.springframework.stereotype.Component
+
+/**
+ * Drives the Camunda 8 / Zeebe engine through the process-engine-api. Zeebe has no business key, so the
+ * application id travels as a process variable and is declared as the message subscription correlation
+ * key on every catch event; messages are published with that id as their correlation key. The variable
+ * and element names come from the typed process API generated from `bike-leasing.bpmn`.
+ *
+ * The user tasks are looked up in the [UserTaskSupport] pool (fed by the adapter's
+ * user-task delivery) and then completed via the [UserTaskCompletionApi] — the process-engine-api
+ * has no server-side task query, so completion always goes through a resolved task id.
+ */
+@Component
+class LeasingProcessAdapter(
+    private val startProcessApi: StartProcessApi,
+    private val correlationApi: CorrelationApi,
+    private val userTaskSupport: UserTaskSupport,
+    private val userTaskCompletionApi: UserTaskCompletionApi,
+) : LeasingProcess {
+
+    override fun submitRequest(application: LeasingApplication) {
+        val start = FlowNodes.StartEventLeasingRequestReceived.Variables
+        // Publishing the leasing-request message starts a new instance via the message start event.
+        startProcessApi.startProcess(
+            cmd = StartProcessByMessageCmd(
+                messageName = Messages.MIRAVELO_LEASING_REQUEST_RECEIVED.value,
+                payload = mapOf(
+                    start.APPLICATION_ID.value to application.id.value.toString(),
+                    start.BIKE_ID.value to application.bikeId.value,
+                    start.MONTHLY_NET_INCOME.value to application.monthlyNetIncome,
+                    start.AGE.value to application.age,
+                ),
+            ),
+        ).join()
+    }
+
+    override fun correlateContractSigned(id: ApplicationId) =
+        correlate(Messages.MIRAVELO_CONTRACT_SIGNED.value, id)
+
+    override fun correlateHandoverReported(id: ApplicationId) =
+        correlate(Messages.MIRAVELO_HANDOVER_REPORTED.value, id)
+
+    override fun correlateApplicationWithdrawn(id: ApplicationId) =
+        correlate(Messages.MIRAVELO_APPLICATION_WITHDRAWN.value, id)
+
+    private fun correlate(messageName: String, id: ApplicationId) {
+        correlationApi.correlateMessage(
+            cmd = CorrelateMessageCmd(
+                messageName = messageName,
+                payload = emptyMap(),
+                correlation = Correlation.withKey(id.value.toString()),
+            ),
+        ).join()
+    }
+
+    override fun completeAlternativeClarification(
+        id: ApplicationId,
+        alternativeFound: Boolean,
+        bikeId: BikeId?,
+    ) {
+        val taskId = awaitTaskId(id, FlowNodes.UserTaskClarifyAlternative.id.value)
+        val variables = buildMap<String, Any?> {
+            put(FlowNodes.UserTaskClarifyAlternative.Variables.ALTERNATIVE_FOUND.value, alternativeFound)
+            bikeId?.let { put(FlowNodes.UserTaskClarifyAlternative.Variables.BIKE_ID.value, it.value) }
+        }
+        userTaskCompletionApi.completeTask(CompleteTaskCmd(taskId, variables)).join()
+    }
+
+    override fun completeReturnClarification(id: ApplicationId) {
+        val taskId = awaitTaskId(id, CancelBikeOrderProcessApi.FlowNodes.UserTaskClarifyReturn.id.value)
+        userTaskCompletionApi.completeTask(CompleteTaskCmd(taskId, emptyMap())).join()
+    }
+
+    /**
+     * Resolves the open [taskDefinitionKey] task id for [id] from the [UserTaskSupport] pool, waiting
+     * briefly for the adapter's user-task delivery to hand it over. Fails with
+     * [NoSuchElementException], which the REST advice maps to a 409: the token is not at this task.
+     */
+    private fun awaitTaskId(id: ApplicationId, taskDefinitionKey: String): String {
+        val applicationId = id.value.toString()
+        val applicationIdKey = FlowNodes.StartEventLeasingRequestReceived.Variables.APPLICATION_ID.value
+        repeat(TASK_LOOKUP_ATTEMPTS) {
+            userTaskSupport.getAllTasks()
+                .filter { it.meta[CommonRestrictions.ACTIVITY_ID] == taskDefinitionKey }
+                .firstOrNull { task ->
+                    runCatching { userTaskSupport.getPayload(task.taskId)[applicationIdKey] == applicationId }
+                        .getOrDefault(false)
+                }
+                ?.let { return it.taskId }
+            try {
+                Thread.sleep(TASK_LOOKUP_INTERVAL_MS)
+            } catch (e: InterruptedException) {
+                // Keep the interrupt visible and fail with an unchecked exception, which also rolls back the
+                // surrounding @Transactional use case; Spring's default rule would commit a checked one.
+                Thread.currentThread().interrupt()
+                throw IllegalStateException("Interrupted while waiting for the '$taskDefinitionKey' task", e)
+            }
+        }
+        throw NoSuchElementException(
+            "No active '$taskDefinitionKey' task for application $applicationId",
+        )
+    }
+
+    private companion object {
+        const val TASK_LOOKUP_ATTEMPTS = 50
+        const val TASK_LOOKUP_INTERVAL_MS = 200L
+    }
+}

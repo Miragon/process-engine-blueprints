@@ -1,0 +1,25 @@
+meta {
+  name: Application is still withdrawn because the dealer cannot cancel
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/bike-leasing/{{applicationId}}
+  body: none
+  auth: none
+}
+
+script:pre-request {
+  await new Promise((resolve) => setTimeout(resolve, 5000));
+}
+
+assert {
+  res.status: eq 200
+  res.body.status: eq WITHDRAWN
+}
+
+docs {
+  A cancellable order would have reached CANCELLED by now (see `11-abort-order-cancelled`). The custom
+  build stays WITHDRAWN: its cancel-order workflow waits for the return to be clarified.
+}

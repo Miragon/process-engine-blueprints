@@ -11,15 +11,17 @@ import dev.bpmcrafters.processengineapi.task.TaskInformation;
 import dev.bpmcrafters.processengineapi.task.UserTaskCompletionApi;
 import dev.bpmcrafters.processengineapi.task.support.UserTaskSupport;
 import io.miragon.blueprint.adapter.process.BikeLeasingProcessProcessApi.FlowNodes;
+import io.miragon.blueprint.adapter.process.CancelBikeOrderProcessApi;
 import io.miragon.blueprint.adapter.process.Messages;
 import io.miragon.blueprint.application.port.outbound.LeasingProcess;
 import io.miragon.blueprint.domain.bike.BikeId;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
 import io.miragon.blueprint.domain.leasing.LeasingApplication;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletionException;
-import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
 /**
@@ -28,9 +30,9 @@ import org.springframework.stereotype.Component;
  * correlation key (so later messages correlate to the right instance). The variable names come from
  * the typed process API generated from {@code bike-leasing.bpmn}.
  *
- * <p>The {@code clarifyAlternative} user task is looked up in the {@link UserTaskSupport} pool (fed by the adapter's
- * user-task delivery) and then completed via the {@link UserTaskCompletionApi} — the process-engine-api
- * has no server-side task query, so completion always goes through a resolved task id.
+ * <p>The user tasks are looked up in the {@link UserTaskSupport} pool (fed by the adapter's user-task
+ * delivery) and then completed via the {@link UserTaskCompletionApi} — the
+ * process-engine-api has no server-side task query, so completion always goes through a resolved task id.
  */
 @Component
 public class LeasingProcessAdapter implements LeasingProcess {
@@ -44,11 +46,10 @@ public class LeasingProcessAdapter implements LeasingProcess {
     private final UserTaskCompletionApi userTaskCompletionApi;
 
     public LeasingProcessAdapter(
-        StartProcessApi startProcessApi,
-        CorrelationApi correlationApi,
-        UserTaskSupport userTaskSupport,
-        UserTaskCompletionApi userTaskCompletionApi
-    ) {
+            StartProcessApi startProcessApi,
+            CorrelationApi correlationApi,
+            UserTaskSupport userTaskSupport,
+            UserTaskCompletionApi userTaskCompletionApi) {
         this.startProcessApi = startProcessApi;
         this.correlationApi = correlationApi;
         this.userTaskSupport = userTaskSupport;
@@ -57,19 +58,20 @@ public class LeasingProcessAdapter implements LeasingProcess {
 
     @Override
     public void submitRequest(LeasingApplication application) {
-        var key = application.id().value().toString();
-        var payload = new HashMap<String, Object>();
+        String key = application.id().value().toString();
+        Map<String, Object> payload = new LinkedHashMap<>();
         payload.put(FlowNodes.StartEventLeasingRequestReceived.Variables.APPLICATION_ID.getValue(), key);
         payload.put(FlowNodes.StartEventLeasingRequestReceived.Variables.BIKE_ID.getValue(), application.bikeId().value());
-        payload.put(FlowNodes.StartEventLeasingRequestReceived.Variables.MONTHLY_NET_INCOME.getValue(),
-            application.monthlyNetIncome());
+        payload.put(
+                FlowNodes.StartEventLeasingRequestReceived.Variables.MONTHLY_NET_INCOME.getValue(),
+                application.monthlyNetIncome());
         payload.put(FlowNodes.StartEventLeasingRequestReceived.Variables.AGE.getValue(), application.age());
         // Preserve the engine business key and seed the global correlation variable.
         payload.put(CommonRestrictions.BUSINESS_KEY, key);
         payload.put(CommonRestrictions.CORRELATION_KEY, key);
         startProcessApi.startProcess(
-            new StartProcessByMessageCmd(Messages.MIRAVELO_LEASING_REQUEST_RECEIVED.getValue(), payload)
-        ).join();
+                new StartProcessByMessageCmd(Messages.MIRAVELO_LEASING_REQUEST_RECEIVED.getValue(), payload))
+                .join();
     }
 
     @Override
@@ -88,24 +90,26 @@ public class LeasingProcessAdapter implements LeasingProcess {
     }
 
     /**
-     * Correlates {@code messageName} to the instance whose global {@code correlationKey} variable equals the id.
-     * A no-longer-valid correlation (e.g. the token already left the wait state) surfaces the engine's
+     * Correlates {@code messageName} to the instance whose global {@code correlationKey} variable equals the
+     * id. A no-longer-valid correlation (e.g. the token already left the wait state) surfaces the engine's
      * {@link org.operaton.bpm.engine.MismatchingMessageCorrelationException}, which the REST advice maps to a
      * 409 — so it is unwrapped from the {@link CompletionException} the async API wraps it in.
      */
     private void correlate(String messageName, ApplicationId id) {
         try {
             correlationApi.correlateMessage(
-                new CorrelateMessageCmd(
-                    messageName,
-                    Map.of(),
-                    Correlation.withKey(id.value().toString()),
-                    CommonRestrictions.builder()
-                        .withRestriction("useGlobalCorrelationKey", "true")
-                        .build()
-                )
-            ).join();
+                    new CorrelateMessageCmd(
+                            messageName,
+                            Map.of(),
+                            Correlation.withKey(id.value().toString()),
+                            CommonRestrictions.builder()
+                                    .withRestriction("useGlobalCorrelationKey", "true")
+                                    .build()))
+                    .join();
         } catch (CompletionException e) {
+            // Unchecked causes are rethrown as they are; a (theoretical) checked cause cannot be thrown
+            // from here, so the CompletionException itself is rethrown instead — being unchecked, it rolls
+            // back the caller's transaction, where a checked exception would have let Spring commit it.
             if (e.getCause() instanceof RuntimeException cause) {
                 throw cause;
             }
@@ -116,14 +120,10 @@ public class LeasingProcessAdapter implements LeasingProcess {
         }
     }
 
-    /**
-     * Completes the {@code Clarify alternative with customer} user task via the engine client — the same
-     * task a human could complete through its deployed Camunda Form in the Tasklist.
-     */
     @Override
-    public void completeAlternativeClarification(ApplicationId id, boolean alternativeFound, @Nullable BikeId bikeId) {
-        var taskId = awaitClarifyAlternativeTaskId(id);
-        var variables = new HashMap<String, Object>();
+    public void completeAlternativeClarification(ApplicationId id, boolean alternativeFound, BikeId bikeId) {
+        String taskId = awaitTaskId(id, FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID);
+        Map<String, Object> variables = new LinkedHashMap<>();
         variables.put(FlowNodes.UserTaskClarifyAlternative.Variables.ALTERNATIVE_FOUND.getValue(), alternativeFound);
         if (bikeId != null) {
             variables.put(FlowNodes.UserTaskClarifyAlternative.Variables.BIKE_ID.getValue(), bikeId.value());
@@ -131,44 +131,52 @@ public class LeasingProcessAdapter implements LeasingProcess {
         userTaskCompletionApi.completeTask(new CompleteTaskCmd(taskId, variables)).join();
     }
 
+    @Override
+    public void completeReturnClarification(ApplicationId id) {
+        String taskId = awaitTaskId(id, CancelBikeOrderProcessApi.FlowNodes.UserTaskClarifyReturn.ELEMENT_ID);
+        userTaskCompletionApi.completeTask(new CompleteTaskCmd(taskId, Map.of())).join();
+    }
+
     /**
-     * Resolves the open {@code clarifyAlternative} task id for {@code id} from the {@link UserTaskSupport} pool,
-     * waiting briefly for the adapter's user-task delivery to hand it over. Fails loudly if none appears.
+     * Resolves the open task id of {@code taskDefinitionKey} for {@code id} from the {@link UserTaskSupport}
+     * pool, waiting briefly for the adapter's user-task delivery to hand it over. Fails loudly if none
+     * appears.
      */
-    private String awaitClarifyAlternativeTaskId(ApplicationId id) {
-        var applicationId = id.value().toString();
-        var applicationIdKey = FlowNodes.StartEventLeasingRequestReceived.Variables.APPLICATION_ID.getValue();
+    private String awaitTaskId(ApplicationId id, String taskDefinitionKey) {
+        String applicationId = id.value().toString();
+        String applicationIdKey = FlowNodes.StartEventLeasingRequestReceived.Variables.APPLICATION_ID.getValue();
         for (int attempt = 0; attempt < TASK_LOOKUP_ATTEMPTS; attempt++) {
-            var task = userTaskSupport.getAllTasks().stream()
-                .filter(it -> FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID
-                    .equals(it.getMeta().get(CommonRestrictions.ACTIVITY_ID)))
-                .filter(it -> belongsToApplication(it, applicationIdKey, applicationId))
-                .findFirst()
-                .orElse(null);
-            if (task != null) {
-                return task.getTaskId();
+            Optional<TaskInformation> task = userTaskSupport.getAllTasks().stream()
+                    .filter(it -> Objects.equals(
+                            it.getMeta().get(CommonRestrictions.ACTIVITY_ID),
+                            taskDefinitionKey))
+                    .filter(it -> hasApplicationId(it, applicationIdKey, applicationId))
+                    .findFirst();
+            if (task.isPresent()) {
+                return task.get().getTaskId();
             }
-            sleep(TASK_LOOKUP_INTERVAL_MS);
+            try {
+                Thread.sleep(TASK_LOOKUP_INTERVAL_MS);
+            } catch (InterruptedException e) {
+                // Keep the interrupt visible and fail with an unchecked exception the REST advice does not
+                // map, so an interrupted wait still surfaces as a 500 rather than a 404. Being unchecked, it
+                // also rolls back the surrounding @Transactional use case (SelectAlternativeService's bike and
+                // application saves); Spring's default rule would have committed a checked
+                // InterruptedException.
+                Thread.currentThread().interrupt();
+                throw new RuntimeException("Interrupted while waiting for the '" + taskDefinitionKey + "' task", e);
+            }
         }
         throw new IllegalStateException(
-            "No open '" + FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID + "' task for application "
-                + applicationId);
+                "No open '" + taskDefinitionKey + "' task for application " + applicationId);
     }
 
-    private boolean belongsToApplication(TaskInformation task, String applicationIdKey, String applicationId) {
+    /** Whether the pooled task's payload carries the application id; a failing payload lookup is no match. */
+    private boolean hasApplicationId(TaskInformation task, String applicationIdKey, String applicationId) {
         try {
-            return applicationId.equals(userTaskSupport.getPayload(task.getTaskId()).get(applicationIdKey));
+            return Objects.equals(userTaskSupport.getPayload(task.getTaskId()).get(applicationIdKey), applicationId);
         } catch (RuntimeException e) {
             return false;
-        }
-    }
-
-    private static void sleep(long millis) {
-        try {
-            Thread.sleep(millis);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new IllegalStateException(e);
         }
     }
 }

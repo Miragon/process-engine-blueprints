@@ -178,7 +178,7 @@ export function ciWorkflow(examples) {
           setupNode,
           { name: 'Install the maintainer tooling', run: 'npm ci' },
           { name: 'Verify the generated files are in sync with examples/*/blueprint.yaml', run: 'npm run generate:check' },
-          { name: 'Verify the copies across examples have not drifted (drift.yml)', run: 'npm run drift' },
+          { name: 'Verify the examples and their variants have not drifted apart (drift.yml)', run: 'npm run drift' },
           { name: 'Verify no hard-coded owner outside the owner setting', run: 'scripts/check-owner.sh' },
         ],
       },

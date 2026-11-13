@@ -106,7 +106,7 @@ public final class CancelBikeOrderProcessApi {
         }
 
         public SequenceFlows<UserTaskClarifyReturn> userTaskClarifyReturn() {
-          return SequenceFlows.single(new ElementId("flow_cancellationNotPossible"), "No", "${cancellationPossible}", false, UserTaskClarifyReturn.INSTANCE);
+          return SequenceFlows.single(new ElementId("flow_cancellationNotPossible"), "No", "${!cancellationPossible}", false, UserTaskClarifyReturn.INSTANCE);
         }
       }
     }

@@ -2,13 +2,13 @@ package io.miragon.blueprint.adapter.inbound.rest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -24,12 +24,12 @@ import tools.jackson.databind.node.ObjectNode;
  * spec can never lie about the code. CI regenerates it and runs {@code git diff --exit-code} — the
  * output must be byte-for-byte deterministic, or that gate would flap.
  *
- * <p>Determinism is bought three ways: {@link SerializationFeature#ORDER_MAP_ENTRIES_BY_KEYS} sorts every
- * object key, a fixed two-space LF indenter keeps it stable across OSes, and a trailing newline
+ * <p>Determinism is bought three ways: {@link SerializationFeature#ORDER_MAP_ENTRIES_BY_KEYS} sorts
+ * every object key, a fixed two-space LF indenter keeps it stable across OSes, and a trailing newline
  * keeps POSIX tools happy.
  *
  * <p>This is not really an assertion test — it is a code generator wearing a JUnit costume so it runs
- * inside {@code mvn verify} with a live application context. See ADR-0003
+ * inside {@code ./mvnw verify} with a live application context. See ADR-0003
  * (docs/adr/0003-openapi-as-the-checked-in-contract.md).
  */
 @SpringBootTest(
@@ -41,16 +41,15 @@ class OpenApiSpecExportTest {
     @Value("${local.server.port}")
     private int port;
 
-    private final JsonMapper deterministicMapper =
-            JsonMapper.builder()
-                    .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS)
-                    .enable(SerializationFeature.INDENT_OUTPUT)
-                    .defaultPrettyPrinter(
-                            new DefaultPrettyPrinter().withObjectIndenter(new DefaultIndenter("  ", "\n")))
-                    .build();
+    private final JsonMapper deterministicMapper = JsonMapper.builder()
+            .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS)
+            .enable(SerializationFeature.INDENT_OUTPUT)
+            .defaultPrettyPrinter(new DefaultPrettyPrinter().withObjectIndenter(new DefaultIndenter("  ", "\n")))
+            .build();
 
     @Test
-    void exportsTheOpenApiContractToOpenapiOpenapiJsonAtTheRepoRoot() throws IOException, InterruptedException {
+    @DisplayName("exports the OpenAPI contract to openapi_openapi_json at the repo root")
+    void exportsTheOpenApiContractToOpenapiOpenapiJsonAtTheRepoRoot() throws Exception {
         // given: the live spec served by springdoc
         String raw = fetch("http://localhost:" + port + "/v3/api-docs");
         assertThat(raw).isNotBlank();
@@ -58,7 +57,7 @@ class OpenApiSpecExportTest {
         // when: it is re-serialised with sorted keys and a fixed indenter
         ObjectNode tree = (ObjectNode) deterministicMapper.readTree(raw);
         // Drop the `servers` block — springdoc fills it with the random test port, which would make
-        // the drift gate flap. The frontend client uses the httpClient mutator's baseURL anyway.
+        // the drift gate flap. Any API consumer points at its own base URL anyway.
         tree.remove("servers");
         String pretty = deterministicMapper.writeValueAsString(tree) + "\n";
 
@@ -69,14 +68,14 @@ class OpenApiSpecExportTest {
         Files.writeString(target, pretty);
     }
 
-    private String fetch(String url) throws IOException, InterruptedException {
+    private String fetch(String url) throws Exception {
         HttpRequest request = HttpRequest.newBuilder(URI.create(url)).GET().build();
         HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
         assertThat(response.statusCode()).isEqualTo(200);
         return response.body();
     }
 
-    /** Walk up from the module working directory until the directory holding the shared {@code openapi/} contract is found. */
+    /** Walk up from the module working directory until the directory holding the {@code openapi/} contract is found. */
     private Path repoRoot() {
         Path dir = Path.of(System.getProperty("user.dir")).toAbsolutePath();
         while (dir != null) {

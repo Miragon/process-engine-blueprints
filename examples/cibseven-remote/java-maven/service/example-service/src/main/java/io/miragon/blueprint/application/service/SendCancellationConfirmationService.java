@@ -8,6 +8,12 @@ import io.miragon.blueprint.domain.leasing.LeasingApplication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Final step of the cancellation path (serviceTask_sendCancellationConfirmation →
+ * endEvent_applicationCancelled): confirm to the customer AND move the application to CANCELLED, so
+ * the read model reflects the terminal state (symmetric with the reject path). Without this the
+ * process would end while the REST/UI status still read ORDERED.
+ */
 @Service
 @Transactional
 public class SendCancellationConfirmationService implements SendCancellationConfirmationUseCase {
@@ -15,7 +21,9 @@ public class SendCancellationConfirmationService implements SendCancellationConf
     private final LeasingApplicationRepository repository;
     private final NotificationPort notification;
 
-    public SendCancellationConfirmationService(LeasingApplicationRepository repository, NotificationPort notification) {
+    public SendCancellationConfirmationService(
+            LeasingApplicationRepository repository,
+            NotificationPort notification) {
         this.repository = repository;
         this.notification = notification;
     }

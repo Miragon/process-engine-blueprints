@@ -16,6 +16,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import java.time.LocalDateTime
+import java.util.Locale
 import java.util.UUID
 
 @WebMvcTest(ListLeasingApplicationsController::class)
@@ -80,6 +81,27 @@ class ListLeasingApplicationsControllerTest {
         assertThat(filter.captured.status).isEqualTo(LeasingStatus.ACTIVE)
         assertThat(filter.captured.page).isEqualTo(2)
         assertThat(filter.captured.size).isEqualTo(5)
+    }
+
+    @Test
+    fun `parses the status filter independently of the default locale`() {
+        // given: a default locale whose upper-casing of "i" is not "I"
+        every { query.list(any()) } returns
+            ListLeasingApplicationsQuery.Page(emptyList(), page = 0, size = 20, totalElements = 0, totalPages = 0)
+        val filter = slot<ListLeasingApplicationsQuery.Filter>()
+        val previousLocale = Locale.getDefault()
+        Locale.setDefault(Locale.forLanguageTag("tr-TR"))
+
+        // when: a filtered request is made with lowercase status
+        try {
+            mockMvc.perform(get("/api/bike-leasing?status=active")).andReturn()
+        } finally {
+            Locale.setDefault(previousLocale)
+        }
+
+        // then: the status is still recognised
+        verify { query.list(capture(filter)) }
+        assertThat(filter.captured.status).isEqualTo(LeasingStatus.ACTIVE)
     }
 
     @Test

@@ -33,18 +33,20 @@ migrated schema and never creates or drops a table.
   to the datasource (migrations silently don't run). Postgres additionally needs the separate
   `flyway-database-postgresql` module. Versions come from the Spring Boot BOM.
 - **Migrations** live in `service/example-service/src/main/resources/db/migration/`, named
-  `V{n}__description.sql`, **forward-only** (an applied migration is checksummed and never edited — fix
-  it with a new one). Flyway applies pending migrations on start-up, before Hibernate validates, and
-  records each in its `flyway_schema_history` table. The baseline `V1__init.sql` reproduces the two
-  current entities.
-- **Seed vs. schema split:** Flyway owns **schema only**. The bike catalogue stays in an idempotent
-  `ApplicationRunner` seeder, because that data — especially the out-of-stock demo entry — is a
-  **demo/test fixture, not production reference data**, and must not be baked into a fork's real
-  database.
+  `V{n}__description.sql`, **forward-only** (an applied migration is checksummed and never edited — fix it with a new one).
+  Flyway applies pending migrations on start-up, before Hibernate validates, and records each in its
+  `flyway_schema_history` table. The baseline `V1__init.sql` reproduces the two current entities.
+- **Seed vs. schema split:** Flyway owns **schema only**. The bike catalogue stays in
+  `BikeCatalogueSeeder` (an idempotent `ApplicationRunner`), because that data — especially the
+  `BIKE-OOS` out-of-stock entry — is a **demo/test fixture, not production reference data**, and must
+  not be baked into a fork's real database.
 - **Tests keep Flyway off.** The `test` profile runs on in-memory H2 with Hibernate building the
-  schema; `spring.flyway.enabled: false` in `application-test.yaml` stops the Postgres-flavoured
-  baseline from running against H2. The migrations are therefore exercised by the real-Postgres paths —
-  local `bootRun` and the Bruno CI jobs.
+  schema (`ddl-auto: create-drop`); `spring.flyway.enabled: false` in `application-test.yaml` stops the
+  Postgres-flavoured baseline from running against H2. The migrations are therefore exercised by the
+  real-Postgres paths — local `bootRun` and the Bruno CI runs.
+
+The how-to (adding a migration, the one-time reset of an old dev DB) is in
+[CONTRIBUTING.md](../../CONTRIBUTING.md).
 
 ## Consequences
 

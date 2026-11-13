@@ -11,8 +11,8 @@ get {
 }
 
 script:pre-request {
-  const id = bru.getVar('applicationId');
-  await pollApp('/api/bike-leasing/' + id, (b, s) => s === 200 && b && b.status === 'REJECTED');
+  await pollApp("/api/bike-leasing/" + bru.getVar("applicationId"),
+    (b, s) => s === 200 && b && b.status === "REJECTED");
 }
 
 assert {

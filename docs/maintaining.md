@@ -9,7 +9,6 @@
 | `.github/workflows/<example>.<file>.yml` | `examples/<example>/.github/workflows/{pre-merge,nightly}*.yml` |
 | `.github/workflows/ci.yml`, `nightly.yml` | the examples and their workflows |
 | `.github/dependabot.yml` | `examples/*/.github/dependabot.yml` |
-| `.conductor/settings.toml` | `examples/*/.conductor/settings.toml` (targets prefixed `<example>:`) |
 | `tooling/create-blueprint/catalog.json` | `examples/*/blueprint.yaml` and the root `package.json` |
 | `README.md` (badges, quick start, examples table) | `examples/*/blueprint.yaml` and the root `package.json` |
 
@@ -41,8 +40,7 @@ squashed or signed.
   and `fullstack-cibseven-embedded` on their first variant, plus every example it touches directly.
 - The pre-merge workflow of a selected variant runs without its `backend` job: the starter build covers it.
   Mutation testing does not run on pull requests at all.
-- `_blueprint.yml` per selected example: identical resources of both variants, and every starter exported to a
-  folder outside the checkout, linted, built and compared with the committed OpenAPI contract and process API.
+- `_blueprint.yml` per selected example: every starter exported to a folder outside the checkout, linted, built and compared with the committed OpenAPI contract and process API.
 - Nightly: the nightly checks (mutation testing of the domain, Bruno, cross-browser e2e for fullstack) and
   `_blueprint.yml` of the examples changed in the last 25 hours, every example if a change outside `examples/`
   landed; on Sundays and on demand all of them. Nightly failures only reach GitHub's default notifications.
@@ -52,15 +50,34 @@ squashed or signed.
 One entry per example, build tool and ecosystem; groups and multi-ecosystem groups are prefixed with the example
 and pull requests are labelled `example:<name>`, so an update of one example never waits for another. GitHub
 Actions are bumped once for the root and all examples. Patch and minor updates are auto-merged once `CI gate` is
-green (`dependabot-automerge.yml`); a red Dependabot pull request is handed to `dependency-repair.yml` (needs the
+green (`dependabot-automerge.yml`), majors only when they touch nothing but workflow files, after a seven-day
+cooldown; a red Dependabot pull request is handed to `dependency-repair.yml` (needs the
 `claude-maintenance` environment and `CLAUDE_CODE_OAUTH_TOKEN`).
 
 ## Drift between examples
 
-`drift.yml` lists files that are identical in several examples today (scenarios, SQL fixtures, ADR template,
-`CLAUDE.md`, …). Build files, wrappers, lockfiles, stacks and workflows are left out on purpose: they are bumped
-per example. When a change has to differ in one example, move the file out of its rule with a reason in the pull
-request. `node scripts/check-drift.mjs --propose` prints what is shared right now, as a starting point.
+Every file of every example must be accounted for. `npm run drift` (in CI and in the pre-commit hook) fails
+unless each file is
+
+- identical to its copies in other examples of the same language (`kotlin-gradle/` with `kotlin-gradle/`,
+  `java-maven/` with `java-maven/`; a single-variant example at the root has its `service/` compared as
+  `<variant>/service/`), after replacing the engine names listed under `engines` in
+  `drift.yml`; the generated `drift.lock.yml` records which examples share which file, so a copy that drifts
+  fails, or
+- listed in `drift.yml` with a reason: `differs` (compared, allowed to differ) or `independent` (never compared,
+  Dependabot bumps it per example: build files, wrappers, lockfiles, stacks, workflows).
+
+A file that becomes identical to another copy fails until it is locked, and a `differs` entry whose files are all
+identical again fails until it is removed, so the list cannot go stale. The reason is free text: why the file
+differs and whether it is still to be aligned. Prefer exact paths over globs in `differs`, so a new file has to
+be decided on.
+
+Both variants of an example are checked by the same command: the same source and test files in `kotlin-gradle/`
+and `java-maven/` (path without `src/<lang>/` and extension), the same test methods in each test class (by
+`@DisplayName` or method name, ignoring case and punctuation), and identical `identicalResources` from
+`blueprint.yaml`. `languageOnly` lists the exceptions, each with a reason.
+
+After an intended change run `npm run drift:update` and commit `drift.lock.yml` with it.
 
 `temporal-native` is the example without BPMN. It shares the core of `zeebe-native` through its own rule, so a
 change to `domain/`, `application/`, the migration or the contract of `zeebe-native` goes there too, and that core

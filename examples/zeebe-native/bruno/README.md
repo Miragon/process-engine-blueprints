@@ -2,7 +2,7 @@
 
 A [Bruno](https://www.usebruno.com) collection that drives the bike-leasing process end to end against
 a **running** service — either variant, they expose the same API. Domain endpoints trigger the business
-actions; the Camunda 8 REST API (`/v2`) completes the form-only user task and resolves the incident. CI
+actions; the Camunda 8 REST API (`/v2`) reads the engine's state and resolves the incident. CI
 runs the collection against both variants on every pull request.
 
 ```bash
@@ -13,14 +13,14 @@ npx --yes @usebruno/cli@4.0.0 run . --env local -r --exclude-tags=demo-data
 |---|---|
 | `00-demo-data` | six cases left open for a demo, one per state: waiting for the signature, waiting for the handover, in the withdrawal period, rejected, an alternative waiting in the inbox, withdrawn with the return clarification open. ACTIVE is left out: Zeebe timers cannot be fast-forwarded over REST, see `01-happy-path`. CI skips it (tag `demo-data`) |
 | `01-happy-path` | submit → sign the contract → report the handover |
-| `03-abort` | the customer withdraws after signing; the bike order is cancelled and the contract compensated |
+| `03-abort` | the customer withdraws after signing for a custom build the dealer cannot cancel; the return is clarified, the costs booked and the contract compensated |
 | `04-not-solvent` | the DMN rejects the applicant |
 | `05-bike-unavailable` | the bike is out of stock and the customer picks an alternative |
 | `06-incident-demo` | a failing job runs out of retries and raises an incident |
 | `07-list-and-inbox` | the list and task-inbox endpoints |
 | `08-alternative-declined` | the bike is out of stock and no alternative is found; contract and policy are compensated, no order is cancelled |
 | `09-invalid-request` | invalid input is refused with a 400: a request without income, an accepted alternative without a bike |
-| `10-alternative-via-tasklist` | the bike is out of stock and the alternative is chosen the way the Tasklist form does it |
+| `11-abort-order-cancelled` | the customer withdraws after signing; the dealer cancels the order, so no return has to be clarified |
 
 Fill an empty stack with demo cases:
 
@@ -51,18 +51,19 @@ availability), `GET /api/bike-leasing?status=&page=&size=` (the paged applicatio
 alternative-clarification task, never exposing a raw task id). The full contract is
 [`../openapi/openapi.json`](../openapi/openapi.json).
 
-## 🔁 Two ways to complete a user task
+## 🔁 Completing the user tasks
 
-If the requested bike is out of stock (`bikeId: "BIKE-OOS"`), the `Clarify alternative with customer`
-user task shows a deliberate contrast:
+Both user tasks have no form and are completed through a domain endpoint only:
 
-- **Reaches the domain either way:** a client calls `POST /api/bike-leasing/{id}/clarify-alternative`, or
-  a human completes the Camunda Form in the Tasklist. Both hand the chosen `bikeId` to the process, and
-  the re-order reads it and persists it on the application. The REST call additionally registers the
-  bike's model in the portfolio.
-- **Counter-example:** `clarify-return` in `cancel-bike-order.bpmn` is completed via the Camunda Form or
-  the Camunda 8 REST API only. It never touches the domain, so its data lands only in process variables
-  (see the `bpmn:documentation` on each task).
+- **Clarify alternative with customer:** if the requested bike is out of stock (`bikeId: "BIKE-OOS"`),
+  `POST /api/bike-leasing/{id}/clarify-alternative` hands the chosen `bikeId` to the process; the re-order
+  reads it and persists it on the application, and the endpoint registers the bike's model in the
+  portfolio.
+- **Clarify return with supplier:** `POST /api/bike-leasing/{id}/clarify-return` confirms the return, and
+  the process books the costs.
+- **Which withdrawal clarifies a return:** the simulated dealer refuses to cancel the order of the custom
+  build `BIKE-CUSTOM` (`03-abort`), so the return is clarified and the costs booked; it cancels every other
+  order right away (`11-abort-order-cancelled`).
 
 ## 🚨 Incident demo
 

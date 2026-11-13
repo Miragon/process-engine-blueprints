@@ -13,6 +13,7 @@ import org.springframework.http.MediaType
 import org.springframework.test.web.client.MockRestServiceServer
 import org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath
 import org.springframework.test.web.client.match.MockRestRequestMatchers.method
+import org.springframework.test.web.client.match.MockRestRequestMatchers.queryParam
 import org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo
 import org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess
 import org.springframework.web.client.RestClient
@@ -134,6 +135,28 @@ class RemoteLeasingProcessAdapterTest {
     }
 
     @Test
+    fun `completeReturnClarification looks up the task by business key and completes it without variables`() {
+
+        // given: one active clarify-return task for the application
+        val application = testLeasingApplication()
+        server.expect(requestTo(containsString("/task?")))
+            .andExpect(method(HttpMethod.GET))
+            .andExpect(queryParam("processInstanceBusinessKey", application.id.value.toString()))
+            .andExpect(queryParam("taskDefinitionKey", "userTask_clarifyReturn"))
+            .andRespond(withSuccess("""[{"id":"task-2"}]""", MediaType.APPLICATION_JSON))
+        server.expect(requestTo("http://engine/engine-rest/task/task-2/complete"))
+            .andExpect(method(HttpMethod.POST))
+            .andExpect(jsonPath("$.variables").isEmpty())
+            .andRespond(withSuccess())
+
+        // when: the back office confirms the return
+        underTest.completeReturnClarification(application.id)
+
+        // then: both the lookup and completion happened
+        server.verify()
+    }
+
+    @Test
     fun `findTaskId fails when no active task exists`() {
 
         // given: the engine reports no active task
@@ -144,7 +167,9 @@ class RemoteLeasingProcessAdapterTest {
 
         // when / then: completing the clarification surfaces the missing task
         val error = runCatching { underTest.completeAlternativeClarification(application.id, alternativeFound = false) }
-        assertThat(error.exceptionOrNull()).isInstanceOf(IllegalStateException::class.java)
+        assertThat(error.exceptionOrNull())
+            .isInstanceOf(IllegalStateException::class.java)
+            .hasMessageContaining("No active task")
         server.verify()
     }
 

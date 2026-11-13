@@ -8,12 +8,11 @@ import io.miragon.blueprint.domain.bike.Bike;
 import io.miragon.blueprint.domain.bike.BikeId;
 import io.miragon.blueprint.domain.leasing.LeasingApplication;
 import io.miragon.blueprint.domain.leasing.PendingClarification;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(readOnly = true)
@@ -26,8 +25,7 @@ public class GetPendingClarificationsService implements GetPendingClarifications
     public GetPendingClarificationsService(
             TaskInboxPort taskInbox,
             LeasingApplicationRepository repository,
-            BikePortfolioRepository bikePortfolio
-    ) {
+            BikePortfolioRepository bikePortfolio) {
         this.taskInbox = taskInbox;
         this.repository = repository;
         this.bikePortfolio = bikePortfolio;
@@ -43,20 +41,17 @@ public class GetPendingClarificationsService implements GetPendingClarifications
                         .stream())
                 .toList();
         Map<BikeId, String> models = new HashMap<>();
-        for (Bike bike : bikePortfolio.findAllByIds(cases.stream().map(c -> c.getValue().bikeId()).toList())) {
+        for (Bike bike : bikePortfolio.findAllByIds(
+                cases.stream().map(c -> c.getValue().bikeId()).toList())) {
             models.put(bike.bikeId(), bike.model());
         }
         return cases.stream()
-                .map(c -> {
-                    TaskInboxPort.OpenClarification task = c.getKey();
-                    LeasingApplication application = c.getValue();
-                    return new PendingClarification(
-                            application.id(),
-                            application.customerName(),
-                            application.bikeId(),
-                            models.get(application.bikeId()),
-                            task.waitingSince());
-                })
+                .map(c -> new PendingClarification(
+                        c.getValue().id(),
+                        c.getValue().customerName(),
+                        c.getValue().bikeId(),
+                        models.get(c.getValue().bikeId()),
+                        c.getKey().waitingSince()))
                 .toList();
     }
 }

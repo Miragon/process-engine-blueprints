@@ -17,9 +17,8 @@ import org.springframework.context.annotation.Primary
 @Configuration
 class OpenApiConfiguration {
 
-    // The CIB seven webapp registers its own OpenAPI bean (org.cibseven.webapp.config.OpenApiConfig).
-    // @Primary makes springdoc's openAPIBuilder pick ours for the /api/** contract any API consumer
-    // is generated from.
+    // The CIB seven webapp registers its own OpenAPI bean. @Primary makes springdoc's openAPIBuilder
+    // pick ours for the /api/** contract we publish to API consumers.
     @Bean
     @Primary
     fun bikeLeasingOpenApi(): OpenAPI =

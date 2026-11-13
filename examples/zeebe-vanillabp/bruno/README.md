@@ -2,7 +2,8 @@
 
 A [Bruno](https://www.usebruno.com) collection that drives the bike-leasing process end to end against
 a **running** service — either variant, they expose the same API. Domain endpoints trigger the business
-actions; the Camunda 8 REST API (`/v2`) completes the engine-only user task and reads the engine state.
+actions and complete the user tasks; the Camunda 8 REST API (`/v2`) reads the engine state and drives the
+incident demo.
 CI runs the collection against both variants on every pull request.
 
 ```bash
@@ -13,13 +14,14 @@ npx --yes @usebruno/cli@4.0.0 run . --env local -r --exclude-tags=demo-data
 |---|---|
 | `00-demo-data` | six cases left open for a demo, one per state: waiting for the signature, waiting for the handover, in the withdrawal period, rejected, an alternative waiting in the inbox, withdrawn with the return clarification open. ACTIVE is left out: Zeebe timers cannot be fast-forwarded over REST, see `01-happy-path`. CI skips it (tag `demo-data`) |
 | `01-happy-path` | submit → sign the contract → report the handover |
-| `03-abort` | the customer withdraws after signing; the bike order is cancelled and the contract compensated |
+| `03-abort` | the customer withdraws after signing for a custom build the dealer cannot cancel; the return is clarified, the costs booked and the contract compensated |
 | `04-not-solvent` | the DMN rejects the applicant |
 | `05-bike-unavailable` | the bike is out of stock and the customer picks an alternative |
 | `06-incident-demo` | a failing job runs out of retries and raises an incident |
 | `07-list-and-inbox` | the list and task-inbox endpoints |
 | `08-alternative-declined` | the bike is out of stock and no alternative is found; contract and policy are compensated, no order is cancelled |
 | `09-invalid-request` | a request without income is refused with a 400 before any process starts |
+| `11-abort-order-cancelled` | the customer withdraws after signing; the dealer cancels the order, so no return has to be clarified |
 
 Fill an empty stack with demo cases:
 
@@ -51,16 +53,20 @@ list) and `GET /api/tasks/clarify-alternative` (the back-office inbox, correlate
 never exposing a raw task id). The full contract is [`../openapi/openapi.json`](../openapi/openapi.json),
 also served at <http://localhost:8081/swagger-ui.html>.
 
-## 🔁 Two ways to complete a user task
+## 🔁 Completing the user tasks
 
-If the requested bike is out of stock (`bikeId: "BIKE-OOS"`), the process parks on a user task. The two
-user tasks of the model are a deliberate contrast:
+Both user tasks have no form and are completed through a domain endpoint, never through the Camunda 8
+REST API ([ADR-0014](../docs/adr/0014-user-tasks-without-forms.md)):
 
-- **Recommended:** a client calls `POST /api/bike-leasing/{id}/clarify-alternative`, which routes through
-  the domain (persisting the chosen alternative) *before* completing the task.
-- **Counter-example:** `clarify-return` in `cancel-bike-order.bpmn` is completed through the Camunda 8
-  REST API only. It never touches the domain, so its data lands only in process variables (see the
-  `bpmn:documentation` on each task).
+- **Clarify alternative:** if the requested bike is out of stock (`bikeId: "BIKE-OOS"`), the process
+  parks on this task. `POST /api/bike-leasing/{id}/clarify-alternative` persists the chosen alternative
+  on the aggregate *before* completing the task (`05-bike-unavailable`).
+- **Clarify return:** if the dealer cannot cancel the order of a withdrawn application, the called
+  process parks on this task. `POST /api/bike-leasing/{id}/clarify-return` confirms the return arranged
+  with the supplier; the process then books the costs (`03-abort`).
+- **Which withdrawal clarifies a return:** the simulated dealer refuses to cancel the order of the custom
+  build `BIKE-CUSTOM` (`03-abort`), so the return is clarified and the costs booked; it cancels every other
+  order right away (`11-abort-order-cancelled`).
 
 ## 🚨 Incident demo
 

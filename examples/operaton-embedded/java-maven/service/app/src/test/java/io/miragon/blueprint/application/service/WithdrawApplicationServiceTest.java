@@ -1,6 +1,7 @@
 package io.miragon.blueprint.application.service;
 
 import static io.miragon.blueprint.domain.leasing.TestObjectBuilder.testLeasingApplication;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doThrow;
@@ -59,6 +60,24 @@ class WithdrawApplicationServiceTest {
 
         verify(process).correlateApplicationWithdrawn(id);
         verify(repository, never()).findById(any());
+        verify(repository, never()).save(any());
+        verifyNoMoreInteractions(process, repository);
+    }
+
+    @Test
+    void withdrawFailsForAnUnknownApplication() {
+
+        // given: a correlated withdrawal for an application the repository does not know
+        ApplicationId unknownId = new ApplicationId(UUID.fromString("123e4567-e89b-12d3-a456-426614174999"));
+        when(repository.findById(unknownId)).thenReturn(Optional.empty());
+
+        // when / then: the lookup fails and nothing is persisted
+        assertThatThrownBy(() -> underTest.withdraw(unknownId))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Unknown application " + unknownId);
+
+        verify(process).correlateApplicationWithdrawn(unknownId);
+        verify(repository).findById(unknownId);
         verify(repository, never()).save(any());
         verifyNoMoreInteractions(process, repository);
     }

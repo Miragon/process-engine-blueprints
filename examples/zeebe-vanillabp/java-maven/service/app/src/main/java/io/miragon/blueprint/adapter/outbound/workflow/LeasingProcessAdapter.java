@@ -52,6 +52,13 @@ public class LeasingProcessAdapter implements LeasingProcess {
         processService.completeUserTask(aggregate, taskId);
     }
 
+    @Override
+    public void completeReturnClarification(ApplicationId id) {
+        LeasingApplicationAggregate aggregate = aggregateOf(id);
+        String taskId = aggregate.resolveReturnClarification();
+        processService.completeUserTask(aggregate, taskId);
+    }
+
     private void correlate(ApplicationId id, MessageName message) {
         processService.correlateMessage(aggregateOf(id), message.getValue());
     }

@@ -1,19 +1,23 @@
 package io.miragon.blueprint.application.service;
 
 import static io.miragon.blueprint.domain.leasing.TestObjectBuilder.testLeasingApplication;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import io.miragon.blueprint.application.port.outbound.LeasingApplicationRepository;
 import io.miragon.blueprint.application.port.outbound.NotificationPort;
+import io.miragon.blueprint.domain.leasing.ApplicationId;
 import io.miragon.blueprint.domain.leasing.LeasingApplication;
 import io.miragon.blueprint.domain.leasing.LeasingStatus;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class RejectApplicationServiceTest {
@@ -38,5 +42,21 @@ class RejectApplicationServiceTest {
         verify(notification).send(any(), eq(application));
         verify(repository).save(argThat(app -> app.status() == LeasingStatus.REJECTED));
         verifyNoMoreInteractions(repository, notification);
+    }
+
+    @Test
+    void rejectFailsForAnUnknownApplication() {
+
+        // given: an id the repository cannot resolve
+        ApplicationId unknownId = new ApplicationId(UUID.fromString("123e4567-e89b-12d3-a456-426614174999"));
+        when(repository.findById(unknownId)).thenReturn(Optional.empty());
+
+        // when / then: rejection fails with the unknown-application message, nobody is notified, nothing saved
+        assertThatThrownBy(() -> underTest.reject(unknownId))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Unknown application " + unknownId);
+        verify(repository).findById(unknownId);
+        verifyNoMoreInteractions(repository);
+        verifyNoInteractions(notification);
     }
 }

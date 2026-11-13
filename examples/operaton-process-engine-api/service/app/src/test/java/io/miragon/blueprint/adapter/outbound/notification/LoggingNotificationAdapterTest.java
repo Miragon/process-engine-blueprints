@@ -1,10 +1,11 @@
 package io.miragon.blueprint.adapter.outbound.notification;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
 import static io.miragon.blueprint.domain.leasing.TestObjectBuilder.testLeasingApplication;
 import static org.assertj.core.api.Assertions.assertThatCode;
+
+import io.miragon.blueprint.domain.leasing.LeasingApplication;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 class LoggingNotificationAdapterTest {
 
@@ -15,10 +16,10 @@ class LoggingNotificationAdapterTest {
     void sendLogsTheNotificationWithoutError() {
 
         // given: a subject and an application
-        var application = testLeasingApplication().build();
+        LeasingApplication application = testLeasingApplication().build();
 
         // when / then: sending the notification completes without throwing
         assertThatCode(() -> underTest.send("Please review and sign your leasing contract", application))
-            .doesNotThrowAnyException();
+                .doesNotThrowAnyException();
     }
 }

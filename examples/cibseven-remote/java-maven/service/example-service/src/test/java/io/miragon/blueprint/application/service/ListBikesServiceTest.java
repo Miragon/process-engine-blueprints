@@ -10,11 +10,8 @@ import io.miragon.blueprint.application.port.outbound.BikeDealerPort;
 import io.miragon.blueprint.application.port.outbound.BikePortfolioRepository;
 import io.miragon.blueprint.domain.bike.Bike;
 import io.miragon.blueprint.domain.bike.BikeId;
-import org.assertj.core.api.InstanceOfAssertFactories;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
 import java.util.List;
+import org.junit.jupiter.api.Test;
 
 class ListBikesServiceTest {
 
@@ -23,7 +20,6 @@ class ListBikesServiceTest {
     private final ListBikesService underTest = new ListBikesService(bikePortfolio, bikeDealer);
 
     @Test
-    @DisplayName("enriches each catalogue bike with its dealer availability")
     void enrichesEachCatalogueBikeWithItsDealerAvailability() {
         // given: a catalogue (already ordered by the portfolio) where one bike is out of stock
         when(bikePortfolio.findAll())
@@ -37,21 +33,15 @@ class ListBikesServiceTest {
         List<ListBikesQuery.Item> result = underTest.all();
 
         // then: the portfolio's order is preserved and each item's availability comes from the dealer
-        assertThat(result).extracting(item -> item.bikeId().value()).containsExactly("BIKE-900", "BIKE-OOS");
-        assertThat(result)
-                .filteredOn(item -> item.bikeId().value().equals("BIKE-900"))
-                .singleElement()
-                .extracting(ListBikesQuery.Item::available, InstanceOfAssertFactories.BOOLEAN)
-                .isTrue();
-        assertThat(result)
-                .filteredOn(item -> item.bikeId().value().equals("BIKE-OOS"))
-                .singleElement()
-                .extracting(ListBikesQuery.Item::available, InstanceOfAssertFactories.BOOLEAN)
-                .isFalse();
+        assertThat(result.stream().map(item -> item.bikeId().value()).toList())
+                .containsExactly("BIKE-900", "BIKE-OOS");
+        assertThat(result.stream().filter(item -> item.bikeId().value().equals("BIKE-900")).findFirst()
+                .orElseThrow().available()).isTrue();
+        assertThat(result.stream().filter(item -> item.bikeId().value().equals("BIKE-OOS")).findFirst()
+                .orElseThrow().available()).isFalse();
     }
 
     @Test
-    @DisplayName("returns an empty list for an empty catalogue")
     void returnsAnEmptyListForAnEmptyCatalogue() {
         // given: no bikes
         when(bikePortfolio.findAll()).thenReturn(List.of());

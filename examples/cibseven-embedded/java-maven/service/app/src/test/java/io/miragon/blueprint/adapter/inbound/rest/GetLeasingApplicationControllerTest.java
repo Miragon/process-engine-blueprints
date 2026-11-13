@@ -13,6 +13,7 @@ import io.miragon.blueprint.domain.leasing.ApplicationId;
 import io.miragon.blueprint.domain.leasing.ContractId;
 import io.miragon.blueprint.domain.leasing.LeasingApplication;
 import java.util.Optional;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -30,6 +31,7 @@ class GetLeasingApplicationControllerTest {
     private GetLeasingApplicationQuery query;
 
     @Test
+    @DisplayName("returns the application with all of its fields mapped when it exists")
     void returnsTheApplicationWithAllOfItsFieldsMappedWhenItExists() throws Exception {
 
         // given: a fully-populated application (incl. order and contract) the query can find
@@ -51,14 +53,18 @@ class GetLeasingApplicationControllerTest {
                 application.email().value(),
                 application.bikeId().value(),
                 "Gravel Explorer 900",
+                "\"age\":35",
+                "\"monthlyNetIncome\":3500.0",
                 "RECEIVED",
                 "ORDER-42",
-                "CONTRACT-7");
+                "CONTRACT-7",
+                "\"createdAt\":\"2024-01-15T10:30:00\"");
         verify(query).byId(application.id());
         verifyNoMoreInteractions(query);
     }
 
     @Test
+    @DisplayName("maps a not-yet-ordered application with null order and contract")
     void mapsANotYetOrderedApplicationWithNullOrderAndContract() throws Exception {
 
         // given: an application still without an order or contract (both nullable fields absent)
@@ -75,9 +81,12 @@ class GetLeasingApplicationControllerTest {
         assertThat(response.getResponse().getStatus()).isEqualTo(200);
         assertThat(response.getResponse().getContentAsString())
                 .contains("\"orderId\":null", "\"contractId\":null", "\"bikeModel\":null");
+        verify(query).byId(application.id());
+        verifyNoMoreInteractions(query);
     }
 
     @Test
+    @DisplayName("returns 404 when the application does not exist")
     void returns404WhenTheApplicationDoesNotExist() throws Exception {
 
         // given: an unknown application id
@@ -91,5 +100,7 @@ class GetLeasingApplicationControllerTest {
 
         // then: the response is 404 Not Found
         assertThat(response.getResponse().getStatus()).isEqualTo(404);
+        verify(query).byId(id);
+        verifyNoMoreInteractions(query);
     }
 }

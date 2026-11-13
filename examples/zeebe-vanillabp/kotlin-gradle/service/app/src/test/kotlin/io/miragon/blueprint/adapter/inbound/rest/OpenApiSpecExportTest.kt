@@ -16,7 +16,7 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.nio.file.Files
 import java.nio.file.Path
-import kotlin.io.path.exists
+import kotlin.io.path.isDirectory
 
 /**
  * Exports the live OpenAPI contract to `openapi/openapi.json` at the repo root, so the committed
@@ -30,7 +30,8 @@ import kotlin.io.path.exists
  * This is not really an assertion test — it is a code generator wearing a JUnit costume so it runs
  * inside `./gradlew build` with a live application context. Zeebe is not needed to publish the
  * contract, so the engine's client autoconfiguration is excluded, which keeps this gate fast and
- * broker-free. See the OpenAPI-contract ADR.
+ * broker-free. See ADR-0003
+ * (docs/adr/0003-openapi-as-the-checked-in-contract.md).
  */
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
@@ -81,11 +82,11 @@ class OpenApiSpecExportTest {
         return response.body()
     }
 
-    /** Walk up from the module working directory until the directory holding the shared `openapi/` contract is found. */
+    /** Walk up from the module working directory until the directory holding the `openapi/` contract is found. */
     private fun repoRoot(): Path {
         var dir: Path? = Path.of(System.getProperty("user.dir")).toAbsolutePath()
         while (dir != null) {
-            if (dir.resolve("openapi").exists()) return dir
+            if (dir.resolve("openapi").isDirectory()) return dir
             dir = dir.parent
         }
         error("could not locate the repo root (no openapi directory found above ${System.getProperty("user.dir")})")

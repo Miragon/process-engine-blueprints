@@ -17,8 +17,8 @@ In this repository that is one branch and one pull request, not issues in other 
 
 ## 2. Find the targets
 
-- **Must follow:** for every changed file, the rules in `drift.yml` that list it. Every example of such a rule
-  gets the identical change, otherwise CI fails.
+- **Must follow:** for every changed file, the groups in `drift.lock.yml` that list it (paths use `{engine}`
+  for the engine name). Every example of such a group gets the identical change, otherwise CI fails.
 - **May follow:** the other examples (`examples/*/blueprint.yaml`). Check whether the touched files and concepts
   exist there (`git grep`, the same path in the other example, the other variant).
 - Give each target one verdict with a one-line reason: `applies`, `adapt` (name what differs: engine API,
@@ -39,10 +39,11 @@ read) is the user's, never yours.
 
 ## 5. Verify
 
-- `npm run generate` and `npm run drift` at the root.
+- `npm run generate`, `npm run drift:update` and `npm run drift` at the root.
 - Per touched example and variant, the targeted check its `AGENTS.md` names (e.g.
   `cd examples/<x>/kotlin-gradle && ./gradlew build`, `cd examples/<x>/java-maven && ./mvnw verify`).
-- If a file left a drift rule on purpose, move it out of the rule in `drift.yml` and say why in the summary.
+- If a file differs on purpose now, add it to `differs` in `drift.yml` with the reason, and say so in the summary.
+  If a change brought copies back in step, remove their `differs` entry.
 
 ## 6. Report
 

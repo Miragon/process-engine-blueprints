@@ -3,9 +3,9 @@ package io.miragon.common.architecture;
 import static com.tngtech.archunit.lang.conditions.ArchConditions.haveSimpleNameEndingWith;
 
 import com.tngtech.archunit.core.domain.JavaClass;
+import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
-import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.lang.ArchCondition;
 import com.tngtech.archunit.lang.syntax.ArchRuleDefinition;
 import java.util.List;

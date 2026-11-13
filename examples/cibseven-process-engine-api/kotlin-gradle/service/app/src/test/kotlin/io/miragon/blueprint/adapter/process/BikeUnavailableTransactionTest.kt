@@ -12,7 +12,6 @@ import io.miragon.blueprint.domain.leasing.LeasingStatus
 import org.assertj.core.api.Assertions
 import org.cibseven.bpm.engine.ProcessEngine
 import org.cibseven.bpm.engine.RuntimeService
-import org.cibseven.bpm.engine.TaskService
 import org.cibseven.bpm.engine.test.assertions.bpmn.BpmnAwareTests.assertThat
 import org.cibseven.bpm.engine.test.assertions.bpmn.BpmnAwareTests.init
 import org.junit.jupiter.api.BeforeEach
@@ -41,9 +40,6 @@ class BikeUnavailableTransactionTest {
 
     @Autowired
     private lateinit var runtimeService: RuntimeService
-
-    @Autowired
-    private lateinit var taskService: TaskService
 
     @Autowired
     private lateinit var processEngine: ProcessEngine
@@ -81,27 +77,14 @@ class BikeUnavailableTransactionTest {
     }
 
     @Test
-    fun `alternative via tasklist - the bike the form submits is ordered and stored on the application`() {
+    fun `alternative selected - the chosen bike is ordered and stored on the application`() {
         val application = receivedApplication(BikeId("BIKE-OOS"))
         repository.save(application)
         process.submitRequest(application)
         val instance = runtimeService.findProcessInstance(application.id)
         signContractAndRunIntoTheUnavailableBike(application.id)
 
-        // the Tasklist completes the task with the variables its Camunda Form submits, bypassing the domain endpoint
-        val task =
-            taskService
-                .createTaskQuery()
-                .processInstanceId(instance.id)
-                .taskDefinitionKey(FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID)
-                .singleResult()
-        taskService.complete(
-            task.id,
-            mapOf(
-                FlowNodes.UserTaskClarifyAlternative.Variables.ALTERNATIVE_FOUND.value to true,
-                FlowNodes.UserTaskClarifyAlternative.Variables.BIKE_ID.value to "BIKE-900",
-            ),
-        )
+        process.completeAlternativeClarification(application.id, alternativeFound = true, bikeId = BikeId("BIKE-900"))
         processEngine.continueToNextWaitState() // re-order succeeds -> parallel join -> handover wait state
 
         assertThat(instance).isWaitingAt(FlowNodes.EventHandoverReported.ELEMENT_ID)

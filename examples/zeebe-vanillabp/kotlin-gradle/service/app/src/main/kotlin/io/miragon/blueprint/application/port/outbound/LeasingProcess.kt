@@ -4,9 +4,9 @@ import io.miragon.blueprint.domain.leasing.ApplicationId
 import io.miragon.blueprint.domain.leasing.LeasingApplication
 
 /**
- * Outbound port that drives the BPMN engine: it starts a process instance, correlates the messages
- * that release the process's wait states, and completes the alternative-clarification user task from
- * the outside. Implemented by the VanillaBP adapter.
+ * Outbound port that drives the process engine: it starts a process instance, correlates the messages
+ * that release the process's wait states, and completes the user tasks. Implemented by the engine
+ * adapter.
  */
 interface LeasingProcess {
     fun submitRequest(application: LeasingApplication)
@@ -21,4 +21,6 @@ interface LeasingProcess {
         id: ApplicationId,
         alternativeFound: Boolean,
     )
+
+    fun completeReturnClarification(id: ApplicationId)
 }

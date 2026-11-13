@@ -7,7 +7,6 @@ import org.finos.fluxnova.bpm.engine.ProcessEngine;
 import org.finos.fluxnova.bpm.engine.RepositoryService;
 import org.finos.fluxnova.bpm.engine.repository.DecisionDefinition;
 import org.finos.fluxnova.bpm.engine.repository.ProcessDefinition;
-import org.finos.fluxnova.bpm.engine.repository.Resource;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -48,18 +47,5 @@ class ProcessDeploymentTest {
                 .toList();
 
         assertThat(deployedDecisionKeys).containsExactly("checkCreditRating");
-    }
-
-    @Test
-    void theUserTaskFormsAreDeployedWithTheModels() {
-        List<String> deployedFormFiles = repositoryService.createDeploymentQuery().list()
-                .stream()
-                .flatMap(deployment -> repositoryService.getDeploymentResources(deployment.getId()).stream())
-                .map(Resource::getName)
-                .map(name -> name.substring(name.lastIndexOf('/') + 1))
-                .filter(name -> name.endsWith(".form"))
-                .toList();
-
-        assertThat(deployedFormFiles).containsExactlyInAnyOrder("clarify-alternative.form", "clarify-return.form");
     }
 }

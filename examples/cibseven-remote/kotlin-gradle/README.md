@@ -42,7 +42,7 @@ service/
     adapter/process             generated *ProcessApi and shared constants (bpmn-to-code)
     application/{port,service}  use-case ports and their services
     domain/{leasing,bike}       pure domain model
-    resources/{bpmn,dmn,forms}  the process models and Camunda Forms the worker owns and deploys
+    resources/{bpmn,dmn}        the process models the worker owns and deploys
     resources/db/migration      Flyway versioned schema migrations
 ```
 
@@ -56,12 +56,12 @@ The resources are kept identical to the other variant's; CI fails when they diff
   with a topic (`bikeLeasing.<task>`). The worker subscribes with `@ExternalTaskSubscription` handlers
   that fetch, lock and complete them over `/engine-rest`. A handler that produces variables passes them
   on `complete(...)`; `orderBike` raises the `bikeUnavailable` BPMN error when the dealer has no bike.
-- **The worker owns and deploys the model.** `ProcessModelDeploymentAdapter` deploys the `.bpmn`, `.dmn`
-  and `.form` files at start-up (idempotent through duplicate filtering), so the engine stays a generic
+- **The worker owns and deploys the model.** `ProcessModelDeploymentAdapter` deploys the `.bpmn` and
+  `.dmn` files at start-up (idempotent through duplicate filtering), so the engine stays a generic
   host.
 - **The process is driven over REST.** `RemoteLeasingProcessAdapter` starts the process through its
   message start event, correlates the messages that release the wait states and completes the
-  `clarify-alternative` user task — all correlated by the `ApplicationId` business key, through the
+  user tasks — all correlated by the `ApplicationId` business key, through the
   client generated in [`common-cibseven-client`](service/common-cibseven-client/README.md).
 - **Listeners run in the engine.** A listener has no external-task equivalent, so the two examples are
   Spring beans in [`engine-service`](service/engine-service/README.md) and reference process variables

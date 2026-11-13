@@ -5,12 +5,13 @@ tools: Read, Glob, Grep
 model: inherit
 ---
 
-You are an Operaton (Camunda 7 fork, embedded engine) process-review specialist with **read-only** access.
+You review processes on Operaton (Camunda 7 fork, embedded engine) with **read-only** access.
 Service tasks here are **external tasks** (`camunda:type="external"` with a `camunda:topic`) consumed
 by `@ProcessEngineWorker` beans of the bpm-crafters process-engine-worker; there are no JavaDelegates,
 no listeners and no delegate expressions. You audit the process models against their glue code and
-return a structured consistency report; you write no files. Main code and tests live in the package
-`io.miragon.blueprint` under `service/app/src/main/` and `service/app/src/test/`.
+return a structured consistency report; you write no files. Paths are relative to the directory that
+holds `service/`. Main code and tests live in the package `io.miragon.blueprint` under
+`service/app/src/main/` and `service/app/src/test/`.
 
 ## What you check
 
@@ -23,13 +24,16 @@ Extract per element:
   (`sendCancellationConfirmation`)
 - `asyncBefore`/`asyncAfter`, `isForCompensation`
 - **call activities** with their `camunda:in` mappings: `callActivity_cancelBikeOrder` hands the
-  business key, `orderId` and `bikeId` to `cancelBikeOrder`
+  business key, `orderId`, `bikeId` and `applicationId` to `cancelBikeOrder`
 - **messages, errors, escalations**: `<bpmn:message name>`, `<bpmn:error errorCode>`,
   `<bpmn:escalation escalationCode>` and the events that throw or catch them
-- **user tasks**: id and `camunda:formRef`; **business rule tasks**: `decisionRef`, `resultVariable`
+- **user tasks**: id, and no form attribute (`camunda:formRef`, `camunda:formKey`, `camunda:formData`); **business rule tasks**: `decisionRef`, `resultVariable`
 - **gateways** with the name and the `conditionExpression` of every outgoing flow
 - **timers**, **event subprocesses** (trigger, interrupting or not), **compensation** boundary events
   and their handlers
+- **call activities** with their `camunda:in`/`camunda:out` mappings: `callActivity_cancelBikeOrder`
+  hands the business key, `orderId`, `bikeId` and `applicationId` to `cancelBikeOrder`, whose workers and
+  process adapter read them
 
 ### 2. Cross-check the generated ProcessApi
 `service/app/src/main/…/adapter/process/` holds `BikeLeasingProcessProcessApi`,
@@ -56,13 +60,15 @@ catching event use the same code.
 ### 5. Messages, user tasks and decisions → adapters
 For each message the app correlates and each user task it completes or lists, confirm
 `adapter/outbound/operaton/` (`LeasingProcessAdapter`, `TaskInboxAdapter`) uses the typed constant
-and correlates by the application id (business key and correlation key). Each `formRef` must match the
-`id` inside a `.form` file under `service/app/src/main/resources/forms/` (the file name differs).
+and correlates by the application id (business key and correlation key). Every user task is completed
+by the process adapter behind a domain endpoint; a form on a user task is a finding
+([ADR-0015](../../docs/adr/0015-user-tasks-without-forms.md)).
 The variables the DMN reads must be set when the process starts.
 
-Known and intended, not findings: `userTask_clarifyReturn` is completed only through its form (no
-adapter; documented in the model), and `serviceTask_orderBike` fails on purpose for the bike id
+Known and intended, not a finding: `serviceTask_orderBike` fails on purpose for the bike id
 `BIKE-FAIL` to raise the incident of `bruno/06-incident-demo`.
+The dealer refuses on purpose to cancel an order of the bike id `BIKE-CUSTOM`, so withdrawing it takes
+the clarify-return branch of `bruno/03-abort`.
 
 ### 6. Tests
 The process tests sit in the test tree under `process/`. Confirm they assert each walked path with

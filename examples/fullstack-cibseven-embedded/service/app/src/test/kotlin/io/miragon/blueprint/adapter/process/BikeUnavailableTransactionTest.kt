@@ -69,7 +69,7 @@ class BikeUnavailableTransactionTest {
         processEngine.executeJobFor(FlowNodes.StartEventLeasingRequestReceived)
         processEngine.executeJobFor(FlowNodes.ServiceTaskSendContract)
         process.correlateContractSigned(application.id)
-        processEngine.executeJobFor(FlowNodes.EventContractSigned) // forks into insurance + bike order
+        processEngine.executeJobFor(FlowNodes.EventContractSigned)
         processEngine.executeJobFor(FlowNodes.ServiceTaskIssueInsurancePolicy)
         processEngine.executeJobFor(FlowNodes.ServiceTaskOrderBike) // unavailable -> BPMN error -> clarify alternative
 
@@ -97,7 +97,7 @@ class BikeUnavailableTransactionTest {
         processEngine.executeJobFor(FlowNodes.StartEventLeasingRequestReceived)
         processEngine.executeJobFor(FlowNodes.ServiceTaskSendContract)
         process.correlateContractSigned(application.id)
-        processEngine.executeJobFor(FlowNodes.EventContractSigned) // forks into insurance + bike order
+        processEngine.executeJobFor(FlowNodes.EventContractSigned)
         processEngine.executeJobFor(FlowNodes.ServiceTaskIssueInsurancePolicy)
         processEngine.executeJobFor(FlowNodes.ServiceTaskOrderBike) // unavailable -> BPMN error -> clarify alternative
 

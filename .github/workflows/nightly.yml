@@ -191,6 +191,23 @@ jobs:
     uses: ./.github/workflows/_blueprint.yml
     with:
       example: zeebe-native
+  zeebe-process-engine-api--nightly-java-maven:
+    name: zeebe-process-engine-api · Nightly Checks · Java/Maven
+    needs: changes
+    if: contains(fromJSON(needs.changes.outputs.examples), 'zeebe-process-engine-api')
+    uses: ./.github/workflows/zeebe-process-engine-api.nightly-java-maven.yml
+  zeebe-process-engine-api--nightly-kotlin-gradle:
+    name: zeebe-process-engine-api · Nightly Checks · Kotlin/Gradle
+    needs: changes
+    if: contains(fromJSON(needs.changes.outputs.examples), 'zeebe-process-engine-api')
+    uses: ./.github/workflows/zeebe-process-engine-api.nightly-kotlin-gradle.yml
+  zeebe-process-engine-api--blueprint:
+    name: zeebe-process-engine-api · Blueprint checks
+    needs: changes
+    if: contains(fromJSON(needs.changes.outputs.examples), 'zeebe-process-engine-api')
+    uses: ./.github/workflows/_blueprint.yml
+    with:
+      example: zeebe-process-engine-api
   zeebe-vanillabp--nightly-java-maven:
     name: zeebe-vanillabp · Nightly Checks · Java/Maven
     needs: changes

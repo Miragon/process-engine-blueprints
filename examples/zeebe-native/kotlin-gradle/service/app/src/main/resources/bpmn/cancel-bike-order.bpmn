@@ -19,17 +19,16 @@
     </bpmn:exclusiveGateway>
     <bpmn:sequenceFlow id="flow_requestToCancellationPossible" sourceRef="serviceTask_requestCancellation" targetRef="gateway_cancellationPossible" />
     <bpmn:sequenceFlow id="flow_notPossibleToClarifyReturn" name="No" sourceRef="gateway_cancellationPossible" targetRef="userTask_clarifyReturn">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=cancellationPossible</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=not(cancellationPossible)</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:endEvent id="endEvent_orderReversed" name="Order reversed">
       <bpmn:incoming>flow_joinToReversed</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="flow_possibleToJoin" name="Yes" sourceRef="gateway_cancellationPossible" targetRef="gateway_join" />
     <bpmn:userTask id="userTask_clarifyReturn" name="Clarify return with supplier">
-      <bpmn:documentation>Kept deliberately as a FORM-ONLY task to show the trade-off. It is completed straight through its Camunda Form (Tasklist) or the Camunda 8 REST API, so the completion never passes through our domain services: any data entered on the form lands only in process variables and never reaches the domain model. In other words, for capturing business data this is NOT best practice. Contrast this with "Clarify alternative with customer" in bike-leasing.bpmn, whose chosen bike is read by the re-order and persisted on the aggregate, and which offers a domain REST endpoint (POST /api/bike-leasing/{id}/clarify-alternative) on top.</bpmn:documentation>
+      <bpmn:documentation>Completed through POST /api/bike-leasing/{id}/clarify-return once the return is arranged with the supplier; the process then books the costs. The task has no form: the application owns the UI and finds the task by its id and the application id.</bpmn:documentation>
       <bpmn:extensionElements>
         <zeebe:userTask />
-        <zeebe:formDefinition formId="clarifyReturnForm" />
       </bpmn:extensionElements>
       <bpmn:incoming>flow_notPossibleToClarifyReturn</bpmn:incoming>
       <bpmn:outgoing>flow_clarifyReturnToBookCosts</bpmn:outgoing>

@@ -37,7 +37,7 @@ service/
     adapter/process             generated *ProcessApi (bpmn-to-code) + engine config
     application/{port,service}  use-case ports and their services
     domain/{leasing,bike}       pure domain model
-    resources/{bpmn,dmn,forms}  the process models and Camunda Forms
+    resources/{bpmn,dmn}        the process models
     resources/db/migration      Flyway versioned schema migrations
 ```
 

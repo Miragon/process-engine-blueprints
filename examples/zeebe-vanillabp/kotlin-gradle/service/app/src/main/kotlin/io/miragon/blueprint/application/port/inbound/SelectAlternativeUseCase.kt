@@ -4,8 +4,8 @@ import io.miragon.blueprint.domain.leasing.ApplicationId
 import io.miragon.blueprint.domain.bike.BikeId
 
 /**
- * Resolves the `Clarify alternative with customer` user task through our own client. When an
- * alternative bike was found, the newly chosen bike is carried into the re-order.
+ * Resolves the `Clarify alternative with customer` user task. When an alternative bike was found, the
+ * newly chosen bike is carried into the re-order.
  */
 interface SelectAlternativeUseCase {
     fun selectAlternative(command: Command)

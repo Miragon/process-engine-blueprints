@@ -16,10 +16,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * External completion of the {@code Clarify alternative with customer} user task — the counterpart to
- * a human completing the deployed Camunda Form in the CIB seven Tasklist.
- */
 @RestController
 @RequestMapping("/api/bike-leasing")
 public class SelectAlternativeController {

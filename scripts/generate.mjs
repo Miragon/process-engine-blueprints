@@ -1,7 +1,6 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { repositorySlug, starterCatalog, renderCatalog } from './lib/catalog.mjs';
-import { conductorSettings, renderConductor } from './lib/conductor.mjs';
 import { dependabotConfig, renderDependabot } from './lib/dependabot.mjs';
 import { loadExamples, repoRoot } from './lib/examples.mjs';
 import { withGeneratedBlocks } from './lib/readme.mjs';
@@ -22,7 +21,6 @@ function expectedFiles(examples) {
   files.set('.github/workflows/ci.yml', renderWorkflow(header('examples/*/blueprint.yaml'), ciWorkflow(examples)));
   files.set('.github/workflows/nightly.yml', renderWorkflow(header('examples/*/blueprint.yaml'), nightlyWorkflow(examples)));
   files.set('.github/dependabot.yml', renderDependabot(header('examples/*/.github/dependabot.yml'), dependabotConfig(examples)));
-  files.set('.conductor/settings.toml', renderConductor(header('examples/*/.conductor/settings.toml'), conductorSettings(examples)));
   files.set('tooling/create-blueprint/catalog.json', renderCatalog(starterCatalog(examples)));
   files.set('README.md', withGeneratedBlocks(readFileSync(join(repoRoot, 'README.md'), 'utf8'), examples, repositorySlug()));
   return files;

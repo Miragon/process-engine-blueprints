@@ -129,6 +129,34 @@ class LeasingProcessAdapterTest {
         verifyNoInteractions(processService);
     }
 
+    @Test
+    void completeReturnClarificationCompletesTheRememberedUserTask() {
+
+        // given: an aggregate parked on the return clarification user task
+        aggregate.returnClarificationRequested("4712");
+        knownAggregate();
+
+        // when: the back office confirms the return
+        underTest.completeReturnClarification(application.id());
+
+        // then: the remembered task is completed and forgotten
+        assertThat(aggregate.getClarifyReturnTaskId()).isNull();
+        verify(processService).completeUserTask(aggregate, "4712");
+        verifyNoMoreInteractions(processService);
+    }
+
+    @Test
+    void completeReturnClarificationIsNotAvailableWhileNoReturnClarificationIsOpen() {
+
+        // given: an aggregate that is not parked on the return clarification user task
+        knownAggregate();
+
+        // when / then: the action is refused without touching the engine
+        assertThatThrownBy(() -> underTest.completeReturnClarification(application.id()))
+                .isInstanceOf(NoSuchElementException.class);
+        verifyNoInteractions(processService);
+    }
+
     private void knownAggregate() {
         when(aggregates.findById(application.id().value().toString())).thenReturn(Optional.of(aggregate));
     }

@@ -15,14 +15,12 @@ import io.miragon.blueprint.domain.leasing.Email;
 import io.miragon.blueprint.domain.leasing.LeasingApplication;
 import io.miragon.blueprint.domain.leasing.LeasingStatus;
 import java.time.LocalDateTime;
-import java.util.Map;
 import org.assertj.core.api.Assertions;
 import org.cibseven.bpm.engine.ProcessEngine;
 import org.cibseven.bpm.engine.RuntimeService;
-import org.cibseven.bpm.engine.TaskService;
 import org.cibseven.bpm.engine.runtime.ProcessInstance;
-import org.cibseven.bpm.engine.task.Task;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -50,9 +48,6 @@ class BikeUnavailableTransactionTest {
     private RuntimeService runtimeService;
 
     @Autowired
-    private TaskService taskService;
-
-    @Autowired
     private ProcessEngine processEngine;
 
     @BeforeEach
@@ -61,7 +56,8 @@ class BikeUnavailableTransactionTest {
     }
 
     @Test
-    void bike_unavailable_the_BPMN_error_raised_by_the_real_order_service_reaches_the_engine()
+    @DisplayName("bike unavailable - the BPMN error raised by the real order service reaches the engine")
+    void bikeUnavailableTheBpmnErrorRaisedByTheRealOrderServiceReachesTheEngine()
         throws InterruptedException {
         // BIKE-OOS is on the simulated dealer's out-of-stock list
         LeasingApplication application =
@@ -89,7 +85,8 @@ class BikeUnavailableTransactionTest {
     }
 
     @Test
-    void alternative_via_tasklist_the_bike_the_form_submits_is_ordered_and_stored_on_the_application()
+    @DisplayName("alternative selected - the chosen bike is ordered and stored on the application")
+    void alternativeSelectedTheChosenBikeIsOrderedAndStoredOnTheApplication()
         throws InterruptedException {
         LeasingApplication application = receivedApplication(new BikeId("BIKE-OOS"));
         repository.save(application);
@@ -97,18 +94,7 @@ class BikeUnavailableTransactionTest {
         ProcessInstance instance = findProcessInstance(runtimeService, application.id());
         signContractAndRunIntoTheUnavailableBike(application.id());
 
-        // the Tasklist completes the task with the variables its Camunda Form submits, bypassing the domain endpoint
-        Task task =
-            taskService
-                .createTaskQuery()
-                .processInstanceId(instance.getId())
-                .taskDefinitionKey(FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID)
-                .singleResult();
-        taskService.complete(
-            task.getId(),
-            Map.of(
-                FlowNodes.UserTaskClarifyAlternative.Variables.ALTERNATIVE_FOUND.getValue(), true,
-                FlowNodes.UserTaskClarifyAlternative.Variables.BIKE_ID.getValue(), "BIKE-900"));
+        process.completeAlternativeClarification(application.id(), true, new BikeId("BIKE-900"));
         continueToNextWaitState(processEngine); // re-order succeeds -> parallel join -> handover wait state
 
         assertThat(instance).isWaitingAt(FlowNodes.EventHandoverReported.ELEMENT_ID);
@@ -118,7 +104,8 @@ class BikeUnavailableTransactionTest {
     }
 
     @Test
-    void bike_unavailable_the_bike_the_process_carries_stays_on_the_application_although_the_order_fails()
+    @DisplayName("bike unavailable - the bike the process carries stays on the application although the order fails")
+    void bikeUnavailableTheBikeTheProcessCarriesStaysOnTheApplicationAlthoughTheOrderFails()
         throws InterruptedException {
         LeasingApplication application = receivedApplication(new BikeId("BIKE-900"));
         repository.save(application);

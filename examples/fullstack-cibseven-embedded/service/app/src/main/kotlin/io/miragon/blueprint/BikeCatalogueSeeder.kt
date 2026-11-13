@@ -14,7 +14,8 @@ import org.springframework.stereotype.Component
  *
  * `BIKE-OOS` is seeded deliberately: it is the dealer's out-of-stock bike, so selecting it from the
  * UI drives the bike-unavailable → alternative-selection scenario end to end. Availability itself is
- * decided by the dealer, not stored here.
+ * decided by the dealer, not stored here. `BIKE-CUSTOM` is seeded for the same reason: the dealer
+ * cannot cancel its order, so withdrawing it from the UI drives the clarify-return scenario.
  *
  * It lives in the root package next to the application class — application bootstrap, outside the
  * hexagonal layers — and is excluded from mutation testing for the same reason.
@@ -37,6 +38,7 @@ class BikeCatalogueSeeder(
                 Bike(BikeId("BIKE-900"), "Gravel Explorer 900"),
                 Bike(BikeId("BIKE-800"), "Carbon Road 800"),
                 Bike(BikeId("BIKE-OOS"), "Mountain Trail 600"),
+                Bike(BikeId("BIKE-CUSTOM"), "Custom Build"),
             )
     }
 }

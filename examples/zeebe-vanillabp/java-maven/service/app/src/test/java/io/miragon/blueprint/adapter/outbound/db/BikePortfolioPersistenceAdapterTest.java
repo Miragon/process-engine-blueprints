@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.miragon.blueprint.domain.bike.Bike;
 import io.miragon.blueprint.domain.bike.BikeId;
 import java.util.List;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
@@ -24,13 +25,15 @@ class BikePortfolioPersistenceAdapterTest {
     private TestEntityManager entityManager;
 
     @Test
+    @DisplayName("saves and reloads a bike")
     void savesAndReloadsABike() {
 
         // given: a bike in the portfolio
         Bike bike = new Bike(new BikeId("BIKE-900"), "Gravel Explorer 900");
 
         // when: it is saved and re-read from a cleared persistence context
-        underTest.save(bike);
+        Bike saved = underTest.save(bike);
+        assertThat(saved).isEqualTo(bike);
         entityManager.flush();
         entityManager.clear();
 
@@ -39,14 +42,16 @@ class BikePortfolioPersistenceAdapterTest {
     }
 
     @Test
-    void findByBikeIdReturnsNothingWhenTheBikeIsNotInThePortfolio() {
+    @DisplayName("findByBikeId returns null when the bike is not in the portfolio")
+    void findByBikeIdReturnsNullWhenTheBikeIsNotInThePortfolio() {
 
         // given: an empty portfolio
-        // when / then: the lookup returns nothing
+        // when / then: the lookup finds nothing
         assertThat(underTest.findByBikeId(new BikeId("BIKE-000"))).isEmpty();
     }
 
     @Test
+    @DisplayName("findAll returns the whole catalogue ordered by id")
     void findAllReturnsTheWholeCatalogueOrderedById() {
 
         // given: two bikes saved out of id order
@@ -63,6 +68,7 @@ class BikePortfolioPersistenceAdapterTest {
     }
 
     @Test
+    @DisplayName("findAllByIds resolves only the requested bikes and short-circuits on empty input")
     void findAllByIdsResolvesOnlyTheRequestedBikesAndShortCircuitsOnEmptyInput() {
 
         // given: three bikes
@@ -76,7 +82,8 @@ class BikePortfolioPersistenceAdapterTest {
         List<Bike> result = underTest.findAllByIds(List.of(new BikeId("BIKE-900"), new BikeId("BIKE-OOS")));
 
         // then: exactly those two come back
-        assertThat(result).extracting(bike -> bike.bikeId().value()).containsExactlyInAnyOrder("BIKE-900", "BIKE-OOS");
+        assertThat(result.stream().map(b -> b.bikeId().value()).toList())
+                .containsExactlyInAnyOrder("BIKE-900", "BIKE-OOS");
         // and: an empty request returns an empty list without touching the database
         assertThat(underTest.findAllByIds(List.of())).isEmpty();
     }

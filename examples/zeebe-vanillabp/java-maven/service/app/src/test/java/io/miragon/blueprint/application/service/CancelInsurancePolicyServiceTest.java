@@ -16,13 +16,10 @@ class CancelInsurancePolicyServiceTest {
 
     @Test
     void cancelPolicyDelegatesTheCompensationToTheInsurer() {
-
         // given: an application whose policy must be revoked
         LeasingApplication application = testLeasingApplication().build();
-
         // when: the policy is cancelled
         underTest.cancelPolicy(application.id());
-
         // then: the insurance out-port revokes the policy
         verify(insurance).cancelPolicy(application.id());
         verifyNoMoreInteractions(insurance);

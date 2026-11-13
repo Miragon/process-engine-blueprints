@@ -19,10 +19,8 @@ public class ActivateLeasingService implements ActivateLeasingUseCase {
 
     @Override
     public void activate(ApplicationId id) {
-        LeasingApplication application = repository.findById(id);
-        if (application == null) {
-            throw new IllegalStateException("Unknown application " + id);
-        }
+        LeasingApplication application = repository.findById(id)
+                .orElseThrow(() -> new IllegalStateException("Unknown application " + id));
         repository.save(application.activate());
     }
 }

@@ -11,6 +11,10 @@ import io.miragon.blueprint.domain.bike.BikeId;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
 import io.miragon.blueprint.domain.leasing.CustomerName;
 import io.miragon.blueprint.domain.leasing.LeasingStatus;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -19,9 +23,6 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
 
 @WebMvcTest(ListLeasingApplicationsController.class)
 class ListLeasingApplicationsControllerTest {
@@ -71,7 +72,8 @@ class ListLeasingApplicationsControllerTest {
     @DisplayName("parses the status filter and paging params into the query")
     void parsesTheStatusFilterAndPagingParamsIntoTheQuery() throws Exception {
         // given
-        when(query.list(any())).thenReturn(new ListLeasingApplicationsQuery.Page(List.of(), 2, 5, 0, 0));
+        when(query.list(any())).thenReturn(
+                new ListLeasingApplicationsQuery.Page(List.of(), 2, 5, 0, 0));
         ArgumentCaptor<ListLeasingApplicationsQuery.Filter> filter =
                 ArgumentCaptor.forClass(ListLeasingApplicationsQuery.Filter.class);
 
@@ -83,6 +85,29 @@ class ListLeasingApplicationsControllerTest {
         assertThat(filter.getValue().status()).isEqualTo(LeasingStatus.ACTIVE);
         assertThat(filter.getValue().page()).isEqualTo(2);
         assertThat(filter.getValue().size()).isEqualTo(5);
+    }
+
+    @Test
+    @DisplayName("parses the status filter independently of the default locale")
+    void parsesTheStatusFilterIndependentlyOfTheDefaultLocale() throws Exception {
+        // given: a default locale whose upper-casing of "i" is not "I"
+        when(query.list(any())).thenReturn(
+                new ListLeasingApplicationsQuery.Page(List.of(), 0, 20, 0, 0));
+        ArgumentCaptor<ListLeasingApplicationsQuery.Filter> filter =
+                ArgumentCaptor.forClass(ListLeasingApplicationsQuery.Filter.class);
+        Locale previousLocale = Locale.getDefault();
+        Locale.setDefault(Locale.forLanguageTag("tr-TR"));
+
+        // when: a filtered request is made with lowercase status
+        try {
+            mockMvc.perform(get("/api/bike-leasing?status=active")).andReturn();
+        } finally {
+            Locale.setDefault(previousLocale);
+        }
+
+        // then: the status is still recognised
+        verify(query).list(filter.capture());
+        assertThat(filter.getValue().status()).isEqualTo(LeasingStatus.ACTIVE);
     }
 
     @Test

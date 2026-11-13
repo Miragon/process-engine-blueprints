@@ -4,7 +4,6 @@ import static io.miragon.blueprint.domain.leasing.TestObjectBuilder.testLeasingA
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -79,6 +78,7 @@ class SelectAlternativeServiceTest {
         assertThatThrownBy(() -> underTest.selectAlternative(new SelectAlternativeUseCase.Command(id, false, null, null)))
             .isInstanceOf(IllegalStateException.class)
             .hasMessage("Unknown application " + id);
-        verify(repository, never()).save(any());
+        verify(repository).findById(id);
+        verifyNoMoreInteractions(repository, bikePortfolio, process);
     }
 }

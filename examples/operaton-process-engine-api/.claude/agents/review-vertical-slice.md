@@ -12,8 +12,9 @@ write no files. Relevant decisions:
 [hexagon](../../docs/adr/0002-hexagonal-architecture-for-the-backend.md),
 [contract](../../docs/adr/0003-openapi-as-the-checked-in-contract.md).
 
-Main code and tests live in the package `io.miragon.blueprint` under `service/app/src/main/` and
-`service/app/src/test/`. `openapi/` and `bruno/` sit at the repo root.
+Code paths are relative to the directory that holds `service/`; main code and tests live in the
+package `io.miragon.blueprint` under `service/app/src/main/` and `service/app/src/test/`. `openapi/` and
+`bruno/` sit at the repo root.
 
 ## The chain — check each hop and report a finding at every gap
 

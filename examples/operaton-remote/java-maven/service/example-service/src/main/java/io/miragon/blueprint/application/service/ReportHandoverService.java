@@ -24,7 +24,7 @@ public class ReportHandoverService implements ReportHandoverUseCase {
     public void reportHandover(ApplicationId id) {
         process.correlateHandoverReported(id);
         LeasingApplication application = repository.findById(id)
-                .orElseThrow(() -> new IllegalStateException("Unknown application " + id.value()));
+                .orElseThrow(() -> new IllegalStateException("Unknown application " + id));
         repository.save(application.reportHandover());
     }
 }

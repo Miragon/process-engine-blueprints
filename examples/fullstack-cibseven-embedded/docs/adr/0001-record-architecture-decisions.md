@@ -7,9 +7,9 @@
 
 This repository is a **blueprint** — a starting point meant to be forked and made your own. Its value
 is not only the working code but the *reasoning* behind its shape: why the backend is hexagonal, why
-the frontend is npm-only, why the OpenAPI spec is committed. That reasoning normally lives in people's
-heads and pull-request threads, where a new contributor (human or AI agent) cannot find it and where
-it decays as the team changes.
+mutation testing gates the domain nightly, why the OpenAPI spec is committed. That reasoning normally
+lives in people's heads and pull-request threads, where a new contributor (human or AI agent) cannot
+find it and where it decays as the team changes.
 
 ## Decision
 

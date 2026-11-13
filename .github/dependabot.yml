@@ -46,6 +46,11 @@ multi-ecosystem-groups:
       interval: monthly
     labels:
       - dependencies
+  zeebe-process-engine-api-backend:
+    schedule:
+      interval: monthly
+    labels:
+      - dependencies
   zeebe-vanillabp-backend:
     schedule:
       interval: monthly
@@ -77,6 +82,8 @@ updates:
       - /examples/*
     schedule:
       interval: monthly
+    cooldown:
+      semver-major-days: 7
     labels:
       - dependencies
     commit-message:
@@ -587,6 +594,52 @@ updates:
           - minor
           - major
       zeebe-native-tooling-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+    ignore:
+      - dependency-name: "@miragon/bpmn-cli"
+  - package-ecosystem: gradle
+    directory: /examples/zeebe-process-engine-api/kotlin-gradle
+    patterns:
+      - "*"
+    multi-ecosystem-group: zeebe-process-engine-api-backend
+    labels:
+      - example:zeebe-process-engine-api
+  - package-ecosystem: maven
+    directory: /examples/zeebe-process-engine-api/java-maven
+    patterns:
+      - "*"
+    multi-ecosystem-group: zeebe-process-engine-api-backend
+    labels:
+      - example:zeebe-process-engine-api
+  - package-ecosystem: docker-compose
+    directory: /examples/zeebe-process-engine-api/stack
+    patterns:
+      - "*"
+    multi-ecosystem-group: zeebe-process-engine-api-backend
+    labels:
+      - example:zeebe-process-engine-api
+  - package-ecosystem: npm
+    directory: /examples/zeebe-process-engine-api
+    schedule:
+      interval: monthly
+    labels:
+      - dependencies
+      - example:zeebe-process-engine-api
+    commit-message:
+      prefix: build
+      include: scope
+    groups:
+      zeebe-process-engine-api-tooling-dependencies:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - patch
+          - minor
+          - major
+      zeebe-process-engine-api-tooling-security:
         applies-to: security-updates
         patterns:
           - "*"

@@ -15,9 +15,7 @@ public class WithdrawApplicationService implements WithdrawApplicationUseCase {
     private final LeasingProcess process;
     private final LeasingApplicationRepository repository;
 
-    public WithdrawApplicationService(
-            LeasingProcess process,
-            LeasingApplicationRepository repository) {
+    public WithdrawApplicationService(LeasingProcess process, LeasingApplicationRepository repository) {
         this.process = process;
         this.repository = repository;
     }

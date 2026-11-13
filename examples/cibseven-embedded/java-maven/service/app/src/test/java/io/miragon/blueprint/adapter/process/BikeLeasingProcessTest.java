@@ -38,14 +38,11 @@ import io.miragon.blueprint.domain.leasing.LeasingApplication;
 import io.miragon.blueprint.domain.leasing.LeasingStatus;
 import io.miragon.bpmn.runtime.path.PathWalk;
 import java.time.LocalDateTime;
-import java.util.Map;
 import org.assertj.core.api.Assertions;
 import org.cibseven.bpm.engine.HistoryService;
 import org.cibseven.bpm.engine.ProcessEngine;
 import org.cibseven.bpm.engine.RuntimeService;
-import org.cibseven.bpm.engine.TaskService;
 import org.cibseven.bpm.engine.runtime.ProcessInstance;
-import org.cibseven.bpm.engine.task.Task;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
@@ -63,9 +60,6 @@ class BikeLeasingProcessTest {
 
     @Autowired
     private RuntimeService runtimeService;
-
-    @Autowired
-    private TaskService taskService;
 
     @Autowired
     private HistoryService historyService;
@@ -136,7 +130,16 @@ class BikeLeasingProcessTest {
         assertThat(instance)
                 .isEnded()
                 .hasPassedInOrder(inWalkOrder(
-                        pathUntilContractSigned()
+                        PathWalk.from(FlowNodes.StartEventLeasingRequestReceived.INSTANCE)
+                                .then(next -> next.businessRuleTaskCheckCreditRating())
+                                .then(next -> next.gatewayIsSolvent())
+                                .onto(next -> next.subProcessConcludeContract())
+                                .inside(FlowNodes.SubProcessConcludeContract.INSTANCE, start ->
+                                        PathWalk.from(start.startEventCustomerEligible())
+                                                .then(next -> next.serviceTaskSendContract())
+                                                .then(next -> next.gatewayAwaitSignature())
+                                                .then(next -> next.eventContractSigned())
+                                                .end(next -> next.endEventContractValid()))
                                 .then(next -> next.gatewayFork())
                                 .then(next -> next.serviceTaskIssueInsurancePolicy())
                                 .then(next -> next.gatewayJoin())
@@ -144,7 +147,17 @@ class BikeLeasingProcessTest {
                                 .then(next -> next.eventWithdrawalPeriodElapsed())
                                 .end(next -> next.endEventLeasingActive())))
                 .hasPassedInOrder(inWalkOrder(
-                        PathWalk.from(FlowNodes.GatewayFork.INSTANCE)
+                        PathWalk.from(FlowNodes.StartEventLeasingRequestReceived.INSTANCE)
+                                .then(next -> next.businessRuleTaskCheckCreditRating())
+                                .then(next -> next.gatewayIsSolvent())
+                                .onto(next -> next.subProcessConcludeContract())
+                                .inside(FlowNodes.SubProcessConcludeContract.INSTANCE, start ->
+                                        PathWalk.from(start.startEventCustomerEligible())
+                                                .then(next -> next.serviceTaskSendContract())
+                                                .then(next -> next.gatewayAwaitSignature())
+                                                .then(next -> next.eventContractSigned())
+                                                .end(next -> next.endEventContractValid()))
+                                .then(next -> next.gatewayFork())
                                 .then(next -> next.gatewayBikeSourceJoin())
                                 .then(next -> next.serviceTaskOrderBike())
                                 .then(next -> next.gatewayJoin())))
@@ -174,10 +187,14 @@ class BikeLeasingProcessTest {
         assertThat(instance)
                 .isEnded()
                 .hasPassedInOrder(inWalkOrder(
-                        pathUntilCreditRatingChecked()
+                        PathWalk.from(FlowNodes.StartEventLeasingRequestReceived.INSTANCE)
+                                .then(next -> next.businessRuleTaskCheckCreditRating())
+                                .then(next -> next.gatewayIsSolvent())
                                 .onto(next -> next.subProcessConcludeContract())
                                 .inside(FlowNodes.SubProcessConcludeContract.INSTANCE, start ->
-                                        pathUntilSignatureAwaited(start)
+                                        PathWalk.from(start.startEventCustomerEligible())
+                                                .then(next -> next.serviceTaskSendContract())
+                                                .then(next -> next.gatewayAwaitSignature())
                                                 .then(next -> next.eventSignatureDeadline())
                                                 .end(next -> next.endEventNotSigned()))
                                 .interruptedBy(
@@ -203,7 +220,9 @@ class BikeLeasingProcessTest {
         assertThat(instance)
                 .isEnded()
                 .hasPassedInOrder(inWalkOrder(
-                        pathUntilCreditRatingChecked()
+                        PathWalk.from(FlowNodes.StartEventLeasingRequestReceived.INSTANCE)
+                                .then(next -> next.businessRuleTaskCheckCreditRating())
+                                .then(next -> next.gatewayIsSolvent())
                                 .then(next -> next.gatewayRejectionJoin())
                                 .then(next -> next.serviceTaskSendRejection())
                                 .end(next -> next.endEventApplicationRejected())))
@@ -214,8 +233,41 @@ class BikeLeasingProcessTest {
     }
 
     @Test
+    void reminderAnUnsignedContractGetsOneReminderBeforeTheDeadlineRejectsIt() {
+        ApplicationId id = submit(35, 3500.0);
+        ProcessInstance instance = findProcessInstance(runtimeService, id);
+
+        executeJobFor(processEngine, FlowNodes.StartEventLeasingRequestReceived.INSTANCE);
+        executeJobFor(processEngine, FlowNodes.ServiceTaskSendContract.INSTANCE);
+
+        fireTimer(processEngine, FlowNodes.EventSignatureReminder.INSTANCE);
+        executeJobFor(processEngine, FlowNodes.ServiceTaskSendReminderMail.INSTANCE);
+        assertThat(instance).isWaitingAt(FlowNodes.GatewayAwaitSignature.ELEMENT_ID);
+
+        fireTimer(processEngine, FlowNodes.EventSignatureDeadline.INSTANCE);
+        executeJobFor(processEngine, FlowNodes.ServiceTaskSendRejection.INSTANCE);
+
+        assertThat(instance)
+                .isEnded()
+                .hasPassedInOrder(inWalkOrder(
+                        PathWalk.from(FlowNodes.StartEventLeasingRequestReceived.INSTANCE)
+                                .then(next -> next.businessRuleTaskCheckCreditRating())
+                                .then(next -> next.gatewayIsSolvent())
+                                .onto(next -> next.subProcessConcludeContract())
+                                .interruptedBy(
+                                        FlowNodes.SubProcessConcludeContract.INSTANCE,
+                                        next -> next.eventSignatureReminder())
+                                .then(next -> next.serviceTaskSendReminderMail())
+                                .end(next -> next.endEventProspectReminded())))
+                .hasPassed(FlowNodes.EndEventApplicationRejected.ELEMENT_ID);
+
+        verify(sendSignatureReminderUseCase, times(1)).sendSignatureReminder(id);
+        verify(rejectApplicationUseCase, times(1)).reject(id);
+    }
+
+    @Test
     void abortWithdrawingTheApplicationCompensatesTheCompletedSteps() {
-        when(requestOrderCancellationUseCase.requestCancellation(any())).thenReturn(true);
+        when(requestOrderCancellationUseCase.requestCancellation(any())).thenReturn(false);
 
         ApplicationId id = submit(35, 3500.0);
         ProcessInstance instance = findProcessInstance(runtimeService, id);
@@ -233,17 +285,26 @@ class BikeLeasingProcessTest {
         process.correlateApplicationWithdrawn(id);
         continueToNextWaitState(processEngine);
 
-        Task task = taskService
-                .createTaskQuery()
-                .taskDefinitionKey(CancelBikeOrderProcessApi.FlowNodes.UserTaskClarifyReturn.ELEMENT_ID)
-                .singleResult();
-        taskService.complete(task.getId(), Map.of("returnClarified", true));
+        process.completeReturnClarification(id);
         continueToNextWaitState(processEngine);
 
         assertThat(instance)
                 .isEnded()
                 .hasPassed(inAnyOrder(
-                        PathWalk.from(FlowNodes.StartEventApplicationWithdrawn.INSTANCE)
+                        PathWalk.from(FlowNodes.StartEventLeasingRequestReceived.INSTANCE)
+                                .then(next -> next.businessRuleTaskCheckCreditRating())
+                                .then(next -> next.gatewayIsSolvent())
+                                .onto(next -> next.subProcessConcludeContract())
+                                .inside(FlowNodes.SubProcessConcludeContract.INSTANCE, start ->
+                                        PathWalk.from(start.startEventCustomerEligible())
+                                                .then(next -> next.serviceTaskSendContract())
+                                                .then(next -> next.gatewayAwaitSignature())
+                                                .then(next -> next.eventContractSigned())
+                                                .end(next -> next.endEventContractValid()))
+                                .then(next -> next.gatewayFork())
+                                .then(next -> next.gatewayBikeSourceJoin())
+                                .then(next -> next.serviceTaskOrderBike())
+                                .enter(FlowNodes.SubProcessApplicationWithdrawn.INSTANCE, start -> start.startEventApplicationWithdrawn())
                                 .then(next -> next.eventReverseApplication())
                                 .throwingCompensation(
                                         FlowNodes.EventCompensateContract.INSTANCE,
@@ -261,6 +322,7 @@ class BikeLeasingProcessTest {
         verify(cancelContractUseCase, times(1)).cancelContract(id);
         verify(cancelInsurancePolicyUseCase, times(1)).cancelPolicy(id);
         verify(sendCancellationConfirmationUseCase, times(1)).sendCancellationConfirmation(id);
+        verify(bookCancellationCostsUseCase, times(1)).bookCosts(new OrderId("ORDER-1"));
     }
 
     @Test
@@ -296,7 +358,17 @@ class BikeLeasingProcessTest {
         assertThat(instance)
                 .isEnded()
                 .hasPassedInOrder(inWalkOrder(
-                        PathWalk.from(FlowNodes.GatewayFork.INSTANCE)
+                        PathWalk.from(FlowNodes.StartEventLeasingRequestReceived.INSTANCE)
+                                .then(next -> next.businessRuleTaskCheckCreditRating())
+                                .then(next -> next.gatewayIsSolvent())
+                                .onto(next -> next.subProcessConcludeContract())
+                                .inside(FlowNodes.SubProcessConcludeContract.INSTANCE, start ->
+                                        PathWalk.from(start.startEventCustomerEligible())
+                                                .then(next -> next.serviceTaskSendContract())
+                                                .then(next -> next.gatewayAwaitSignature())
+                                                .then(next -> next.eventContractSigned())
+                                                .end(next -> next.endEventContractValid()))
+                                .then(next -> next.gatewayFork())
                                 .then(next -> next.gatewayBikeSourceJoin())
                                 .then(next -> next.serviceTaskOrderBike())
                                 .interruptedBy(
@@ -331,7 +403,22 @@ class BikeLeasingProcessTest {
         assertThat(instance)
                 .isEnded()
                 .hasPassed(inAnyOrder(
-                        PathWalk.from(FlowNodes.GatewayAlternativeFound.INSTANCE)
+                        PathWalk.from(FlowNodes.StartEventLeasingRequestReceived.INSTANCE)
+                                .then(next -> next.businessRuleTaskCheckCreditRating())
+                                .then(next -> next.gatewayIsSolvent())
+                                .onto(next -> next.subProcessConcludeContract())
+                                .inside(FlowNodes.SubProcessConcludeContract.INSTANCE, start ->
+                                        PathWalk.from(start.startEventCustomerEligible())
+                                                .then(next -> next.serviceTaskSendContract())
+                                                .then(next -> next.gatewayAwaitSignature())
+                                                .then(next -> next.eventContractSigned())
+                                                .end(next -> next.endEventContractValid()))
+                                .then(next -> next.gatewayFork())
+                                .then(next -> next.gatewayBikeSourceJoin())
+                                .then(next -> next.serviceTaskOrderBike())
+                                .interruptedBy(FlowNodes.ServiceTaskOrderBike.INSTANCE, next -> next.eventBikeUnavailable())
+                                .then(next -> next.userTaskClarifyAlternative())
+                                .then(next -> next.gatewayAlternativeFound())
                                 .then(next -> next.eventTriggerReversal())
                                 .throwingCompensation(
                                         FlowNodes.EventCompensateContract.INSTANCE,
@@ -362,7 +449,22 @@ class BikeLeasingProcessTest {
         assertThat(instance)
                 .isEnded()
                 .hasPassed(inAnyOrder(
-                        PathWalk.from(FlowNodes.StartEventApplicationWithdrawn.INSTANCE)
+                        PathWalk.from(FlowNodes.StartEventLeasingRequestReceived.INSTANCE)
+                                .then(next -> next.businessRuleTaskCheckCreditRating())
+                                .then(next -> next.gatewayIsSolvent())
+                                .onto(next -> next.subProcessConcludeContract())
+                                .inside(FlowNodes.SubProcessConcludeContract.INSTANCE, start ->
+                                        PathWalk.from(start.startEventCustomerEligible())
+                                                .then(next -> next.serviceTaskSendContract())
+                                                .then(next -> next.gatewayAwaitSignature())
+                                                .then(next -> next.eventContractSigned())
+                                                .end(next -> next.endEventContractValid()))
+                                .then(next -> next.gatewayFork())
+                                .then(next -> next.gatewayBikeSourceJoin())
+                                .then(next -> next.serviceTaskOrderBike())
+                                .interruptedBy(FlowNodes.ServiceTaskOrderBike.INSTANCE, next -> next.eventBikeUnavailable())
+                                .then(next -> next.userTaskClarifyAlternative())
+                                .enter(FlowNodes.SubProcessApplicationWithdrawn.INSTANCE, start -> start.startEventApplicationWithdrawn())
                                 .then(next -> next.eventReverseApplication())
                                 .throwingCompensation(
                                         FlowNodes.EventCompensateContract.INSTANCE,
@@ -389,13 +491,7 @@ class BikeLeasingProcessTest {
         continueToNextWaitState(processEngine); // re-order succeeds -> parallel join -> handover wait state
 
         process.correlateApplicationWithdrawn(id);
-        continueToNextWaitState(processEngine);
-        Task task = taskService
-                .createTaskQuery()
-                .taskDefinitionKey(CancelBikeOrderProcessApi.FlowNodes.UserTaskClarifyReturn.ELEMENT_ID)
-                .singleResult();
-        taskService.complete(task.getId(), Map.of("returnClarified", true));
-        continueToNextWaitState(processEngine);
+        continueToNextWaitState(processEngine); // the dealer cancels the order -> order reversed without a return to clarify
 
         assertThat(instance).isEnded().hasPassed(FlowNodes.EndEventApplicationCancelled.ELEMENT_ID);
         long orderCancellations = historyService
@@ -404,6 +500,7 @@ class BikeLeasingProcessTest {
                 .superProcessInstanceId(instance.getId())
                 .count();
         Assertions.assertThat(orderCancellations).isEqualTo(1);
+        verify(bookCancellationCostsUseCase, never()).bookCosts(any());
     }
 
     /** Drives a signed, insured application to the clarify-alternative task: the dealer has no bike. */
@@ -420,29 +517,6 @@ class BikeLeasingProcessTest {
         executeJobFor(processEngine, FlowNodes.ServiceTaskIssueInsurancePolicy.INSTANCE);
         executeJobFor(processEngine, FlowNodes.ServiceTaskOrderBike.INSTANCE); // unavailable -> parks on clarify-alternative
         return id;
-    }
-
-    private PathWalk<FlowNodes.GatewayIsSolvent, FlowNodes.GatewayIsSolvent.Next> pathUntilCreditRatingChecked() {
-        return PathWalk.from(FlowNodes.StartEventLeasingRequestReceived.INSTANCE)
-                .then(next -> next.businessRuleTaskCheckCreditRating())
-                .then(next -> next.gatewayIsSolvent());
-    }
-
-    private PathWalk<FlowNodes.GatewayAwaitSignature, FlowNodes.GatewayAwaitSignature.Next> pathUntilSignatureAwaited(
-            FlowNodes.SubProcessConcludeContract.Start start) {
-        return PathWalk.from(start.startEventCustomerEligible())
-                .then(next -> next.serviceTaskSendContract())
-                .then(next -> next.gatewayAwaitSignature());
-    }
-
-    private PathWalk<FlowNodes.SubProcessConcludeContract, FlowNodes.SubProcessConcludeContract.Next>
-            pathUntilContractSigned() {
-        return pathUntilCreditRatingChecked()
-                .onto(next -> next.subProcessConcludeContract())
-                .inside(FlowNodes.SubProcessConcludeContract.INSTANCE, start ->
-                        pathUntilSignatureAwaited(start)
-                                .then(next -> next.eventContractSigned())
-                                .end(next -> next.endEventContractValid()));
     }
 
     private ApplicationId submit(int age, double income) {

@@ -146,6 +146,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.cibseven.community.process_test_coverage</groupId>
+            <artifactId>cibseven-process-test-coverage-spring-test-platform-7</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <!-- `runtime`, not `test`: CIB seven's webclient (cibseven-webclient-core) already puts h2 on the
                  runtime classpath, and a direct test-scoped declaration would narrow it (in Maven the direct
                  scope wins) and drop it from the boot jar. -->
@@ -268,6 +273,9 @@
                 <configuration>
                     <forkCount>1</forkCount>
                     <reuseForks>false</reuseForks>
+                    <systemPropertyVariables>
+                        <org.cibseven.community.process_test_coverage.ASSERT_AT_LEAST>${process-test-coverage.minimum}</org.cibseven.community.process_test_coverage.ASSERT_AT_LEAST>
+                    </systemPropertyVariables>
                 </configuration>
             </plugin>
 
@@ -318,6 +326,18 @@
                     <timestampedReports>false</timestampedReports>
                     <mutationThreshold>80</mutationThreshold>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.cibseven.community.process_test_coverage</groupId>
+                <artifactId>cibseven-process-test-coverage-report-aggregator-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>aggregate</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

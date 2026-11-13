@@ -1,11 +1,15 @@
 package io.miragon.blueprint.adapter.inbound.rest;
 
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
+
 import io.miragon.blueprint.application.port.inbound.SubmitLeasingRequestUseCase;
 import io.miragon.blueprint.domain.bike.BikeId;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
 import io.miragon.blueprint.domain.leasing.CustomerName;
 import io.miragon.blueprint.domain.leasing.Email;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -13,7 +17,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/bike-leasing")
@@ -27,33 +30,12 @@ public class SubmitLeasingRequestController {
         this.useCase = useCase;
     }
 
+    @Operation(operationId = "submitLeasingRequest")
     @PostMapping
     public ResponseEntity<LeasingApplicationCreatedDto> submit(@RequestBody LeasingRequestInput input) {
         log.debug("Received leasing request: {}", input);
         ApplicationId id = useCase.submit(toCommand(input));
         return ResponseEntity.ok(new LeasingApplicationCreatedDto(id.value().toString()));
-    }
-
-    @Schema(requiredProperties = {"customerName", "email", "age", "monthlyNetIncome", "bikeId", "bikeModel"})
-    public record LeasingRequestInput(
-            String customerName,
-            String email,
-            int age,
-            double monthlyNetIncome,
-            String bikeId,
-            String bikeModel
-    ) {
-
-        public LeasingRequestInput {
-            Objects.requireNonNull(customerName, "customerName");
-            Objects.requireNonNull(email, "email");
-            Objects.requireNonNull(bikeId, "bikeId");
-            Objects.requireNonNull(bikeModel, "bikeModel");
-        }
-    }
-
-    @Schema(requiredProperties = {"applicationId"})
-    public record LeasingApplicationCreatedDto(String applicationId) {
     }
 
     private static SubmitLeasingRequestUseCase.Command toCommand(LeasingRequestInput input) {
@@ -64,5 +46,24 @@ public class SubmitLeasingRequestController {
                 input.monthlyNetIncome(),
                 new BikeId(input.bikeId()),
                 input.bikeModel());
+    }
+
+    public record LeasingRequestInput(
+            @Schema(requiredMode = REQUIRED) String customerName,
+            @Schema(requiredMode = REQUIRED) String email,
+            @Schema(requiredMode = REQUIRED) int age,
+            @Schema(requiredMode = REQUIRED) double monthlyNetIncome,
+            @Schema(requiredMode = REQUIRED) String bikeId,
+            @Schema(requiredMode = REQUIRED) String bikeModel) {
+
+        public LeasingRequestInput {
+            Objects.requireNonNull(customerName, "customerName");
+            Objects.requireNonNull(email, "email");
+            Objects.requireNonNull(bikeId, "bikeId");
+            Objects.requireNonNull(bikeModel, "bikeModel");
+        }
+    }
+
+    public record LeasingApplicationCreatedDto(@Schema(requiredMode = REQUIRED) String applicationId) {
     }
 }

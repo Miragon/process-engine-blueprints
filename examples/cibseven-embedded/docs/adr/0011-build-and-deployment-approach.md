@@ -1,4 +1,4 @@
-# 0014 — Build and deployment approach: OCI image
+# 0011 — Build and deployment approach: OCI image
 
 - **Status:** Accepted
 - **Date:** 2026-08-20

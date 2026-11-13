@@ -48,7 +48,7 @@ Write the plan as a checklist along the chain, skipping hops the issue does not 
    is taken (skill `create-adr`)
 <!-- variant:blueprint -->
 
-Every behaviour item lands in **both** variants with equivalent tests; models, forms, migrations and
+Every behaviour item lands in **both** variants with equivalent tests; models, migrations and
 `application.yaml` are copied byte-identically.
 <!-- /variant:blueprint -->
 

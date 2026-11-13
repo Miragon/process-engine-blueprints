@@ -1,7 +1,7 @@
 # 0014 — Temporal as a beta next to the BPMN engines
 
 - **Status:** Accepted
-- **Date:** 2026-10-30
+- **Date:** 2026-11-07
 
 ## Context
 
@@ -22,7 +22,7 @@ repository's README table, still offered by the starter CLI, Kotlin only.
 | business key, correlation | workflow id = application id |
 | message catch event | signal |
 | user task `clarifyAlternative` | update with a validator that rejects a call without an open clarification |
-| user task `clarifyReturn` | signal `returnClarified` to the child workflow, sent from the Temporal UI or CLI |
+| user task `clarifyReturn` | signal `returnClarified` to the child workflow, sent by `POST /api/bike-leasing/{id}/clarify-return` |
 | timer, non-interrupting boundary timer | `Workflow.await` / `sleep`, a cancellable `Async` branch |
 | event-based gateway | `Workflow.await` with a timeout |
 | parallel gateway | `Async` |
@@ -57,8 +57,8 @@ steps in one place.
   after three attempts. The outage shows as a pending activity in the Temporal UI and the application
   stays withdrawable. There is no `06-incident-demo`.
 - **`clarifyReturn` has no Tasklist.** The workflow waits on a signal. `cancellationPossible` is ported
-  literally from the model: `true` leads to the clarification and the booked costs, `false` ends it.
-  The model reads as inverted; that question belongs to the model, not to this port.
+  as `cancel-bike-order.bpmn` models it: `true` reverses the order right away, `false` waits for the
+  return clarification and books the costs.
 - **Early signals.** A Zeebe message expires after 10 seconds; a signal stays until the workflow
   handles it. A `contractSigned` that arrives before the contract went out is therefore not lost.
 - **Withdrawal during a running step.** `issueInsurancePolicy` and `orderBike` wait for the running

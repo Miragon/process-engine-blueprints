@@ -21,7 +21,6 @@ class ListBikesServiceTest {
 
     @Test
     void enrichesEachCatalogueBikeWithItsDealerAvailability() {
-
         // given: a catalogue (already ordered by the portfolio) where one bike is out of stock
         when(bikePortfolio.findAll())
                 .thenReturn(List.of(
@@ -34,21 +33,16 @@ class ListBikesServiceTest {
         List<ListBikesQuery.Item> result = underTest.all();
 
         // then: the portfolio's order is preserved and each item's availability comes from the dealer
-        assertThat(result.stream().map(item -> item.bikeId().value()))
+        assertThat(result.stream().map(item -> item.bikeId().value()).toList())
                 .containsExactly("BIKE-900", "BIKE-OOS");
-        assertThat(result)
-                .filteredOn(item -> item.bikeId().value().equals("BIKE-900"))
-                .singleElement()
-                .matches(ListBikesQuery.Item::available);
-        assertThat(result)
-                .filteredOn(item -> item.bikeId().value().equals("BIKE-OOS"))
-                .singleElement()
-                .matches(item -> !item.available());
+        assertThat(result.stream().filter(item -> item.bikeId().value().equals("BIKE-900")).findFirst()
+                .orElseThrow().available()).isTrue();
+        assertThat(result.stream().filter(item -> item.bikeId().value().equals("BIKE-OOS")).findFirst()
+                .orElseThrow().available()).isFalse();
     }
 
     @Test
     void returnsAnEmptyListForAnEmptyCatalogue() {
-
         // given: no bikes
         when(bikePortfolio.findAll()).thenReturn(List.of());
 

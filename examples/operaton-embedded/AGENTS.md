@@ -7,21 +7,22 @@ imports it (see [ADR-0005](docs/adr/0005-agents-md-as-the-single-source.md)).
 
 A headless **MiraVelo bike-leasing** example: one complete BPMN process automated on an embedded
 Operaton engine, with an enforced hexagonal architecture and a committed REST contract. Headless —
-there is no UI; the engine's Cockpit/Tasklist webapps and the REST API are the only entry points.
+there is no UI; the REST API is the entry point, user tasks included, and the engine's Cockpit
+webapp is there to operate the engine.
 
 - **Backend** — Spring Boot 4, hexagonal, Operaton 2.x embedded engine (JavaDelegates). Package root
   `io.miragon.blueprint`.
   <!-- variant:blueprint -->
 - **Two equivalent variants on `main`** — `kotlin-gradle/` (Kotlin, **the recommended stack**) and
   `java-maven/` (Java 21, for teams bound to it and for trainings). Each is self-contained and
-  carries its own copy of the process models, DMN, forms, migrations and `application.yaml`; the
+  carries its own copy of the process models, DMN, migrations and `application.yaml`; the
   `Blueprint Checks` workflow fails when the two `src/main/resources` trees differ, so **edit a model
   in one variant and copy it to the other**. `openapi/`, `bruno/` and `stack/` exist once and apply to
   both. The variants must stay functionally identical: **make every change in behaviour in both
   variants in the same PR.** Changes that only concern one language's idioms stay on that side. See
   [ADR-0013](docs/adr/0013-two-stack-variants-side-by-side-on-main.md). The OpenAPI contract below is
   drift-gated against **both** variants.
-  Stack-specific content in shared files (docs, Dependabot, Conductor settings) is wrapped in
+  Stack-specific content in shared files (docs, Dependabot) is wrapped in
   `variant:<name>` markers so `scripts/create-starter.sh` can strip it — see
   [docs/starter.md](docs/starter.md).
   <!-- /variant:blueprint -->
@@ -52,7 +53,7 @@ service/
     adapter/process             generated *ProcessApi (bpmn-to-code) + engine config
     application/{port,service}  use-case ports and their services
     domain/{leasing,bike}       pure domain model
-    resources/{bpmn,dmn,forms}  the process models and Camunda Forms
+    resources/{bpmn,dmn}        the process models
     resources/db/migration      Flyway versioned schema migrations
 ```
 
@@ -95,7 +96,7 @@ The stack also starts **EnterpriseGlue The Bridge** (an additional Operaton UI o
 the engine in it under Platform Settings → Engines with base URL
 `http://host.docker.internal:8080/engine-rest`.
 
-### Ports (one source of truth — keep README, this file and `.conductor/settings.toml` in sync)
+### Ports (one source of truth — keep README and this file in sync)
 
 | What | Port |
 |---|---|
@@ -114,7 +115,7 @@ the engine in it under Platform Settings → Engines with base URL
 | Backend (arch + unit + process + model validation + spec export) | `./gradlew build` |
 | Mutation testing (gate 80) | `./gradlew :service:app:pitest` |
 | Regenerate the typed BPMN process API (after editing a `.bpmn`) | `./gradlew generateBpmnModels` |
-| Regenerate the OpenAPI contract | `./gradlew :service:app:test --tests "io.miragon.blueprint.openapi.OpenApiSpecExportTest"` |
+| Regenerate the OpenAPI contract | `./gradlew :service:app:test --tests "io.miragon.blueprint.adapter.inbound.rest.OpenApiSpecExportTest"` |
 | Backend OCI image (`miravelo/app`) | `./gradlew :service:app:bootBuildImage` |
 <!-- /variant:kotlin-gradle -->
 
@@ -169,7 +170,7 @@ rules:
   the walked path against these nodes instead of hand-maintained element-id lists.
   <!-- variant:kotlin-gradle -->
 - The Kotlin process tests express that path as a compile-checked `ProcessPath`
-  (`process/util/ProcessPathAssertions.kt`).
+  (`adapter/process/ProcessPathAssertions.kt`).
   <!-- /variant:kotlin-gradle -->
 - `bpmnlint` runs on staged `.bpmn` via the pre-commit hook (install: `npm run hooks:install`).
 
@@ -199,7 +200,7 @@ Verify the variant you touched — which, for a change in behaviour, is both.
 In `kotlin-gradle/`:
 
 - Backend service/controller: `./gradlew :service:app:test --tests "*<Name>Test"`
-- Architecture only: `./gradlew :service:app:test --tests "io.miragon.blueprint.architecture.*"`
+- Architecture only: `./gradlew :service:app:test --tests "io.miragon.blueprint.ArchitectureTest*"`
   <!-- /variant:kotlin-gradle -->
 
 <!-- variant:java-maven -->
@@ -229,8 +230,8 @@ Two CLIs come as Claude Code plugins (`.claude/settings.json`) and are pinned in
   (`inspect --business-key <applicationId>`, `status`, `incident`, history, `retry`). It never
   deploys: the service deploys the models from its classpath, and a hand deploy is a version the
   generated process API does not know. It never moves a case either (correlating a message,
-  completing a user task): that is a business action, taken by a client of the app's API or by a
-  human in the Tasklist, not by an agent.
+  completing a user task): that is a business action, taken by a client of the app's API, not by an
+  agent.
 
 Two more plugins bring recipes, no CLI: **bpmn-to-code** (skills `bpmn-to-code:*`, e.g.
 `bpmn-to-code:test-process`, `bpmn-to-code:create-process-adapter`) for the generated process API and

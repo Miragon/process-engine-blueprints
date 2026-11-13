@@ -1,8 +1,8 @@
 # Validating a model: three nets
 
 BPMNDI defects are invisible in the XML and in a diff: a task can execute but never render, a flow
-can run backwards. Run all three nets and report all of them. Also use this to review a diagram
-after any edit.
+can run backwards. Run all three nets and report all of them. Paths are relative to the directory
+that holds `service/`.
 
 ## 1. bpmnlint
 

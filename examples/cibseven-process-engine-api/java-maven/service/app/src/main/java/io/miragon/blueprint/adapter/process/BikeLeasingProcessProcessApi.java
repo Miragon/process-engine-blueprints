@@ -315,6 +315,8 @@ public final class BikeLeasingProcessProcessApi {
       }
 
       public static final class Variables extends VariableDefinitions {
+        public static final VariableName.Input APPLICATION_ID = new VariableName.Input(ProcessVariables.APPLICATION_ID);
+
         public static final VariableName.Input BIKE_ID = new VariableName.Input(ProcessVariables.BIKE_ID);
 
         public static final VariableName.Input ORDER_ID = new VariableName.Input(ProcessVariables.ORDER_ID);
@@ -324,11 +326,13 @@ public final class BikeLeasingProcessProcessApi {
 
         @Override
         public List<VariableName> getAll() {
-          return List.of(BIKE_ID, ORDER_ID);
+          return List.of(APPLICATION_ID, BIKE_ID, ORDER_ID);
         }
       }
 
       public static final class Inputs {
+        public static final InputOutputMapping APPLICATION_ID = new InputOutputMapping("applicationId", "applicationId", null);
+
         public static final InputOutputMapping BIKE_ID = new InputOutputMapping("bikeId", "bikeId", null);
 
         public static final InputOutputMapping ORDER_ID = new InputOutputMapping("orderId", "orderId", null);

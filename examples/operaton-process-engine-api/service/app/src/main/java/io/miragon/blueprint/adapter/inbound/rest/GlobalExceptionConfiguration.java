@@ -1,8 +1,6 @@
 package io.miragon.blueprint.adapter.inbound.rest;
 
 import java.net.URI;
-
-import org.jspecify.annotations.Nullable;
 import org.operaton.bpm.engine.MismatchingMessageCorrelationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,11 +11,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 /**
  * Cross-cutting web error handling for the REST adapter: turns domain and input errors into RFC 9457
- * `application/problem+json` responses (Spring serialises {@link ProblemDetail} as such automatically).
+ * {@code application/problem+json} responses (Spring serialises {@link ProblemDetail} as such
+ * automatically).
  *
- * This is web configuration, hence the `Configuration` suffix whitelisted for `adapter.inbound.rest`
- * and its home here rather than in a new top-level `config` package (which the architecture tests
- * would reject).
+ * <p>This is web configuration, hence the {@code Configuration} suffix whitelisted for
+ * {@code adapter.inbound.rest} and its home here rather than in a new top-level {@code config} package
+ * (which the architecture tests would reject).
  */
 @RestControllerAdvice
 public class GlobalExceptionConfiguration {
@@ -45,7 +44,7 @@ public class GlobalExceptionConfiguration {
         return problem(HttpStatus.CONFLICT, "Action not available in the current state", exception.getMessage());
     }
 
-    private ProblemDetail problem(HttpStatus status, String title, @Nullable String detail) {
+    private ProblemDetail problem(HttpStatus status, String title, String detail) {
         ProblemDetail problemDetail = ProblemDetail.forStatus(status);
         problemDetail.setTitle(title);
         problemDetail.setDetail(detail);

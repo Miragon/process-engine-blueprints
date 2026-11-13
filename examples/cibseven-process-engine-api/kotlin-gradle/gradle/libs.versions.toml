@@ -12,6 +12,7 @@ bpmn_to_code_version = "7.0.1"
 archunit_version = "1.5.1"
 konsist_version = "0.18.1"
 cib7_jgiven_version = "2.2.0"
+cib7_process_test_coverage_version = "2.2.0"
 jgiven_kotlin_version = "2.0.2.1"
 
 [libraries]
@@ -64,6 +65,8 @@ h2 = { module = "com.h2database:h2", version = "2.5.252" }
 # Process test — CIB seven
 cib7-bpm-assert = { module = "org.cibseven.bpm:cibseven-bpm-assert", version.ref = "cib7_version" }
 cib7-bpm-junit5 = { module = "org.cibseven.bpm:cibseven-bpm-junit5", version.ref = "cib7_version" }
+cib7-process-test-coverage = { module = "org.cibseven.community.process_test_coverage:cibseven-process-test-coverage-spring-test-platform-7", version.ref = "cib7_process_test_coverage_version" }
+cib7-process-test-coverage-aggregator = { module = "org.cibseven.community.process_test_coverage:cibseven-process-test-coverage-report-aggregator-gradle-plugin", version.ref = "cib7_process_test_coverage_version" }
 
 # JGiven — CIB seven
 cib7-bpm-jgiven = { module = "org.cibseven.community:cibseven-bpm-jgiven", version.ref = "cib7_jgiven_version" }
@@ -78,7 +81,7 @@ processEngineApi = ["process-engine-api", "process-engine-adapter-cib7-embedded"
 test = ["spring_test", "spring_web_test", "spring_data_jpa_test", "mockito", "mockk", "spring_mockk", "kotlin_mockito"]
 archunit = ["archunit"]
 konsist = ["konsist"]
-cib7ProcessTest = ["cib7-bpm-assert", "cib7-bpm-junit5", "h2"]
+cib7ProcessTest = ["cib7-bpm-assert", "cib7-bpm-junit5", "cib7-process-test-coverage", "h2"]
 cib7JGiven = ["cib7-bpm-jgiven", "cib7-bpm-junit5", "jgiven-kotlin", "jgiven-junit5"]
 
 [plugins]

@@ -41,6 +41,7 @@ timers, messages, escalations, compensation and user tasks along the way. What y
 | [`operaton-process-engine-api`](examples/operaton-process-engine-api/README.md) | Operaton | embedded | [Java](examples/operaton-process-engine-api/README.md) |
 | [`operaton-remote`](examples/operaton-remote/README.md) | Operaton | remote | [Kotlin](examples/operaton-remote/kotlin-gradle/README.md) · [Java](examples/operaton-remote/java-maven/README.md) |
 | [`zeebe-native`](examples/zeebe-native/README.md) | Camunda 8 (Zeebe) | remote | [Kotlin](examples/zeebe-native/kotlin-gradle/README.md) · [Java](examples/zeebe-native/java-maven/README.md) |
+| [`zeebe-process-engine-api`](examples/zeebe-process-engine-api/README.md) | Camunda 8 (Zeebe) | remote | [Kotlin](examples/zeebe-process-engine-api/kotlin-gradle/README.md) · [Java](examples/zeebe-process-engine-api/java-maven/README.md) |
 <!-- END:examples -->
 
 **Embedded** runs the engine inside your service, **remote** in its own engine host or Camunda 8 cluster. The
@@ -69,7 +70,7 @@ starts from another state of the examples than `main`, `--list` shows the exampl
 
 ## Working on an example
 
-Open the example's folder, not the repository root. Its README, `AGENTS.md`, skills and Conductor targets treat
+Open the example's folder, not the repository root. Its README, `AGENTS.md` and skills treat
 that folder as the project.
 
 ```bash

@@ -1,6 +1,6 @@
 package io.miragon.blueprint.adapter.inbound.rest;
 
-import org.jspecify.annotations.Nullable;
+import java.net.URI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -8,11 +8,11 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.RestClientResponseException;
-import java.net.URI;
 
 /**
  * Cross-cutting web error handling for the REST adapter: turns domain and input errors into RFC 9457
- * {@code application/problem+json} responses (Spring serialises {@link ProblemDetail} as such automatically).
+ * {@code application/problem+json} responses (Spring serialises {@link ProblemDetail} as such
+ * automatically).
  *
  * <p>This is web configuration, hence the {@code Configuration} suffix whitelisted for
  * {@code adapter.inbound.rest} and its home here rather than in a new top-level {@code config} package
@@ -45,18 +45,15 @@ public class GlobalExceptionConfiguration {
      */
     @ExceptionHandler(RestClientResponseException.class)
     public ProblemDetail handleEngineError(RestClientResponseException exception) {
-        HttpStatus status;
-        if (exception.getStatusCode().is4xxClientError()) {
-            status = HttpStatus.CONFLICT;
-        } else {
-            status = HttpStatus.BAD_GATEWAY;
-        }
+        HttpStatus status = exception.getStatusCode().is4xxClientError()
+                ? HttpStatus.CONFLICT
+                : HttpStatus.BAD_GATEWAY;
         log.debug("Engine rejected the call ({}): {}", exception.getStatusCode(), exception.getMessage());
         String title = status == HttpStatus.CONFLICT ? "Action not available in the current state" : "Engine error";
         return problem(status, title, exception.getMessage());
     }
 
-    private static ProblemDetail problem(HttpStatus status, String title, @Nullable String detail) {
+    private ProblemDetail problem(HttpStatus status, String title, String detail) {
         ProblemDetail problemDetail = ProblemDetail.forStatus(status);
         problemDetail.setTitle(title);
         problemDetail.setDetail(detail);

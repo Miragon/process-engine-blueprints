@@ -1,10 +1,11 @@
 package io.miragon.blueprint.adapter.inbound.rest;
 
-import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
-
 import io.miragon.blueprint.application.port.inbound.GetLeasingApplicationQuery;
+import io.miragon.blueprint.domain.bike.OrderId;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
+import io.miragon.blueprint.domain.leasing.ContractId;
 import io.miragon.blueprint.domain.leasing.LeasingApplication;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,35 +23,39 @@ public class GetLeasingApplicationController {
         this.query = query;
     }
 
+    @Operation(operationId = "getLeasingApplication")
     @GetMapping("/{applicationId}")
     public ResponseEntity<LeasingApplicationDto> byId(@PathVariable String applicationId) {
         return query.byId(ApplicationId.of(applicationId))
-                .map(result -> ResponseEntity.ok(toDto(result)))
-                .orElseGet(() -> ResponseEntity.notFound().build());
+            .map(result -> ResponseEntity.ok(toDto(result)))
+            .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     public record LeasingApplicationDto(
-            @Schema(requiredMode = REQUIRED) String applicationId,
-            @Schema(requiredMode = REQUIRED) String customerName,
-            @Schema(requiredMode = REQUIRED) String email,
-            @Schema(requiredMode = REQUIRED) String bikeId,
-            @Schema(nullable = true) String bikeModel,
-            @Schema(requiredMode = REQUIRED) String status,
-            @Schema(nullable = true) String orderId,
-            @Schema(nullable = true) String contractId) {
+        @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String applicationId,
+        @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String customerName,
+        @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String email,
+        @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String bikeId,
+        @Schema(types = {"string", "null"}) String bikeModel,
+        @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String status,
+        @Schema(types = {"string", "null"}) String orderId,
+        @Schema(types = {"string", "null"}) String contractId
+    ) {
     }
 
     private static LeasingApplicationDto toDto(GetLeasingApplicationQuery.Result result) {
         LeasingApplication application = result.application();
+        OrderId orderId = application.orderId();
+        ContractId contractId = application.contractId();
         return new LeasingApplicationDto(
-                application.id().value().toString(),
-                application.customerName().value(),
-                application.email().value(),
-                application.bikeId().value(),
-                // resolved from the bike portfolio, not carried on the application
-                result.bikeModel(),
-                application.status().name(),
-                application.orderId() != null ? application.orderId().value() : null,
-                application.contractId() != null ? application.contractId().value() : null);
+            application.id().value().toString(),
+            application.customerName().value(),
+            application.email().value(),
+            application.bikeId().value(),
+            // resolved from the bike portfolio, not carried on the application
+            result.bikeModel(),
+            application.status().name(),
+            orderId == null ? null : orderId.value(),
+            contractId == null ? null : contractId.value());
     }
 }

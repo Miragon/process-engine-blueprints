@@ -13,7 +13,6 @@ public interface BikePortfolioRepository {
 
     Bike save(Bike bike);
 
-    /** The bike with the given id, or {@link Optional#empty()} if it is not in the portfolio. */
     Optional<Bike> findByBikeId(BikeId bikeId);
 
     /** The whole catalogue — backs the {@code GET /api/bikes} picker. */

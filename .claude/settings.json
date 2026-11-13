@@ -16,7 +16,6 @@
       "Edit(/.github/workflows/*.pre-merge*.yml)",
       "Edit(/.github/workflows/*.nightly*.yml)",
       "Edit(/.github/dependabot.yml)",
-      "Edit(/.conductor/settings.toml)",
       "Edit(/tooling/create-blueprint/catalog.json)",
       "Edit(/**/adapter/process/*ProcessApi.*)",
       "Edit(/examples/*/openapi/*.json)",

@@ -122,6 +122,16 @@
             <artifactId>cibseven-bpm-junit5</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.cibseven.community.process_test_coverage</groupId>
+            <artifactId>cibseven-process-test-coverage-spring-test-platform-7</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-reflect</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <!-- BPMN model validation (build-time, no engine) -->
         <dependency>
@@ -196,7 +206,23 @@
                 <configuration>
                     <reuseForks>false</reuseForks>
                     <forkCount>1</forkCount>
+                    <systemPropertyVariables>
+                        <org.cibseven.community.process_test_coverage.ASSERT_AT_LEAST>${process-test-coverage.minimum}</org.cibseven.community.process_test_coverage.ASSERT_AT_LEAST>
+                    </systemPropertyVariables>
                 </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.cibseven.community.process_test_coverage</groupId>
+                <artifactId>cibseven-process-test-coverage-report-aggregator-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>aggregate</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
             <!-- Spring Boot: repackage, build-info, and the OCI image (miravelo/cibseven-embedded-example). -->

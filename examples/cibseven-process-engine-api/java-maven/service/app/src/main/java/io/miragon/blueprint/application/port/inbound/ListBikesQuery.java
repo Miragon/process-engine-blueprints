@@ -12,9 +12,6 @@ public interface ListBikesQuery {
 
     List<Item> all();
 
-    record Item(
-            BikeId bikeId,
-            String model,
-            boolean available) {
+    record Item(BikeId bikeId, String model, boolean available) {
     }
 }

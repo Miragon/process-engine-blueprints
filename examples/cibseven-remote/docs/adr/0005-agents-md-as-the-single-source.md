@@ -12,17 +12,15 @@ guarantees they drift. Meanwhile `AGENTS.md` has emerged as a cross-tool, vendor
 
 ## Decision
 
-**`AGENTS.md` is the real file** — the single source of truth for build commands, the port table, and
-the architecture rules. Tool-specific files are **thin pointers** to it: `CLAUDE.md` is exactly one
-line, `@AGENTS.md`.
+**`AGENTS.md` is the real file** — the single source of truth for build commands, the port table,
+architecture rules, and the day-to-day workflow. Tool-specific files are **thin pointers** to it:
+`CLAUDE.md` is exactly one line, `@AGENTS.md`.
 
 - We use an **`@`-import, not a symlink.** A symlink breaks on Windows checkouts and inside ZIP/tarball
   exports of the repo (a blueprint gets downloaded, not just cloned); an `@`-import is plain text that
   travels everywhere and is resolved by the tool.
-- The standard is **nestable**: a module can carry its own `AGENTS.md` with commands specific to it, and
-  an agent working under that directory picks it up in addition to the root file.
-- The port table lives in `AGENTS.md` and is referenced by the README, so **engine-service 8081 /
-  example-service 8082 / Postgres 5432** have one authoritative home (see
+- The port table lives in `AGENTS.md` so engine-service 8081 / example-service 8082 / Postgres 5432 have one
+  authoritative home (see
   [ADR-0006](0006-fixed-ports-for-v1-portless-as-the-upgrade.md)).
 
 ## Consequences
@@ -30,6 +28,6 @@ line, `@AGENTS.md`.
 - **Positive:** one file to maintain; new tools are onboarded by adding a one-line pointer; the
   convention is portable across clone, ZIP, and worktree.
 - **Negative / trade-offs:** an agent whose tool does **not** resolve `@`-imports needs a one-time nudge
-  to read `AGENTS.md`; nested files mean an agent must respect the nearest one.
-- **Neutral:** because the root file is the one place conventions live, an agent can discover how to
-  work in the repo without crawling the tree.
+  to read `AGENTS.md`; nested files, if any, mean an agent must respect the nearest one.
+- **Neutral:** `AGENTS.md` is the discoverable entry point, so an agent finds the repo's conventions
+  without crawling the tree.

@@ -1,89 +1,65 @@
 ---
 name: create-rest-controller
-argument-hint: "[<path-to-UseCase-or-Query-port-file>] [http-verb] [path]"
-description: Scaffold or update a Spring @RestController (inbound adapter) in service/app for one inbound port, with nested request/response DTOs and a toCommand() mapping. Use when the user asks to "create a REST controller", "add an endpoint", "expose a use-case over REST", or "scaffold an inbound adapter". Accepts a UseCase/Query port file or a description; the generated controller obeys the hexagonal + naming ArchUnit rules and carries an @Operation(operationId) so the OpenAPI client method is stable.
-allowed-tools: Read, Write, Glob
+argument-hint: "[UseCase-or-Query port] [http-verb] [path]"
+description: "Create or update one Spring @RestController (inbound adapter) for one inbound port, with its request types, an @Operation(operationId) and its @WebMvcTest, then carry the change through the re-exported openapi/openapi.json, the regenerated frontend client and a Bruno request. Use when the user asks to create a REST controller, add an endpoint, or expose a use case over REST."
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Skill
 ---
 
 # Skill: create-rest-controller
 
-Generate or update **one** `@RestController` (inbound REST adapter) for a specific inbound port in
-`service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/rest/`. One endpoint per class. See
-[ADR-0002](../../../docs/adr/0002-hexagonal-architecture-for-the-backend.md) for the rules this obeys
-and [ADR-0004](../../../docs/adr/0004-openapi-as-the-checked-in-contract.md) for why `operationId`
-matters.
+One endpoint per class in `adapter/inbound/rest/` (package `io.miragon.blueprint` under
+`service/app/src/main/`), its test next to it in the test tree. The architecture rules are in
+`AGENTS.md`; the contract rules in [ADR-0004](../../../docs/adr/0004-openapi-as-the-checked-in-contract.md).
 
-## Pattern (this repo)
+## Production pattern
 
-```kotlin
-@RestController
-@RequestMapping("/api/bike-leasing")
-class SubmitLeasingRequestController(
-    private val useCase: SubmitLeasingRequestUseCase,
-) {
-    @Operation(operationId = "submitLeasingRequest")
-    @PostMapping
-    fun submit(@RequestBody input: LeasingRequestInput): ResponseEntity<LeasingApplicationCreatedDto> {
-        val id = useCase.submit(input.toCommand())
-        return ResponseEntity.ok(LeasingApplicationCreatedDto(id.value.toString()))
-    }
+Copy the shape of the existing controllers instead of inventing one:
 
-    data class LeasingRequestInput(val customerName: String, /* … */)
-    data class LeasingApplicationCreatedDto(val applicationId: String)
+| Case | Reference |
+|---|---|
+| creating a case | `SubmitLeasingRequestController`: `POST /api/bike-leasing`, 200 with the new id |
+| a command without a body (path variable only) | `SignContractController` |
+| a command with a request body | `SelectAlternativeController` (nested `AlternativeDecisionInput`) |
+| a single read | `GetLeasingApplicationController` (nested `LeasingApplicationDto`) |
+| a list or page read | `ListLeasingApplicationsController` |
 
-    private fun LeasingRequestInput.toCommand() =
-        SubmitLeasingRequestUseCase.Command(customerName = CustomerName(customerName), /* … */)
-}
-```
+- **One inbound port** as the only constructor parameter; a read and a command are two controllers.
+- Commands on a case are `POST /api/bike-leasing/{applicationId}/<action>` and answer **202**,
+  because the engine continues asynchronously. Reads are `GET` with a `*Query` and a nested `*Dto`; a
+  single read answers `ResponseEntity.notFound()` when the query finds nothing.
+- Wrap every request field that has a domain value object (`ApplicationId.of(…)`, `BikeId(…)`) before
+  calling the port; plain values pass through.
+- **Always set `@Operation(operationId = "…")`** (camelCase). Without it springdoc falls back to the
+  method name (`byId`, `list`) as the operationId, and orval names the client hook after it. Only paths under `/api/**`
+  (`springdoc.paths-to-match`) reach the spec.
+- Errors become problem details in `GlobalExceptionConfiguration`: `IllegalArgumentException` → 400,
+  `IllegalStateException` → 404, `MismatchingMessageCorrelationException` → 409 (the case has moved
+  on). Throw those from the domain or the service; don't catch them in the controller.
 
-A **read** controller injects a `*Query` and maps to a `*Dto` inline (see `ListBikesController`).
+## Test pattern
 
-## IMPORTANT — the rules ArchUnit enforces
+`@WebMvcTest(<Controller>.class)` with the port mocked, one test per outcome (references:
+`SelectAlternativeControllerTest`, `GetLeasingApplicationControllerTest`):
 
-- **One endpoint (method) per controller class**, and the port interface is the **only** constructor
-  parameter (`in adapters should only offer one use-case or query`).
-- Class name = port name with `UseCase`/`Query` → `Controller`. Suffixes allowed in
-  `adapter.inbound.rest`: `Controller`, `Dto`, `Input`, `Mapper`, `Configuration` — nothing else.
-- **Wrap every request field in its domain value object inside `toCommand()`** before calling the port.
-  Scan `domain/{leasing,bike}/` first; if a value object is missing, ask before creating it.
-- Request/response types are `data class` **nested inside** the controller. Request → `*Input`,
-  response → `*Dto`.
-- Always return `ResponseEntity<T>` — `ResponseEntity<Void>` when the port returns `Unit`.
-- **Always add `@Operation(operationId = "…")`** (camelCase, matching the port action) — orval derives
-  the generated client's hook name from it, so a stable id keeps the frontend stable.
+- the success status with the **exact** port call, built from the domain value objects, then the
+  strict check (`confirmVerified` / `verifyNoMoreInteractions`);
+- each invalid input → 400, and the port is **not** called;
+- for a read, every DTO field in the body (nothing else notices a mapping no test reads) and
+  the not-found case → 404.
+
+`GlobalExceptionConfigurationTest` covers the 409 mapping; the 400 is asserted in the controller
+tests. Given/when/then comments, as in the existing tests.
 
 ## Instructions
 
-### Step 1 — Resolve the input port
-
-From `$ARGUMENTS`: if a port file under `application/port/inbound/` is given, read it — extract package,
-interface name, method signature(s), the nested `Command` fields (if any), and the return type. If no
-argument, `Glob **/application/port/inbound/*{UseCase,Query}.kt`, list the results, and ask which one.
-
-### Step 2 — Locate the target
-
-Base package is fixed: `io.miragon.blueprint`. Controller package:
-`io.miragon.blueprint.adapter.inbound.rest`. Source root:
-`service/app/src/main/kotlin/`.
-
-### Step 3 — Verb and path
-
-Use `$ARGUMENTS` if given. Otherwise infer: `Submit`/`Create`/`Report`/`Sign` → `POST`;
-`Withdraw`/`Cancel`/`Select` → `POST` (state change via body, matching the existing controllers);
-`Get`/`List` (a `*Query`) → `GET`. Derive a path under `/api/…` consistent with the existing endpoints
-(`/api/bike-leasing`, `/api/bikes`, `/api/leasing-applications`). Confirm verb + path with the user.
-
-### Step 4 — Generate or update
-
-New file → write the controller per the pattern, creating any missing domain value object first (never
-leave a TODO for a domain type). Existing file → read it, add only what's missing (a field, the return
-type, a `toCommand()` correction), preserve existing logic.
-
-### Step 5 — Report and hand off
-
-Report created/updated/skipped, then remind the user to:
-
-1. Run the OpenAPI + client loop with the [`sync-api-client`](../sync-api-client/SKILL.md) skill so the
-   new endpoint reaches `openapi/openapi.json` and the frontend client — **the spec is drift-gated in
-   CI**, so a new endpoint that isn't regenerated will fail the build.
-2. Add a `@WebMvcTest` slice test and run `./gradlew build` (runs the ArchUnit suite too).
+1. **Resolve the port** from `$ARGUMENTS`, else list `application/port/inbound/` and ask. If the port
+   does not exist yet, create it and its service first (a unit test with the outbound ports mocked).
+2. **Agree verb, path and status codes** with the user.
+3. **Write the test first**, then the controller; for an existing file add only what is missing. Run
+   it by name (`AGENTS.md` → Verify After Each Task).
+4. **Carry the contract through:** regenerate `openapi/openapi.json` with the `OpenApiSpecExportTest`
+   (`AGENTS.md` → Build Commands) and review `git diff -- openapi/openapi.json`: the new path with its
+   operationId and schemas. Never hand-edit the file.
+   Then regenerate the frontend client with skill `sync-api-client`.
+5. **Add the request to `bruno/`**: in the scenario folder of the flow, numbered in order, with
+   assertions on the status and the body; a new flow gets a new numbered folder.

@@ -48,7 +48,7 @@ empty result:
   (`TestObjectBuilder`). A separate mapper gets its own plain unit test for every field
   (`LeasingApplicationEntityMapperTest`).
 
-Tests run against H2 with Flyway off; the migration is checked when the worker starts against
+Tests run against H2 with Flyway off; the migration is checked when the service starts against
 Postgres, so start it once after a schema change.
 
 ## Instructions
@@ -59,7 +59,7 @@ Postgres, so start it once after a schema change.
    what is missing to existing files.
 3. **Write the tests first**, then entity, repository, mapper, adapter and migration.
 4. **Verify:** the adapter and mapper tests by name, then the architecture tests (`AGENTS.md` →
-   Verify After Each Task); with the stack running, start the worker once so Hibernate validates the
+   Verify After Each Task); with the stack running, start the service once so Hibernate validates the
    schema against the migrated Postgres.
 <!-- variant:blueprint -->
 5. **Both variants:** the same classes and tests in `kotlin-gradle/` and `java-maven/`; the migration

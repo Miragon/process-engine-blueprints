@@ -11,9 +11,8 @@ get {
 }
 
 script:pre-request {
-  const pid = bru.getVar('processInstanceId');
-  await pollEngine(
-    '/history/activity-instance?processInstanceId=' + pid + '&activityId=endEvent_leasingActive',
+  await pollEngine("/history/activity-instance?processInstanceId=" + bru.getVar("processInstanceId")
+    + "&activityId=endEvent_leasingActive",
     (b) => Array.isArray(b) && b.length >= 1);
 }
 

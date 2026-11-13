@@ -1,7 +1,6 @@
 package io.miragon.blueprint.adapter.inbound.workflow
 
 import io.miragon.blueprint.adapter.process.LeasingApplicationAggregate
-import io.miragon.blueprint.domain.bike.OrderId
 import io.miragon.blueprint.domain.leasing.testLeasingApplication
 import io.vanillabp.spi.service.TaskEvent
 import org.assertj.core.api.Assertions.assertThat
@@ -12,18 +11,27 @@ class ClarifyReturnTaskTest {
     private val task = ClarifyReturnTask()
 
     @Test
-    fun `the engine-only user task leaves no trace on the workflow aggregate`() {
+    fun `remembers the created user task on the workflow aggregate`() {
         // given
-        val application = testLeasingApplication(orderId = OrderId("ORDER-1"))
-        val aggregate = LeasingApplicationAggregate.of(application)
+        val aggregate = LeasingApplicationAggregate.of(testLeasingApplication())
 
         // when
-        task.clarifyReturn(aggregate, TaskEvent.Event.CREATED)
-        task.clarifyReturn(aggregate, TaskEvent.Event.CANCELED)
+        task.clarifyReturn(aggregate, "4712", TaskEvent.Event.CREATED)
 
         // then
-        assertThat(aggregate.toDomain()).isEqualTo(application)
-        assertThat(aggregate.clarifyAlternativeTaskId).isNull()
-        assertThat(aggregate.cancellationPossible).isNull()
+        assertThat(aggregate.clarifyReturnTaskId).isEqualTo("4712")
+    }
+
+    @Test
+    fun `forgets the user task when the engine cancels it`() {
+        // given
+        val aggregate = LeasingApplicationAggregate.of(testLeasingApplication())
+        task.clarifyReturn(aggregate, "4712", TaskEvent.Event.CREATED)
+
+        // when
+        task.clarifyReturn(aggregate, "4712", TaskEvent.Event.CANCELED)
+
+        // then
+        assertThat(aggregate.clarifyReturnTaskId).isNull()
     }
 }

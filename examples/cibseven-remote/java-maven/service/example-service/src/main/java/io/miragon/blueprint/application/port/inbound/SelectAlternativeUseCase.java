@@ -2,31 +2,21 @@ package io.miragon.blueprint.application.port.inbound;
 
 import io.miragon.blueprint.domain.bike.BikeId;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
-import org.jspecify.annotations.Nullable;
 
 /**
- * Resolves the {@code Clarify alternative with customer} user task from the outside — the "external"
- * completion path via our own client, next to a human completing the deployed Camunda Form in the
- * Tasklist. When an alternative bike was found, the newly chosen bike is carried into the re-order.
+ * Resolves the {@code Clarify alternative with customer} user task. When an alternative bike was found, the
+ * newly chosen bike is carried into the re-order.
  */
 public interface SelectAlternativeUseCase {
+
     void selectAlternative(Command command);
 
-    record Command(
-            ApplicationId applicationId,
-            boolean alternativeFound,
-            @Nullable BikeId bikeId,
-            @Nullable String bikeModel
-    ) {
+    /** {@code bikeId} and {@code bikeModel} may be {@code null} when no alternative was found. */
+    record Command(ApplicationId applicationId, boolean alternativeFound, BikeId bikeId, String bikeModel) {
         public Command {
             if (alternativeFound && bikeId == null) {
                 throw new IllegalArgumentException("An accepted alternative must name the bike");
             }
-        }
-
-        /** No alternative bike: the customer declined or none was found. */
-        public Command(ApplicationId applicationId, boolean alternativeFound) {
-            this(applicationId, alternativeFound, null, null);
         }
     }
 }

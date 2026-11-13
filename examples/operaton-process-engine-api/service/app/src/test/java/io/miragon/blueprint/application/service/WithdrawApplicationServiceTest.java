@@ -1,22 +1,24 @@
 package io.miragon.blueprint.application.service;
 
+import static io.miragon.blueprint.domain.leasing.TestObjectBuilder.testLeasingApplication;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+
 import io.miragon.blueprint.application.port.outbound.LeasingApplicationRepository;
 import io.miragon.blueprint.application.port.outbound.LeasingProcess;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
 import io.miragon.blueprint.domain.leasing.LeasingApplication;
 import io.miragon.blueprint.domain.leasing.LeasingStatus;
+import java.util.Optional;
 import java.util.UUID;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import static io.miragon.blueprint.domain.leasing.TestObjectBuilder.testLeasingApplication;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
-import static org.mockito.BDDMockito.willThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 
 class WithdrawApplicationServiceTest {
 
@@ -25,44 +27,57 @@ class WithdrawApplicationServiceTest {
     private final WithdrawApplicationService underTest = new WithdrawApplicationService(process, repository);
 
     @Test
-    @DisplayName("withdraw correlates the message and persists the WITHDRAWN status")
-    void withdrawCorrelatesTheMessageAndPersistsTheWithdrawnStatus() {
+    void withdraw_correlates_the_message_and_persists_the_WITHDRAWN_status() {
 
         // given: a handed-over application
         ApplicationId id = new ApplicationId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
         LeasingApplication application = testLeasingApplication().id(id).status(LeasingStatus.HANDED_OVER).build();
-        given(repository.findById(id)).willReturn(application);
-        given(repository.save(any())).willAnswer(inv -> inv.getArgument(0));
+        when(repository.findById(id)).thenReturn(Optional.of(application));
+        when(repository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         // when: the application is withdrawn
         underTest.withdraw(id);
 
         // then: the message is correlated and the application is persisted with WITHDRAWN
-        then(process).should().correlateApplicationWithdrawn(id);
-        then(repository).should().findById(id);
-        then(repository).should().save(argThat(it -> it.status() == LeasingStatus.WITHDRAWN));
-        then(process).shouldHaveNoMoreInteractions();
-        then(repository).shouldHaveNoMoreInteractions();
+        verify(process).correlateApplicationWithdrawn(id);
+        verify(repository).findById(id);
+        verify(repository).save(argThat(a -> a.status() == LeasingStatus.WITHDRAWN));
+        verifyNoMoreInteractions(process, repository);
     }
 
     @Test
-    @DisplayName("withdraw does not persist when correlation fails")
-    void withdrawDoesNotPersistWhenCorrelationFails() {
+    void withdraw_does_not_persist_when_correlation_fails() {
 
         // given: a correlation that throws
         ApplicationId id = new ApplicationId(UUID.fromString("123e4567-e89b-12d3-a456-426614174001"));
-        willThrow(new RuntimeException("no token")).given(process).correlateApplicationWithdrawn(id);
+        doThrow(new RuntimeException("no token")).when(process).correlateApplicationWithdrawn(id);
 
         // when / then: the exception propagates without touching the repository
-        try {
-            underTest.withdraw(id);
-        } catch (RuntimeException ignored) {
-        }
+        assertThatThrownBy(() -> underTest.withdraw(id))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("no token");
 
-        then(process).should().correlateApplicationWithdrawn(id);
-        then(repository).should(never()).findById(any());
-        then(repository).should(never()).save(any());
-        then(process).shouldHaveNoMoreInteractions();
-        then(repository).shouldHaveNoMoreInteractions();
+        verify(process).correlateApplicationWithdrawn(id);
+        verify(repository, never()).findById(any());
+        verify(repository, never()).save(any());
+        verifyNoMoreInteractions(process, repository);
+    }
+
+    @Test
+    void withdraw_fails_for_an_unknown_application() {
+
+        // given: a correlated withdrawal for an application the repository does not know
+        ApplicationId unknownId = new ApplicationId(UUID.fromString("123e4567-e89b-12d3-a456-426614174999"));
+        when(repository.findById(unknownId)).thenReturn(Optional.empty());
+
+        // when / then: the lookup fails and nothing is persisted
+        assertThatThrownBy(() -> underTest.withdraw(unknownId))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Unknown application " + unknownId);
+
+        verify(process).correlateApplicationWithdrawn(unknownId);
+        verify(repository).findById(unknownId);
+        verify(repository, never()).save(any());
+        verifyNoMoreInteractions(process, repository);
     }
 }

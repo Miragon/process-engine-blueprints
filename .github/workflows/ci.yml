@@ -53,7 +53,7 @@ jobs:
         run: npm ci
       - name: Verify the generated files are in sync with examples/*/blueprint.yaml
         run: npm run generate:check
-      - name: Verify the copies across examples have not drifted (drift.yml)
+      - name: Verify the examples and their variants have not drifted apart (drift.yml)
         run: npm run drift
       - name: Verify no hard-coded owner outside the owner setting
         run: scripts/check-owner.sh
@@ -228,6 +228,23 @@ jobs:
     uses: ./.github/workflows/_blueprint.yml
     with:
       example: zeebe-native
+  zeebe-process-engine-api--pre-merge-java-maven:
+    name: zeebe-process-engine-api · Pre-Merge Checks · Java/Maven
+    needs: changes
+    if: contains(fromJSON(needs.changes.outputs.variants), 'zeebe-process-engine-api/java-maven')
+    uses: ./.github/workflows/zeebe-process-engine-api.pre-merge-java-maven.yml
+  zeebe-process-engine-api--pre-merge-kotlin-gradle:
+    name: zeebe-process-engine-api · Pre-Merge Checks · Kotlin/Gradle
+    needs: changes
+    if: contains(fromJSON(needs.changes.outputs.variants), 'zeebe-process-engine-api/kotlin-gradle')
+    uses: ./.github/workflows/zeebe-process-engine-api.pre-merge-kotlin-gradle.yml
+  zeebe-process-engine-api--blueprint:
+    name: zeebe-process-engine-api · Blueprint checks
+    needs: changes
+    if: contains(fromJSON(needs.changes.outputs.examples), 'zeebe-process-engine-api')
+    uses: ./.github/workflows/_blueprint.yml
+    with:
+      example: zeebe-process-engine-api
   zeebe-vanillabp--pre-merge-java-maven:
     name: zeebe-vanillabp · Pre-Merge Checks · Java/Maven
     needs: changes
@@ -279,6 +296,9 @@ jobs:
       - zeebe-native--pre-merge-java-maven
       - zeebe-native--pre-merge-kotlin-gradle
       - zeebe-native--blueprint
+      - zeebe-process-engine-api--pre-merge-java-maven
+      - zeebe-process-engine-api--pre-merge-kotlin-gradle
+      - zeebe-process-engine-api--blueprint
       - zeebe-vanillabp--pre-merge-java-maven
       - zeebe-vanillabp--pre-merge-kotlin-gradle
       - zeebe-vanillabp--blueprint

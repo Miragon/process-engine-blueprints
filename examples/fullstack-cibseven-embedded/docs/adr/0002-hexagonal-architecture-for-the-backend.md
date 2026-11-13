@@ -5,8 +5,8 @@
 
 ## Context
 
-The backend automates a real BPMN process with many collaborators: a process engine, JPA persistence,
-a simulated dealer, notification and contract stubs. If controllers, delegates, and the engine client
+The backend automates a real BPMN process with many collaborators: a process engine, JPA persistence, a
+simulated dealer, notification and contract stubs. If controllers, delegates, and the engine client
 call each other freely, business logic leaks into infrastructure and the process becomes untestable in
 isolation. A blueprint has to demonstrate a structure that stays sane as this fan-out grows — and it
 has to make that structure *checkable*, not merely documented, so a forker (or an AI agent) cannot
@@ -32,8 +32,8 @@ violation:
 
 - `HexagonalArchitectureTest` — the layered-dependency graph (domain depends on nothing; ports are
   interfaces; an in-adapter offers exactly one use-case; out-adapters never touch inbound ports).
-- `NamingConventionArchitectureTest` — the suffix rules per package (`Controller`, `Delegate`,
-  `Listener`, `PersistenceAdapter`, `UseCase`, `Query`, …).
+- `NamingConventionArchitectureTest` — the suffix rules per package (`Controller`, `Delegate`, `Listener`,
+  `PersistenceAdapter`, `UseCase`, `Query`, …).
 - There is deliberately **no `config` package**; Spring configuration lives beside the adapter it
   configures (`OpenApiConfiguration`, `GlobalExceptionConfiguration`, `HistoryCleanupConfiguration`).
 - The generated `adapter/process` package is **explicitly excluded** from both suites — it is machine-
@@ -52,4 +52,5 @@ these rules.
 - **Negative / trade-offs:** more indirection (a port + a service + an adapter per operation) than a
   layered CRUD app; the "one use-case per adapter" rule means many small classes.
 - **Neutral:** the generated-code seam (`adapter/process`) is a permanent, documented exception; see
-  [ADR-0004](0004-openapi-as-the-checked-in-contract.md) for the analogous frontend generated seam.
+  [ADR-0004](0004-openapi-as-the-checked-in-contract.md) for the analogous generated seam on the
+  API contract side.

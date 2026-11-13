@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
 import io.miragon.blueprint.domain.leasing.ContractId;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class LoggingContractAdapterTest {
@@ -12,6 +13,7 @@ class LoggingContractAdapterTest {
     private final LoggingContractAdapter underTest = new LoggingContractAdapter();
 
     @Test
+    @DisplayName("issueContract mints a fresh contract id")
     void issueContractMintsAFreshContractId() {
         // given: an application / when: a contract is issued twice
         ContractId first = underTest.issueContract(testLeasingApplication().build().id());
@@ -22,6 +24,7 @@ class LoggingContractAdapterTest {
     }
 
     @Test
+    @DisplayName("revokeContract logs without error")
     void revokeContractLogsWithoutError() {
         // given: an issued contract / when-then: revoking it runs without error
         assertThatCode(() -> underTest.revokeContract(new ContractId("CONTRACT-1"))).doesNotThrowAnyException();

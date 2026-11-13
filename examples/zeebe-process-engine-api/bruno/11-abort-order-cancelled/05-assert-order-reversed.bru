@@ -1,0 +1,36 @@
+meta {
+  name: The cancelBikeOrder call activity reversed the order
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{camundaRest}}/process-instances/search
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "filter": {
+      "processDefinitionId": "cancelBikeOrder",
+      "state": "COMPLETED",
+      "variables": [
+        { "name": "applicationId", "value": "\"{{applicationId}}\"" }
+      ]
+    }
+  }
+}
+
+script:pre-request {
+  const id = bru.getVar("applicationId");
+  await pollSearch("/process-instances/search",
+    { filter: { processDefinitionId: "cancelBikeOrder", state: "COMPLETED",
+      variables: [{ name: "applicationId", value: `"${id}"` }] } },
+    (b) => b && Array.isArray(b.items) && b.items.length > 0);
+}
+
+assert {
+  res.status: eq 200
+  res.body.items: length 1
+}

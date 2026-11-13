@@ -14,7 +14,7 @@ remote/external-task blueprint.
   on **:8081** (`/engine-rest` + Cockpit/Tasklist). It deploys no model; it only hosts the in-engine
   execution/task listener beans. Package root `io.miragon.blueprint`.
 - **Worker** (`service/example-service`) — Spring Boot 4, hexagonal, on **:8082**. It owns the domain,
-  use cases and adapters, **owns and deploys** the BPMN/DMN/form models, and drives the remote engine
+  use cases and adapters, **owns and deploys** the BPMN/DMN models, and drives the remote engine
   through the generated REST client. Service tasks are `camunda:type="external"`; the worker
   subscribes to their topics (`bikeLeasing.<task>`) via external-task workers under
   `adapter/inbound/operaton`. Package root `io.miragon.blueprint`.
@@ -26,13 +26,13 @@ remote/external-task blueprint.
   <!-- variant:blueprint -->
 - **Two equivalent variants on `main`** — `kotlin-gradle/` (Kotlin, **the recommended stack**) and
   `java-maven/` (Java 21, for teams bound to it and for trainings). Each is self-contained and
-  carries its own copy of the process models, forms, migrations and `application.yaml`; the
+  carries its own copy of the process models, migrations and `application.yaml`; the
   `Blueprint Checks` workflow fails when the `src/main/resources` trees differ, so **edit a model in
   one variant and copy it to the other**. The variants must stay functionally identical: **make every
   change in behaviour in both variants in the same PR.** Changes that only concern one language's
   idioms stay on that side. See [ADR-0014](docs/adr/0014-two-stack-variants-side-by-side-on-main.md).
   The OpenAPI contract below is drift-gated against **both** variants.
-  Stack-specific content in shared files (docs, Dependabot, Conductor settings) is wrapped in
+  Stack-specific content in shared files (docs, Dependabot) is wrapped in
   `variant:<name>` markers so `scripts/create-starter.sh` can strip it — see
   [docs/starter.md](docs/starter.md).
   <!-- /variant:blueprint -->
@@ -65,7 +65,7 @@ service/
     adapter/process             generated *ProcessApi (bpmn-to-code)
     application/{port,service}  use-case ports and their services
     domain/{leasing,bike}       pure domain model
-    resources/{bpmn,dmn,forms}  the process models and Camunda Forms
+    resources/{bpmn,dmn}        the process models
     resources/db/migration      Flyway versioned schema migrations
 ```
 
@@ -107,7 +107,7 @@ cd java-maven && ./mvnw -pl service/example-service spring-boot:run    # worker 
 ```
 <!-- /variant:java-maven -->
 
-### Ports (one source of truth — keep README, this file and `.conductor/settings.toml` in sync)
+### Ports (one source of truth — keep README and this file in sync)
 
 | What | Port |
 |---|---|
@@ -117,7 +117,7 @@ cd java-maven && ./mvnw -pl service/example-service spring-boot:run    # worker 
 | Worker REST · OpenAPI spec · Swagger UI | 8082/api · 8082/v3/api-docs · 8082/swagger-ui.html |
 | Worker actuator (health/liveness/readiness · prometheus) | 8082/actuator |
 
-Under Conductor the ports are fixed and the workspace runs `nonconcurrent`
+The ports are fixed
 (see [ADR-0006](docs/adr/0006-fixed-ports-for-v1-portless-as-the-upgrade.md)).
 
 ## Build Commands
@@ -175,7 +175,7 @@ source-level tool for the rules bytecode cannot express) and **fail the build**.
 
 ## BPMN Quality Gates
 
-- The worker **owns** the `.bpmn`/`.dmn`/`.form` models under
+- The worker **owns** the `.bpmn`/`.dmn` models under
   `service/example-service/src/main/resources` and deploys them into the remote engine at start-up.
 - `bpmn-to-code` generates typed process constants from the models. Since bpmn-to-code 6 the API is
   node-centric: `<Process>ProcessApi.FlowNodes.<Node>` carries the element (`ELEMENT_ID`), its
@@ -245,8 +245,8 @@ root `package.json`:
   (`inspect --business-key <applicationId>`, `status`, `incident`, history, `retry`). It never
   deploys: the worker deploys the models from its classpath at start-up, and a hand deploy is a
   version the generated process API does not know. It never moves a case either (correlating a
-  message, completing a user task): that is a business action, taken by a client of the worker's API
-  or by a human in the Tasklist, not by an agent.
+  message, completing a user task): that is a business action, taken by a client of the worker's API,
+  not by an agent.
 - **bpmn-to-code** (skills `bpmn-to-code:*`) for the glue around the generated process API:
   `bpmn-to-code:create-worker` and `bpmn-to-code:test-worker` for an external-task worker,
   `bpmn-to-code:create-process-adapter` for a message or user task the worker drives,

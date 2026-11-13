@@ -25,7 +25,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.ObjectMapper;
 
 @WebMvcTest(SubmitLeasingRequestController.class)
 class SubmitLeasingRequestControllerTest {
@@ -36,10 +36,13 @@ class SubmitLeasingRequestControllerTest {
     @MockitoBean
     private SubmitLeasingRequestUseCase useCase;
 
+    private final ObjectMapper mapper = new ObjectMapper();
+
     @Test
     void userSubmitsALeasingRequest() throws Exception {
 
         // given: valid input data & rest-operation
+        Map<String, Object> input = validInput();
         ApplicationId applicationId = new ApplicationId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
         SubmitLeasingRequestUseCase.Command expectedCommand = new SubmitLeasingRequestUseCase.Command(
                 new CustomerName("John Doe"),
@@ -49,14 +52,12 @@ class SubmitLeasingRequestControllerTest {
                 new BikeId("BIKE-900"),
                 "Gravel Explorer 900");
         when(useCase.submit(any())).thenReturn(applicationId);
-        String body = """
-                {"customerName":"John Doe","email":"john.doe@test.com","age":35,\
-                "monthlyNetIncome":3500.0,"bikeId":"BIKE-900","bikeModel":"Gravel Explorer 900"}""";
 
         // when: the request is performed
-        MvcResult response = mockMvc.perform(post("/api/bike-leasing")
+        MvcResult response = mockMvc
+                .perform(post("/api/bike-leasing")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
+                        .content(mapper.writeValueAsString(input)))
                 .andReturn();
 
         // then: the use case is invoked with the mapped command and the id is returned
@@ -67,10 +68,50 @@ class SubmitLeasingRequestControllerTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"customerName", "email", "bikeId", "bikeModel"})
-    void aRequestWithoutARequiredTextFieldIsRejected(String missingField) throws Exception {
+    @ValueSource(strings = {"customerName", "email", "age", "monthlyNetIncome", "bikeId", "bikeModel"})
+    void aRequestWithoutARequiredFieldIsRejected(String missingField) throws Exception {
 
         // given: an otherwise valid request that lacks one required field
+        Map<String, Object> input = validInput();
+        input.remove(missingField);
+
+        // when: the request is performed
+        MvcResult response = mockMvc
+                .perform(post("/api/bike-leasing")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(input)))
+                .andReturn();
+
+        // then: it is an unreadable request and never reaches the use case
+        assertThat(response.getResponse().getStatus()).isEqualTo(400);
+        assertThat(response.getResponse().getContentType()).contains("application/problem+json");
+        assertThat(response.getResponse().getContentAsString()).contains("Failed to read request");
+        verifyNoInteractions(useCase);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"customerName", "email", "bikeId", "bikeModel"})
+    void aRequestWithARequiredTextFieldSetToNullIsRejectedAsUnreadable(String nullField) throws Exception {
+
+        // given: an otherwise valid request that carries null for one required field
+        Map<String, Object> input = validInput();
+        input.put(nullField, null);
+
+        // when: the request is performed
+        MvcResult response = mockMvc
+                .perform(post("/api/bike-leasing")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(input)))
+                .andReturn();
+
+        // then: it is an unreadable request and never reaches the use case
+        assertThat(response.getResponse().getStatus()).isEqualTo(400);
+        assertThat(response.getResponse().getContentType()).contains("application/problem+json");
+        assertThat(response.getResponse().getContentAsString()).contains("Failed to read request");
+        verifyNoInteractions(useCase);
+    }
+
+    private static Map<String, Object> validInput() {
         Map<String, Object> input = new LinkedHashMap<>();
         input.put("customerName", "John Doe");
         input.put("email", "john.doe@test.com");
@@ -78,18 +119,6 @@ class SubmitLeasingRequestControllerTest {
         input.put("monthlyNetIncome", 3500.0);
         input.put("bikeId", "BIKE-900");
         input.put("bikeModel", "Gravel Explorer 900");
-        input.remove(missingField);
-
-        // when: the request is performed
-        MvcResult response = mockMvc.perform(post("/api/bike-leasing")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(new JsonMapper().writeValueAsString(input)))
-                .andReturn();
-
-        // then: it is refused as an unreadable request and never reaches the use case
-        assertThat(response.getResponse().getStatus()).isEqualTo(400);
-        assertThat(response.getResponse().getContentType()).contains("application/problem+json");
-        assertThat(response.getResponse().getContentAsString()).contains("Failed to read request");
-        verifyNoInteractions(useCase);
+        return input;
     }
 }

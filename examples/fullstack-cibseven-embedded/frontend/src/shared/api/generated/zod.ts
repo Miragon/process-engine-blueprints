@@ -52,6 +52,13 @@ export const ReportHandoverParams = zod.object({
 export const ReportHandoverResponse = zod.unknown()
 
 
+export const ClarifyReturnParams = zod.object({
+  "applicationId": zod.string()
+})
+
+export const ClarifyReturnResponse = zod.unknown()
+
+
 export const SelectAlternativeParams = zod.object({
   "applicationId": zod.string()
 })

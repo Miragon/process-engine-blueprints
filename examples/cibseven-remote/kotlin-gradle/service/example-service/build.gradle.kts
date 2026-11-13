@@ -1,9 +1,19 @@
 import io.miragon.bpmn.adapter.GenerateBpmnModelsTask
 import io.miragon.bpmn.domain.shared.OutputLanguage
 import io.miragon.bpmn.domain.shared.ProcessEngine
+import org.cibseven.community.process_test_coverage.report.aggregator.ReportAggregatorPluginExtension
 import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 import java.math.BigDecimal
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath(libs.cib7.process.test.coverage.aggregator)
+    }
+}
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
@@ -15,13 +25,19 @@ plugins {
     alias(libs.plugins.pitest)
 }
 
+apply(plugin = "org.cibseven.community.process_test_coverage.report-aggregator")
+
+configure<ReportAggregatorPluginExtension> {
+    reportDirectory = "build/reports/process-test-coverage"
+}
+
 springBoot {
     buildInfo()
 }
 
 /**
  * The remote worker + business logic (hexagonal), and — since there is no separate contract module —
- * the **owner of the process contract** too. It carries the `.bpmn`/`.dmn`/`.form` models and generates
+ * the **owner of the process contract** too. It carries the `.bpmn`/`.dmn` models and generates
  * the typed `*ProcessApi` objects and shared constants (flow nodes, topics, messages, variables) from
  * them with `bpmn-to-code`, keeps its own JPA/Postgres store, subscribes to the engine's external service-tasks
  * via the CIB seven external-task client, deploys the model into the engine over REST at start-up, and
@@ -65,6 +81,9 @@ tasks.test {
     // Isolate each test class in its own JVM so the standalone in-memory engine used by the process
     // tests never carries state between classes.
     forkEvery = 1
+    systemProperty("cibseven-process-test-coverage.target-dir-root", "${layout.buildDirectory.get()}/reports/process-test-coverage/")
+    systemProperty("org.cibseven.community.process_test_coverage.ASSERT_AT_LEAST", providers.gradleProperty("processTestCoverageMinimum").getOrElse("1.0"))
+    finalizedBy("aggregateProcessTestCoverage")
 }
 
 pitest {

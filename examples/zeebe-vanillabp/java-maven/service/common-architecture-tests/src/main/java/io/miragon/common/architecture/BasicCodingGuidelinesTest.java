@@ -1,5 +1,10 @@
 package io.miragon.common.architecture;
 
+import static com.tngtech.archunit.core.domain.JavaCall.Predicates.target;
+import static com.tngtech.archunit.core.domain.JavaClass.Predicates.assignableTo;
+import static com.tngtech.archunit.core.domain.properties.HasName.Predicates.name;
+import static com.tngtech.archunit.core.domain.properties.HasOwner.Predicates.With.owner;
+
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
@@ -57,7 +62,7 @@ public abstract class BasicCodingGuidelinesTest {
     @Test
     void productionCodeDoesNotUsePrintlnOrSystemOut() {
         ArchRuleDefinition.noClasses()
-                .should().callMethod(PrintStream.class, "println", Object.class)
+                .should().callMethodWhere(target(name("println")).and(target(owner(assignableTo(PrintStream.class)))))
                 .because("Use a logger instead of println or System.out for diagnostic output")
                 .check(productionClasses());
     }

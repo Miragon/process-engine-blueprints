@@ -5,6 +5,7 @@ import io.miragon.blueprint.domain.leasing.ApplicationId;
 import io.miragon.blueprint.domain.leasing.LeasingApplication;
 import java.util.Optional;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
@@ -29,14 +30,15 @@ public class LeasingApplicationPersistenceAdapter implements LeasingApplicationR
     }
 
     @Override
-    public LeasingApplicationRepository.Page findAll(LeasingApplicationRepository.Criteria criteria) {
+    public Page findAll(Criteria criteria) {
         // Newest first — the list shows the most recent applications at the top. Spring Data's paging
         // types are used only here, inside the adapter, and never returned to the application layer.
-        var pageable = PageRequest.of(criteria.page(), criteria.size(), Sort.by(Sort.Direction.DESC, "createdAt"));
-        var result = criteria.status() != null
-                ? repository.findAllByStatus(criteria.status(), pageable)
-                : repository.findAll(pageable);
-        return new LeasingApplicationRepository.Page(
+        Pageable pageable = PageRequest.of(criteria.page(), criteria.size(), Sort.by(Sort.Direction.DESC, "createdAt"));
+        org.springframework.data.domain.Page<LeasingApplicationEntity> result =
+                criteria.status() != null
+                        ? repository.findAllByStatus(criteria.status(), pageable)
+                        : repository.findAll(pageable);
+        return new Page(
                 result.getContent().stream().map(LeasingApplicationEntityMapper::toDomain).toList(),
                 result.getNumber(),
                 result.getSize(),

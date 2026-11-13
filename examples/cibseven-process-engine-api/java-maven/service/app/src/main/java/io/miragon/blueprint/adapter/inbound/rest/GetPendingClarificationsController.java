@@ -19,8 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
  *
  * <p>The DTO carries NO task id on purpose. Completing a clarification goes through the domain
  * ({@code POST /api/bike-leasing/{id}/clarify-alternative}), which correlates by business key — so this
- * read model cannot be used to bypass the domain and complete a task directly. That is exactly the
- * lesson the form-only {@code clarify-return} task contrasts against.
+ * read model cannot be used to bypass the domain and complete a task directly.
  */
 @RestController
 @RequestMapping("/api/tasks")
@@ -35,9 +34,7 @@ public class GetPendingClarificationsController {
     @Operation(operationId = "listPendingClarifications")
     @GetMapping("/clarify-alternative")
     public List<PendingClarificationDto> pending() {
-        return query.pending().stream()
-                .map(GetPendingClarificationsController::toDto)
-                .toList();
+        return query.pending().stream().map(GetPendingClarificationsController::toDto).toList();
     }
 
     private static PendingClarificationDto toDto(PendingClarification clarification) {
@@ -49,16 +46,14 @@ public class GetPendingClarificationsController {
                 clarification.waitingSince());
     }
 
-    /**
-     * @param requestedBikeModel the requested bike's model; {@code null} if it is not in the portfolio
-     */
     public record PendingClarificationDto(
             @Schema(requiredMode = REQUIRED) String applicationId,
             @Schema(requiredMode = REQUIRED) String customerName,
             @Schema(requiredMode = REQUIRED) String requestedBikeId,
             @Schema(nullable = true) String requestedBikeModel,
             // ISO-8601 string — see the note in GetLeasingApplicationController.LeasingApplicationDto.
+            @Schema(requiredMode = REQUIRED)
             @JsonFormat(shape = JsonFormat.Shape.STRING)
-            @Schema(requiredMode = REQUIRED) LocalDateTime waitingSince) {
+            LocalDateTime waitingSince) {
     }
 }

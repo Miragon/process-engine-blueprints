@@ -6,6 +6,7 @@ import io.miragon.blueprint.domain.leasing.CustomerName;
 import io.miragon.blueprint.domain.leasing.Email;
 
 public interface SubmitLeasingRequestUseCase {
+
     ApplicationId submit(Command command);
 
     record Command(

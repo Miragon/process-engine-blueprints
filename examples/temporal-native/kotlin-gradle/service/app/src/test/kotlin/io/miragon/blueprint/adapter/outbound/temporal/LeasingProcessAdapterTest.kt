@@ -71,4 +71,10 @@ class LeasingProcessAdapterTest {
         assertThatThrownBy { adapter.completeAlternativeClarification(application.id, alternativeFound = false) }
             .isInstanceOf(NoSuchElementException::class.java)
     }
+
+    @Test
+    fun `reports a return clarification without a cancel-order workflow as not found`() {
+        assertThatThrownBy { adapter.completeReturnClarification(application.id) }
+            .isInstanceOf(NoSuchElementException::class.java)
+    }
 }

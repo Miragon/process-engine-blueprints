@@ -1,4 +1,4 @@
-# 0004 — OpenAPI as the checked-in contract
+# 0003 — OpenAPI as the checked-in contract
 
 - **Status:** Accepted
 - **Date:** 2026-08-18
@@ -49,8 +49,6 @@ so they never need a running backend to build, and every API change is visible i
 
 ## Implementation notes
 
-Two things to know when this runs on the embedded Fluxnova engine:
-
 - **Swagger UI next to the Fluxnova webapp.** The webapp lives under `/fluxnova` and registers no
   `OpenAPI` bean of its own, so `OpenApiConfiguration`'s bean needs no `@Primary` and `/fluxnova`,
   `/swagger-ui.html` and `/v3/api-docs` coexist (verified against the running app). If a future upgrade
@@ -62,5 +60,6 @@ Two things to know when this runs on the embedded Fluxnova engine:
   excluded in `service/app/build.gradle.kts` — the upstream fix
   ([finos/fluxnova-bpm-platform#244](https://github.com/finos/fluxnova-bpm-platform/issues/244)) — because
   Jackson 3 handles `java.time` natively. springdoc types the fields as `string/date-time`, and DTO date
-  fields stay pinned with `@JsonFormat(shape = STRING)` to keep payload and contract in sync. Operation ids are set explicitly (`@Operation(operationId = …)`) so the
-  generated client method names stay clean and stable (e.g. `listLeasingApplications`).
+  fields stay pinned with `@JsonFormat(shape = STRING)` to keep payload and contract in sync.
+- **Stable operation ids.** Operation ids are set explicitly (`@Operation(operationId = …)`) so any
+  generated client's method names stay clean and stable (e.g. `listLeasingApplications`).

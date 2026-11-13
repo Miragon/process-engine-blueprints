@@ -1,7 +1,7 @@
 ---
 name: create-delegate
 argument-hint: "[element-id or task name] [DelegateClassName]"
-description: "Create, update or test a Fluxnova (Camunda 7 fork) JavaDelegate or an execution/task listener for a BPMN element, wired as a Spring @Component and invoked by expression (#{beanName}), together with its unit test and the process test of its path. Use when the user asks to create a delegate, wire a service task to code, add a JavaDelegate or listener, or test an existing delegate. A delegate extends BaseDelegate, calls exactly one inbound port, and reads process variables through the typed ProcessApi."
+description: "Create, update or test a JavaDelegate or an execution/task listener for a BPMN element on Fluxnova (Camunda 7 fork), wired as a Spring @Component and invoked by expression (#{beanName}), together with its unit test and the process test of its path. Use when the user asks to create a delegate, wire a service task to code, add a JavaDelegate or listener, or test an existing delegate. A delegate extends BaseDelegate, calls exactly one inbound port, and reads process variables through the typed ProcessApi."
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Skill
 ---
 

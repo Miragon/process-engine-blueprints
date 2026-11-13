@@ -2,8 +2,8 @@
 
 A [Bruno](https://www.usebruno.com) collection that drives the bike-leasing process end to end against
 a **running** engine host and worker — either variant, they expose the same API. The worker's domain
-endpoints (:8082) trigger the business actions; the CIB seven `/engine-rest` API of the engine host
-(:8081) completes user tasks and fires timer jobs, so the whole flow runs without real 14-day waits. CI
+endpoints (:8082) trigger the business actions and complete the user tasks; the CIB seven `/engine-rest`
+API of the engine host (:8081) fires timer jobs, so the whole flow runs without real 14-day waits. CI
 runs the collection against both variants on every pull request.
 
 ```bash
@@ -15,14 +15,14 @@ npx --yes @usebruno/cli@4.0.0 run . --env local -r --exclude-tags=demo-data
 | `00-demo-data` | seven cases left open for a demo, one per state: waiting for the signature, waiting for the handover, in the withdrawal period, active, rejected, an alternative waiting in the inbox, withdrawn with the return clarification open. CI skips it (tag `demo-data`) |
 | `01-happy-path` | submit → sign the contract → report the handover → active lease |
 | `02-escalation` | the signature deadline passes and the application is rejected |
-| `03-abort` | the customer withdraws after signing; the bike order is cancelled and the contract compensated |
+| `03-abort` | the customer withdraws after signing for a custom build the dealer cannot cancel; the return is clarified, the costs booked and the contract compensated |
 | `04-not-solvent` | the DMN rejects the applicant |
 | `05-bike-unavailable` | the bike is out of stock and the customer picks an alternative |
 | `06-incident-demo` | a failing external task runs out of retries and raises an incident |
 | `07-list-and-inbox` | the list and task-inbox endpoints |
 | `08-alternative-declined` | the bike is out of stock and no alternative is found; contract and policy are compensated, no order is cancelled |
 | `09-invalid-request` | invalid input is refused with a 400: a request without income, an accepted alternative without a bike |
-| `10-alternative-via-tasklist` | the bike is out of stock and the alternative is chosen the way the Tasklist form does it |
+| `11-abort-order-cancelled` | the customer withdraws after signing; the dealer cancels the order, so no return has to be clarified |
 
 Fill an empty stack with demo cases:
 
@@ -32,7 +32,7 @@ npx --yes @usebruno/cli@4.0.0 run 00-demo-data --env local -r
 
 The worker and the engine are eventually consistent, so the requests **poll for a state instead of
 sleeping** ([ADR-0012](../docs/adr/0012-polling-for-eventual-consistency-in-e2e-tests.md)). The helpers
-(`pollApp`, `pollEngine`, `awaitMessageSubscription`) live in `collection.bru`; their budgets are set in
+(`pollApp`, `pollEngine`, `pollMessageSubscription`) live in `collection.bru`; their budgets are set in
 the environment file. Keep the CLI pinned to `@usebruno/cli@4.0.0` — the script sandbox changes between
 majors.
 
@@ -58,18 +58,19 @@ The worker also exposes a small read surface: `GET /api/bikes` (the seeded catal
 inbox of applications parked on the clarification task, correlated by business key and never by an
 engine task id).
 
-## 🔁 Two ways to complete a user task
+## 🔁 User tasks
 
-If the requested bike is out of stock, the `Clarify alternative with customer` user task shows a
-deliberate contrast:
+Neither user task has a form; both are completed through the worker's domain endpoints
+([ADR-0014](../docs/adr/0014-user-tasks-without-forms.md)):
 
-- **Reaches the domain either way:** a client calls `POST /api/bike-leasing/{id}/clarify-alternative`, or
-  a human completes the Camunda Form in the Tasklist. Both hand the chosen `bikeId` to the process, and
-  the re-order reads it and persists it on the application. The REST call additionally registers the
-  bike's model in the portfolio.
-- **Counter-example:** `clarify-return` in `cancel-bike-order.bpmn` is completed via the Camunda Form or
-  `/engine-rest` only. It never touches the domain, so its data lands only in process variables (see the
-  `bpmn:documentation` on each task).
+- **Clarify alternative with customer:** `POST /api/bike-leasing/{id}/clarify-alternative` hands the
+  chosen `bikeId` to the process, and the re-order reads it and persists it on the application. The call
+  also registers the bike's model in the portfolio.
+- **Clarify return with supplier:** `POST /api/bike-leasing/{id}/clarify-return` confirms that the return
+  is arranged with the supplier; the process then books the costs.
+- **Which withdrawal clarifies a return:** the simulated dealer refuses to cancel the order of the custom
+  build `BIKE-CUSTOM` (`03-abort`), so the return is clarified and the costs booked; it cancels every other
+  order right away (`11-abort-order-cancelled`).
 
 ## 🚨 Incident demo
 

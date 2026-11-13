@@ -29,7 +29,7 @@ never by sleeping a guessed duration.
   are in scope for every request): `pollUntil(config, predicate, opts)` and the convenience wrappers
   `pollApp(path, predicate)` (GET the worker read model), `pollEngine(path, predicate)` (GET a
   CIB seven `/engine-rest` query — process instances, jobs, tasks, incidents, history) and
-  `awaitMessageSubscription(businessKey, messageName)` (wait until the instance's token is parked at
+  `pollMessageSubscription(businessKey, messageName)` (wait until the instance's token is parked at
   the message wait state a command correlates to). They return
   the instant the predicate is met and only wait the full budget when something is genuinely wrong — at
   which point the request's own assertions report the real, still-wrong state instead of a bare timeout.
@@ -53,7 +53,8 @@ never by sleeping a guessed duration.
   executor has run the continuation.
 - **Division of labour holds:** Bruno asserts the **synchronous request/response contract** (status
   codes, DTO shape); genuinely engine-level, deterministic checks (timer fast-forward via
-  `/engine-rest/job/{id}/execute`, full token flow) stay in the JVM `@CamundaSpringProcessTest` layer.
+  `/engine-rest/job/{id}/execute`, full token flow) stay in the JVM process-test layer (`cibseven-bpm-assert`
+  in `BikeLeasingProcessTest`).
   See ADR-0004 for the test layering.
 - **The Bruno CLI is pinned** (`@usebruno/cli@4.0.0`): the script sandbox's capabilities (available
   globals, the `require` whitelist the helpers depend on) can change between majors, so an unpinned

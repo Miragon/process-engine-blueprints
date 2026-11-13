@@ -99,4 +99,25 @@ class SelectAlternativeControllerTest {
         assertThat(response.response.contentAsString).contains("An accepted alternative must name the bike")
         confirmVerified(useCase)
     }
+
+    @Test
+    fun `a decision without the alternative-found flag is rejected`() {
+
+        // given: a decision body that names a bike but not whether an alternative was found
+        val pathVar = "123e4567-e89b-12d3-a456-426614174000"
+        val body = mapOf("bikeId" to "BIKE-ALT", "bikeModel" to "Aero Road 700")
+        val operation =
+            post("/api/bike-leasing/{applicationId}/clarify-alternative", pathVar)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(body))
+
+        // when: the request is performed
+        val response = mockMvc.perform(operation).andReturn()
+
+        // then: it is an unreadable request and never reaches the use case
+        assertThat(response.response.status).isEqualTo(400)
+        assertThat(response.response.contentType).contains("application/problem+json")
+        assertThat(response.response.contentAsString).contains("Failed to read request")
+        confirmVerified(useCase)
+    }
 }

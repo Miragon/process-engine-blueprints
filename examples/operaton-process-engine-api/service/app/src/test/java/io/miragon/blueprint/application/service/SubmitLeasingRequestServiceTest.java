@@ -1,5 +1,14 @@
 package io.miragon.blueprint.application.service;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+
 import io.miragon.blueprint.application.port.inbound.SubmitLeasingRequestUseCase;
 import io.miragon.blueprint.application.port.outbound.BikePortfolioRepository;
 import io.miragon.blueprint.application.port.outbound.LeasingApplicationRepository;
@@ -14,16 +23,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 
 class SubmitLeasingRequestServiceTest {
 
@@ -32,59 +32,54 @@ class SubmitLeasingRequestServiceTest {
     private final LeasingProcess process = mock(LeasingProcess.class);
     private final Clock clock = Clock.fixed(Instant.parse("2024-01-15T10:30:00Z"), ZoneOffset.UTC);
     private final SubmitLeasingRequestService underTest =
-        new SubmitLeasingRequestService(repository, bikePortfolio, process, clock);
+            new SubmitLeasingRequestService(repository, bikePortfolio, process, clock);
 
     @Test
-    @DisplayName("submit registers the bike, persists a received application and starts the process")
-    void submitRegistersTheBikePersistsAReceivedApplicationAndStartsTheProcess() {
+    void submit_registers_the_bike_persists_a_received_application_and_starts_the_process() {
 
         // given: a leasing-request command and stubbed out-ports
         SubmitLeasingRequestUseCase.Command command =
-            new SubmitLeasingRequestUseCase.Command(
-                new CustomerName("John Doe"),
-                new Email("john.doe@test.com"),
-                35,
-                3500.0,
-                new BikeId("BIKE-900"),
-                "Gravel Explorer 900");
-        given(bikePortfolio.save(any())).willAnswer(inv -> inv.getArgument(0));
-        given(repository.save(any())).willAnswer(inv -> inv.getArgument(0));
+                new SubmitLeasingRequestUseCase.Command(
+                        new CustomerName("John Doe"),
+                        new Email("john.doe@test.com"),
+                        35,
+                        3500.0,
+                        new BikeId("BIKE-900"),
+                        "Gravel Explorer 900");
+        when(bikePortfolio.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(repository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         // when: the use case is invoked
         ApplicationId id = underTest.submit(command);
 
         // then: the bike is stored in the portfolio, a RECEIVED application referencing it is saved, and the process starts
-        then(bikePortfolio).should().save(new Bike(new BikeId("BIKE-900"), "Gravel Explorer 900"));
-        then(repository).should().save(
-            argThat(it ->
-                it.id().equals(id)
-                    && it.status() == LeasingStatus.RECEIVED
-                    && it.bikeId().equals(new BikeId("BIKE-900"))
-                    && it.createdAt().equals(LocalDateTime.now(clock))));
-        then(process).should().submitRequest(argThat(it -> it.id().equals(id)));
-        then(repository).shouldHaveNoMoreInteractions();
-        then(bikePortfolio).shouldHaveNoMoreInteractions();
-        then(process).shouldHaveNoMoreInteractions();
+        verify(bikePortfolio).save(new Bike(new BikeId("BIKE-900"), "Gravel Explorer 900"));
+        verify(repository).save(argThat(a ->
+                a.id().equals(id)
+                        && a.status() == LeasingStatus.RECEIVED
+                        && a.bikeId().equals(new BikeId("BIKE-900"))
+                        && a.createdAt().equals(LocalDateTime.now(clock))));
+        verify(process).submitRequest(argThat(a -> a.id().equals(id)));
+        verifyNoMoreInteractions(repository, bikePortfolio, process);
     }
 
     @Test
-    @DisplayName("submit rejects a request without income and starts no process")
-    void submitRejectsARequestWithoutIncomeAndStartsNoProcess() {
+    void submit_rejects_a_request_without_income_and_starts_no_process() {
 
         // given: a leasing-request command without any income
         SubmitLeasingRequestUseCase.Command command =
-            new SubmitLeasingRequestUseCase.Command(
-                new CustomerName("John Doe"),
-                new Email("john.doe@test.com"),
-                35,
-                0.0,
-                new BikeId("BIKE-900"),
-                "Gravel Explorer 900");
-        given(bikePortfolio.save(any())).willAnswer(inv -> inv.getArgument(0));
+                new SubmitLeasingRequestUseCase.Command(
+                        new CustomerName("John Doe"),
+                        new Email("john.doe@test.com"),
+                        35,
+                        0.0,
+                        new BikeId("BIKE-900"),
+                        "Gravel Explorer 900");
+        when(bikePortfolio.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         // when / then: the request is refused before anything is persisted or started
         assertThatThrownBy(() -> underTest.submit(command)).isInstanceOf(IllegalArgumentException.class);
-        then(repository).should(never()).save(any());
-        then(process).should(never()).submitRequest(any());
+        verify(repository, never()).save(any());
+        verify(process, never()).submitRequest(any());
     }
 }

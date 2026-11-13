@@ -1,5 +1,5 @@
 meta {
-  name: Find the clarify-return task (in the cancel sub-process)
+  name: Wait for the clarify-return task (in the cancel sub-process)
   type: http
   seq: 5
 }
@@ -19,8 +19,4 @@ script:pre-request {
 assert {
   res.status: eq 200
   res.body[0].id: isDefined
-}
-
-vars:post-response {
-  clarifyReturnTaskId: res.body[0].id
 }

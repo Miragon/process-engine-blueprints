@@ -3,12 +3,14 @@ package io.miragon.blueprint.domain.leasing;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class CustomerNameTest {
 
     @Test
-    void exposes_the_wrapped_name() {
+    @DisplayName("exposes the wrapped name")
+    void exposesTheWrappedName() {
         // given/when: a customer name is created from a non-blank value
         CustomerName name = new CustomerName("John Doe");
         // then: the raw value is exposed unchanged
@@ -16,7 +18,8 @@ class CustomerNameTest {
     }
 
     @Test
-    void rejects_an_empty_name() {
+    @DisplayName("rejects an empty name")
+    void rejectsAnEmptyName() {
         // when/then: an empty value is refused
         assertThatThrownBy(() -> new CustomerName(""))
             .isInstanceOf(IllegalArgumentException.class)
@@ -24,7 +27,8 @@ class CustomerNameTest {
     }
 
     @Test
-    void rejects_a_blank_name() {
+    @DisplayName("rejects a blank name")
+    void rejectsABlankName() {
         // when/then: a whitespace-only value is refused
         assertThatThrownBy(() -> new CustomerName("   "))
             .isInstanceOf(IllegalArgumentException.class)
@@ -32,9 +36,10 @@ class CustomerNameTest {
     }
 
     @Test
-    void rejects_a_name_of_non_breaking_spaces() {
-        // when/then: a value of only non-breaking spaces (U+00A0, U+2007, U+202F) is blank too
-        assertThatThrownBy(() -> new CustomerName("\u00A0\u2007\u202F"))
+    @DisplayName("rejects a name made of no-break spaces")
+    void rejectsANameMadeOfNoBreakSpaces() {
+        // when/then: a value that only looks empty is refused, too
+        assertThatThrownBy(() -> new CustomerName("   "))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("Customer name must not be blank");
     }

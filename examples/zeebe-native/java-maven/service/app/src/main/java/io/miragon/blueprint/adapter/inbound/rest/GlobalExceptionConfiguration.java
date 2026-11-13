@@ -11,11 +11,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 /**
  * Cross-cutting web error handling for the REST adapter: turns domain and input errors into RFC 9457
- * {@code application/problem+json} responses (Spring serialises {@link ProblemDetail} as such automatically).
+ * {@code application/problem+json} responses (Spring serialises {@link ProblemDetail} as such
+ * automatically).
  *
- * <p>This is web configuration, hence the {@code Configuration} suffix whitelisted for {@code adapter.inbound.rest}
- * and its home here rather than in a new top-level {@code config} package (which the architecture tests
- * would reject).
+ * <p>This is web configuration, hence the {@code Configuration} suffix whitelisted for
+ * {@code adapter.inbound.rest} and its home here rather than in a new top-level {@code config} package
+ * (which the architecture tests would reject).
  */
 @RestControllerAdvice
 public class GlobalExceptionConfiguration {
@@ -46,11 +47,11 @@ public class GlobalExceptionConfiguration {
         return problem(HttpStatus.CONFLICT, "Action not available in the current state", exception.getMessage());
     }
 
-    private static ProblemDetail problem(HttpStatus status, String title, String detail) {
-        ProblemDetail problem = ProblemDetail.forStatus(status);
-        problem.setTitle(title);
-        problem.setDetail(detail);
-        problem.setType(URI.create("https://miravelo.example/problems/" + status.value()));
-        return problem;
+    private ProblemDetail problem(HttpStatus status, String title, String detail) {
+        ProblemDetail problemDetail = ProblemDetail.forStatus(status);
+        problemDetail.setTitle(title);
+        problemDetail.setDetail(detail);
+        problemDetail.setType(URI.create("https://miravelo.example/problems/" + status.value()));
+        return problemDetail;
     }
 }

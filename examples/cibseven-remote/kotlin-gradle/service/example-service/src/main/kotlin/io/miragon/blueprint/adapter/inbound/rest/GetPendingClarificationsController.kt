@@ -15,8 +15,7 @@ import java.time.LocalDateTime
  *
  * The DTO carries NO task id on purpose. Completing a clarification goes through the domain
  * (`POST /api/bike-leasing/{id}/clarify-alternative`), which correlates by business key — so this
- * read model cannot be used to bypass the domain and complete a task directly. That is exactly the
- * lesson the form-only `clarify-return` task contrasts against.
+ * read model cannot be used to bypass the domain and complete a task directly.
  */
 @RestController
 @RequestMapping("/api/tasks")

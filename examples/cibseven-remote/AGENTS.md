@@ -14,7 +14,7 @@ remote/external-task blueprint.
   on **:8081** (`/engine-rest` + Cockpit/Tasklist). It deploys no model; it only hosts the in-engine
   execution/task listener beans. Package root `io.miragon.blueprint`.
 - **Worker** (`service/example-service`) — Spring Boot 4, hexagonal, on **:8082**. It owns
-  the domain, use cases and adapters, **owns and deploys** the BPMN/DMN/form models, and drives the
+  the domain, use cases and adapters, **owns and deploys** the BPMN/DMN models, and drives the
   remote engine through the generated REST client. Service tasks are `camunda:type="external"`; the
   worker subscribes to their topics (`bikeLeasing.<task>`) via external-task workers under
   `adapter/inbound/cibseven`. Package root `io.miragon.blueprint`.
@@ -26,13 +26,13 @@ remote/external-task blueprint.
   <!-- variant:blueprint -->
 - **Two equivalent variants on `main`** — `kotlin-gradle/` (Kotlin, **the recommended stack**) and
   `java-maven/` (Java 21, for teams bound to it and for trainings). Each is self-contained: it holds
-  all four modules and its own copy of the process models, forms, migrations and `application.yaml`;
+  all four modules and its own copy of the process models, migrations and `application.yaml`;
   the `Blueprint Checks` workflow fails when the `src/main/resources` trees differ, so **edit a model in
   one variant and copy it to the other**. The variants must stay functionally identical: **make every
   change in behaviour in both variants in the same PR.** Changes that only concern one language's
   idioms stay on that side. See [ADR-0013](docs/adr/0013-two-stack-variants-side-by-side-on-main.md).
   The OpenAPI contract below is drift-gated against **both** variants.
-  Stack-specific content in shared files (docs, Dependabot, Conductor settings) is wrapped in
+  Stack-specific content in shared files (docs, Dependabot) is wrapped in
   `variant:<name>` markers so `scripts/create-starter.sh` can strip it — see
   [docs/starter.md](docs/starter.md).
   <!-- /variant:blueprint -->
@@ -65,7 +65,7 @@ service/
     adapter/process             generated *ProcessApi and shared constants (bpmn-to-code)
     application/{port,service}  use-case ports and their services
     domain/{leasing,bike}       pure domain model
-    resources/{bpmn,dmn,forms}  the process models and Camunda Forms
+    resources/{bpmn,dmn}        the process models
     resources/db/migration      Flyway versioned schema migrations
 ```
 
@@ -105,7 +105,7 @@ cd java-maven && ./mvnw -pl service/example-service -am spring-boot:run   # work
 ```
 <!-- /variant:java-maven -->
 
-### Ports (one source of truth — keep README, this file and `.conductor/settings.toml` in sync)
+### Ports (one source of truth — keep README and this file in sync)
 
 | What | Port |
 |---|---|
@@ -170,7 +170,7 @@ into the worker (`ArchitectureTest` extends `ServiceArchitectureTest`). See
 
 ## BPMN Quality Gates
 
-- The worker **owns** the `.bpmn`/`.dmn`/`.form` models under
+- The worker **owns** the `.bpmn`/`.dmn` models under
   `service/example-service/src/main/resources` and deploys them into the remote engine at start-up.
 - `bpmn-to-code` generates the typed process API into the worker's `adapter/process` package — never
   hand-edit `*ProcessApi` or the shared `ServiceTasks`/`Messages`/`ProcessVariables`/`Errors`/
@@ -196,6 +196,15 @@ TDD. Match the test style to the layer:
 | `adapter.outbound.db` | `@DataJpaTest` |
 | `adapter.outbound.engine` (remote client) | `MockRestServiceServer` |
 | process end-to-end | CIB seven process tests (`cibseven-bpm-assert`, in-memory engine), paths asserted against the generated API |
+
+The process tests also write a **process test coverage** report per test class, with the CIB seven community extension Process Test Coverage: an HTML page per class that draws the paths the tests took on the model and gives the share of flow nodes and sequence flows they reached. After the tests, the report aggregator of the same extension combines them into one report over all test classes, `all/report.html` in the report folder. Every process test class must reach 100 %, or it fails: the coverage extension reads the minimum from the system property `org.cibseven.community.process_test_coverage.ASSERT_AT_LEAST`, which the build file of `service/example-service` sets to `1.0` for the test run. A run of single test methods covers less and fails the gate; lower the minimum for it with `-PprocessTestCoverageMinimum=0` (Gradle) or `-Dprocess-test-coverage.minimum=0` (Maven).
+
+<!-- variant:kotlin-gradle -->
+Report folder: `service/example-service/build/reports/process-test-coverage/`
+<!-- /variant:kotlin-gradle -->
+<!-- variant:java-maven -->
+Report folder: `service/example-service/target/process-test-coverage/`
+<!-- /variant:java-maven -->
 
 **Mutation testing gates the domain at 80, nightly**: a test that executes without asserting will fail the nightly run. Coverage
 says a line ran; mutation says a test would have noticed. It mutates `io.miragon.blueprint.domain.*` only and does not
@@ -242,8 +251,8 @@ root `package.json`:
   (`inspect --business-key <applicationId>`, `status`, `incident`, history, `retry`). It never
   deploys: the worker deploys the models from its classpath at start-up, and a hand deploy is a
   version the generated process API does not know. It never moves a case either (correlating a
-  message, completing a user task): that is a business action, taken by a client of the worker's API
-  or by a human in the Tasklist, not by an agent.
+  message, completing a user task): that is a business action, taken by a client of the worker's API,
+  not by an agent.
 - **bpmn-to-code** (skills `bpmn-to-code:*`) for the glue around the generated process API:
   `bpmn-to-code:create-worker` and `bpmn-to-code:test-worker` for an external-task worker,
   `bpmn-to-code:create-process-adapter` for a message or user task the worker drives,

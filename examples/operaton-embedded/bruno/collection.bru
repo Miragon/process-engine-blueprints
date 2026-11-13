@@ -31,15 +31,14 @@ script:pre-request {
     }
   };
 
-  // GET {{baseUrl}}{path} until predicate(data, status) holds (the domain read model / inbox).
+  // GET {{baseUrl}}{path} until predicate(data, status) holds (the domain read model).
   globalThis.pollApp = function (path, predicate, opts) {
     return globalThis.pollUntil(
       { method: 'get', url: bru.getEnvVar('baseUrl') + path },
       predicate, opts);
   };
 
-  // GET {{engineRest}}{path} until predicate(data, status) holds (the Operaton engine REST API:
-  // process instances, jobs, tasks, incidents, history).
+  // GET {{engineRest}}{path} until predicate(data, status) holds (the Operaton engine REST API).
   globalThis.pollEngine = function (path, predicate, opts) {
     return globalThis.pollUntil(
       { method: 'get', url: bru.getEnvVar('engineRest') + path },

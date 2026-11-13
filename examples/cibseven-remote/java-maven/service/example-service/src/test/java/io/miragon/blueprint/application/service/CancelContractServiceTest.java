@@ -1,5 +1,6 @@
 package io.miragon.blueprint.application.service;
 
+import static io.miragon.blueprint.domain.leasing.TestObjectBuilder.testLeasingApplication;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -11,11 +12,8 @@ import io.miragon.blueprint.application.port.outbound.LeasingApplicationReposito
 import io.miragon.blueprint.domain.leasing.ApplicationId;
 import io.miragon.blueprint.domain.leasing.ContractId;
 import io.miragon.blueprint.domain.leasing.LeasingApplication;
-import io.miragon.blueprint.domain.leasing.TestObjectBuilder;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
 import java.util.Optional;
+import org.junit.jupiter.api.Test;
 
 class CancelContractServiceTest {
 
@@ -24,13 +22,10 @@ class CancelContractServiceTest {
     private final CancelContractService underTest = new CancelContractService(repository, contract);
 
     @Test
-    @DisplayName("cancelContract revokes the contract recorded on the application")
     void cancelContractRevokesTheContractRecordedOnTheApplication() {
 
         // given: an application that already carries an issued contract
-        LeasingApplication application = TestObjectBuilder.aLeasingApplication()
-                .contractId(new ContractId("CONTRACT-1"))
-                .build();
+        LeasingApplication application = testLeasingApplication().contractId(new ContractId("CONTRACT-1")).build();
         when(repository.findById(application.id())).thenReturn(Optional.of(application));
 
         // when: the contract is cancelled as part of the compensation
@@ -43,7 +38,6 @@ class CancelContractServiceTest {
     }
 
     @Test
-    @DisplayName("cancelContract fails when the application is unknown")
     void cancelContractFailsWhenTheApplicationIsUnknown() {
 
         // given: an id the repository cannot resolve
@@ -58,13 +52,10 @@ class CancelContractServiceTest {
     }
 
     @Test
-    @DisplayName("cancelContract fails when no contract was issued for the application")
     void cancelContractFailsWhenNoContractWasIssuedForTheApplication() {
 
         // given: an application that never received a contract
-        LeasingApplication application = TestObjectBuilder.aLeasingApplication()
-                .contractId(null)
-                .build();
+        LeasingApplication application = testLeasingApplication().contractId(null).build();
         when(repository.findById(application.id())).thenReturn(Optional.of(application));
 
         // when/then: cancellation fails and no contract is touched

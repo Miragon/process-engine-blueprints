@@ -16,10 +16,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class ListLeasingApplicationsService implements ListLeasingApplicationsQuery {
 
     private final LeasingApplicationRepository repository;
-
     private final BikePortfolioRepository bikePortfolio;
 
-    public ListLeasingApplicationsService(LeasingApplicationRepository repository, BikePortfolioRepository bikePortfolio) {
+    public ListLeasingApplicationsService(
+            LeasingApplicationRepository repository,
+            BikePortfolioRepository bikePortfolio) {
         this.repository = repository;
         this.bikePortfolio = bikePortfolio;
     }
@@ -27,28 +28,29 @@ public class ListLeasingApplicationsService implements ListLeasingApplicationsQu
     @Override
     public ListLeasingApplicationsQuery.Page list(ListLeasingApplicationsQuery.Filter filter) {
         LeasingApplicationRepository.Page page = repository.findAll(
-            new LeasingApplicationRepository.Criteria(
-                filter.status(),
-                filter.page(),
-                filter.size()));
+                new LeasingApplicationRepository.Criteria(
+                        filter.status(),
+                        filter.page(),
+                        filter.size()));
         // Resolve every bike model in one batch query rather than one per row.
         Map<BikeId, String> models = new HashMap<>();
-        for (Bike bike : bikePortfolio.findAllByIds(page.items().stream().map(LeasingApplication::bikeId).toList())) {
+        for (Bike bike : bikePortfolio.findAllByIds(
+                page.items().stream().map(LeasingApplication::bikeId).toList())) {
             models.put(bike.bikeId(), bike.model());
         }
         return new ListLeasingApplicationsQuery.Page(
-            page.items().stream()
-                .map(application -> new ListLeasingApplicationsQuery.Item(
-                    application.id(),
-                    application.customerName(),
-                    application.bikeId(),
-                    models.get(application.bikeId()),
-                    application.status(),
-                    application.createdAt()))
-                .toList(),
-            page.page(),
-            page.size(),
-            page.totalElements(),
-            page.totalPages());
+                page.items().stream()
+                        .map(application -> new ListLeasingApplicationsQuery.Item(
+                                application.id(),
+                                application.customerName(),
+                                application.bikeId(),
+                                models.get(application.bikeId()),
+                                application.status(),
+                                application.createdAt()))
+                        .toList(),
+                page.page(),
+                page.size(),
+                page.totalElements(),
+                page.totalPages());
     }
 }

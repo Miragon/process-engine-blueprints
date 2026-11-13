@@ -28,8 +28,8 @@ if the user agrees. A missing prerequisite makes the run **BLOCKED**, not FAILED
 From the issue or the request, list the acceptance criteria and the steps that show each one. Pick
 the persona per step: the **customer** (application list `/`, new application `/antraege/neu`, detail
 page `/antraege/<id>`) or the **back office** (inbox `/aufgaben`). There is no login. A case in a
-later state is reached through the UI; what the UI cannot drive (the 14-day timers, the form-only
-*Clarify return* task) is driven by the matching scenario folder in `bruno/`, e.g.:
+later state is reached through the UI; what the UI cannot drive (the 14-day timers) is driven by the
+matching scenario folder in `bruno/`, e.g.:
 
 ```bash
 cd bruno && npx --yes @usebruno/cli@4.0.0 run 01-happy-path --env local

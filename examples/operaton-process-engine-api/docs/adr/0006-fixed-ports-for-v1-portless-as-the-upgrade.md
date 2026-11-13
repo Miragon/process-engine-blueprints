@@ -3,35 +3,41 @@
 - **Status:** Accepted
 - **Date:** 2026-08-18
 
+> **Note (2026-11-04):** We no longer use Conductor and have switched to Orca. The `.conductor/settings.toml` mentioned below has been removed; the fixed ports still apply.
+
 ## Context
 
 This repo is developed with [Conductor](https://conductor.build), which runs each task in its own git
 worktree — potentially several at once. Parallel worktrees that all bind the same ports collide. Two
 answers exist: **fixed ports + serialised runs**, or **portless** (stable per-worktree `.localhost`
 URLs that avoid collisions). Portless is the nicer end state, but it only wraps what it can slug — a JS
-dev server — and this headless stack has no JS dev server at all; everything that wants a port is a
-backend process.
+dev server — and this headless stack has no JS dev server at all; every collision source is a backend
+process that wants a fixed port.
 
 ## Decision
 
-For v1 we use **fixed ports and serialise the runs.** `.conductor/settings.toml` pins
-**backend 8080 / Postgres 5432** (the same table published in `AGENTS.md` — see
-[ADR-0005](0005-agents-md-as-the-single-source.md)) and sets **`run_mode = "nonconcurrent"`**, so only
-one worktree runs the app at a time and the ports never clash.
+For v1 we use **fixed ports and serialise the runs.** `.conductor/settings.toml` sets
+**`run_mode = "nonconcurrent"`**, so only one worktree runs the app and its dev stack at a time and the
+ports never clash. The port set (also published in `AGENTS.md` — see
+[ADR-0005](0005-agents-md-as-the-single-source.md)) is:
 
-**Portless is deferred, deliberately.** None of this stack's collision sources are things portless
-wraps:
+| Component                              | Port         |
+| -------------------------------------- | ------------ |
+| Spring Boot app (REST, webapps, `/engine-rest`) | 8080         |
+| Postgres (app tables + engine schema)  | 5432         |
 
-| Collision source        | Port | Wrapped by portless? |
-| ----------------------- | ---- | -------------------- |
-| Spring Boot app         | 8080 | ❌ no |
-| Postgres                | 5432 | ❌ no |
-| Operaton engine schema  | (shared DB schema in Postgres) | ❌ no |
+**Portless is deferred, deliberately.** Portless only slugs a JS dev server, and this stack has none —
+so it wraps **none** of the collision sources:
 
-Portless slugs a JS dev server, and this headless stack has none. Every collision source here — the
-Spring port, the Postgres port, and the shared engine schema — is **outside what portless wraps**, so
-adopting it now would buy nothing while still forcing `nonconcurrent`. It is added complexity for a
-problem it cannot address until the backend/DB isolation story is solved.
+| Collision source                        | Port         | Wrapped by portless? |
+| --------------------------------------- | ------------ | -------------------- |
+| Spring Boot app                         | 8080         | ❌ no |
+| Postgres                                | 5432         | ❌ no |
+| Engine schema                           | (shared DB)  | ❌ no |
+
+Every collision here is a backend process or a container in `stack/docker-compose.yml`, **outside what
+portless wraps.** Adopting it now would buy nothing and still force `nonconcurrent`, so it is added
+complexity for zero coverage until the backend/DB/stack isolation story is solved.
 
 ## Consequences
 
@@ -39,5 +45,5 @@ problem it cannot address until the backend/DB isolation story is solved.
   slug/proxy layer to reason about.
 - **Negative / trade-offs:** only one worktree can run the app at once (`nonconcurrent`); truly parallel
   end-to-end runs across worktrees are not possible in v1.
-- **Neutral:** per-worktree Postgres/schema isolation is the recorded upgrade path — a future ADR would
-  supersede this one once the backend, database, and engine schema can each avoid collision.
+- **Neutral:** per-worktree isolation of the app, Postgres, and the engine schema is the recorded
+  upgrade path — a future ADR would supersede this one once all collision sources are covered.

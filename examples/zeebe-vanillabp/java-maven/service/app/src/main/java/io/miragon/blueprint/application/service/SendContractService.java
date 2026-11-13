@@ -25,6 +25,7 @@ public class SendContractService implements SendContractUseCase {
         if (application.contractId() != null) {
             return application;
         }
+        // Issue the contract in the contract system and record its id on the application.
         ContractId contractId = contract.issueContract(application.id());
         notification.send("Please review and sign your leasing contract", application);
         return application.withContract(contractId);

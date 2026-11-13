@@ -77,7 +77,7 @@ class SelectAlternativeServiceTest {
         // when / then: the selection is refused and the message names the application
         assertThatThrownBy(() -> underTest.selectAlternative(command))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessage("Unknown application ApplicationId(value=123e4567-e89b-12d3-a456-426614174000)");
+                .hasMessage("Unknown application " + id);
         verify(repository).findById(id);
         verifyNoMoreInteractions(repository, bikePortfolio, process);
     }

@@ -8,11 +8,12 @@ allowed-tools: Read, Glob, Grep, Bash(git *), Bash(gh pr view *), Bash(gh pr dif
 # Skill: review-change
 
 A review that only ticks boxes is worthless; one finding with a reproducible scenario beats ten
-style notes. The machine gates (architecture rules, contract and process-API drift, bpmnlint,
-mutation 80) run in CI; do not restate them, check what they cannot see. Do check that a gate
-actually ran: the mutation gate runs nightly on the domain, so a pull request never
-exercises it. Generic code
-review is what the built-in review tooling does; this skill adds what only this repo knows.
+style notes. The machine gates run in CI:
+architecture rules, contract and process-API drift, bpmnlint, mutation 80.
+Do not restate them, check what they cannot see.
+Do check that a gate actually ran: the mutation gate runs nightly on the domain, so a pull request
+never exercises it. Generic code review is what the built-in review tooling does; this skill adds
+what only this repo knows.
 
 The agents `review-process` and `review-vertical-slice` are loaded at session start. If one is not
 available, read its file in `.claude/agents/` and apply it yourself.
@@ -43,7 +44,8 @@ and packages instead: a leftover reference is the typical defect.
 | a JPA entity | a new `V<n>__*.sql` migration; no edited migration |
 | a controller method or a DTO | `@Operation(operationId)` on the method, the re-exported `openapi/openapi.json`, a Bruno request |
 | a `.bpmn` | the regenerated `adapter/process`, a process test per new path, Bruno updated for renamed element ids; run the agent `review-process` |
-| the DMN or a form | a process test for the decision or the user task; the form `id` still matching the `formRef` |
+| the DMN | a process test for the decision |
+| a user task | a domain endpoint that completes it (no form, ADR-0015), a process test for the path it serves |
 | a worker | a process test for every path it serves (the process tests cover the workers); run the agent `review-process` |
 | a process adapter method | its unit test (`LeasingProcessAdapterTest`, `TaskInboxAdapterTest`) and a process test for the path it drives; run the agent `review-process` |
 | a whole feature | run the agent `review-vertical-slice` |

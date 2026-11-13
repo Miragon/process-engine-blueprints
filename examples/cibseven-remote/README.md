@@ -27,7 +27,7 @@ identical. Building on one? [Turn the repo into a single-stack starter](docs/sta
 application from the first request to an active lease and deliberately covers the BPMN elements you
 meet in real processes: message start, service tasks run as external tasks by the worker and a DMN
 rule, an embedded sub-process with an event-based gateway and reminder timer, a parallel fork/join, a
-user task with a Camunda Form, execution and task listeners running inside the engine, compensation
+user task completed through the worker's REST API, execution and task listeners running inside the engine, compensation
 guarded by error and escalation events, a call activity, a withdrawal event sub-process and a
 terminate end event.
 
@@ -61,7 +61,7 @@ Tests, ports and containers are in [CONTRIBUTING.md](CONTRIBUTING.md).
 | Path | Content |
 |---|---|
 | [`openapi/`](openapi/openapi.json) | the checked-in, drift-gated OpenAPI contract of the worker |
-| [`bruno/`](bruno/README.md) | REST scenarios, the two ways to complete a user task, the incident demo |
+| [`bruno/`](bruno/README.md) | REST scenarios, the user tasks, the incident demo |
 | [`stack/`](stack/docker-compose.yml) | the Postgres dev stack |
 | [`docs/`](docs/README.md) | the Architecture Decision Records |
 

@@ -30,20 +30,19 @@ public class LeasingApplicationPersistenceAdapter implements LeasingApplicationR
     }
 
     @Override
-    public LeasingApplicationRepository.Page findAll(LeasingApplicationRepository.Criteria criteria) {
+    public Page findAll(Criteria criteria) {
         // Newest first — the list shows the most recent applications at the top. Spring Data's paging
         // types are used only here, inside the adapter, and never returned to the application layer.
         Pageable pageable = PageRequest.of(criteria.page(), criteria.size(), Sort.by(Sort.Direction.DESC, "createdAt"));
-        // Fully qualified: the simple name Page resolves to the port's own LeasingApplicationRepository.Page here.
         org.springframework.data.domain.Page<LeasingApplicationEntity> result =
-            criteria.status() != null
-                ? repository.findAllByStatus(criteria.status(), pageable)
-                : repository.findAll(pageable);
-        return new LeasingApplicationRepository.Page(
-            result.getContent().stream().map(LeasingApplicationEntityMapper::toDomain).toList(),
-            result.getNumber(),
-            result.getSize(),
-            result.getTotalElements(),
-            result.getTotalPages());
+                criteria.status() != null
+                        ? repository.findAllByStatus(criteria.status(), pageable)
+                        : repository.findAll(pageable);
+        return new Page(
+                result.getContent().stream().map(LeasingApplicationEntityMapper::toDomain).toList(),
+                result.getNumber(),
+                result.getSize(),
+                result.getTotalElements(),
+                result.getTotalPages());
     }
 }

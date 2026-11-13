@@ -4,7 +4,7 @@ package io.miragon.blueprint.domain.bike;
 public record BikeId(String value) {
 
     public BikeId {
-        if (value == null || value.isBlank()) {
+        if (value == null || value.chars().allMatch(c -> Character.isWhitespace(c) || Character.isSpaceChar(c))) {
             throw new IllegalArgumentException("BikeId must not be blank");
         }
     }

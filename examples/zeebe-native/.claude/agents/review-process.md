@@ -25,8 +25,8 @@ Extract per element:
 - **messages, errors, escalations**: `<bpmn:message name>` with its `zeebe:subscription
   correlationKey`, `<bpmn:error errorCode>`, `<bpmn:escalation escalationCode>` and the events that
   throw or catch them
-- **user tasks**: id, `zeebe:userTask` and the `formId` of `zeebe:formDefinition`; **business rule
-  tasks**: `zeebe:calledDecision` `decisionId` and `resultVariable`
+- **user tasks**: id, `zeebe:userTask`, and no form (`zeebe:formDefinition`, `zeebe:userTaskForm`);
+  **business rule tasks**: `zeebe:calledDecision` `decisionId` and `resultVariable`
 - **gateways** with the name and the FEEL `conditionExpression` of every outgoing flow
 - **timers**, **event subprocesses** (trigger, interrupting or not), **compensation** boundary events
   and their handlers
@@ -60,14 +60,14 @@ For each message the app publishes and each user task it completes or lists, con
 `adapter/outbound/zeebe/` (`LeasingProcessAdapter`, `TaskInboxAdapter`) uses the typed constant.
 Zeebe has no business key: the process starts through the message start event, and every catch
 event correlates on `=applicationId`, so each published message carries the application id as its
-correlation key. Each `formId` must match the `id` inside a `.form` file under
-`service/app/src/main/resources/forms/` (the file name differs). The variables the DMN reads must be
-set when the process starts.
+correlation key. Every user task is completed by the process adapter behind a domain endpoint; a form
+on a user task is a finding ([ADR-0014](../../docs/adr/0014-user-tasks-without-forms.md)). The
+variables the DMN reads must be set when the process starts.
 
-Known and intended, not findings: `userTask_clarifyReturn` is completed only through its form or the
-Camunda REST API (no adapter; documented in the model), and `serviceTask_orderBike` fails on purpose
-for the bike id `BIKE-FAIL` until its retries run out, to raise the incident of
-`bruno/06-incident-demo`.
+Known and intended, not a finding: `serviceTask_orderBike` fails on purpose for the bike id
+`BIKE-FAIL` until its retries run out, to raise the incident of `bruno/06-incident-demo`.
+The dealer refuses on purpose to cancel an order of the bike id `BIKE-CUSTOM`, so withdrawing it takes
+the clarify-return branch of `bruno/03-abort`.
 
 ### 6. Tests
 The process tests sit in the test tree under `adapter/process/` and run on an in-container engine

@@ -41,7 +41,7 @@ schema and never creates or drops a table.
 - **Tests keep Flyway off.** The `test` profile runs on in-memory H2 with Hibernate building the
   schema (`ddl-auto: create-drop`); `spring.flyway.enabled: false` in `application-test.yaml` stops the
   Postgres-flavoured baseline from running against H2. The migrations are therefore exercised by the
-  real-Postgres paths — local `bootRun` and the Bruno API-scenario CI job.
+  real-Postgres paths — local `bootRun` and the Bruno CI runs.
 
 The how-to (adding a migration, the one-time reset of an old dev DB) is in
 [CONTRIBUTING.md](../../CONTRIBUTING.md).

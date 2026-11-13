@@ -227,8 +227,8 @@
                         <param>io.miragon.blueprint.*</param>
                     </targetTests>
                     <excludedTestClasses>
-                        <param>io.miragon.blueprint.process.*</param>
-                        <param>io.miragon.blueprint.architecture.*</param>
+                        <param>io.miragon.blueprint.adapter.process.*</param>
+                        <param>io.miragon.blueprint.ArchitectureTest*</param>
                     </excludedTestClasses>
                     <avoidCallsTo>
                         <avoidCallsTo>org.slf4j</avoidCallsTo>

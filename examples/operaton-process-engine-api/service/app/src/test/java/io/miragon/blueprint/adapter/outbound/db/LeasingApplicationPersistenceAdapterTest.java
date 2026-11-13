@@ -1,7 +1,12 @@
 package io.miragon.blueprint.adapter.outbound.db;
 
+import static io.miragon.blueprint.domain.leasing.TestObjectBuilder.testLeasingApplication;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import io.miragon.blueprint.application.port.outbound.LeasingApplicationRepository;
+import io.miragon.blueprint.domain.bike.OrderId;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
+import io.miragon.blueprint.domain.leasing.ContractId;
 import io.miragon.blueprint.domain.leasing.LeasingApplication;
 import io.miragon.blueprint.domain.leasing.LeasingStatus;
 import java.time.LocalDateTime;
@@ -15,9 +20,6 @@ import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
-
-import static io.miragon.blueprint.domain.leasing.TestObjectBuilder.testLeasingApplication;
-import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @ActiveProfiles("test")
@@ -40,12 +42,34 @@ class LeasingApplicationPersistenceAdapterTest {
         LeasingApplication application = testLeasingApplication().id(id).build();
 
         // when: it is saved and re-read from a cleared persistence context
-        underTest.save(application);
+        LeasingApplication saved = underTest.save(application);
+        assertThat(saved).usingRecursiveComparison().isEqualTo(application);
         entityManager.flush();
         entityManager.clear();
 
         // then: the reloaded application equals the original
-        assertThat(underTest.findById(id)).usingRecursiveComparison().isEqualTo(application);
+        assertThat(underTest.findById(id)).get().usingRecursiveComparison().isEqualTo(application);
+    }
+
+    @Test
+    @DisplayName("saves and reloads an application carrying an order and a contract")
+    void savesAndReloadsAnApplicationCarryingAnOrderAndAContract() {
+
+        // given: a leasing application that already has an order and a contract
+        LeasingApplication application = testLeasingApplication()
+                .id(id)
+                .status(LeasingStatus.ACTIVE)
+                .orderId(new OrderId("ORDER-1"))
+                .contractId(new ContractId("CONTRACT-1"))
+                .build();
+
+        // when: it is saved and re-read from a cleared persistence context
+        underTest.save(application);
+        entityManager.flush();
+        entityManager.clear();
+
+        // then: the reloaded application keeps its order and contract ids
+        assertThat(underTest.findById(id)).get().usingRecursiveComparison().isEqualTo(application);
     }
 
     @Test
@@ -53,8 +77,8 @@ class LeasingApplicationPersistenceAdapterTest {
     void findByIdReturnsNullWhenTheApplicationDoesNotExist() {
 
         // given: an empty database
-        // when / then: the lookup returns null
-        assertThat(underTest.findById(id)).isNull();
+        // when / then: the lookup finds nothing
+        assertThat(underTest.findById(id)).isEmpty();
     }
 
     @Test
@@ -65,8 +89,9 @@ class LeasingApplicationPersistenceAdapterTest {
         // given: a pre-inserted row (see sql/leasing-application.sql)
         // when / then: the adapter maps it back to the expected application
         assertThat(underTest.findById(id))
-            .usingRecursiveComparison()
-            .isEqualTo(testLeasingApplication().id(id).build());
+                .get()
+                .usingRecursiveComparison()
+                .isEqualTo(testLeasingApplication().id(id).build());
     }
 
     @Test
@@ -75,29 +100,31 @@ class LeasingApplicationPersistenceAdapterTest {
 
         // given: three applications created on different days
         LeasingApplication older = testLeasingApplication()
-            .id(new ApplicationId(UUID.randomUUID()))
-            .createdAt(LocalDateTime.of(2026, 1, 1, 8, 0))
-            .build();
+                .id(new ApplicationId(UUID.randomUUID()))
+                .createdAt(LocalDateTime.of(2026, 1, 1, 8, 0))
+                .build();
         LeasingApplication newer = testLeasingApplication()
-            .id(new ApplicationId(UUID.randomUUID()))
-            .createdAt(LocalDateTime.of(2026, 3, 1, 8, 0))
-            .build();
+                .id(new ApplicationId(UUID.randomUUID()))
+                .createdAt(LocalDateTime.of(2026, 3, 1, 8, 0))
+                .build();
         LeasingApplication newest = testLeasingApplication()
-            .id(new ApplicationId(UUID.randomUUID()))
-            .createdAt(LocalDateTime.of(2026, 6, 1, 8, 0))
-            .build();
-        List.of(older, newest, newer).forEach(underTest::save);
+                .id(new ApplicationId(UUID.randomUUID()))
+                .createdAt(LocalDateTime.of(2026, 6, 1, 8, 0))
+                .build();
+        for (LeasingApplication application : List.of(older, newest, newer)) {
+            underTest.save(application);
+        }
         entityManager.flush();
         entityManager.clear();
 
         // when: the first page is read without a filter
         LeasingApplicationRepository.Page page =
-            underTest.findAll(new LeasingApplicationRepository.Criteria(null, 0, 10));
+                underTest.findAll(new LeasingApplicationRepository.Criteria(null, 0, 10));
 
         // then: all three come back, newest first
         assertThat(page.totalElements()).isEqualTo(3);
-        assertThat(page.items().stream().map(LeasingApplication::id))
-            .containsExactly(newest.id(), newer.id(), older.id());
+        assertThat(page.items().stream().map(LeasingApplication::id).toList())
+                .containsExactly(newest.id(), newer.id(), older.id());
     }
 
     @Test
@@ -106,27 +133,27 @@ class LeasingApplicationPersistenceAdapterTest {
 
         // given: two RECEIVED and one ACTIVE application
         underTest.save(testLeasingApplication()
-            .id(new ApplicationId(UUID.randomUUID()))
-            .status(LeasingStatus.RECEIVED)
-            .build());
+                .id(new ApplicationId(UUID.randomUUID()))
+                .status(LeasingStatus.RECEIVED)
+                .build());
         underTest.save(testLeasingApplication()
-            .id(new ApplicationId(UUID.randomUUID()))
-            .status(LeasingStatus.RECEIVED)
-            .build());
+                .id(new ApplicationId(UUID.randomUUID()))
+                .status(LeasingStatus.RECEIVED)
+                .build());
         underTest.save(testLeasingApplication()
-            .id(new ApplicationId(UUID.randomUUID()))
-            .status(LeasingStatus.ACTIVE)
-            .build());
+                .id(new ApplicationId(UUID.randomUUID()))
+                .status(LeasingStatus.ACTIVE)
+                .build());
         entityManager.flush();
         entityManager.clear();
 
         // when: only ACTIVE applications are requested
         LeasingApplicationRepository.Page page =
-            underTest.findAll(new LeasingApplicationRepository.Criteria(LeasingStatus.ACTIVE, 0, 10));
+                underTest.findAll(new LeasingApplicationRepository.Criteria(LeasingStatus.ACTIVE, 0, 10));
 
         // then: only the single ACTIVE application is returned
         assertThat(page.totalElements()).isEqualTo(1);
         assertThat(page.items()).hasSize(1);
-        assertThat(page.items().getFirst().status()).isEqualTo(LeasingStatus.ACTIVE);
+        assertThat(page.items().get(0).status()).isEqualTo(LeasingStatus.ACTIVE);
     }
 }

@@ -13,13 +13,13 @@ implement, on Camunda 8 / Zeebe, with an enforced hexagonal architecture and a R
   <!-- variant:blueprint -->
 - **Two equivalent variants on `main`** — `kotlin-gradle/` (Kotlin, **the recommended stack**) and
   `java-maven/` (Java 21, for teams bound to it and for trainings). Each is self-contained and
-  carries its own copy of the process models, forms, migrations and `application.yaml`; the
+  carries its own copy of the process models, migrations and `application.yaml`; the
   `Blueprint Checks` workflow fails when the two `src/main/resources` trees differ, so **edit a model in
   one variant and copy it to the other**. The variants must stay functionally identical: **make every
   change in behaviour in both variants in the same PR.** Changes that only concern one language's idioms
   stay on that side. See [ADR-0013](docs/adr/0013-two-stack-variants-side-by-side-on-main.md). The
   OpenAPI contract below is drift-gated against **both** variants.
-  Stack-specific content in shared files (docs, Dependabot, Conductor settings) is wrapped in
+  Stack-specific content in shared files (docs, Dependabot) is wrapped in
   `variant:<name>` markers so `scripts/create-starter.sh` can strip it — see
   [docs/starter.md](docs/starter.md).
   <!-- /variant:blueprint -->
@@ -52,7 +52,7 @@ service/
     adapter/process             generated *ProcessApi + shared constants (bpmn-to-code)
     application/{port,service}  use-case ports and their services
     domain/{leasing,bike}       pure domain model
-    resources/{bpmn,dmn,forms}  the process models and Camunda Forms
+    resources/{bpmn,dmn}        the process models
     resources/db/migration      Flyway versioned schema migrations
 ```
 
@@ -90,7 +90,7 @@ cd java-maven && ./mvnw -pl service/app -am spring-boot:run
 ```
 <!-- /variant:java-maven -->
 
-### Ports (one source of truth — keep README, this file, `.conductor/settings.toml` in sync)
+### Ports (one source of truth — keep README and this file in sync)
 
 | What | Port |
 |---|---|
@@ -178,6 +178,15 @@ TDD. Match the test style to the layer:
 | `adapter.outbound.db` | Spring Data JPA slice tests |
 | process end-to-end | Camunda 8 process tests (`@CamundaSpringProcessTest`, in-container Zeebe), paths asserted against the generated API |
 
+The process tests also write a **process test coverage** report, with Camunda Process Test, which has it built in: one HTML page for the test run that draws the paths the tests took on the model and gives the share of flow nodes and sequence flows they reached. No minimum is enforced.
+
+<!-- variant:kotlin-gradle -->
+Report folder: `service/app/build/reports/process-test-coverage/`
+<!-- /variant:kotlin-gradle -->
+<!-- variant:java-maven -->
+Report folder: `service/app/target/coverage-report/`
+<!-- /variant:java-maven -->
+
 **Mutation testing gates the domain at 80, nightly**: a test that executes without asserting
 will fail
 the nightly run. Coverage says a line ran; mutation says a test would have noticed. It mutates `io.miragon.blueprint.domain.*` only and does not block pull requests. See ADR-0004.
@@ -229,7 +238,7 @@ repo uses:
 No engine CLI comes with the repo. Diagnose a running case in Operate (<http://localhost:8080>) or over the Zeebe
 REST API on `:8080/v2` (process-instance and incident search, as in `bruno/06-incident-demo`). Moving a
 case on (publishing a message, completing a user task) is a business action, taken by a client of the
-app's API or by a human in the Tasklist, not by an agent.
+app's API, not by an agent.
 
 A PostToolUse hook (`.claude/hooks/lint-bpmn.sh`) runs bpmnlint after every edit of an executable
 `.bpmn` and hands the findings back.

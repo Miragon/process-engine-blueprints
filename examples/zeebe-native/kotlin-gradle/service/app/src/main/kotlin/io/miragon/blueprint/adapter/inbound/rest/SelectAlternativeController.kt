@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import io.miragon.blueprint.application.port.inbound.SelectAlternativeUseCase
 import io.miragon.blueprint.domain.leasing.ApplicationId
 import io.miragon.blueprint.domain.bike.BikeId
+import io.swagger.v3.oas.annotations.Operation
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -12,16 +13,13 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
-/**
- * External completion of the `Clarify alternative with customer` user task — the counterpart to a
- * human completing the deployed Camunda Form in the Camunda Tasklist.
- */
 @RestController
 @RequestMapping("/api/bike-leasing")
 class SelectAlternativeController(
     private val useCase: SelectAlternativeUseCase,
 ) {
 
+    @Operation(operationId = "selectAlternative")
     @PostMapping("/{applicationId}/clarify-alternative")
     fun clarifyAlternative(
         @PathVariable applicationId: String,

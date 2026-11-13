@@ -13,6 +13,7 @@ import io.miragon.blueprint.domain.leasing.ApplicationId;
 import io.miragon.blueprint.domain.leasing.ContractId;
 import io.miragon.blueprint.domain.leasing.LeasingApplication;
 import java.util.Optional;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -31,6 +32,7 @@ class GetLeasingApplicationControllerTest {
     private GetLeasingApplicationQuery query;
 
     @Test
+    @DisplayName("returns the application with all of its fields mapped when it exists")
     void returns_the_application_with_all_of_its_fields_mapped_when_it_exists() throws Exception {
 
         // given: a fully-populated application (incl. order and contract) the query can find
@@ -64,6 +66,7 @@ class GetLeasingApplicationControllerTest {
     }
 
     @Test
+    @DisplayName("maps a not-yet-ordered application with null order and contract")
     void maps_a_not_yet_ordered_application_with_null_order_and_contract() throws Exception {
 
         // given: an application still without an order or contract (both nullable fields absent)
@@ -79,9 +82,12 @@ class GetLeasingApplicationControllerTest {
         assertThat(response.getResponse().getStatus()).isEqualTo(200);
         assertThat(response.getResponse().getContentAsString())
                 .contains("\"orderId\":null", "\"contractId\":null", "\"bikeModel\":null");
+        verify(query).byId(application.id());
+        verifyNoMoreInteractions(query);
     }
 
     @Test
+    @DisplayName("returns 404 when the application does not exist")
     void returns_404_when_the_application_does_not_exist() throws Exception {
 
         // given: an unknown application id
@@ -94,5 +100,7 @@ class GetLeasingApplicationControllerTest {
 
         // then: the response is 404 Not Found
         assertThat(response.getResponse().getStatus()).isEqualTo(404);
+        verify(query).byId(id);
+        verifyNoMoreInteractions(query);
     }
 }

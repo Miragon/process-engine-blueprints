@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
@@ -69,8 +70,8 @@ class OrderBikeServiceTest {
         assertThat(orderId).isEqualTo(new OrderId("ORDER-ALT"));
         verify(bikeDealer).checkAvailability(alternative);
         verify(bikeDealer).order(alternative);
-        verify(repository).save(argThat(saved ->
-                saved.bikeId().equals(alternative) && new OrderId("ORDER-ALT").equals(saved.orderId())));
+        verify(repository).save(argThat(app ->
+                app.bikeId().equals(alternative) && new OrderId("ORDER-ALT").equals(app.orderId())));
         verifyNoMoreInteractions(bikeDealer);
     }
 
@@ -88,7 +89,7 @@ class OrderBikeServiceTest {
                 .hasMessage("Bike BIKE-OOS is not available at the dealer");
         verify(bikeDealer).checkAvailability(application.bikeId());
         verify(bikeDealer, never()).order(any());
-        verify(repository, never()).save(argThat(saved -> saved.orderId() != null));
+        verify(repository, never()).save(argThat(app -> app.orderId() != null));
         verifyNoMoreInteractions(bikeDealer);
     }
 
@@ -105,22 +106,23 @@ class OrderBikeServiceTest {
         assertThatThrownBy(() -> underTest.orderBike(application.id(), alternative))
                 .isInstanceOf(BikeUnavailableException.class)
                 .hasMessage("Bike BIKE-OOS is not available at the dealer");
-        verify(repository).save(argThat(saved -> saved.bikeId().equals(alternative) && saved.orderId() == null));
+        verify(repository).save(argThat(app -> app.bikeId().equals(alternative) && app.orderId() == null));
         verify(bikeDealer, never()).order(any());
     }
 
     @Test
     void orderBikeFailsForAnUnknownApplication() {
 
-        // given: no application is stored under the id
-        ApplicationId id = new ApplicationId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
-        when(repository.findById(id)).thenReturn(Optional.empty());
+        // given: an id the repository cannot resolve
+        ApplicationId unknownId = new ApplicationId(UUID.fromString("123e4567-e89b-12d3-a456-426614174999"));
+        when(repository.findById(unknownId)).thenReturn(Optional.empty());
 
-        // when / then: the lookup fails and nothing is ordered or stored
-        assertThatThrownBy(() -> underTest.orderBike(id, new BikeId("BIKE-900")))
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessage("Unknown application " + id.value());
-        verify(bikeDealer, never()).order(any());
-        verify(repository, never()).save(any());
+        // when / then: ordering fails with the unknown-application message, the dealer is never asked
+        assertThatThrownBy(() -> underTest.orderBike(unknownId, new BikeId("BIKE-900")))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Unknown application " + unknownId);
+        verify(repository).findById(unknownId);
+        verifyNoMoreInteractions(repository);
+        verifyNoInteractions(bikeDealer);
     }
 }

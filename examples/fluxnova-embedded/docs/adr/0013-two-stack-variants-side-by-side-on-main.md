@@ -57,12 +57,11 @@ alone; such a gate would mostly produce noise. The gates compare observable beha
 
 ## Consequences
 
-- **Positive:** the Java variant has CI, dependency updates and the automated dependency repair like
-  everything else on `main`. Each variant is a complete project on its own. Trainings use a plain directory
-  instead of a tag checkout.
+- **Positive:** the Java variant has CI and dependency updates like everything else on `main`. Each
+  variant is a complete project on its own. Trainings use a plain directory.
 - **Negative / trade-offs:** every functional change is implemented and reviewed twice, and pull
-  requests grow. A model change has to be copied to the other variant. `main` is no longer a pure Kotlin tree, which makes it less directly comparable to
-  sibling blueprints until they adopt the same layout.
+  requests grow. A model change has to be copied to the other variant. `main` is no longer a pure
+  Kotlin tree.
 - **Neutral:** the gates compare the contract and the scripted scenarios. Behaviour covered by neither
   can still differ, which is why the unit and process tests of both variants are kept case-for-case
   equivalent by review.
@@ -70,7 +69,8 @@ alone; such a gate would mostly produce noise. The gates compare observable beha
 ## Implementation notes
 
 - Idiomatic differences are intended and not drift: records and `Optional` instead of `data` classes
-  and nullable types, Mockito instead of MockK, Checkstyle instead of Konsist for the two source rules
+  and nullable types, Mockito instead of MockK, SLF4J instead of kotlin-logging, Checkstyle instead of
+  Konsist for the two source rules
   ([ADR-0007](0007-two-architecture-test-tools-archunit-and-konsist.md)).
 - Java records carry no nullability, so the Java DTOs declare it with annotations to produce the same
   `required` arrays and nullable types the Kotlin types yield.

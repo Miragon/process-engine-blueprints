@@ -66,7 +66,8 @@ class ListLeasingApplicationsServiceTest {
 
         // then: the exact criteria reach the outbound port
         verify(repository).findAll(new LeasingApplicationRepository.Criteria(LeasingStatus.ACTIVE, 1, 5));
-        verifyNoMoreInteractions(repository);
+        verify(bikePortfolio).findAllByIds(List.of());
+        verifyNoMoreInteractions(repository, bikePortfolio);
     }
 
     @Test

@@ -15,13 +15,10 @@ class BookCancellationCostsServiceTest {
 
     @Test
     void bookCostsDelegatesTheCostBookingToTheDealer() {
-
         // given: a placed order
         OrderId orderId = new OrderId("ORDER-900");
-
         // when: the costs are booked
         underTest.bookCosts(orderId);
-
         // then: the dealer out-port books the cancellation costs
         verify(bikeDealer).bookCancellationCosts(orderId);
         verifyNoMoreInteractions(bikeDealer);

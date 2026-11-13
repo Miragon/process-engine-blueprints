@@ -22,10 +22,8 @@ public class RejectApplicationService implements RejectApplicationUseCase {
 
     @Override
     public void reject(ApplicationId id) {
-        LeasingApplication application = repository.findById(id);
-        if (application == null) {
-            throw new IllegalStateException("Unknown application " + id);
-        }
+        LeasingApplication application = repository.findById(id)
+                .orElseThrow(() -> new IllegalStateException("Unknown application " + id));
         notification.send("Your bike-leasing application was rejected", application);
         repository.save(application.reject());
     }

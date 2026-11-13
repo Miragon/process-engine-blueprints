@@ -8,7 +8,7 @@
   <bpmn:error id="Error_BikeUnavailable" name="Bike_Unavailable" errorCode="bikeUnavailable" />
   <bpmn:escalation id="Escalation_ContractNotSigned" name="Contract_Not_Signed" escalationCode="contractNotSigned" />
   <bpmn:process id="bikeLeasingProcess" name="MiraVelo Bike Leasing" isExecutable="true" camunda:historyTimeToLive="P180D">
-    <bpmn:startEvent id="startEvent_leasingRequestReceived" name="Leasing request received" camunda:asyncAfter="true">
+    <bpmn:startEvent id="startEvent_leasingRequestReceived" camunda:asyncBefore="true" name="Leasing request received" camunda:asyncAfter="true">
       <bpmn:extensionElements>
         <!-- The message start event injects these variables. Message start events don't support
              camunda:inputOutput, so they are declared for bpmn-to-code via this extension property. -->
@@ -38,7 +38,7 @@
       <bpmn:incoming>flow_bikeSourceToOrder</bpmn:incoming>
       <bpmn:outgoing>flow_orderedToJoin</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:serviceTask id="serviceTask_cancelPolicy" name="Cancel policy" isForCompensation="true" camunda:asyncAfter="true" camunda:delegateExpression="#{cancelPolicyDelegate}" />
+    <bpmn:serviceTask id="serviceTask_cancelPolicy" camunda:asyncBefore="true" name="Cancel policy" isForCompensation="true" camunda:asyncAfter="true" camunda:delegateExpression="#{cancelPolicyDelegate}" />
     <bpmn:endEvent id="endEvent_applicationRejected" name="Application rejected">
       <bpmn:incoming>flow_rejectionSent</bpmn:incoming>
     </bpmn:endEvent>
@@ -47,7 +47,7 @@
       <bpmn:outgoing>flow_handoverToWithdrawalPeriod</bpmn:outgoing>
       <bpmn:messageEventDefinition id="MessageEventDefinition_1m0s1ya" messageRef="Message_HandoverReported" />
     </bpmn:intermediateCatchEvent>
-    <bpmn:endEvent id="endEvent_leasingActive" name="Leasing active">
+    <bpmn:endEvent id="endEvent_leasingActive" camunda:asyncBefore="true" name="Leasing active">
       <bpmn:incoming>flow_withdrawalElapsedToActive</bpmn:incoming>
       <bpmn:messageEventDefinition id="MessageEventDefinition_activateLeasingDelegate" messageRef="Message_LeasingActivated" camunda:delegateExpression="#{activateLeasingDelegate}" />
     </bpmn:endEvent>
@@ -56,7 +56,7 @@
       <bpmn:incoming>flow_notSignedToRejection</bpmn:incoming>
       <bpmn:outgoing>flow_rejectionJoined</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:serviceTask id="serviceTask_sendRejection" name="Send rejection" camunda:asyncAfter="true" camunda:delegateExpression="#{sendRejectionDelegate}">
+    <bpmn:serviceTask id="serviceTask_sendRejection" camunda:asyncBefore="true" name="Send rejection" camunda:asyncAfter="true" camunda:delegateExpression="#{sendRejectionDelegate}">
       <bpmn:incoming>flow_rejectionJoined</bpmn:incoming>
       <bpmn:outgoing>flow_rejectionSent</bpmn:outgoing>
     </bpmn:serviceTask>
@@ -105,7 +105,7 @@
         <bpmn:incoming>flow_deadlineToNotSigned</bpmn:incoming>
         <bpmn:escalationEventDefinition id="EscalationEventDefinition_0wpbfeq" escalationRef="Escalation_ContractNotSigned" />
       </bpmn:endEvent>
-      <bpmn:serviceTask id="serviceTask_sendContract" name="Send contract" camunda:asyncAfter="true" camunda:delegateExpression="#{sendContractDelegate}">
+      <bpmn:serviceTask id="serviceTask_sendContract" camunda:asyncBefore="true" name="Send contract" camunda:asyncAfter="true" camunda:delegateExpression="#{sendContractDelegate}">
         <bpmn:incoming>flow_eligibleToSendContract</bpmn:incoming>
         <bpmn:outgoing>flow_contractSentToAwait</bpmn:outgoing>
       </bpmn:serviceTask>
@@ -117,17 +117,16 @@
       <bpmn:outgoing>flow_forkToBikeSource</bpmn:outgoing>
       <bpmn:outgoing>flow_forkToInsurance</bpmn:outgoing>
     </bpmn:parallelGateway>
-    <bpmn:parallelGateway id="gateway_join">
+    <bpmn:parallelGateway id="gateway_join" camunda:asyncBefore="true">
       <bpmn:incoming>flow_insuranceToJoin</bpmn:incoming>
       <bpmn:incoming>flow_orderedToJoin</bpmn:incoming>
       <bpmn:outgoing>flow_joinToHandover</bpmn:outgoing>
     </bpmn:parallelGateway>
-    <bpmn:userTask id="userTask_clarifyAlternative" name="Clarify alternative with customer" camunda:asyncAfter="true" camunda:formRef="clarifyAlternativeForm" camunda:formRefBinding="deployment">
-      <bpmn:documentation>Completable two ways: a human via the deployed Fluxnova Form (Tasklist), or a client via POST /api/bike-leasing/{id}/clarify-alternative. Both paths hand the chosen alternative to the process as the bikeId variable, which the re-order reads and persists on the aggregate, so the captured data reaches the domain model either way. The REST path additionally registers the bike's model in the portfolio. An accepted alternative always names its bike: the form requires the field and the endpoint answers 400 without it. See "Clarify return with supplier" in cancel-bike-order.bpmn for the form-only anti-pattern where data never leaves the process.</bpmn:documentation>
+    <bpmn:userTask id="userTask_clarifyAlternative" name="Clarify alternative with customer" camunda:asyncAfter="true">
+      <bpmn:documentation>Completed through POST /api/bike-leasing/{id}/clarify-alternative. The chosen alternative reaches the process as the bikeId variable, which the re-order reads and persists on the aggregate, and the endpoint registers the bike's model in the portfolio. An accepted alternative always names its bike: the endpoint answers 400 without it. The task has no form: the application owns the UI and finds the task by its id and the business key.</bpmn:documentation>
       <bpmn:extensionElements>
         <!-- The decision the task produces and the alternative bike the re-order picks up; declared
-             for bpmn-to-code. The Fluxnova Form (camunda:formRef) still renders them in the Tasklist
-             for the human completion path. -->
+             for bpmn-to-code. -->
         <camunda:properties>
           <camunda:property name="additionalOutputVariables" value="alternativeFound, bikeId" />
         </camunda:properties>
@@ -151,7 +150,7 @@
       <bpmn:outgoing>flow_triggerReversalToConfirmation</bpmn:outgoing>
       <bpmn:compensateEventDefinition id="CompensateEventDefinition_1acwjf2" />
     </bpmn:intermediateThrowEvent>
-    <bpmn:serviceTask id="serviceTask_cancelContract" name="Cancel contract" isForCompensation="true" camunda:asyncAfter="true" camunda:delegateExpression="#{cancelContractDelegate}" />
+    <bpmn:serviceTask id="serviceTask_cancelContract" camunda:asyncBefore="true" name="Cancel contract" isForCompensation="true" camunda:asyncAfter="true" camunda:delegateExpression="#{cancelContractDelegate}" />
     <bpmn:callActivity id="callActivity_cancelBikeOrder" name="Cancel bike order" isForCompensation="true" calledElement="cancelBikeOrder">
       <bpmn:extensionElements>
         <camunda:in businessKey="#{execution.processBusinessKey}" />
@@ -159,7 +158,7 @@
         <camunda:in source="bikeId" target="bikeId" />
       </bpmn:extensionElements>
     </bpmn:callActivity>
-    <bpmn:serviceTask id="serviceTask_issueInsurancePolicy" name="Issue insurance policy" camunda:asyncAfter="true" camunda:delegateExpression="#{issueInsurancePolicyDelegate}">
+    <bpmn:serviceTask id="serviceTask_issueInsurancePolicy" camunda:asyncBefore="true" name="Issue insurance policy" camunda:asyncAfter="true" camunda:delegateExpression="#{issueInsurancePolicyDelegate}">
       <bpmn:incoming>flow_forkToInsurance</bpmn:incoming>
       <bpmn:outgoing>flow_insuranceToJoin</bpmn:outgoing>
     </bpmn:serviceTask>
@@ -212,7 +211,7 @@
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${!alternativeFound}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="flow_triggerReversalToConfirmation" sourceRef="event_triggerReversal" targetRef="serviceTask_confirmContractCancellation" />
-    <bpmn:serviceTask id="serviceTask_confirmContractCancellation" name="Send cancellation confirmation" camunda:asyncAfter="true" camunda:delegateExpression="#{sendCancellationConfirmationDelegate}">
+    <bpmn:serviceTask id="serviceTask_confirmContractCancellation" camunda:asyncBefore="true" name="Send cancellation confirmation" camunda:asyncAfter="true" camunda:delegateExpression="#{sendCancellationConfirmationDelegate}">
       <bpmn:incoming>flow_triggerReversalToConfirmation</bpmn:incoming>
       <bpmn:outgoing>flow_confirmationToContractCancelled</bpmn:outgoing>
     </bpmn:serviceTask>
@@ -234,7 +233,7 @@
       <bpmn:sequenceFlow id="flow_withdrawalToReversal" sourceRef="startEvent_applicationWithdrawn" targetRef="event_reverseApplication" />
       <bpmn:sequenceFlow id="flow_reversalToConfirmation" sourceRef="event_reverseApplication" targetRef="serviceTask_sendCancellationConfirmation" />
       <bpmn:sequenceFlow id="flow_confirmationToCancelled" sourceRef="serviceTask_sendCancellationConfirmation" targetRef="endEvent_applicationCancelled" />
-      <bpmn:serviceTask id="serviceTask_sendCancellationConfirmation" name="Send cancellation confirmation" camunda:asyncAfter="true" camunda:delegateExpression="#{sendCancellationConfirmationDelegate}">
+      <bpmn:serviceTask id="serviceTask_sendCancellationConfirmation" camunda:asyncBefore="true" name="Send cancellation confirmation" camunda:asyncAfter="true" camunda:delegateExpression="#{sendCancellationConfirmationDelegate}">
         <bpmn:incoming>flow_reversalToConfirmation</bpmn:incoming>
         <bpmn:outgoing>flow_confirmationToCancelled</bpmn:outgoing>
       </bpmn:serviceTask>
@@ -248,16 +247,16 @@
         <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">P7D</bpmn:timeDuration>
       </bpmn:timerEventDefinition>
     </bpmn:boundaryEvent>
-    <bpmn:serviceTask id="serviceTask_sendReminderMail" name="Send reminder mail" camunda:asyncAfter="true" camunda:delegateExpression="#{sendReminderMailDelegate}">
+    <bpmn:serviceTask id="serviceTask_sendReminderMail" camunda:asyncBefore="true" name="Send reminder mail" camunda:asyncAfter="true" camunda:delegateExpression="#{sendReminderMailDelegate}">
       <bpmn:incoming>flow_reminderToMail</bpmn:incoming>
       <bpmn:outgoing>flow_mailToProspectReminded</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:endEvent id="endEvent_prospectReminded" name="Prospect reminded">
       <bpmn:incoming>flow_mailToProspectReminded</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:association id="Association_0reycrf" associationDirection="One" sourceRef="event_compensateInsurance" targetRef="serviceTask_cancelPolicy" />
-    <bpmn:association id="Association_1q9i1wm" associationDirection="One" sourceRef="event_compensateContract" targetRef="serviceTask_cancelContract" />
-    <bpmn:association id="Association_185chbk" associationDirection="One" sourceRef="event_compensateOrder" targetRef="callActivity_cancelBikeOrder" />
+    <bpmn:association id="association_compensateInsurance" associationDirection="One" sourceRef="event_compensateInsurance" targetRef="serviceTask_cancelPolicy" />
+    <bpmn:association id="association_compensateContract" associationDirection="One" sourceRef="event_compensateContract" targetRef="serviceTask_cancelContract" />
+    <bpmn:association id="association_compensateOrder" associationDirection="One" sourceRef="event_compensateOrder" targetRef="callActivity_cancelBikeOrder" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="bikeLeasingProcess">
@@ -614,17 +613,17 @@
         <di:waypoint x="1870" y="400" />
         <di:waypoint x="1922" y="400" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Association_0reycrf_di" bpmnElement="Association_0reycrf">
+      <bpmndi:BPMNEdge id="association_compensateInsurance_di" bpmnElement="association_compensateInsurance">
         <di:waypoint x="1340" y="72" />
         <di:waypoint x="1340" y="60" />
         <di:waypoint x="1420" y="60" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Association_1q9i1wm_di" bpmnElement="Association_1q9i1wm">
+      <bpmndi:BPMNEdge id="association_compensateContract_di" bpmnElement="association_compensateContract">
         <di:waypoint x="880" y="140" />
         <di:waypoint x="880" y="60" />
         <di:waypoint x="950" y="60" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Association_185chbk_di" bpmnElement="Association_185chbk">
+      <bpmndi:BPMNEdge id="association_compensateOrder_di" bpmnElement="association_compensateOrder">
         <di:waypoint x="1305" y="308" />
         <di:waypoint x="1305" y="360" />
       </bpmndi:BPMNEdge>

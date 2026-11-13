@@ -6,7 +6,7 @@
 ## Context
 
 The blueprint serves two audiences. New projects that are free to choose should start from the stack we
-consider modern: **Kotlin + Gradle**. Many enterprise teams — and our developer trainings —
+consider modern: **Kotlin + Gradle**. Many enterprise teams — and our Camunda 8 developer trainings —
 are bound to **Java + Maven** and must be able to use the blueprint without knowing Kotlin or Gradle.
 Until now this blueprint existed in Kotlin + Gradle only.
 
@@ -58,11 +58,10 @@ alone; such a gate would mostly produce noise. The gates compare observable beha
 ## Consequences
 
 - **Positive:** the Java variant has CI and dependency updates like everything else on `main`. Each
-  variant is a complete project on its own, so a training or a fork works in a plain directory.
+  variant is a complete project on its own. Trainings use a plain directory.
 - **Negative / trade-offs:** every functional change is implemented and reviewed twice, and pull
   requests grow. A model change has to be copied to the other variant. `main` is no longer a pure
-  Kotlin tree, which makes it less directly comparable to sibling blueprints until they adopt the same
-  layout.
+  Kotlin tree.
 - **Neutral:** the gates compare the contract and the scripted scenarios. Behaviour covered by neither
   can still differ, which is why the unit and process tests of both variants are kept case-for-case
   equivalent by review.
@@ -70,10 +69,12 @@ alone; such a gate would mostly produce noise. The gates compare observable beha
 ## Implementation notes
 
 - Idiomatic differences are intended and not drift: records and `Optional` instead of `data` classes
-  and nullable types, Mockito instead of MockK, Checkstyle instead of Konsist for the two source rules
+  and nullable types, Mockito instead of MockK, SLF4J instead of kotlin-logging, Checkstyle instead of
+  Konsist for the two source rules
   ([ADR-0007](0007-two-architecture-test-tools-archunit-and-konsist.md)).
 - Java records carry no nullability, so the Java DTOs declare it with annotations to produce the same
-  `required` arrays and nullable types the Kotlin types yield.
+  `required` arrays and nullable types the Kotlin types yield, and reject a missing required property in
+  their compact constructor the way Kotlin rejects it while deserialising.
 - The Java variant binds the BPMN tasks the same way the Kotlin one does: VanillaBP `@WorkflowTask`
   methods on the shared workflow aggregate. It mirrors all four Gradle modules, including the Zeebe
   glue (`common-zeebe`) and the process-test helper (`common-zeebe-test`), and the resource comparison

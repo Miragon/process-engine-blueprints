@@ -6,8 +6,8 @@ import io.miragon.blueprint.domain.leasing.LeasingApplication;
 
 /**
  * Outbound port that drives the BPMN engine: it starts a process instance, correlates the messages
- * that release the process's wait states, and completes the alternative-clarification user task from
- * the outside. Implemented by the CIB seven adapter.
+ * that release the process's wait states, and completes the user tasks. Implemented by the CIB seven
+ * adapter.
  */
 public interface LeasingProcess {
 
@@ -25,4 +25,6 @@ public interface LeasingProcess {
     default void completeAlternativeClarification(ApplicationId id, boolean alternativeFound) {
         completeAlternativeClarification(id, alternativeFound, null);
     }
+
+    void completeReturnClarification(ApplicationId id);
 }

@@ -13,16 +13,14 @@ class LoggingInsuranceAdapterTest {
     @Test
     @DisplayName("issuePolicy logs without error")
     void issuePolicyLogsWithoutError() {
-
         // given: an application / when-then: issuing the policy runs without error
-        assertThatCode(() -> underTest.issuePolicy(testLeasingApplication().id())).doesNotThrowAnyException();
+        assertThatCode(() -> underTest.issuePolicy(testLeasingApplication().build().id())).doesNotThrowAnyException();
     }
 
     @Test
     @DisplayName("cancelPolicy logs without error")
     void cancelPolicyLogsWithoutError() {
-
         // given: an application / when-then: cancelling the policy runs without error
-        assertThatCode(() -> underTest.cancelPolicy(testLeasingApplication().id())).doesNotThrowAnyException();
+        assertThatCode(() -> underTest.cancelPolicy(testLeasingApplication().build().id())).doesNotThrowAnyException();
     }
 }

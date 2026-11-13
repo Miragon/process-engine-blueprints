@@ -1,7 +1,6 @@
 package io.miragon.blueprint.application.service;
 
 import static io.miragon.blueprint.domain.leasing.TestObjectBuilder.testLeasingApplication;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -17,14 +16,10 @@ class IssueInsurancePolicyServiceTest {
 
     @Test
     void issuePolicyDelegatesToTheInsurer() {
-
         // given: an eligible application
         LeasingApplication application = testLeasingApplication().build();
-        doNothing().when(insurance).issuePolicy(application.id());
-
         // when: the policy is issued
         underTest.issuePolicy(application.id());
-
         // then: the insurance out-port binds the policy
         verify(insurance).issuePolicy(application.id());
         verifyNoMoreInteractions(insurance);

@@ -8,14 +8,14 @@ import org.springframework.stereotype.Component;
 
 /**
  * Example {@link TaskListener} on the {@code userTask_clarifyAlternative} user task, wired via
- * {@code camunda:taskListener event="create" delegateExpression="#{clarifyAlternativeTaskListener}"} in the
- * BPMN. It fires when the out-of-stock branch parks the human task, and simply audit-logs that manual
- * clarification is required — the human-task counterpart to {@link BikeOrderAuditListener}.
+ * {@code camunda:taskListener event="create" delegateExpression="#{clarifyAlternativeTaskListener}"} in
+ * the BPMN. It fires when the out-of-stock branch parks the human task, and simply audit-logs that
+ * manual clarification is required — the human-task counterpart to {@link BikeOrderAuditListener}.
  *
- * <p>Like the execution listener, it runs <em>inside</em> the engine (task listeners have no external-task
- * equivalent), so the bean lives in the generic {@code engine-service} host and is referenced by expression
- * ({@code #{clarifyAlternativeTaskListener}}). A production listener could notify the customer or route
- * through a use case instead of logging.
+ * <p>Like the execution listener, it runs <em>inside</em> the engine (task listeners have no
+ * external-task equivalent), so the bean lives in the generic {@code engine-service} host and is
+ * referenced by expression ({@code #{clarifyAlternativeTaskListener}}). A production listener could
+ * notify the customer or route through a use case instead of logging.
  */
 @Component
 public class ClarifyAlternativeTaskListener implements TaskListener {

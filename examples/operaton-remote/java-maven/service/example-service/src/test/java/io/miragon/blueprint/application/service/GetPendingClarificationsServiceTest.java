@@ -4,6 +4,7 @@ import static io.miragon.blueprint.domain.leasing.TestObjectBuilder.testLeasingA
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import io.miragon.blueprint.application.port.outbound.BikePortfolioRepository;
@@ -75,5 +76,6 @@ class GetPendingClarificationsServiceTest {
 
         // when / then: the inbox is empty
         assertThat(underTest.pending()).isEmpty();
+        verifyNoInteractions(repository);
     }
 }

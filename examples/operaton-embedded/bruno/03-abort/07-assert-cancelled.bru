@@ -11,9 +11,9 @@ get {
 }
 
 script:pre-request {
-  const pid = bru.getVar("processInstanceId");
-  await pollEngine(`/history/activity-instance?processInstanceId=${pid}&activityId=endEvent_applicationCancelled`,
-    (b, s) => s === 200 && Array.isArray(b) && b.length >= 1);
+  await pollEngine("/history/activity-instance?processInstanceId=" + bru.getVar("processInstanceId")
+    + "&activityId=endEvent_applicationCancelled",
+    (b) => Array.isArray(b) && b.length >= 1);
 }
 
 assert {

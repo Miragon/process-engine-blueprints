@@ -12,6 +12,7 @@ import io.miragon.blueprint.application.port.inbound.SelectAlternativeUseCase;
 import io.miragon.blueprint.domain.bike.BikeId;
 import io.miragon.blueprint.domain.leasing.ApplicationId;
 import java.util.Map;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -33,6 +34,7 @@ class SelectAlternativeControllerTest {
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Test
+    @DisplayName("client clarifies an alternative bike")
     void client_clarifies_an_alternative_bike() throws Exception {
 
         // given: a decision body and the application-id path variable
@@ -56,6 +58,7 @@ class SelectAlternativeControllerTest {
     }
 
     @Test
+    @DisplayName("client reports that no alternative was found")
     void client_reports_that_no_alternative_was_found() throws Exception {
 
         // given: a decision body with no alternative and no bike details
@@ -78,6 +81,7 @@ class SelectAlternativeControllerTest {
     }
 
     @Test
+    @DisplayName("rejects an accepted alternative without a bike id with a 400 problem detail")
     void rejects_an_accepted_alternative_without_a_bike_id_with_a_400_problem_detail() throws Exception {
 
         // given: a decision body that accepts an alternative but names no bike
@@ -95,6 +99,28 @@ class SelectAlternativeControllerTest {
         assertThat(response.getResponse().getStatus()).isEqualTo(400);
         assertThat(response.getResponse().getContentType()).contains("application/problem+json");
         assertThat(response.getResponse().getContentAsString()).contains("An accepted alternative must name the bike");
+        verifyNoMoreInteractions(useCase);
+    }
+
+    @Test
+    @DisplayName("a decision without the alternative-found flag is rejected")
+    void a_decision_without_the_alternative_found_flag_is_rejected() throws Exception {
+
+        // given: a decision body that names a bike but not whether an alternative was found
+        String pathVar = "123e4567-e89b-12d3-a456-426614174000";
+        Map<String, Object> body = Map.of("bikeId", "BIKE-ALT", "bikeModel", "Aero Road 700");
+        RequestBuilder operation =
+                post("/api/bike-leasing/{applicationId}/clarify-alternative", pathVar)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(body));
+
+        // when: the request is performed
+        MvcResult response = mockMvc.perform(operation).andReturn();
+
+        // then: it is an unreadable request and never reaches the use case
+        assertThat(response.getResponse().getStatus()).isEqualTo(400);
+        assertThat(response.getResponse().getContentType()).contains("application/problem+json");
+        assertThat(response.getResponse().getContentAsString()).contains("Failed to read request");
         verifyNoMoreInteractions(useCase);
     }
 }

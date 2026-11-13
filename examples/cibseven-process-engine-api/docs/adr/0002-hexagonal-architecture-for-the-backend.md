@@ -5,8 +5,8 @@
 
 ## Context
 
-The backend automates a real BPMN process with many collaborators: a process engine, JPA persistence,
-a simulated dealer, notification and contract stubs. If controllers, workers, and the engine client
+The backend automates a real BPMN process with many collaborators: a process engine, JPA persistence, a
+simulated dealer, notification and contract stubs. If controllers, workers, and the engine client
 call each other freely, business logic leaks into infrastructure and the process becomes untestable in
 isolation. A blueprint has to demonstrate a structure that stays sane as this fan-out grows — and it
 has to make that structure *checkable*, not merely documented, so a forker (or an AI agent) cannot
@@ -21,8 +21,7 @@ We structure `service/app` as a **hexagon (ports & adapters)** under `io.miragon
   operation. `application/port/outbound` — **`*Repository` / `*Port` / `*Process`** interfaces.
 - `application/service` — one `*Service` implementing exactly one inbound port; it may not call another
   service or any inbound port.
-- `adapter/inbound/{rest,cibseven}` — driving adapters (REST controllers and the external-topic
-  `@ProcessEngineWorker` beans that consume the engine's service-task work).
+- `adapter/inbound/{rest,cibseven}` — driving adapters (REST controllers, the external-topic `@ProcessEngineWorker` beans that consume the engine's service-task work).
 - `adapter/outbound/{db,cibseven,dealer,notification,contract,insurance}` — driven adapters.
 - `adapter/process` — the **generated** `*ProcessApi` and shared constants (bpmn-to-code) plus engine config; a technical
   seam that fits neither side of the split.
@@ -52,4 +51,4 @@ Service-task logic lives **only** in external-topic `@ProcessEngineWorker` beans
   layered CRUD app; the "one use-case per adapter" rule means many small classes.
 - **Neutral:** the generated-code seam (`adapter/process`) is a permanent, documented exception; see
   [ADR-0003](0003-openapi-as-the-checked-in-contract.md) for the analogous generated seam on the
-  API-contract side.
+  API contract side.

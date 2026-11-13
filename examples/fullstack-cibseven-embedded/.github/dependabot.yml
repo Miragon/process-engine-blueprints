@@ -126,6 +126,8 @@ updates:
   # GitHub Actions — fully grouped (SHA-pinned, mechanical majors, CI-gated)
   - package-ecosystem: "github-actions"
     directory: "/"
+    cooldown:
+      semver-major-days: 7
     schedule:
       interval: "monthly"
     labels:

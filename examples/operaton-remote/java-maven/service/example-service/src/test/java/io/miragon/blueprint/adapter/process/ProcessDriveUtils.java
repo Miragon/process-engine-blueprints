@@ -174,7 +174,7 @@ public final class ProcessDriveUtils {
      * process settles at its next wait state or external task. Timer jobs are excluded — those are fired
      * explicitly via {@link #fireTimer}.
      */
-    private static void executeAsyncContinuations(ProcessEngine engine) {
+    static void executeAsyncContinuations(ProcessEngine engine) {
         executeAsyncContinuations(engine, 100);
     }
 

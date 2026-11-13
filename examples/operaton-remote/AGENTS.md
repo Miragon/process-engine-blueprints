@@ -199,6 +199,7 @@ TDD. Match the test style to the layer:
 | `adapter.outbound.db` | `@DataJpaTest` |
 | `adapter.outbound.engine` (remote client) | against the wire format or the mocked generated client |
 | process end-to-end | Operaton process tests (`operaton-bpm-assert`, in-memory engine) |
+| process integration | `BikeLeasingIntegrationProcessTest` (step by step, one worker per call via `ExternalTaskWorkers`) and `BikeLeasingPollingIntegrationProcessTest` (job executor and polling client on, `ProcessAwaits`): `@SpringBootTest` with an in-memory engine serving `/engine-rest`, so the real workers and the real process adapter run over HTTP; only the use cases are mocked |
 
 **Mutation testing gates the domain at 80, nightly**: a test that executes without asserting will fail the nightly run. Coverage
 says a line ran; mutation says a test would have noticed. It mutates `io.miragon.blueprint.domain.*` only and does not

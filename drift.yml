@@ -737,6 +737,26 @@ differs:
       - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/ProcessTestCoverageContextCustomizerFactory.java"
       - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/ProcessTestCoverageContextCustomizerFactory.kt"
     reason: "Builds the coverage properties of its engine's Process Test Coverage extension, which CIB seven and Fluxnova ship in different packages."
+  - examples: [cibseven-remote, operaton-remote]
+    files:
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/process/BikeLeasingIntegrationProcessTest.java"
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/process/BikeLeasingPollingIntegrationProcessTest.java"
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/process/InMemoryEngineIntegrationTest.java"
+      - "java-maven/service/example-service/src/test/resources/application-in-memory-engine.yaml"
+      - "java-maven/service/example-service/src/test/resources/application-test.yaml"
+      - "kotlin-gradle/service/example-service/src/test/kotlin/io/miragon/blueprint/adapter/process/BikeLeasingIntegrationProcessTest.kt"
+      - "kotlin-gradle/service/example-service/src/test/kotlin/io/miragon/blueprint/adapter/process/BikeLeasingPollingIntegrationProcessTest.kt"
+      - "kotlin-gradle/service/example-service/src/test/kotlin/io/miragon/blueprint/adapter/process/InMemoryEngineIntegrationTest.kt"
+      - "kotlin-gradle/service/example-service/src/test/resources/application-in-memory-engine.yaml"
+      - "kotlin-gradle/service/example-service/src/test/resources/application-test.yaml"
+    reason: "The integration process tests configure the in-memory engine by its property prefix and auto-configuration names, which CIB seven keeps from Camunda (camunda.bpm, CamundaBpm*) and Operaton renamed (operaton.bpm, OperatonBpm*); only CIB seven also records process test coverage in them."
+  - examples: [cibseven-remote]
+    files:
+      - "java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/process/ProcessTestCoverageContextCustomizerFactory.java"
+      - "java-maven/service/example-service/src/test/resources/META-INF/spring.factories"
+      - "kotlin-gradle/service/example-service/src/test/kotlin/io/miragon/blueprint/adapter/process/ProcessTestCoverageContextCustomizerFactory.kt"
+      - "kotlin-gradle/service/example-service/src/test/resources/META-INF/spring.factories"
+    reason: "Gates the Spring-based integration process tests on Process Test Coverage, which only the CIB seven remote example records; operaton-remote has no coverage extension yet."
 languageOnly:
   - examples: [cibseven-embedded, cibseven-process-engine-api, cibseven-remote, fluxnova-embedded, operaton-embedded, operaton-remote, zeebe-native, zeebe-process-engine-api, zeebe-vanillabp]
     sources: [service/common-architecture-tests/src/main/io/miragon/common/architecture/KotlinSourceGuidelinesTest]

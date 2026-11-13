@@ -1394,6 +1394,8 @@
     - java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/outbound/dealer/BikeDealerAdapterTest.java
     - java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/outbound/insurance/LoggingInsuranceAdapterTest.java
     - java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/outbound/notification/LoggingNotificationAdapterTest.java
+    - java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/process/ExternalTaskWorkers.java
+    - java-maven/service/example-service/src/test/java/io/miragon/blueprint/adapter/process/ProcessAwaits.java
     - java-maven/service/example-service/src/test/java/io/miragon/blueprint/application/service/ActivateLeasingServiceTest.java
     - java-maven/service/example-service/src/test/java/io/miragon/blueprint/application/service/BookCancellationCostsServiceTest.java
     - java-maven/service/example-service/src/test/java/io/miragon/blueprint/application/service/CancelContractServiceTest.java
@@ -1423,7 +1425,6 @@
     - java-maven/service/example-service/src/test/java/io/miragon/blueprint/domain/leasing/EmailTest.java
     - java-maven/service/example-service/src/test/java/io/miragon/blueprint/domain/leasing/LeasingApplicationTest.java
     - java-maven/service/example-service/src/test/java/io/miragon/blueprint/domain/leasing/TestObjectBuilder.java
-    - java-maven/service/example-service/src/test/resources/application-test.yaml
     - java-maven/service/example-service/src/test/resources/sql/leasing-application.sql
     - kotlin-gradle/run/engine-service.run.xml
     - kotlin-gradle/run/example-service.run.xml
@@ -1564,6 +1565,8 @@
     - kotlin-gradle/service/example-service/src/test/kotlin/io/miragon/blueprint/adapter/outbound/engine/TaskInboxAdapterTest.kt
     - kotlin-gradle/service/example-service/src/test/kotlin/io/miragon/blueprint/adapter/outbound/insurance/LoggingInsuranceAdapterTest.kt
     - kotlin-gradle/service/example-service/src/test/kotlin/io/miragon/blueprint/adapter/outbound/notification/LoggingNotificationAdapterTest.kt
+    - kotlin-gradle/service/example-service/src/test/kotlin/io/miragon/blueprint/adapter/process/ExternalTaskWorkers.kt
+    - kotlin-gradle/service/example-service/src/test/kotlin/io/miragon/blueprint/adapter/process/ProcessAwaits.kt
     - kotlin-gradle/service/example-service/src/test/kotlin/io/miragon/blueprint/adapter/process/ProcessPathAssertions.kt
     - kotlin-gradle/service/example-service/src/test/kotlin/io/miragon/blueprint/application/service/ActivateLeasingServiceTest.kt
     - kotlin-gradle/service/example-service/src/test/kotlin/io/miragon/blueprint/application/service/BookCancellationCostsServiceTest.kt
@@ -1594,7 +1597,6 @@
     - kotlin-gradle/service/example-service/src/test/kotlin/io/miragon/blueprint/domain/leasing/EmailTest.kt
     - kotlin-gradle/service/example-service/src/test/kotlin/io/miragon/blueprint/domain/leasing/LeasingApplicationTest.kt
     - kotlin-gradle/service/example-service/src/test/kotlin/io/miragon/blueprint/domain/leasing/TestObjectBuilder.kt
-    - kotlin-gradle/service/example-service/src/test/resources/application-test.yaml
     - kotlin-gradle/service/example-service/src/test/resources/sql/leasing-application.sql
     - openapi/openapi.json
     - stack/init-databases.sql

@@ -139,6 +139,18 @@
             <artifactId>operaton-engine</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- Integration process tests — an in-memory engine with /engine-rest inside the worker's test
+             context, so the real external-task workers and the real process adapter run over HTTP -->
+        <dependency>
+            <groupId>org.operaton.bpm.springboot</groupId>
+            <artifactId>operaton-bpm-spring-boot-starter-rest</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <!-- Structural BPMN model validation (build-time, no engine) -->
         <dependency>

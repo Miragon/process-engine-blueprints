@@ -1210,6 +1210,7 @@
     - java-maven/service/app/src/main/java/io/miragon/blueprint/application/service/GetPendingClarificationsService.java
     - java-maven/service/app/src/main/java/io/miragon/blueprint/application/service/ListLeasingApplicationsService.java
     - java-maven/service/app/src/main/java/io/miragon/blueprint/application/service/SubmitLeasingRequestService.java
+    - java-maven/service/app/src/main/resources/bpmn/bike-leasing.bpmn
     - java-maven/service/app/src/main/resources/bpmn/cancel-bike-order.bpmn
     - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/rest/GetLeasingApplicationControllerTest.java
     - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/rest/SelectAlternativeControllerTest.java

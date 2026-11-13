@@ -35,7 +35,7 @@
         <process-engine-worker.version>0.8.5</process-engine-worker.version>
         <process-engine-adapter-operaton.version>2026.09.1</process-engine-adapter-operaton.version>
         <!-- 3.x is the Spring Boot 4 line; 3.1.0 is built against Spring Boot 4.1.0. -->
-        <springdoc.version>3.1.1</springdoc.version>
+        <springdoc.version>3.2.0</springdoc.version>
         <!-- Maven plugin, runtime and testing library deliberately aligned on one release. -->
         <bpmn-to-code.version>7.0.1</bpmn-to-code.version>
         <archunit.version>1.5.1</archunit.version>

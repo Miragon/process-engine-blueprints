@@ -69,6 +69,7 @@ kotlin_mockito = { module = "org.mockito.kotlin:mockito-kotlin", version = "6.4.
 mockk = { module = "io.mockk:mockk", version = "1.14.11" }
 spring_mockk = { module = "com.ninja-squad:springmockk", version = "5.0.1" }
 h2 = { module = "com.h2database:h2", version = "2.5.252" }
+awaitility = { module = "org.awaitility:awaitility-kotlin" }   # version pinned by the Spring Boot BOM
 
 # Process test — Operaton
 operaton-bpm-assert = { module = "org.operaton.bpm:operaton-bpm-assert", version.ref = "operaton_version" }
@@ -85,6 +86,9 @@ externalTaskClient = ["operaton-external-task-client", "jakarta-xml-bind-api"]
 test = ["spring_test", "spring_web_test", "spring_data_jpa_test", "mockito", "mockk", "spring_mockk", "kotlin_mockito"]
 archunit = ["archunit"]
 konsist = ["konsist"]
+# An in-memory engine with /engine-rest inside the worker's test context, so the integration process tests
+# drive the real external-task workers and the real process adapter over HTTP.
+operatonIntegrationProcessTest = ["operaton-rest", "awaitility"]
 operatonProcessTest = ["operaton-bpm-assert", "operaton-bpm-junit5", "operaton-engine", "h2"]
 
 [plugins]

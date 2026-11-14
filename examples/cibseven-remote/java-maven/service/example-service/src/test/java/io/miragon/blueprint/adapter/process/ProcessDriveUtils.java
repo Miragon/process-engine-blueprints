@@ -172,7 +172,7 @@ final class ProcessDriveUtils {
         return instance;
     }
 
-    private static void executeAsyncContinuations(ProcessEngine engine) {
+    static void executeAsyncContinuations(ProcessEngine engine) {
         executeAsyncContinuations(engine, 100);
     }
 

@@ -6,6 +6,10 @@ spring:
     # a non-existent engine). The full-context tests (OpenAPI export, actuator) only need the web layer.
     exclude:
       - org.cibseven.bpm.client.spring.boot.starter.impl.ClientAutoConfiguration
+      # The engine starters are on the test classpath only for the integration process tests, which
+      # switch them back on with the `in-memory-engine` profile.
+      - org.cibseven.bpm.spring.boot.starter.CamundaBpmAutoConfiguration
+      - org.cibseven.bpm.spring.boot.starter.rest.CamundaBpmRestJerseyAutoConfiguration
   flyway:
     # Tests build the schema from the JPA entities (H2, create-drop); Flyway migrations are validated
     # against the real Postgres in the Bruno / container runs, not here.

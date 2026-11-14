@@ -196,6 +196,7 @@ TDD. Match the test style to the layer:
 | `adapter.outbound.db` | `@DataJpaTest` |
 | `adapter.outbound.engine` (remote client) | `MockRestServiceServer` |
 | process end-to-end | CIB seven process tests (`cibseven-bpm-assert`, in-memory engine), paths asserted against the generated API |
+| process integration | `BikeLeasingIntegrationProcessTest` (step by step, one worker per call via `ExternalTaskWorkers`) and `BikeLeasingPollingIntegrationProcessTest` (job executor and polling client on, `ProcessAwaits`): `@SpringBootTest` with an in-memory engine serving `/engine-rest`, so the real workers and the real process adapter run over HTTP; only the use cases are mocked |
 
 The process tests also write a **process test coverage** report per test class, with the CIB seven community extension Process Test Coverage: an HTML page per class that draws the paths the tests took on the model and gives the share of flow nodes and sequence flows they reached. After the tests, the report aggregator of the same extension combines them into one report over all test classes, `all/report.html` in the report folder. Every process test class must reach 100 %, or it fails: the coverage extension reads the minimum from the system property `org.cibseven.community.process_test_coverage.ASSERT_AT_LEAST`, which the build file of `service/example-service` sets to `1.0` for the test run. A run of single test methods covers less and fails the gate; lower the minimum for it with `-PprocessTestCoverageMinimum=0` (Gradle) or `-Dprocess-test-coverage.minimum=0` (Maven).
 

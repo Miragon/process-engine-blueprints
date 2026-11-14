@@ -127,7 +127,7 @@ fun ProcessEngine.findInstance(businessKey: String): ProcessInstance {
  * process settles at its next wait state or external task. Timer jobs are excluded — those are fired
  * explicitly via [fireTimer].
  */
-private fun ProcessEngine.executeAsyncContinuations(maxIterations: Int = 100) {
+fun ProcessEngine.executeAsyncContinuations(maxIterations: Int = 100) {
     repeat(maxIterations) {
         val job = managementService.createJobQuery().active().messages().listPage(0, 1).firstOrNull()
             ?: return

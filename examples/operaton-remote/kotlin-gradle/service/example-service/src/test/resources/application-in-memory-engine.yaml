@@ -1,0 +1,18 @@
+# The integration process tests host an in-memory Operaton engine with its /engine-rest API inside the
+# worker's own test context. The worker reaches it over HTTP exactly as it reaches the remote engine.
+spring:
+  autoconfigure:
+    exclude: []
+
+operaton:
+  bpm:
+    database:
+      type: h2
+      schema-update: true
+    job-execution:
+      enabled: false
+    client:
+      worker-id: integration-test-worker
+      lock-duration: 20000
+      async-response-timeout: 500
+      disable-backoff-strategy: true

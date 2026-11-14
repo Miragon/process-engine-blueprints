@@ -34,7 +34,7 @@ Read-only reviewers with their own context, loaded at session start.
 
 - `settings.json` denies edits to the generated files (the process API in `adapter/process` and
   `openapi/openapi.json`). The patterns list the generated files by name, so the hand-written
-  `EngineApiConfiguration` and `HistoryCleanupConfiguration` next to them stay editable. It allows
+  `EngineApiConfiguration` next to them stays editable. It allows
   the build commands and read-only `gh` commands, and wires one hook.
   Personal additions go in `settings.local.json` (git-ignored).
 - `hooks/lint-bpmn.sh` (PostToolUse) runs bpmnlint after every edit of an executable `.bpmn` and

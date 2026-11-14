@@ -35,7 +35,7 @@ violation:
 - `NamingConventionArchitectureTest` — the suffix rules per package (`Controller`, `Delegate`, `Listener`,
   `PersistenceAdapter`, `UseCase`, `Query`, …).
 - There is deliberately **no `config` package**; Spring configuration lives beside the adapter it
-  configures (`OpenApiConfiguration`, `GlobalExceptionConfiguration`, `HistoryCleanupConfiguration`).
+  configures (`OpenApiConfiguration`, `GlobalExceptionConfiguration`).
 - The generated `adapter/process` package is **explicitly excluded** from both suites — it is machine-
   written and does not follow the hand-written conventions.
 

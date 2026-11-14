@@ -32,8 +32,7 @@ package `io.miragon.blueprint` under `service/app/src/main/` and `service/app/sr
   owner comes from the issue; otherwise ask before editing.
 - **Constants come from the generated API** (`BikeLeasingProcessProcessApi.FlowNodes.<Node>` with
   `.ELEMENT_ID`, `Variables`, `Next`; the shared `Messages`, `Errors`, `Escalations`, `ServiceTasks`),
-  never raw strings. `adapter/process` is generated: never edit it (except
-  `HistoryCleanupConfiguration`).
+  never raw strings. `adapter/process` is generated: never edit it.
 - **Engine limits:** a service task is a delegate by expression (`#{beanName}`, enforced by
   `adapter/process/model/ServiceTaskDelegateExpressionRule`); the asynchronous continuations
   (`asyncBefore` on service tasks, start events, joins and message throws, `asyncAfter` on user

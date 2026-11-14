@@ -39,8 +39,7 @@ to the other, then regenerate, wire and test **both**.
   owner comes from the issue; otherwise ask before editing.
 - **Constants come from the generated API** (`BikeLeasingProcessProcessApi.FlowNodes.<Node>` with
   `.ELEMENT_ID`, `Variables`, `Next`; the shared `Messages`, `Errors`, `Escalations`, `ServiceTasks`),
-  never raw strings. `adapter/process` is generated: never edit it (except
-  `HistoryCleanupConfiguration`).
+  never raw strings. `adapter/process` is generated: never edit it.
 - **Engine limits:** a service task is a delegate by expression (`#{beanName}`, enforced by
   `adapter/process/model/ServiceTaskDelegateExpressionRule`); asynchronous continuations
   (`asyncAfter` on most tasks, `asyncBefore` on `serviceTask_orderBike`) are where retries and

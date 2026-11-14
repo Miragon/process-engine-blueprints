@@ -85,6 +85,13 @@ camunda:
     job-execution:
       wait-time-in-millis: 250
       max-wait: 1000
+    generic-properties:
+      properties:
+        history-cleanup-strategy: removalTimeBased
+        history-cleanup-batch-window-start-time: "22:00"
+        history-cleanup-batch-window-end-time: "06:00"
+        history-cleanup-batch-size: 500
+        history-cleanup-degree-of-parallelism: 1
 
 cibseven:
   webclient:

@@ -640,7 +640,6 @@
     - operaton-embedded
   files:
     - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/rest/GlobalExceptionConfiguration.kt
-    - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/process/HistoryCleanupConfiguration.kt
     - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/inbound/SelectAlternativeUseCase.kt
     - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/port/outbound/LeasingProcess.kt
     - kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/application/service/SendCancellationConfirmationService.kt
@@ -673,7 +672,6 @@
     - java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/inbound/rest/GetPendingClarificationsController.java
     - java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/inbound/rest/GlobalExceptionConfiguration.java
     - java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/inbound/rest/ListLeasingApplicationsController.java
-    - java-maven/service/app/src/main/java/io/miragon/blueprint/adapter/process/HistoryCleanupConfiguration.java
     - java-maven/service/app/src/main/java/io/miragon/blueprint/{engine}BikeLeasingApplication.java
     - java-maven/service/app/src/main/resources/db/migration/V1__init.sql
     - java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/inbound/rest/GlobalExceptionConfigurationTest.java
@@ -1274,7 +1272,6 @@
     - java-maven/run/engine-service.run.xml
     - java-maven/run/example-service.run.xml
     - java-maven/service/common-architecture-tests/src/main/java/io/miragon/common/architecture/HexagonalArchitectureTest.java
-    - java-maven/service/engine-service/src/main/java/io/miragon/blueprint/config/HistoryCleanupConfiguration.java
     - java-maven/service/engine-service/src/main/java/io/miragon/blueprint/listener/BikeOrderAuditListener.java
     - java-maven/service/engine-service/src/main/java/io/miragon/blueprint/listener/ClarifyAlternativeTaskListener.java
     - java-maven/service/example-service/src/main/java/io/miragon/blueprint/BikeCatalogueSeeder.java
@@ -1429,7 +1426,6 @@
     - kotlin-gradle/run/engine-service.run.xml
     - kotlin-gradle/run/example-service.run.xml
     - kotlin-gradle/service/common-architecture-tests/src/main/kotlin/io/miragon/common/architecture/HexagonalArchitectureTest.kt
-    - kotlin-gradle/service/engine-service/src/main/kotlin/io/miragon/blueprint/config/HistoryCleanupConfiguration.kt
     - kotlin-gradle/service/engine-service/src/main/kotlin/io/miragon/blueprint/listener/BikeOrderAuditListener.kt
     - kotlin-gradle/service/engine-service/src/main/kotlin/io/miragon/blueprint/listener/ClarifyAlternativeTaskListener.kt
     - kotlin-gradle/service/example-service/src/main/kotlin/io/miragon/blueprint/BikeCatalogueSeeder.kt

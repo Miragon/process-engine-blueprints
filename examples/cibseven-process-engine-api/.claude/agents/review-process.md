@@ -76,8 +76,8 @@ as a typed path built from the generated API (`ProcessPath` with `ProcessPathAss
 `PathWalk` in Java), not hand-written element-id lists, and that every gateway outcome, boundary
 event (error, escalation, timer, compensation) and event subprocess has a path, in
 `bikeLeasingProcess` **and** in the called `cancelBikeOrder`. The real workers consume the external
-tasks; `JobExecutionUtils.continueToNextWaitState` fires async continuations and waits for the
-workers, `TimerUtils` fires timers. Report a missing path per element.
+tasks; `WorkerUtils.awaitWorkers` waits for them, each async continuation runs with its own
+`execute(job(...))`, one job per call, and `TimerUtils` fires timers. Report a missing path per element.
 
 <!-- variant:blueprint -->
 ### Variant parity

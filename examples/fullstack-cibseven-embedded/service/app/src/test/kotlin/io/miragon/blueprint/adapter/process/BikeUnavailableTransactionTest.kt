@@ -13,7 +13,9 @@ import org.assertj.core.api.Assertions
 import org.cibseven.bpm.engine.ProcessEngine
 import org.cibseven.bpm.engine.RuntimeService
 import org.cibseven.bpm.engine.test.assertions.bpmn.BpmnAwareTests.assertThat
+import org.cibseven.bpm.engine.test.assertions.bpmn.BpmnAwareTests.execute
 import org.cibseven.bpm.engine.test.assertions.bpmn.BpmnAwareTests.init
+import org.cibseven.bpm.engine.test.assertions.bpmn.BpmnAwareTests.job
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -51,6 +53,7 @@ class BikeUnavailableTransactionTest {
 
     @Test
     fun `bike unavailable - the BPMN error raised by the real order service is committed`() {
+        // given
         // BIKE-OOS is on the simulated dealer's out-of-stock list
         val application =
             LeasingApplication.receive(
@@ -66,13 +69,16 @@ class BikeUnavailableTransactionTest {
         process.submitRequest(application)
         val instance = runtimeService.findProcessInstance(application.id)
 
-        processEngine.executeJobFor(FlowNodes.StartEventLeasingRequestReceived)
-        processEngine.executeJobFor(FlowNodes.ServiceTaskSendContract)
+        // when
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance))
+        execute(job(FlowNodes.ServiceTaskSendContract.ELEMENT_ID, instance))
         process.correlateContractSigned(application.id)
-        processEngine.executeJobFor(FlowNodes.EventContractSigned)
-        processEngine.executeJobFor(FlowNodes.ServiceTaskIssueInsurancePolicy)
-        processEngine.executeJobFor(FlowNodes.ServiceTaskOrderBike) // unavailable -> BPMN error -> clarify alternative
+        execute(job(FlowNodes.EventContractSigned.ELEMENT_ID, instance))
+        execute(job(FlowNodes.ServiceTaskIssueInsurancePolicy.ELEMENT_ID, instance))
+        execute(job(FlowNodes.GatewayJoin.ELEMENT_ID, instance))
+        execute(job(FlowNodes.ServiceTaskOrderBike.ELEMENT_ID, instance)) // unavailable -> BPMN error -> clarify alternative
 
+        // then
         assertThat(instance)
             .isWaitingAt(FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID)
             .hasPassed(FlowNodes.EventBikeUnavailable.ELEMENT_ID)
@@ -80,6 +86,7 @@ class BikeUnavailableTransactionTest {
 
     @Test
     fun `bike unavailable - the bike the process carries is stored although the order service throws`() {
+        // given
         // the stored application names another bike than the out-of-stock one the process carries
         val application =
             LeasingApplication.receive(
@@ -93,20 +100,52 @@ class BikeUnavailableTransactionTest {
             )
         repository.save(application)
         process.submitRequest(application.selectAlternative(BikeId("BIKE-OOS")))
+        val instance = runtimeService.findProcessInstance(application.id)
 
-        processEngine.executeJobFor(FlowNodes.StartEventLeasingRequestReceived)
-        processEngine.executeJobFor(FlowNodes.ServiceTaskSendContract)
+        // when
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance))
+        execute(job(FlowNodes.ServiceTaskSendContract.ELEMENT_ID, instance))
         process.correlateContractSigned(application.id)
-        processEngine.executeJobFor(FlowNodes.EventContractSigned)
-        processEngine.executeJobFor(FlowNodes.ServiceTaskIssueInsurancePolicy)
-        processEngine.executeJobFor(FlowNodes.ServiceTaskOrderBike) // unavailable -> BPMN error -> clarify alternative
+        execute(job(FlowNodes.EventContractSigned.ELEMENT_ID, instance))
+        execute(job(FlowNodes.ServiceTaskIssueInsurancePolicy.ELEMENT_ID, instance))
+        execute(job(FlowNodes.GatewayJoin.ELEMENT_ID, instance))
+        execute(job(FlowNodes.ServiceTaskOrderBike.ELEMENT_ID, instance)) // unavailable -> BPMN error -> clarify alternative
 
+        // then
         Assertions.assertThat(repository.findById(application.id)?.bikeId).isEqualTo(BikeId("BIKE-OOS"))
+    }
 
-        // the alternative reaches the application through the process variable alone
+    @Test
+    fun `bike unavailable - the alternative reaches the application through the process variable alone`() {
+        // given
+        val application =
+            LeasingApplication.receive(
+                id = ApplicationId.new(),
+                customerName = CustomerName("Test Customer"),
+                email = Email("test@example.com"),
+                age = 35,
+                monthlyNetIncome = 3500.0,
+                bikeId = BikeId("BIKE-900"),
+                createdAt = LocalDateTime.now(),
+            )
+        repository.save(application)
+        process.submitRequest(application.selectAlternative(BikeId("BIKE-OOS")))
+        val instance = runtimeService.findProcessInstance(application.id)
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance))
+        execute(job(FlowNodes.ServiceTaskSendContract.ELEMENT_ID, instance))
+        process.correlateContractSigned(application.id)
+        execute(job(FlowNodes.EventContractSigned.ELEMENT_ID, instance))
+        execute(job(FlowNodes.ServiceTaskIssueInsurancePolicy.ELEMENT_ID, instance))
+        execute(job(FlowNodes.GatewayJoin.ELEMENT_ID, instance))
+        execute(job(FlowNodes.ServiceTaskOrderBike.ELEMENT_ID, instance)) // unavailable -> BPMN error -> clarify alternative
+
+        // when
         process.completeAlternativeClarification(application.id, alternativeFound = true, bikeId = BikeId("BIKE-ALT"))
-        processEngine.continueToNextWaitState()
+        execute(job(FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID, instance))
+        execute(job(FlowNodes.ServiceTaskOrderBike.ELEMENT_ID, instance))
+        execute(job(FlowNodes.GatewayJoin.ELEMENT_ID, instance))
 
+        // then
         val reordered = repository.findById(application.id)
         Assertions.assertThat(reordered?.bikeId).isEqualTo(BikeId("BIKE-ALT"))
         Assertions.assertThat(reordered?.status).isEqualTo(LeasingStatus.ORDERED)

@@ -12,8 +12,11 @@ import io.miragon.blueprint.domain.leasing.LeasingStatus
 import org.assertj.core.api.Assertions
 import org.cibseven.bpm.engine.ProcessEngine
 import org.cibseven.bpm.engine.RuntimeService
+import org.cibseven.bpm.engine.runtime.ProcessInstance
 import org.cibseven.bpm.engine.test.assertions.bpmn.BpmnAwareTests.assertThat
+import org.cibseven.bpm.engine.test.assertions.bpmn.BpmnAwareTests.execute
 import org.cibseven.bpm.engine.test.assertions.bpmn.BpmnAwareTests.init
+import org.cibseven.bpm.engine.test.assertions.bpmn.BpmnAwareTests.job
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -51,6 +54,7 @@ class BikeUnavailableTransactionTest {
 
     @Test
     fun `bike unavailable - the BPMN error raised by the real order service reaches the engine`() {
+        // given
         // BIKE-OOS is on the simulated dealer's out-of-stock list
         val application =
             LeasingApplication.receive(
@@ -66,10 +70,18 @@ class BikeUnavailableTransactionTest {
         process.submitRequest(application)
         val instance = runtimeService.findProcessInstance(application.id)
 
-        processEngine.continueToNextWaitState() // parks on the signature wait state
+        // when
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance))
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance))
+        processEngine.awaitWorkers()
+        execute(job(FlowNodes.ServiceTaskSendContract.ELEMENT_ID, instance)) // parks on the signature wait state
         process.correlateContractSigned(application.id)
-        processEngine.continueToNextWaitState() // fork -> order raises bikeUnavailable -> parks on clarify-alternative
+        execute(job(FlowNodes.EventContractSigned.ELEMENT_ID, instance)) // fork -> order raises bikeUnavailable -> parks on clarify-alternative
+        processEngine.awaitWorkers()
+        execute(job(FlowNodes.ServiceTaskIssueInsurancePolicy.ELEMENT_ID, instance))
+        execute(job(FlowNodes.GatewayJoin.ELEMENT_ID, instance))
 
+        // then
         assertThat(instance)
             .isWaitingAt(FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID)
             .hasPassed(FlowNodes.EventBikeUnavailable.ELEMENT_ID)
@@ -78,15 +90,21 @@ class BikeUnavailableTransactionTest {
 
     @Test
     fun `alternative selected - the chosen bike is ordered and stored on the application`() {
+        // given
         val application = receivedApplication(BikeId("BIKE-OOS"))
         repository.save(application)
         process.submitRequest(application)
         val instance = runtimeService.findProcessInstance(application.id)
-        signContractAndRunIntoTheUnavailableBike(application.id)
+        signContractAndRunIntoTheUnavailableBike(application.id, instance)
 
+        // when
         process.completeAlternativeClarification(application.id, alternativeFound = true, bikeId = BikeId("BIKE-900"))
-        processEngine.continueToNextWaitState() // re-order succeeds -> parallel join -> handover wait state
+        execute(job(FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID, instance))
+        processEngine.awaitWorkers()
+        execute(job(FlowNodes.ServiceTaskOrderBike.ELEMENT_ID, instance)) // re-order succeeds
+        execute(job(FlowNodes.GatewayJoin.ELEMENT_ID, instance)) // -> handover wait state
 
+        // then
         assertThat(instance).isWaitingAt(FlowNodes.EventHandoverReported.ELEMENT_ID)
         val stored = repository.findById(application.id)
         Assertions.assertThat(stored?.bikeId).isEqualTo(BikeId("BIKE-900"))
@@ -95,21 +113,38 @@ class BikeUnavailableTransactionTest {
 
     @Test
     fun `bike unavailable - the bike the process carries stays on the application although the order fails`() {
+        // given
         val application = receivedApplication(BikeId("BIKE-900"))
         repository.save(application)
         process.submitRequest(application.selectAlternative(BikeId("BIKE-OOS")))
         val instance = runtimeService.findProcessInstance(application.id)
 
-        signContractAndRunIntoTheUnavailableBike(application.id)
+        // when
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance))
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance))
+        processEngine.awaitWorkers()
+        execute(job(FlowNodes.ServiceTaskSendContract.ELEMENT_ID, instance)) // parks on the signature wait state
+        process.correlateContractSigned(application.id)
+        execute(job(FlowNodes.EventContractSigned.ELEMENT_ID, instance)) // fork -> order raises bikeUnavailable -> parks on clarify-alternative
+        processEngine.awaitWorkers()
+        execute(job(FlowNodes.ServiceTaskIssueInsurancePolicy.ELEMENT_ID, instance))
+        execute(job(FlowNodes.GatewayJoin.ELEMENT_ID, instance))
 
+        // then
         assertThat(instance).isWaitingAt(FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID)
         Assertions.assertThat(repository.findById(application.id)?.bikeId).isEqualTo(BikeId("BIKE-OOS"))
     }
 
-    private fun signContractAndRunIntoTheUnavailableBike(id: ApplicationId) {
-        processEngine.continueToNextWaitState() // parks on the signature wait state
+    private fun signContractAndRunIntoTheUnavailableBike(id: ApplicationId, instance: ProcessInstance) {
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance))
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance))
+        processEngine.awaitWorkers()
+        execute(job(FlowNodes.ServiceTaskSendContract.ELEMENT_ID, instance)) // parks on the signature wait state
         process.correlateContractSigned(id)
-        processEngine.continueToNextWaitState() // fork -> order raises bikeUnavailable -> parks on clarify-alternative
+        execute(job(FlowNodes.EventContractSigned.ELEMENT_ID, instance)) // fork -> order raises bikeUnavailable -> parks on clarify-alternative
+        processEngine.awaitWorkers()
+        execute(job(FlowNodes.ServiceTaskIssueInsurancePolicy.ELEMENT_ID, instance))
+        execute(job(FlowNodes.GatewayJoin.ELEMENT_ID, instance))
     }
 
     private fun receivedApplication(bikeId: BikeId) =

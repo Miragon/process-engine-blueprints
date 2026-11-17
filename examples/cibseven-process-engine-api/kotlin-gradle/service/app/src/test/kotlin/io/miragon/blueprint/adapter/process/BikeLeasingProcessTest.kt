@@ -37,7 +37,10 @@ import org.cibseven.bpm.engine.HistoryService
 import org.cibseven.bpm.engine.ProcessEngine
 import org.cibseven.bpm.engine.RuntimeService
 import org.cibseven.bpm.engine.test.assertions.bpmn.BpmnAwareTests.assertThat
+import org.cibseven.bpm.engine.test.assertions.bpmn.BpmnAwareTests.calledProcessInstance
+import org.cibseven.bpm.engine.test.assertions.bpmn.BpmnAwareTests.execute
 import org.cibseven.bpm.engine.test.assertions.bpmn.BpmnAwareTests.init
+import org.cibseven.bpm.engine.test.assertions.bpmn.BpmnAwareTests.job
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -48,9 +51,9 @@ import java.time.LocalDateTime
 /**
  * Drives the deployed model end-to-end. Unlike the classic-delegate blueprint, the service tasks are
  * external tasks completed by the real, asynchronously polling `@ProcessEngineWorker` beans (which
- * call the mocked use cases). Each step therefore drives the process with [continueToNextWaitState],
- * which fires async continuations *and* waits for the workers to drain the open external tasks, then
- * correlates messages / fires timers / completes the user task through the [LeasingProcess] port.
+ * call the mocked use cases). The test therefore waits for the workers with [awaitWorkers] and runs
+ * each async continuation with its own `execute(job(...))`, one job per call, and correlates messages /
+ * fires timers / completes the user task through the [LeasingProcess] port.
  */
 @SpringBootTest
 @ActiveProfiles("test")
@@ -109,21 +112,29 @@ class BikeLeasingProcessTest {
 
     @Test
     fun `happy path - contract signed, bike available, leasing becomes active`() {
+        // given
         val id = submit(age = 35, income = 3500.0)
         val instance = runtimeService.findProcessInstance(id)
 
-        // DMN -> conclude-contract sub-process parks on the signature wait state
-        processEngine.continueToNextWaitState()
-
-        process.correlateContractSigned(id) // forks into insurance + bike order, joins -> handover wait state
-        processEngine.continueToNextWaitState()
-
-        process.correlateHandoverReported(id) // -> withdrawal-period timer
-        processEngine.continueToNextWaitState()
-
+        // when
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance))
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance))
+        processEngine.awaitWorkers()
+        execute(job(FlowNodes.ServiceTaskSendContract.ELEMENT_ID, instance)) // parks on the signature wait state
+        process.correlateContractSigned(id)
+        execute(job(FlowNodes.EventContractSigned.ELEMENT_ID, instance)) // forks into insurance + bike order
+        processEngine.awaitWorkers()
+        execute(job(FlowNodes.ServiceTaskIssueInsurancePolicy.ELEMENT_ID, instance))
+        execute(job(FlowNodes.GatewayJoin.ELEMENT_ID, instance))
+        execute(job(FlowNodes.ServiceTaskOrderBike.ELEMENT_ID, instance))
+        execute(job(FlowNodes.GatewayJoin.ELEMENT_ID, instance)) // -> handover wait state
+        process.correlateHandoverReported(id)
+        execute(job(FlowNodes.EventHandoverReported.ELEMENT_ID, instance)) // -> withdrawal-period timer
         processEngine.fireTimer(FlowNodes.EventWithdrawalPeriodElapsed)
-        processEngine.continueToNextWaitState()
+        processEngine.awaitWorkers()
+        execute(job(FlowNodes.ServiceTaskActivateLeasing.ELEMENT_ID, instance))
 
+        // then
         assertThat(instance)
             .isEnded
             .hasPassedInOrder(
@@ -177,14 +188,20 @@ class BikeLeasingProcessTest {
 
     @Test
     fun `escalation - contract not signed in time is escalated and rejected`() {
+        // given
         val id = submit(age = 35, income = 3500.0)
         val instance = runtimeService.findProcessInstance(id)
 
-        processEngine.continueToNextWaitState() // parks on the signature wait state
-
+        // when
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance))
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance))
+        processEngine.awaitWorkers()
+        execute(job(FlowNodes.ServiceTaskSendContract.ELEMENT_ID, instance)) // parks on the signature wait state
         processEngine.fireTimer(FlowNodes.EventSignatureDeadline) // deadline -> escalation -> rejection
-        processEngine.continueToNextWaitState()
+        processEngine.awaitWorkers()
+        execute(job(FlowNodes.ServiceTaskSendRejection.ELEMENT_ID, instance))
 
+        // then
         assertThat(instance)
             .isEnded
             .hasPassedInOrder(
@@ -209,12 +226,18 @@ class BikeLeasingProcessTest {
 
     @Test
     fun `not solvent - the DMN routes the application straight to rejection`() {
+        // given
         // age below 18 cannot sign a leasing contract, so the DMN returns solvent = false
         val id = submit(age = 15, income = 3500.0)
         val instance = runtimeService.findProcessInstance(id)
 
-        processEngine.continueToNextWaitState() // DMN -> not solvent -> rejection -> end
+        // when
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance))
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance)) // DMN -> not solvent -> rejection
+        processEngine.awaitWorkers()
+        execute(job(FlowNodes.ServiceTaskSendRejection.ELEMENT_ID, instance)) // -> end
 
+        // then
         assertThat(instance)
             .isEnded
             .hasPassedInOrder(
@@ -233,18 +256,23 @@ class BikeLeasingProcessTest {
 
     @Test
     fun `reminder - an unsigned contract gets one reminder before the deadline rejects it`() {
+        // given
         val id = submit(age = 35, income = 3500.0)
         val instance = runtimeService.findProcessInstance(id)
 
-        processEngine.continueToNextWaitState() // parks on the signature wait state
-
+        // when
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance))
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance))
+        processEngine.awaitWorkers()
+        execute(job(FlowNodes.ServiceTaskSendContract.ELEMENT_ID, instance)) // parks on the signature wait state
         processEngine.fireTimer(FlowNodes.EventSignatureReminder)
-        processEngine.continueToNextWaitState() // the worker sends the reminder mail
-        assertThat(instance).isWaitingAt(FlowNodes.GatewayAwaitSignature.ELEMENT_ID)
-
+        processEngine.awaitWorkers() // the worker sends the reminder mail
+        execute(job(FlowNodes.ServiceTaskSendReminderMail.ELEMENT_ID, instance))
         processEngine.fireTimer(FlowNodes.EventSignatureDeadline)
-        processEngine.continueToNextWaitState()
+        processEngine.awaitWorkers()
+        execute(job(FlowNodes.ServiceTaskSendRejection.ELEMENT_ID, instance))
 
+        // then
         assertThat(instance)
             .isEnded
             .hasPassedInOrder(
@@ -264,24 +292,37 @@ class BikeLeasingProcessTest {
 
     @Test
     fun `abort - withdrawing the application compensates the completed steps`() {
+        // given
         every { requestOrderCancellationUseCase.requestCancellation(any()) } returns false
-
         val id = submit(age = 35, income = 3500.0)
         val instance = runtimeService.findProcessInstance(id)
 
-        // drive up to the handover wait state (contract signed, bike ordered, insured)
-        processEngine.continueToNextWaitState()
+        // when
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance))
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance))
+        processEngine.awaitWorkers()
+        execute(job(FlowNodes.ServiceTaskSendContract.ELEMENT_ID, instance)) // parks on the signature wait state
         process.correlateContractSigned(id)
-        processEngine.continueToNextWaitState()
-
-        // Withdrawing triggers compensation; its handlers run in an engine-defined order, so drive the
-        // continuations generically until the cancelBikeOrder sub-process parks on its user task.
+        execute(job(FlowNodes.EventContractSigned.ELEMENT_ID, instance)) // forks into insurance + bike order
+        processEngine.awaitWorkers()
+        execute(job(FlowNodes.ServiceTaskIssueInsurancePolicy.ELEMENT_ID, instance))
+        execute(job(FlowNodes.GatewayJoin.ELEMENT_ID, instance))
+        execute(job(FlowNodes.ServiceTaskOrderBike.ELEMENT_ID, instance))
+        execute(job(FlowNodes.GatewayJoin.ELEMENT_ID, instance)) // -> handover wait state
         process.correlateApplicationWithdrawn(id)
-        processEngine.continueToNextWaitState()
-
+        execute(job(FlowNodes.StartEventApplicationWithdrawn.ELEMENT_ID, instance)) // -> compensation
+        processEngine.awaitWorkers()
+        execute(job(CancelBikeOrderProcessApi.FlowNodes.StartEventCancellationRequired.ELEMENT_ID, calledProcessInstance(instance)))
+        processEngine.awaitWorkers()
+        execute(job(CancelBikeOrderProcessApi.FlowNodes.ServiceTaskRequestCancellation.ELEMENT_ID, calledProcessInstance(instance)))
         process.completeReturnClarification(id)
-        processEngine.continueToNextWaitState()
+        execute(job(CancelBikeOrderProcessApi.FlowNodes.UserTaskClarifyReturn.ELEMENT_ID, calledProcessInstance(instance)))
+        processEngine.awaitWorkers()
+        execute(job(CancelBikeOrderProcessApi.FlowNodes.ServiceTaskBookCosts.ELEMENT_ID, calledProcessInstance(instance)))
+        processEngine.awaitWorkers()
+        execute(job(FlowNodes.ServiceTaskSendCancellationConfirmation.ELEMENT_ID, instance))
 
+        // then
         assertThat(instance)
             .isEnded
             .hasPassed(
@@ -322,20 +363,25 @@ class BikeLeasingProcessTest {
 
     @Test
     fun `bike unavailable - clarifying an alternative re-orders and leasing becomes active`() {
+        // given
         val id = submitUntilBikeUnavailable()
         val instance = runtimeService.findProcessInstance(id)
-
         every { orderBikeUseCase.orderBike(any(), any()) } returns OrderId("ORDER-2") // the alternative is in stock
+
+        // when
         // the alternative is clarified from the outside — the "external" completion of the user task
         process.completeAlternativeClarification(id, alternativeFound = true, bikeId = BikeId("BIKE-ALT"))
-        processEngine.continueToNextWaitState() // re-order succeeds -> parallel join -> handover wait state
-        assertThat(instance).variables().containsEntry(FlowNodes.UserTaskClarifyAlternative.Variables.BIKE_ID.value, "BIKE-ALT")
-
+        execute(job(FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID, instance))
+        processEngine.awaitWorkers()
+        execute(job(FlowNodes.ServiceTaskOrderBike.ELEMENT_ID, instance)) // re-order succeeds
+        execute(job(FlowNodes.GatewayJoin.ELEMENT_ID, instance)) // -> handover wait state
         process.correlateHandoverReported(id)
-        processEngine.continueToNextWaitState()
+        execute(job(FlowNodes.EventHandoverReported.ELEMENT_ID, instance)) // -> withdrawal-period timer
         processEngine.fireTimer(FlowNodes.EventWithdrawalPeriodElapsed)
-        processEngine.continueToNextWaitState()
+        processEngine.awaitWorkers()
+        execute(job(FlowNodes.ServiceTaskActivateLeasing.ELEMENT_ID, instance))
 
+        // then
         assertThat(instance)
             .isEnded
             .hasPassedInOrder(
@@ -377,12 +423,17 @@ class BikeLeasingProcessTest {
 
     @Test
     fun `bike unavailable - declining the alternative reverses contract and policy without cancelling an order`() {
+        // given
         val id = submitUntilBikeUnavailable()
         val instance = runtimeService.findProcessInstance(id)
 
+        // when
         process.completeAlternativeClarification(id, alternativeFound = false)
-        processEngine.continueToNextWaitState() // -> compensation -> sendCancellationConfirmation -> end cancelled
+        execute(job(FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID, instance)) // -> compensation
+        processEngine.awaitWorkers()
+        execute(job(FlowNodes.ServiceTaskConfirmContractCancellation.ELEMENT_ID, instance)) // -> end cancelled
 
+        // then
         assertThat(instance)
             .isEnded
             .hasPassed(
@@ -420,12 +471,17 @@ class BikeLeasingProcessTest {
 
     @Test
     fun `abort while clarifying an alternative - compensates contract and policy without cancelling an order`() {
+        // given
         val id = submitUntilBikeUnavailable()
         val instance = runtimeService.findProcessInstance(id)
 
+        // when
         process.correlateApplicationWithdrawn(id)
-        processEngine.continueToNextWaitState() // -> compensation -> sendCancellationConfirmation -> end cancelled
+        execute(job(FlowNodes.StartEventApplicationWithdrawn.ELEMENT_ID, instance)) // -> compensation
+        processEngine.awaitWorkers()
+        execute(job(FlowNodes.ServiceTaskSendCancellationConfirmation.ELEMENT_ID, instance)) // -> end cancelled
 
+        // then
         assertThat(instance)
             .isEnded
             .hasPassed(
@@ -459,18 +515,28 @@ class BikeLeasingProcessTest {
 
     @Test
     fun `abort after an accepted alternative - cancels the one placed order exactly once`() {
+        // given
         every { requestOrderCancellationUseCase.requestCancellation(any()) } returns true
-
         val id = submitUntilBikeUnavailable()
         val instance = runtimeService.findProcessInstance(id)
-
         every { orderBikeUseCase.orderBike(any(), any()) } returns OrderId("ORDER-2") // the alternative is in stock
+
+        // when
         process.completeAlternativeClarification(id, alternativeFound = true, bikeId = BikeId("BIKE-ALT"))
-        processEngine.continueToNextWaitState() // re-order succeeds -> parallel join -> handover wait state
-
+        execute(job(FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID, instance))
+        processEngine.awaitWorkers()
+        execute(job(FlowNodes.ServiceTaskOrderBike.ELEMENT_ID, instance)) // re-order succeeds
+        execute(job(FlowNodes.GatewayJoin.ELEMENT_ID, instance)) // -> handover wait state
         process.correlateApplicationWithdrawn(id)
-        processEngine.continueToNextWaitState() // the dealer cancels the order -> order reversed without a return to clarify
+        execute(job(FlowNodes.StartEventApplicationWithdrawn.ELEMENT_ID, instance)) // -> compensation
+        processEngine.awaitWorkers()
+        execute(job(CancelBikeOrderProcessApi.FlowNodes.StartEventCancellationRequired.ELEMENT_ID, calledProcessInstance(instance)))
+        processEngine.awaitWorkers()
+        execute(job(CancelBikeOrderProcessApi.FlowNodes.ServiceTaskRequestCancellation.ELEMENT_ID, calledProcessInstance(instance))) // the dealer cancels the order -> order reversed without a return to clarify
+        processEngine.awaitWorkers()
+        execute(job(FlowNodes.ServiceTaskSendCancellationConfirmation.ELEMENT_ID, instance))
 
+        // then
         assertThat(instance).isEnded.hasPassed(FlowNodes.EndEventApplicationCancelled.ELEMENT_ID)
         val orderCancellations =
             historyService
@@ -487,9 +553,16 @@ class BikeLeasingProcessTest {
         every { orderBikeUseCase.orderBike(any(), any()) } throws BikeUnavailableException(BikeId("BIKE-TEST"))
 
         val id = submit(age = 35, income = 3500.0)
-        processEngine.continueToNextWaitState() // parks on the signature wait state
+        val instance = runtimeService.findProcessInstance(id)
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance))
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance))
+        processEngine.awaitWorkers()
+        execute(job(FlowNodes.ServiceTaskSendContract.ELEMENT_ID, instance)) // parks on the signature wait state
         process.correlateContractSigned(id)
-        processEngine.continueToNextWaitState() // fork -> order raises bikeUnavailable -> parks on clarify-alternative
+        execute(job(FlowNodes.EventContractSigned.ELEMENT_ID, instance)) // fork -> order raises bikeUnavailable -> parks on clarify-alternative
+        processEngine.awaitWorkers()
+        execute(job(FlowNodes.ServiceTaskIssueInsurancePolicy.ELEMENT_ID, instance))
+        execute(job(FlowNodes.GatewayJoin.ELEMENT_ID, instance))
         return id
     }
 

@@ -85,8 +85,8 @@ to the other, then regenerate, wire and test **both**.
    `adapter/process/` that asserts the walked path through `ProcessPathAssertions`, a typed path from
    the generated API (see `BikeLeasingProcessTest`). A gateway's branch label must match its
    condition.
-   The job executor is off in tests: `JobExecutionUtils` fires async continuations, `TimerUtils`
-   fires a timer job directly. Run the `io.miragon.blueprint.adapter.process` tests (`AGENTS.md` →
+   The job executor is off in tests: each async continuation is its own `execute(job(...))`, one
+   job per call, and `TimerUtils` fires a timer job directly. Run the `io.miragon.blueprint.adapter.process` tests (`AGENTS.md` →
    Verify After Each Task).
 6. **Bruno.** A path visible over REST gets a numbered scenario folder in `bruno/`. The `.bru` files
    name element ids as strings: a renamed id is updated there too.

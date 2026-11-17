@@ -1,10 +1,13 @@
 package io.miragon.blueprint.process;
 
-import static io.miragon.blueprint.process.util.JobExecutionUtils.continueToNextWaitState;
 import static io.miragon.blueprint.process.util.ProcessInstanceUtils.findProcessInstance;
 import static io.miragon.blueprint.process.util.TimerUtils.fireTimer;
+import static io.miragon.blueprint.process.util.WorkerUtils.awaitWorkers;
 import static org.operaton.bpm.engine.test.assertions.bpmn.BpmnAwareTests.assertThat;
+import static org.operaton.bpm.engine.test.assertions.bpmn.BpmnAwareTests.calledProcessInstance;
+import static org.operaton.bpm.engine.test.assertions.bpmn.BpmnAwareTests.execute;
 import static org.operaton.bpm.engine.test.assertions.bpmn.BpmnAwareTests.init;
+import static org.operaton.bpm.engine.test.assertions.bpmn.BpmnAwareTests.job;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
@@ -54,10 +57,10 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 /**
  * Drives the deployed model end-to-end. Unlike the classic-delegate blueprint, the service tasks are
  * external tasks completed by the real, asynchronously polling {@code @ProcessEngineWorker} beans (which
- * call the mocked use cases). Each step therefore drives the process with
- * {@link io.miragon.blueprint.adapter.process.JobExecutionUtils#continueToNextWaitState(ProcessEngine)},
- * which fires async continuations <em>and</em> waits for the workers to drain the open external tasks, then
- * correlates messages / fires timers / completes the user task through the {@link LeasingProcess} port.
+ * call the mocked use cases). The test therefore waits for the workers with
+ * {@link io.miragon.blueprint.process.util.WorkerUtils#awaitWorkers(ProcessEngine)} and runs each async
+ * continuation with its own {@code execute(job(...))}, one job per call, and correlates messages / fires
+ * timers / completes the user task through the {@link LeasingProcess} port.
  */
 @SpringBootTest
 @ActiveProfiles("test")
@@ -116,21 +119,29 @@ class BikeLeasingProcessTest {
 
     @Test
     void happy_path_contract_signed_bike_available_leasing_becomes_active() throws InterruptedException {
+        // given
         ApplicationId id = submit(35, 3500.0);
         ProcessInstance instance = findProcessInstance(runtimeService, id);
 
-        // DMN -> conclude-contract sub-process parks on the signature wait state
-        continueToNextWaitState(processEngine);
-
-        process.correlateContractSigned(id); // forks into insurance + bike order, joins -> handover wait state
-        continueToNextWaitState(processEngine);
-
-        process.correlateHandoverReported(id); // -> withdrawal-period timer
-        continueToNextWaitState(processEngine);
-
+        // when
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance));
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance));
+        awaitWorkers(processEngine);
+        execute(job(FlowNodes.ServiceTaskSendContract.ELEMENT_ID, instance)); // parks on the signature wait state
+        process.correlateContractSigned(id);
+        execute(job(FlowNodes.EventContractSigned.ELEMENT_ID, instance)); // forks into insurance + bike order
+        awaitWorkers(processEngine);
+        execute(job(FlowNodes.ServiceTaskIssueInsurancePolicy.ELEMENT_ID, instance));
+        execute(job(FlowNodes.GatewayJoin.ELEMENT_ID, instance));
+        execute(job(FlowNodes.ServiceTaskOrderBike.ELEMENT_ID, instance));
+        execute(job(FlowNodes.GatewayJoin.ELEMENT_ID, instance)); // -> handover wait state
+        process.correlateHandoverReported(id);
+        execute(job(FlowNodes.EventHandoverReported.ELEMENT_ID, instance)); // -> withdrawal-period timer
         fireTimer(processEngine, FlowNodes.EventWithdrawalPeriodElapsed.INSTANCE);
-        continueToNextWaitState(processEngine);
+        awaitWorkers(processEngine);
+        execute(job(FlowNodes.ServiceTaskActivateLeasing.ELEMENT_ID, instance));
 
+        // then
         assertThat(instance)
             .isEnded()
             .hasPassedInOrder(
@@ -181,14 +192,20 @@ class BikeLeasingProcessTest {
 
     @Test
     void escalation_contract_not_signed_in_time_is_escalated_and_rejected() throws InterruptedException {
+        // given
         ApplicationId id = submit(35, 3500.0);
         ProcessInstance instance = findProcessInstance(runtimeService, id);
 
-        continueToNextWaitState(processEngine); // parks on the signature wait state
-
+        // when
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance));
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance));
+        awaitWorkers(processEngine);
+        execute(job(FlowNodes.ServiceTaskSendContract.ELEMENT_ID, instance)); // parks on the signature wait state
         fireTimer(processEngine, FlowNodes.EventSignatureDeadline.INSTANCE); // deadline -> escalation -> rejection
-        continueToNextWaitState(processEngine);
+        awaitWorkers(processEngine);
+        execute(job(FlowNodes.ServiceTaskSendRejection.ELEMENT_ID, instance));
 
+        // then
         assertThat(instance)
             .isEnded()
             .hasPassedInOrder(
@@ -216,12 +233,18 @@ class BikeLeasingProcessTest {
 
     @Test
     void not_solvent_the_DMN_routes_the_application_straight_to_rejection() throws InterruptedException {
+        // given
         // age below 18 cannot sign a leasing contract, so the DMN returns solvent = false
         ApplicationId id = submit(15, 3500.0);
         ProcessInstance instance = findProcessInstance(runtimeService, id);
 
-        continueToNextWaitState(processEngine); // DMN -> not solvent -> rejection -> end
+        // when
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance));
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance)); // DMN -> not solvent -> rejection
+        awaitWorkers(processEngine);
+        execute(job(FlowNodes.ServiceTaskSendRejection.ELEMENT_ID, instance)); // -> end
 
+        // then
         assertThat(instance)
             .isEnded()
             .hasPassedInOrder(
@@ -240,18 +263,23 @@ class BikeLeasingProcessTest {
 
     @Test
     void reminder_an_unsigned_contract_gets_one_reminder_before_the_deadline_rejects_it() throws InterruptedException {
+        // given
         ApplicationId id = submit(35, 3500.0);
         ProcessInstance instance = findProcessInstance(runtimeService, id);
 
-        continueToNextWaitState(processEngine); // parks on the signature wait state
-
+        // when
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance));
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance));
+        awaitWorkers(processEngine);
+        execute(job(FlowNodes.ServiceTaskSendContract.ELEMENT_ID, instance)); // parks on the signature wait state
         fireTimer(processEngine, FlowNodes.EventSignatureReminder.INSTANCE); // non-interrupting -> reminder mail
-        continueToNextWaitState(processEngine);
-        assertThat(instance).isWaitingAt(FlowNodes.GatewayAwaitSignature.ELEMENT_ID);
-
+        awaitWorkers(processEngine);
+        execute(job(FlowNodes.ServiceTaskSendReminderMail.ELEMENT_ID, instance));
         fireTimer(processEngine, FlowNodes.EventSignatureDeadline.INSTANCE); // deadline -> escalation -> rejection
-        continueToNextWaitState(processEngine);
+        awaitWorkers(processEngine);
+        execute(job(FlowNodes.ServiceTaskSendRejection.ELEMENT_ID, instance));
 
+        // then
         assertThat(instance)
             .isEnded()
             .hasPassedInOrder(
@@ -273,24 +301,37 @@ class BikeLeasingProcessTest {
 
     @Test
     void abort_withdrawing_the_application_compensates_the_completed_steps() throws InterruptedException {
+        // given
         when(requestOrderCancellationUseCase.requestCancellation(any())).thenReturn(false);
-
         ApplicationId id = submit(35, 3500.0);
         ProcessInstance instance = findProcessInstance(runtimeService, id);
 
-        // drive up to the handover wait state (contract signed, bike ordered, insured)
-        continueToNextWaitState(processEngine);
+        // when
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance));
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance));
+        awaitWorkers(processEngine);
+        execute(job(FlowNodes.ServiceTaskSendContract.ELEMENT_ID, instance)); // parks on the signature wait state
         process.correlateContractSigned(id);
-        continueToNextWaitState(processEngine);
-
-        // Withdrawing triggers compensation; its handlers run in an engine-defined order, so drive the
-        // continuations generically until the cancelBikeOrder sub-process parks on its user task.
+        execute(job(FlowNodes.EventContractSigned.ELEMENT_ID, instance)); // forks into insurance + bike order
+        awaitWorkers(processEngine);
+        execute(job(FlowNodes.ServiceTaskIssueInsurancePolicy.ELEMENT_ID, instance));
+        execute(job(FlowNodes.GatewayJoin.ELEMENT_ID, instance));
+        execute(job(FlowNodes.ServiceTaskOrderBike.ELEMENT_ID, instance));
+        execute(job(FlowNodes.GatewayJoin.ELEMENT_ID, instance)); // -> handover wait state
         process.correlateApplicationWithdrawn(id);
-        continueToNextWaitState(processEngine);
-
+        execute(job(FlowNodes.StartEventApplicationWithdrawn.ELEMENT_ID, instance)); // -> compensation
+        awaitWorkers(processEngine);
+        execute(job(CancelBikeOrderProcessApi.FlowNodes.StartEventCancellationRequired.ELEMENT_ID, calledProcessInstance(instance)));
+        awaitWorkers(processEngine);
+        execute(job(CancelBikeOrderProcessApi.FlowNodes.ServiceTaskRequestCancellation.ELEMENT_ID, calledProcessInstance(instance)));
         process.completeReturnClarification(id);
-        continueToNextWaitState(processEngine);
+        execute(job(CancelBikeOrderProcessApi.FlowNodes.UserTaskClarifyReturn.ELEMENT_ID, calledProcessInstance(instance)));
+        awaitWorkers(processEngine);
+        execute(job(CancelBikeOrderProcessApi.FlowNodes.ServiceTaskBookCosts.ELEMENT_ID, calledProcessInstance(instance)));
+        awaitWorkers(processEngine);
+        execute(job(FlowNodes.ServiceTaskSendCancellationConfirmation.ELEMENT_ID, instance));
 
+        // then
         assertThat(instance)
             .isEnded()
             .hasPassed(
@@ -337,22 +378,25 @@ class BikeLeasingProcessTest {
     @Test
     void bike_unavailable_clarifying_an_alternative_re_orders_and_leasing_becomes_active()
         throws InterruptedException {
+        // given
         ApplicationId id = submitUntilBikeUnavailable();
         ProcessInstance instance = findProcessInstance(runtimeService, id);
-
         doReturn(new OrderId("ORDER-2")).when(orderBikeUseCase).orderBike(any(), any()); // the alternative is in stock
+
+        // when
         // the alternative is clarified from the outside — the "external" completion of the user task
         process.completeAlternativeClarification(id, true, new BikeId("BIKE-ALT"));
-        continueToNextWaitState(processEngine); // re-order succeeds -> parallel join -> handover wait state
-        assertThat(instance)
-            .variables()
-            .containsEntry(FlowNodes.UserTaskClarifyAlternative.Variables.BIKE_ID.getValue(), "BIKE-ALT");
-
+        execute(job(FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID, instance));
+        awaitWorkers(processEngine);
+        execute(job(FlowNodes.ServiceTaskOrderBike.ELEMENT_ID, instance)); // re-order succeeds
+        execute(job(FlowNodes.GatewayJoin.ELEMENT_ID, instance)); // -> handover wait state
         process.correlateHandoverReported(id);
-        continueToNextWaitState(processEngine);
+        execute(job(FlowNodes.EventHandoverReported.ELEMENT_ID, instance)); // -> withdrawal-period timer
         fireTimer(processEngine, FlowNodes.EventWithdrawalPeriodElapsed.INSTANCE);
-        continueToNextWaitState(processEngine);
+        awaitWorkers(processEngine);
+        execute(job(FlowNodes.ServiceTaskActivateLeasing.ELEMENT_ID, instance));
 
+        // then
         assertThat(instance)
             .isEnded()
             .hasPassedInOrder(
@@ -394,12 +438,17 @@ class BikeLeasingProcessTest {
     @Test
     void bike_unavailable_declining_the_alternative_reverses_contract_and_policy_without_cancelling_an_order()
         throws InterruptedException {
+        // given
         ApplicationId id = submitUntilBikeUnavailable();
         ProcessInstance instance = findProcessInstance(runtimeService, id);
 
+        // when
         process.completeAlternativeClarification(id, false, null);
-        continueToNextWaitState(processEngine); // -> compensation -> sendCancellationConfirmation -> end cancelled
+        execute(job(FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID, instance)); // -> compensation
+        awaitWorkers(processEngine);
+        execute(job(FlowNodes.ServiceTaskConfirmContractCancellation.ELEMENT_ID, instance)); // -> end cancelled
 
+        // then
         assertThat(instance)
             .isEnded()
             .hasPassed(
@@ -442,12 +491,17 @@ class BikeLeasingProcessTest {
     @Test
     void abort_while_clarifying_an_alternative_compensates_contract_and_policy_without_cancelling_an_order()
         throws InterruptedException {
+        // given
         ApplicationId id = submitUntilBikeUnavailable();
         ProcessInstance instance = findProcessInstance(runtimeService, id);
 
+        // when
         process.correlateApplicationWithdrawn(id);
-        continueToNextWaitState(processEngine); // -> compensation -> sendCancellationConfirmation -> end cancelled
+        execute(job(FlowNodes.StartEventApplicationWithdrawn.ELEMENT_ID, instance)); // -> compensation
+        awaitWorkers(processEngine);
+        execute(job(FlowNodes.ServiceTaskSendCancellationConfirmation.ELEMENT_ID, instance)); // -> end cancelled
 
+        // then
         assertThat(instance)
             .isEnded()
             .hasPassed(
@@ -487,18 +541,28 @@ class BikeLeasingProcessTest {
     @Test
     void abort_after_an_accepted_alternative_cancels_the_one_placed_order_exactly_once()
         throws InterruptedException {
+        // given
         when(requestOrderCancellationUseCase.requestCancellation(any())).thenReturn(true);
-
         ApplicationId id = submitUntilBikeUnavailable();
         ProcessInstance instance = findProcessInstance(runtimeService, id);
-
         doReturn(new OrderId("ORDER-2")).when(orderBikeUseCase).orderBike(any(), any()); // the alternative is in stock
+
+        // when
         process.completeAlternativeClarification(id, true, new BikeId("BIKE-ALT"));
-        continueToNextWaitState(processEngine); // re-order succeeds -> parallel join -> handover wait state
-
+        execute(job(FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID, instance));
+        awaitWorkers(processEngine);
+        execute(job(FlowNodes.ServiceTaskOrderBike.ELEMENT_ID, instance)); // re-order succeeds
+        execute(job(FlowNodes.GatewayJoin.ELEMENT_ID, instance)); // -> handover wait state
         process.correlateApplicationWithdrawn(id);
-        continueToNextWaitState(processEngine); // the dealer cancels the order -> order reversed without a return to clarify
+        execute(job(FlowNodes.StartEventApplicationWithdrawn.ELEMENT_ID, instance)); // -> compensation
+        awaitWorkers(processEngine);
+        execute(job(CancelBikeOrderProcessApi.FlowNodes.StartEventCancellationRequired.ELEMENT_ID, calledProcessInstance(instance)));
+        awaitWorkers(processEngine);
+        execute(job(CancelBikeOrderProcessApi.FlowNodes.ServiceTaskRequestCancellation.ELEMENT_ID, calledProcessInstance(instance))); // the dealer cancels the order -> order reversed without a return to clarify
+        awaitWorkers(processEngine);
+        execute(job(FlowNodes.ServiceTaskSendCancellationConfirmation.ELEMENT_ID, instance));
 
+        // then
         assertThat(instance).isEnded().hasPassed(FlowNodes.EndEventApplicationCancelled.ELEMENT_ID);
         long orderCancellations =
             historyService
@@ -515,9 +579,16 @@ class BikeLeasingProcessTest {
         when(orderBikeUseCase.orderBike(any(), any())).thenThrow(new BikeUnavailableException(new BikeId("BIKE-TEST")));
 
         ApplicationId id = submit(35, 3500.0);
-        continueToNextWaitState(processEngine); // parks on the signature wait state
+        ProcessInstance instance = findProcessInstance(runtimeService, id);
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance));
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance));
+        awaitWorkers(processEngine);
+        execute(job(FlowNodes.ServiceTaskSendContract.ELEMENT_ID, instance)); // parks on the signature wait state
         process.correlateContractSigned(id);
-        continueToNextWaitState(processEngine); // fork -> order raises bikeUnavailable -> parks on clarify-alternative
+        execute(job(FlowNodes.EventContractSigned.ELEMENT_ID, instance)); // fork -> order raises bikeUnavailable -> parks on clarify-alternative
+        awaitWorkers(processEngine);
+        execute(job(FlowNodes.ServiceTaskIssueInsurancePolicy.ELEMENT_ID, instance));
+        execute(job(FlowNodes.GatewayJoin.ELEMENT_ID, instance));
         return id;
     }
 

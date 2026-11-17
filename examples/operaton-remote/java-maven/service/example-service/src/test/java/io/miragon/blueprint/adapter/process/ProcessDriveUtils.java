@@ -28,31 +28,28 @@ public final class ProcessDriveUtils {
     }
 
     /**
-     * Completes the <strong>single</strong> waiting external task of {@code topicName} — the remote
-     * counterpart to the embedded blueprint's {@code executeJobFor(activityId)}. It is explicit about
-     * <em>which</em> task it drives and fails loudly if that task is not (uniquely) waiting, so a test
-     * reads as an ordered trace. The {@code variables} are passed as the task's output — exactly what a
-     * real worker would return (e.g. {@code orderBike} → {@code orderId}).
-     * Afterwards it settles the deterministic async plumbing (asyncAfter jobs, the DMN, gateways) up to
-     * the next wait state or external task.
+     * Completes the <strong>single</strong> waiting external task of {@code topicName}, as the remote
+     * worker would. It is explicit about <em>which</em> task it drives and fails loudly if that task is not
+     * (uniquely) waiting, so a test reads as an ordered trace. The {@code variables} are passed as the
+     * task's output — exactly what a real worker would return (e.g. {@code orderBike} → {@code orderId}).
+     * It only ends the external task: the test runs the async continuation that follows with its own
+     * {@code execute(job(...))}.
      */
     public static void completeExternalTask(ProcessEngine engine, String topicName, Map<String, Object> variables) {
         ExternalTask task = lockSingleExternalTask(engine, topicName);
         engine.getExternalTaskService().complete(task.getId(), TEST_WORKER, variables);
-        executeAsyncContinuations(engine);
     }
 
     /**
      * Ends the <strong>single</strong> waiting external task of {@code topicName} with the BPMN
      * {@code error} — what a real worker does through {@code handleBpmnError} — so the task is left
-     * through its error boundary event instead of being completed. Afterwards it settles the plumbing
-     * like {@link #completeExternalTask(ProcessEngine, String, Map)}.
+     * through its error boundary event instead of being completed. Like
+     * {@link #completeExternalTask(ProcessEngine, String, Map)}, it runs no job.
      */
     public static void raiseBpmnErrorOnExternalTask(
             ProcessEngine engine, String topicName, BpmnErrorDefinition error) {
         ExternalTask task = lockSingleExternalTask(engine, topicName);
         engine.getExternalTaskService().handleBpmnError(task.getId(), TEST_WORKER, error.getCode());
-        executeAsyncContinuations(engine);
     }
 
     private static ExternalTask lockSingleExternalTask(ProcessEngine engine, String topicName) {
@@ -72,25 +69,23 @@ public final class ProcessDriveUtils {
         completeExternalTask(engine, topicName, Map.of());
     }
 
-    /** Completes the single waiting user task with {@code taskDefinitionKey}, then settles the plumbing. */
+    /** Completes the single waiting user task with {@code taskDefinitionKey}. */
     public static void completeUserTask(ProcessEngine engine, String taskDefinitionKey, Map<String, Object> variables) {
         Task task = engine.getTaskService().createTaskQuery().taskDefinitionKey(taskDefinitionKey).singleResult();
         if (task == null) {
             throw new IllegalArgumentException("no waiting user task '" + taskDefinitionKey + "'");
         }
         engine.getTaskService().complete(task.getId(), variables);
-        executeAsyncContinuations(engine);
     }
 
     public static void completeUserTask(ProcessEngine engine, String taskDefinitionKey) {
         completeUserTask(engine, taskDefinitionKey, Map.of());
     }
 
-    /** Correlates {@code message} to the instance identified by {@code businessKey}, then settles the plumbing. */
+    /** Correlates {@code message} to the instance identified by {@code businessKey}. */
     public static void correlateMessage(ProcessEngine engine, MessageName message, String businessKey) {
         engine.getRuntimeService().createMessageCorrelation(message.getValue())
                 .processInstanceBusinessKey(businessKey).correlate();
-        executeAsyncContinuations(engine);
     }
 
     /**
@@ -105,47 +100,9 @@ public final class ProcessDriveUtils {
                     "no timer job found for activity '" + timerEvent.getId().getValue() + "'");
         }
         engine.getManagementService().executeJob(timer.getId());
-        executeAsyncContinuations(engine);
     }
 
-    /**
-     * Generic fallback for <strong>engine-ordered</strong> chains — e.g. compensation, whose handlers run
-     * in an implementation-defined order where enumerating each external task would be brittle. It drives
-     * async jobs <em>and</em> completes whatever external tasks are waiting (with the per-topic
-     * {@code externalTaskOutputs}) until the next wait state. Prefer {@link #completeExternalTask} for the
-     * deterministic, linear parts of a flow.
-     */
-    public static void drainToWaitState(
-            ProcessEngine engine,
-            Map<String, Map<String, Object>> externalTaskOutputs,
-            int maxIterations) {
-        for (int iteration = 0; iteration < maxIterations; iteration++) {
-            Job job = engine.getManagementService().createJobQuery().active().messages().listPage(0, 1)
-                    .stream().findFirst().orElse(null);
-            if (job != null) {
-                engine.getManagementService().executeJob(job.getId());
-                continue;
-            }
-            List<ExternalTask> tasks = engine.getExternalTaskService().createExternalTaskQuery()
-                    .notLocked().listPage(0, 1);
-            if (tasks.isEmpty()) {
-                return;
-            }
-            ExternalTask task = tasks.get(0);
-            engine.getExternalTaskService().lock(task.getId(), TEST_WORKER, TEST_LOCK_DURATION_MS);
-            Map<String, Object> output = externalTaskOutputs.get(task.getTopicName());
-            engine.getExternalTaskService().complete(
-                    task.getId(), TEST_WORKER, output != null ? output : Map.of());
-        }
-        throw new IllegalStateException(
-                "process did not reach a wait state within " + maxIterations + " iterations");
-    }
-
-    public static void drainToWaitState(ProcessEngine engine, Map<String, Map<String, Object>> externalTaskOutputs) {
-        drainToWaitState(engine, externalTaskOutputs, 100);
-    }
-
-    /** Starts the process through its message start event, keyed by {@code businessKey}, then settles the plumbing. */
+    /** Starts the process through its message start event, keyed by {@code businessKey}. */
     public static void startLeasing(ProcessEngine engine, String businessKey, int age, double income, String bikeId) {
         Map<String, Object> variables = new LinkedHashMap<>();
         variables.put(FlowNodes.StartEventLeasingRequestReceived.Variables.APPLICATION_ID.getValue(), businessKey);
@@ -156,7 +113,6 @@ public final class ProcessDriveUtils {
                 Messages.MIRAVELO_LEASING_REQUEST_RECEIVED.getValue(),
                 businessKey,
                 variables);
-        executeAsyncContinuations(engine);
     }
 
     /** Finds the bike-leasing process instance for the given business key. Fails the test if none exists. */
@@ -167,27 +123,5 @@ public final class ProcessDriveUtils {
                 .singleResult();
         assertThat(instance).as("process instance for business key %s", businessKey).isNotNull();
         return instance;
-    }
-
-    /**
-     * Drives all pending async-continuation jobs (start event, DMN, gateways, {@code asyncAfter}) until the
-     * process settles at its next wait state or external task. Timer jobs are excluded — those are fired
-     * explicitly via {@link #fireTimer}.
-     */
-    private static void executeAsyncContinuations(ProcessEngine engine) {
-        executeAsyncContinuations(engine, 100);
-    }
-
-    private static void executeAsyncContinuations(ProcessEngine engine, int maxIterations) {
-        for (int iteration = 0; iteration < maxIterations; iteration++) {
-            Job job = engine.getManagementService().createJobQuery().active().messages().listPage(0, 1)
-                    .stream().findFirst().orElse(null);
-            if (job == null) {
-                return;
-            }
-            engine.getManagementService().executeJob(job.getId());
-        }
-        throw new IllegalStateException(
-                "async continuations did not settle within " + maxIterations + " iterations");
     }
 }

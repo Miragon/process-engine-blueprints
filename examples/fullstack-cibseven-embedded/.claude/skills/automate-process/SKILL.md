@@ -70,8 +70,8 @@ package `io.miragon.blueprint` under `service/app/src/main/` and `service/app/sr
    `adapter/process/` that asserts the walked path through `ProcessPathAssertions`, a typed path from
    the generated API (see `BikeLeasingProcessTest`). A gateway's branch label must match its
    condition.
-   The job executor is off in tests: `JobExecutionUtils` fires async continuations, `TimerUtils`
-   fires a timer job directly. Run `./gradlew :service:app:test --tests "io.miragon.blueprint.adapter.process.*"`.
+   The job executor is off in tests: each async continuation is its own `execute(job(...))`, one
+   job per call, and `TimerUtils` fires a timer job directly. Run `./gradlew :service:app:test --tests "io.miragon.blueprint.adapter.process.*"`.
 6. **Bruno and Playwright.** A path visible over REST gets a numbered scenario folder in `bruno/`, a
    path users see a spec in `frontend/e2e/`. Both name element ids as strings (the `.bru` files and
    `e2e/helpers/engine-rest.ts`): a renamed id is updated there too.

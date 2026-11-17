@@ -76,7 +76,8 @@ the clarify-return branch of `bruno/03-abort`.
 ### 6. Tests
 The process tests sit in the test tree under `adapter/process/` and run the models on an in-memory
 engine. Confirm they drive the external tasks through `ProcessDriveUtils` (`completeExternalTask`,
-`raiseBpmnErrorOnExternalTask`, `fireTimer`, …), assert each walked path as a typed path from the
+`raiseBpmnErrorOnExternalTask`, `fireTimer`, …) and run each async continuation with its own
+`execute(job(...))`, one job per call, assert each walked path as a typed path from the
 generated API (`ProcessPath` with `ProcessPathAssertions` in Kotlin, `PathWalk` in Java; not
 hand-written element-id lists), and that every gateway outcome, boundary event (error, escalation,
 timer, compensation) and event subprocess has a path, in `bikeLeasingProcess` **and** in the called

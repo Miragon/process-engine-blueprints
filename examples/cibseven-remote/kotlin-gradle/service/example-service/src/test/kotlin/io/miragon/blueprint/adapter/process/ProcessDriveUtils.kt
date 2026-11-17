@@ -16,28 +16,25 @@ private const val TEST_WORKER = "test-worker"
 private const val TEST_LOCK_DURATION_MS = 60_000L
 
 /**
- * Completes the **single** waiting external task of [topicName] — the remote counterpart to the
- * embedded blueprint's `executeJobFor(activityId)`. It is explicit about *which* task it drives and
- * fails loudly if that task is not (uniquely) waiting, so a test reads as an ordered trace. The
- * [variables] are passed as the task's output — exactly what a real worker would return (e.g.
- * `orderBike` → `orderId`). Afterwards it settles the deterministic async plumbing
- * (asyncAfter jobs, the DMN, gateways) up to the next wait state or external task.
+ * Completes the **single** waiting external task of [topicName], as the remote worker would. It is
+ * explicit about *which* task it drives and fails loudly if that task is not (uniquely) waiting, so a
+ * test reads as an ordered trace. The [variables] are passed as the task's output — exactly what a real
+ * worker would return (e.g. `orderBike` → `orderId`). It only ends the external task: the test runs the
+ * async continuation that follows with its own `execute(job(...))`.
  */
 fun ProcessEngine.completeExternalTask(topicName: String, variables: Map<String, Any?> = emptyMap()) {
     val task = lockSingleExternalTask(topicName)
     externalTaskService.complete(task.id, TEST_WORKER, variables)
-    executeAsyncContinuations()
 }
 
 /**
  * Ends the **single** waiting external task of [topicName] with the BPMN [error] — what a real worker
  * does through `handleBpmnError` — so the task is left through its error boundary event instead of
- * being completed. Afterwards it settles the plumbing like [completeExternalTask].
+ * being completed. Like [completeExternalTask], it runs no job.
  */
 fun ProcessEngine.raiseBpmnErrorOnExternalTask(topicName: String, error: BpmnErrorDefinition) {
     val task = lockSingleExternalTask(topicName)
     externalTaskService.handleBpmnError(task.id, TEST_WORKER, error.code)
-    executeAsyncContinuations()
 }
 
 private fun ProcessEngine.lockSingleExternalTask(topicName: String): ExternalTask {
@@ -50,18 +47,16 @@ private fun ProcessEngine.lockSingleExternalTask(topicName: String): ExternalTas
     return task
 }
 
-/** Completes the single waiting user task with [taskDefinitionKey], then settles the plumbing. */
+/** Completes the single waiting user task with [taskDefinitionKey]. */
 fun ProcessEngine.completeUserTask(taskDefinitionKey: String, variables: Map<String, Any?> = emptyMap()) {
     val task = taskService.createTaskQuery().taskDefinitionKey(taskDefinitionKey).singleResult()
     requireNotNull(task) { "no waiting user task '$taskDefinitionKey'" }
     taskService.complete(task.id, variables)
-    executeAsyncContinuations()
 }
 
-/** Correlates [message] to the instance identified by [businessKey], then settles the plumbing. */
+/** Correlates [message] to the instance identified by [businessKey]. */
 fun ProcessEngine.correlateMessage(message: MessageName, businessKey: String) {
     runtimeService.createMessageCorrelation(message.value).processInstanceBusinessKey(businessKey).correlate()
-    executeAsyncContinuations()
 }
 
 /**
@@ -72,34 +67,9 @@ fun ProcessEngine.fireTimer(timerEvent: FlowNode) {
     val timer = managementService.createJobQuery().timers().activityId(timerEvent.id.value).singleResult()
     requireNotNull(timer) { "no timer job found for activity '${timerEvent.id.value}'" }
     managementService.executeJob(timer.id)
-    executeAsyncContinuations()
 }
 
-/**
- * Generic fallback for **engine-ordered** chains — e.g. compensation, whose handlers run in an
- * implementation-defined order where enumerating each external task would be brittle. It drives async
- * jobs *and* completes whatever external tasks are waiting (with the per-topic [externalTaskOutputs])
- * until the next wait state. Prefer [completeExternalTask] for the deterministic, linear parts of a flow.
- */
-fun ProcessEngine.drainToWaitState(
-    externalTaskOutputs: Map<String, Map<String, Any?>> = emptyMap(),
-    maxIterations: Int = 100,
-) {
-    repeat(maxIterations) {
-        val job = managementService.createJobQuery().active().messages().listPage(0, 1).firstOrNull()
-        if (job != null) {
-            managementService.executeJob(job.id)
-            return@repeat
-        }
-        val task = externalTaskService.createExternalTaskQuery().notLocked().listPage(0, 1).firstOrNull()
-            ?: return
-        externalTaskService.lock(task.id, TEST_WORKER, TEST_LOCK_DURATION_MS)
-        externalTaskService.complete(task.id, TEST_WORKER, externalTaskOutputs[task.topicName] ?: emptyMap())
-    }
-    error("process did not reach a wait state within $maxIterations iterations")
-}
-
-/** Starts the process through its message start event, keyed by [businessKey], then settles the plumbing. */
+/** Starts the process through its message start event, keyed by [businessKey]. */
 fun ProcessEngine.startLeasing(businessKey: String, age: Int, income: Double, bikeId: String) {
     val start = FlowNodes.StartEventLeasingRequestReceived.Variables
     runtimeService.startProcessInstanceByMessage(
@@ -112,7 +82,6 @@ fun ProcessEngine.startLeasing(businessKey: String, age: Int, income: Double, bi
             start.AGE.value to age,
         ),
     )
-    executeAsyncContinuations()
 }
 
 /** Finds the bike-leasing process instance for the given business key. Fails the test if none exists. */
@@ -123,18 +92,4 @@ fun ProcessEngine.findInstance(businessKey: String): ProcessInstance {
         .singleResult()
     assertThat(instance).`as`("process instance for business key %s", businessKey).isNotNull
     return instance
-}
-
-/**
- * Drives all pending async-continuation jobs (start event, DMN, gateways, `asyncAfter`) until the
- * process settles at its next wait state or external task. Timer jobs are excluded — those are fired
- * explicitly via [fireTimer].
- */
-private fun ProcessEngine.executeAsyncContinuations(maxIterations: Int = 100) {
-    repeat(maxIterations) {
-        val job = managementService.createJobQuery().active().messages().listPage(0, 1).firstOrNull()
-            ?: return
-        managementService.executeJob(job.id)
-    }
-    error("async continuations did not settle within $maxIterations iterations")
 }

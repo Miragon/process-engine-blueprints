@@ -70,8 +70,8 @@ the clarify-return branch of `bruno/03-abort`.
 The process tests sit in the test tree under `adapter/process/`. Confirm they assert each walked path
 through `ProcessPathAssertions` (a typed path from the generated API, not hand-written element-id
 lists), and that every gateway outcome, boundary event (error, escalation, timer, compensation) and
-event subprocess has a path, in `bikeLeasingProcess` **and** in the called `cancelBikeOrder`. Async
-continuations are fired with `JobExecutionUtils`, timers with `TimerUtils`. Report a missing path per
+event subprocess has a path, in `bikeLeasingProcess` **and** in the called `cancelBikeOrder`. Each async
+continuation runs with its own `execute(job(...))`, one job per call, timers with `TimerUtils`. Report a missing path per
 element.
 
 <!-- variant:blueprint -->

@@ -21,10 +21,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
-import static io.miragon.blueprint.process.util.JobExecutionUtils.continueToNextWaitState;
 import static io.miragon.blueprint.process.util.ProcessInstanceUtils.findProcessInstance;
+import static io.miragon.blueprint.process.util.WorkerUtils.awaitWorkers;
 import static org.operaton.bpm.engine.test.assertions.bpmn.BpmnAwareTests.assertThat;
+import static org.operaton.bpm.engine.test.assertions.bpmn.BpmnAwareTests.execute;
 import static org.operaton.bpm.engine.test.assertions.bpmn.BpmnAwareTests.init;
+import static org.operaton.bpm.engine.test.assertions.bpmn.BpmnAwareTests.job;
 
 /**
  * Runs the out-of-stock order with the <strong>real</strong> use cases instead of mocks. The
@@ -58,6 +60,7 @@ public class BikeUnavailableTransactionTest {
     @Test
     @DisplayName("bike unavailable - the BPMN error raised by the real order service reaches the engine")
     public void bikeUnavailableTheBpmnErrorRaisedByTheRealOrderServiceReachesTheEngine() {
+        // given
         // BIKE-OOS is on the simulated dealer's out-of-stock list
         LeasingApplication application =
             LeasingApplication.receive(
@@ -72,10 +75,18 @@ public class BikeUnavailableTransactionTest {
         process.submitRequest(application);
         ProcessInstance instance = findProcessInstance(runtimeService, application.id());
 
-        continueToNextWaitState(processEngine); // parks on the signature wait state
+        // when
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance));
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance));
+        awaitWorkers(processEngine);
+        execute(job(FlowNodes.ServiceTaskSendContract.ELEMENT_ID, instance)); // parks on the signature wait state
         process.correlateContractSigned(application.id());
-        continueToNextWaitState(processEngine); // fork -> order raises bikeUnavailable -> parks on clarify-alternative
+        execute(job(FlowNodes.EventContractSigned.ELEMENT_ID, instance)); // fork -> order raises bikeUnavailable -> parks on clarify-alternative
+        awaitWorkers(processEngine);
+        execute(job(FlowNodes.ServiceTaskIssueInsurancePolicy.ELEMENT_ID, instance));
+        execute(job(FlowNodes.GatewayJoin.ELEMENT_ID, instance));
 
+        // then
         assertThat(instance)
             .isWaitingAt(FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID)
             .hasPassed(FlowNodes.EventBikeUnavailable.ELEMENT_ID);
@@ -86,15 +97,21 @@ public class BikeUnavailableTransactionTest {
     @Test
     @DisplayName("alternative selected - the chosen bike is ordered and stored on the application")
     public void alternativeSelectedTheChosenBikeIsOrderedAndStoredOnTheApplication() {
+        // given
         LeasingApplication application = receivedApplication(new BikeId("BIKE-OOS"));
         repository.save(application);
         process.submitRequest(application);
         ProcessInstance instance = findProcessInstance(runtimeService, application.id());
-        signContractAndRunIntoTheUnavailableBike(application.id());
+        signContractAndRunIntoTheUnavailableBike(application.id(), instance);
 
+        // when
         process.completeAlternativeClarification(application.id(), true, new BikeId("BIKE-900"));
-        continueToNextWaitState(processEngine); // re-order succeeds -> parallel join -> handover wait state
+        execute(job(FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID, instance));
+        awaitWorkers(processEngine);
+        execute(job(FlowNodes.ServiceTaskOrderBike.ELEMENT_ID, instance)); // re-order succeeds
+        execute(job(FlowNodes.GatewayJoin.ELEMENT_ID, instance)); // -> handover wait state
 
+        // then
         assertThat(instance).isWaitingAt(FlowNodes.EventHandoverReported.ELEMENT_ID);
         LeasingApplication stored = repository.findById(application.id()).orElseThrow();
         Assertions.assertThat(stored.bikeId()).isEqualTo(new BikeId("BIKE-900"));
@@ -104,21 +121,38 @@ public class BikeUnavailableTransactionTest {
     @Test
     @DisplayName("bike unavailable - the bike the process carries stays on the application although the order fails")
     public void bikeUnavailableTheBikeTheProcessCarriesStaysOnTheApplicationAlthoughTheOrderFails() {
+        // given
         LeasingApplication application = receivedApplication(new BikeId("BIKE-900"));
         repository.save(application);
         process.submitRequest(application.selectAlternative(new BikeId("BIKE-OOS")));
         ProcessInstance instance = findProcessInstance(runtimeService, application.id());
 
-        signContractAndRunIntoTheUnavailableBike(application.id());
+        // when
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance));
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance));
+        awaitWorkers(processEngine);
+        execute(job(FlowNodes.ServiceTaskSendContract.ELEMENT_ID, instance)); // parks on the signature wait state
+        process.correlateContractSigned(application.id());
+        execute(job(FlowNodes.EventContractSigned.ELEMENT_ID, instance)); // fork -> order raises bikeUnavailable -> parks on clarify-alternative
+        awaitWorkers(processEngine);
+        execute(job(FlowNodes.ServiceTaskIssueInsurancePolicy.ELEMENT_ID, instance));
+        execute(job(FlowNodes.GatewayJoin.ELEMENT_ID, instance));
 
+        // then
         assertThat(instance).isWaitingAt(FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID);
         Assertions.assertThat(repository.findById(application.id()).orElseThrow().bikeId()).isEqualTo(new BikeId("BIKE-OOS"));
     }
 
-    private void signContractAndRunIntoTheUnavailableBike(ApplicationId id) {
-        continueToNextWaitState(processEngine); // parks on the signature wait state
+    private void signContractAndRunIntoTheUnavailableBike(ApplicationId id, ProcessInstance instance) {
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance));
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance));
+        awaitWorkers(processEngine);
+        execute(job(FlowNodes.ServiceTaskSendContract.ELEMENT_ID, instance)); // parks on the signature wait state
         process.correlateContractSigned(id);
-        continueToNextWaitState(processEngine); // fork -> order raises bikeUnavailable -> parks on clarify-alternative
+        execute(job(FlowNodes.EventContractSigned.ELEMENT_ID, instance)); // fork -> order raises bikeUnavailable -> parks on clarify-alternative
+        awaitWorkers(processEngine);
+        execute(job(FlowNodes.ServiceTaskIssueInsurancePolicy.ELEMENT_ID, instance));
+        execute(job(FlowNodes.GatewayJoin.ELEMENT_ID, instance));
     }
 
     private LeasingApplication receivedApplication(BikeId bikeId) {

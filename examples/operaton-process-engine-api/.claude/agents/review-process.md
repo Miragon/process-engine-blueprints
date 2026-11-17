@@ -75,8 +75,9 @@ The process tests sit in the test tree under `process/`. Confirm they assert eac
 the generated constants (`FlowNodes.<Node>.ELEMENT_ID`), never element ids as string literals, and
 that every gateway outcome, boundary event (error, escalation, timer, compensation) and event
 subprocess has a path, in `bikeLeasingProcess` **and** in the called `cancelBikeOrder`. The real
-workers consume the external tasks; `process/util/JobExecutionUtils.continueToNextWaitState` fires
-async continuations and waits for the workers, `process/util/TimerUtils` fires timers. Report a
+workers consume the external tasks; `process/util/WorkerUtils.awaitWorkers` waits for them, each
+async continuation runs with its own `execute(job(...))`, one job per call, and
+`process/util/TimerUtils` fires timers. Report a
 missing path per element.
 
 ### 7. Modelling conventions

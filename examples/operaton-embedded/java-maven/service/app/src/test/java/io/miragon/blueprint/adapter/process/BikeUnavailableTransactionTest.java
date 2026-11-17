@@ -1,10 +1,10 @@
 package io.miragon.blueprint.adapter.process;
 
-import static io.miragon.blueprint.adapter.process.JobExecutionUtils.continueToNextWaitState;
-import static io.miragon.blueprint.adapter.process.JobExecutionUtils.executeJobFor;
 import static io.miragon.blueprint.adapter.process.ProcessInstanceUtils.findProcessInstance;
 import static org.operaton.bpm.engine.test.assertions.bpmn.BpmnAwareTests.assertThat;
+import static org.operaton.bpm.engine.test.assertions.bpmn.BpmnAwareTests.execute;
 import static org.operaton.bpm.engine.test.assertions.bpmn.BpmnAwareTests.init;
+import static org.operaton.bpm.engine.test.assertions.bpmn.BpmnAwareTests.job;
 
 import io.miragon.blueprint.adapter.process.BikeLeasingProcessProcessApi.FlowNodes;
 import io.miragon.blueprint.application.port.outbound.LeasingApplicationRepository;
@@ -56,6 +56,7 @@ class BikeUnavailableTransactionTest {
 
     @Test
     void bikeUnavailableTheBpmnErrorRaisedByTheRealOrderServiceIsCommitted() {
+        // given
         // BIKE-OOS is on the simulated dealer's out-of-stock list
         LeasingApplication application = LeasingApplication.receive(
                 ApplicationId.newId(),
@@ -69,13 +70,19 @@ class BikeUnavailableTransactionTest {
         process.submitRequest(application);
         ProcessInstance instance = findProcessInstance(runtimeService, application.id());
 
-        executeJobFor(processEngine, FlowNodes.StartEventLeasingRequestReceived.INSTANCE);
-        executeJobFor(processEngine, FlowNodes.ServiceTaskSendContract.INSTANCE);
+        // when
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance));
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance));
+        execute(job(FlowNodes.ServiceTaskSendContract.ELEMENT_ID, instance));
+        execute(job(FlowNodes.ServiceTaskSendContract.ELEMENT_ID, instance));
         process.correlateContractSigned(application.id());
-        executeJobFor(processEngine, FlowNodes.EventContractSigned.INSTANCE);
-        executeJobFor(processEngine, FlowNodes.ServiceTaskIssueInsurancePolicy.INSTANCE);
-        executeJobFor(processEngine, FlowNodes.ServiceTaskOrderBike.INSTANCE); // unavailable -> BPMN error -> clarify alternative
+        execute(job(FlowNodes.EventContractSigned.ELEMENT_ID, instance));
+        execute(job(FlowNodes.ServiceTaskIssueInsurancePolicy.ELEMENT_ID, instance));
+        execute(job(FlowNodes.ServiceTaskIssueInsurancePolicy.ELEMENT_ID, instance));
+        execute(job(FlowNodes.GatewayJoin.ELEMENT_ID, instance));
+        execute(job(FlowNodes.ServiceTaskOrderBike.ELEMENT_ID, instance)); // unavailable -> BPMN error -> clarify alternative
 
+        // then
         assertThat(instance)
                 .isWaitingAt(FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID)
                 .hasPassed(FlowNodes.EventBikeUnavailable.ELEMENT_ID);
@@ -83,6 +90,7 @@ class BikeUnavailableTransactionTest {
 
     @Test
     void bikeUnavailableTheBikeTheProcessCarriesIsStoredAlthoughTheOrderServiceThrows() {
+        // given
         // the stored application names another bike than the out-of-stock one the process carries
         LeasingApplication application = LeasingApplication.receive(
                 ApplicationId.newId(),
@@ -94,22 +102,58 @@ class BikeUnavailableTransactionTest {
                 LocalDateTime.now());
         repository.save(application);
         process.submitRequest(application.selectAlternative(new BikeId("BIKE-OOS")));
+        ProcessInstance instance = findProcessInstance(runtimeService, application.id());
 
-        executeJobFor(processEngine, FlowNodes.StartEventLeasingRequestReceived.INSTANCE);
-        executeJobFor(processEngine, FlowNodes.ServiceTaskSendContract.INSTANCE);
+        // when
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance));
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance));
+        execute(job(FlowNodes.ServiceTaskSendContract.ELEMENT_ID, instance));
+        execute(job(FlowNodes.ServiceTaskSendContract.ELEMENT_ID, instance));
         process.correlateContractSigned(application.id());
-        executeJobFor(processEngine, FlowNodes.EventContractSigned.INSTANCE);
-        executeJobFor(processEngine, FlowNodes.ServiceTaskIssueInsurancePolicy.INSTANCE);
-        executeJobFor(processEngine, FlowNodes.ServiceTaskOrderBike.INSTANCE); // unavailable -> BPMN error -> clarify alternative
+        execute(job(FlowNodes.EventContractSigned.ELEMENT_ID, instance));
+        execute(job(FlowNodes.ServiceTaskIssueInsurancePolicy.ELEMENT_ID, instance));
+        execute(job(FlowNodes.ServiceTaskIssueInsurancePolicy.ELEMENT_ID, instance));
+        execute(job(FlowNodes.GatewayJoin.ELEMENT_ID, instance));
+        execute(job(FlowNodes.ServiceTaskOrderBike.ELEMENT_ID, instance)); // unavailable -> BPMN error -> clarify alternative
 
+        // then
         Assertions.assertThat(repository.findById(application.id()))
                 .map(LeasingApplication::bikeId)
                 .contains(new BikeId("BIKE-OOS"));
+    }
 
-        // the alternative reaches the application through the process variable alone
+    @Test
+    void bikeUnavailableTheAlternativeReachesTheApplicationThroughTheProcessVariableAlone() {
+        // given
+        LeasingApplication application = LeasingApplication.receive(
+                ApplicationId.newId(),
+                new CustomerName("Test Customer"),
+                new Email("test@example.com"),
+                35,
+                3500.0,
+                new BikeId("BIKE-900"),
+                LocalDateTime.now());
+        repository.save(application);
+        process.submitRequest(application.selectAlternative(new BikeId("BIKE-OOS")));
+        ProcessInstance instance = findProcessInstance(runtimeService, application.id());
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance));
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance));
+        execute(job(FlowNodes.ServiceTaskSendContract.ELEMENT_ID, instance));
+        execute(job(FlowNodes.ServiceTaskSendContract.ELEMENT_ID, instance));
+        process.correlateContractSigned(application.id());
+        execute(job(FlowNodes.EventContractSigned.ELEMENT_ID, instance));
+        execute(job(FlowNodes.ServiceTaskIssueInsurancePolicy.ELEMENT_ID, instance));
+        execute(job(FlowNodes.ServiceTaskIssueInsurancePolicy.ELEMENT_ID, instance));
+        execute(job(FlowNodes.GatewayJoin.ELEMENT_ID, instance));
+        execute(job(FlowNodes.ServiceTaskOrderBike.ELEMENT_ID, instance)); // unavailable -> BPMN error -> clarify alternative
+
+        // when
         process.completeAlternativeClarification(application.id(), true, new BikeId("BIKE-ALT"));
-        continueToNextWaitState(processEngine);
+        execute(job(FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID, instance));
+        execute(job(FlowNodes.ServiceTaskOrderBike.ELEMENT_ID, instance));
+        execute(job(FlowNodes.GatewayJoin.ELEMENT_ID, instance));
 
+        // then
         LeasingApplication reordered = repository.findById(application.id()).orElseThrow();
         Assertions.assertThat(reordered.bikeId()).isEqualTo(new BikeId("BIKE-ALT"));
         Assertions.assertThat(reordered.status()).isEqualTo(LeasingStatus.ORDERED);

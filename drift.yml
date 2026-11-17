@@ -110,11 +110,11 @@ differs:
       - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/outbound/zeebe/TaskInboxAdapterTest.java"
       - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/BikeLeasingProcessTest.java"
       - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/BikeUnavailableTransactionTest.java"
-      - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/JobExecutionUtils.java"
       - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/LeasingApplicationAggregateTest.java"
       - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/ProcessDeploymentTest.java"
       - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/ProcessInstanceUtils.java"
       - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/TimerUtils.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/WorkerUtils.java"
       - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/model/BikeLeasingModelValidationTest.java"
       - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/model/ServiceTaskExternalTopicRule.java"
       - "java-maven/service/app/src/test/resources/application-test.yaml"
@@ -276,9 +276,9 @@ differs:
       - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/BikeLeasingProcessTest.kt"
       - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/BikeUnavailableTransactionTest.kt"
       - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/CreditRatingTest.kt"
-      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/JobExecutionUtils.kt"
       - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/LeasingApplicationAggregateTest.kt"
       - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/ProcessDeploymentTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/WorkerUtils.kt"
       - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/model/BikeLeasingModelValidationTest.kt"
       - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/model/ServiceTaskExternalTopicRule.kt"
       - "kotlin-gradle/service/app/src/test/resources/application-test.yaml"
@@ -597,9 +597,9 @@ differs:
       - "java-maven/service/app/src/test/java/io/miragon/blueprint/process/BikeLeasingProcessTest.java"
       - "java-maven/service/app/src/test/java/io/miragon/blueprint/process/BikeUnavailableTransactionTest.java"
       - "java-maven/service/app/src/test/java/io/miragon/blueprint/process/model/BikeLeasingModelValidationTest.java"
-      - "java-maven/service/app/src/test/java/io/miragon/blueprint/process/util/JobExecutionUtils.java"
       - "java-maven/service/app/src/test/java/io/miragon/blueprint/process/util/ProcessInstanceUtils.java"
       - "java-maven/service/app/src/test/java/io/miragon/blueprint/process/util/TimerUtils.java"
+      - "java-maven/service/app/src/test/java/io/miragon/blueprint/process/util/WorkerUtils.java"
       - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/BikeCatalogueSeeder.kt"
       - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/rest/DevCorsConfiguration.kt"
       - "kotlin-gradle/service/app/src/main/kotlin/io/miragon/blueprint/adapter/inbound/rest/GetLeasingApplicationController.kt"
@@ -733,6 +733,11 @@ differs:
   - examples: [temporal-native]
     files: [bruno/03-abort/05-assert-still-withdrawn.bru, bruno/03-abort/07-assert-cancelled.bru]
     reason: "Temporal has no task API to wait for the open return clarification, so the scenario checks that the application stays WITHDRAWN before it confirms the return, and asserts CANCELLED through the domain API where the BPMN examples read the engine history."
+  - examples: [fullstack-cibseven-embedded]
+    files:
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/BikeLeasingProcessTest.kt"
+      - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/BikeUnavailableTransactionTest.kt"
+    reason: "Its model sets no asyncAfter on the service tasks and no asyncBefore on the cancelBikeOrder join, so its process tests run one job less per service task than the other embedded examples."
   - files:
       - "java-maven/service/app/src/test/java/io/miragon/blueprint/adapter/process/ProcessTestCoverageContextCustomizerFactory.java"
       - "kotlin-gradle/service/app/src/test/kotlin/io/miragon/blueprint/adapter/process/ProcessTestCoverageContextCustomizerFactory.kt"

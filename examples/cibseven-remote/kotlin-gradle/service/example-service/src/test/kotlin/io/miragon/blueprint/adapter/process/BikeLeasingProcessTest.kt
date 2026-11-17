@@ -15,7 +15,10 @@ import org.cibseven.bpm.engine.delegate.TaskListener
 import org.cibseven.bpm.engine.runtime.ProcessInstance
 import org.cibseven.bpm.engine.test.Deployment
 import org.cibseven.bpm.engine.test.assertions.bpmn.BpmnAwareTests.assertThat
+import org.cibseven.bpm.engine.test.assertions.bpmn.BpmnAwareTests.calledProcessInstance
+import org.cibseven.bpm.engine.test.assertions.bpmn.BpmnAwareTests.execute
 import org.cibseven.bpm.engine.test.assertions.bpmn.BpmnAwareTests.init
+import org.cibseven.bpm.engine.test.assertions.bpmn.BpmnAwareTests.job
 import org.cibseven.bpm.engine.test.mock.MockExpressionManager
 import org.cibseven.bpm.engine.test.mock.Mocks
 import org.cibseven.community.process_test_coverage.engine.platform7.ProcessCoverageInMemProcessEngineConfiguration
@@ -34,7 +37,8 @@ import java.util.UUID
  *
  * The service tasks are **external tasks**, so the test completes each one explicitly by topic via
  * [completeExternalTask] (supplying the output variables a real worker would return); user tasks,
- * messages and timers are released explicitly. It therefore verifies the *topology* — routing,
+ * messages and timers are released explicitly, and each async continuation runs with its own
+ * `execute(job(...))`, one job per call. It therefore verifies the *topology* — routing,
  * gateways, compensation, the event sub-process, the DMN and the timers — independent of what the
  * workers actually do with each task.
  */
@@ -45,16 +49,6 @@ class BikeLeasingProcessTest {
 
     /** Output of the `orderBike` external task once the dealer accepted the order. */
     private val orderPlaced = mapOf(FlowNodes.ServiceTaskOrderBike.Variables.ORDER_ID.value to "ORDER-1")
-
-    /**
-     * Compensation handlers run in an engine-defined order, so the tests drive that chain generically.
-     * Only the `requestCancellation` external task produces a variable the flow routes on: whether the
-     * dealer cancels the order.
-     */
-    private fun compensationOutputs(cancellationPossible: Boolean) = mapOf(
-        ServiceTasks.BIKE_LEASING_REQUEST_CANCELLATION to
-            mapOf(CancelBikeOrderProcessApi.FlowNodes.ServiceTaskRequestCancellation.Variables.CANCELLATION_POSSIBLE.value to cancellationPossible),
-    )
 
     @BeforeEach
     fun setUp() {
@@ -91,20 +85,30 @@ class BikeLeasingProcessTest {
 
     @Test
     fun `happy path - contract signed, bike available, leasing becomes active`() {
+        // given
         val businessKey = submit(age = 35, income = 3500.0)
         val instance = engine.findInstance(businessKey)
 
-        // the message start runs the DMN (solvent) and parks on sendContract
-        engine.completeExternalTask(ServiceTasks.BIKE_LEASING_SEND_CONTRACT) // -> signature wait state
-
-        engine.correlateMessage(Messages.MIRAVELO_CONTRACT_SIGNED, businessKey) // forks into insurance + bike order
+        // when
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance))
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance))
+        engine.completeExternalTask(ServiceTasks.BIKE_LEASING_SEND_CONTRACT)
+        execute(job(FlowNodes.ServiceTaskSendContract.ELEMENT_ID, instance)) // -> signature wait state
+        engine.correlateMessage(Messages.MIRAVELO_CONTRACT_SIGNED, businessKey)
+        execute(job(FlowNodes.EventContractSigned.ELEMENT_ID, instance)) // forks into insurance + bike order
         engine.completeExternalTask(ServiceTasks.BIKE_LEASING_ISSUE_INSURANCE_POLICY)
-        engine.completeExternalTask(ServiceTasks.BIKE_LEASING_ORDER_BIKE, orderPlaced) // joins -> handover wait state
-
-        engine.correlateMessage(Messages.MIRAVELO_HANDOVER_REPORTED, businessKey) // -> withdrawal-period timer
+        execute(job(FlowNodes.ServiceTaskIssueInsurancePolicy.ELEMENT_ID, instance))
+        execute(job(FlowNodes.GatewayJoin.ELEMENT_ID, instance))
+        engine.completeExternalTask(ServiceTasks.BIKE_LEASING_ORDER_BIKE, orderPlaced)
+        execute(job(FlowNodes.ServiceTaskOrderBike.ELEMENT_ID, instance))
+        execute(job(FlowNodes.GatewayJoin.ELEMENT_ID, instance)) // -> handover wait state
+        engine.correlateMessage(Messages.MIRAVELO_HANDOVER_REPORTED, businessKey)
+        execute(job(FlowNodes.EventHandoverReported.ELEMENT_ID, instance)) // -> withdrawal-period timer
         engine.fireTimer(FlowNodes.EventWithdrawalPeriodElapsed)
-        engine.completeExternalTask(ServiceTasks.BIKE_LEASING_ACTIVATE_LEASING) // flips read model to ACTIVE -> end
+        engine.completeExternalTask(ServiceTasks.BIKE_LEASING_ACTIVATE_LEASING)
+        execute(job(FlowNodes.ServiceTaskActivateLeasing.ELEMENT_ID, instance)) // -> end
 
+        // then
         assertThat(instance)
             .isEnded
             .hasPassedInOrder(
@@ -154,14 +158,20 @@ class BikeLeasingProcessTest {
 
     @Test
     fun `escalation - contract not signed in time is escalated and rejected`() {
+        // given
         val businessKey = submit(age = 35, income = 3500.0)
         val instance = engine.findInstance(businessKey)
 
-        engine.completeExternalTask(ServiceTasks.BIKE_LEASING_SEND_CONTRACT) // -> signature wait state
-
+        // when
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance))
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance))
+        engine.completeExternalTask(ServiceTasks.BIKE_LEASING_SEND_CONTRACT)
+        execute(job(FlowNodes.ServiceTaskSendContract.ELEMENT_ID, instance)) // -> signature wait state
         engine.fireTimer(FlowNodes.EventSignatureDeadline) // deadline -> escalation -> boundary -> rejection
-        engine.completeExternalTask(ServiceTasks.BIKE_LEASING_SEND_REJECTION) // -> end
+        engine.completeExternalTask(ServiceTasks.BIKE_LEASING_SEND_REJECTION)
+        execute(job(FlowNodes.ServiceTaskSendRejection.ELEMENT_ID, instance)) // -> end
 
+        // then
         assertThat(instance)
             .isEnded
             .hasPassedInOrder(
@@ -184,13 +194,18 @@ class BikeLeasingProcessTest {
 
     @Test
     fun `not solvent - the DMN routes the application straight to rejection`() {
+        // given
         // age below 18 cannot sign a leasing contract, so the DMN returns solvent = false
         val businessKey = submit(age = 15, income = 3500.0)
         val instance = engine.findInstance(businessKey)
 
-        // the message start runs the DMN (not solvent) and parks on the rejection
-        engine.completeExternalTask(ServiceTasks.BIKE_LEASING_SEND_REJECTION) // -> end
+        // when
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance))
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance)) // the DMN (not solvent) parks on the rejection
+        engine.completeExternalTask(ServiceTasks.BIKE_LEASING_SEND_REJECTION)
+        execute(job(FlowNodes.ServiceTaskSendRejection.ELEMENT_ID, instance)) // -> end
 
+        // then
         assertThat(instance)
             .isEnded
             .hasPassedInOrder(
@@ -209,18 +224,23 @@ class BikeLeasingProcessTest {
 
     @Test
     fun `reminder - an unsigned contract gets one reminder before the deadline rejects it`() {
+        // given
         val businessKey = submit(age = 35, income = 3500.0)
         val instance = engine.findInstance(businessKey)
 
-        engine.completeExternalTask(ServiceTasks.BIKE_LEASING_SEND_CONTRACT) // -> signature wait state
-
+        // when
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance))
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance))
+        engine.completeExternalTask(ServiceTasks.BIKE_LEASING_SEND_CONTRACT)
+        execute(job(FlowNodes.ServiceTaskSendContract.ELEMENT_ID, instance)) // -> signature wait state
         engine.fireTimer(FlowNodes.EventSignatureReminder) // non-interrupting -> reminder mail
         engine.completeExternalTask(ServiceTasks.BIKE_LEASING_SEND_REMINDER_MAIL)
-        assertThat(instance).isWaitingAt(FlowNodes.GatewayAwaitSignature.ELEMENT_ID)
-
+        execute(job(FlowNodes.ServiceTaskSendReminderMail.ELEMENT_ID, instance))
         engine.fireTimer(FlowNodes.EventSignatureDeadline) // deadline -> escalation -> boundary -> rejection
-        engine.completeExternalTask(ServiceTasks.BIKE_LEASING_SEND_REJECTION) // -> end
+        engine.completeExternalTask(ServiceTasks.BIKE_LEASING_SEND_REJECTION)
+        execute(job(FlowNodes.ServiceTaskSendRejection.ELEMENT_ID, instance)) // -> end
 
+        // then
         assertThat(instance)
             .isEnded
             .hasPassedInOrder(
@@ -237,22 +257,39 @@ class BikeLeasingProcessTest {
 
     @Test
     fun `abort - withdrawing the application compensates the completed steps`() {
+        // given
         val businessKey = submit(age = 35, income = 3500.0)
         val instance = engine.findInstance(businessKey)
 
-        // drive to the handover wait state (contract signed, bike ordered, insured)
+        // when
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance))
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance))
         engine.completeExternalTask(ServiceTasks.BIKE_LEASING_SEND_CONTRACT)
+        execute(job(FlowNodes.ServiceTaskSendContract.ELEMENT_ID, instance)) // -> signature wait state
         engine.correlateMessage(Messages.MIRAVELO_CONTRACT_SIGNED, businessKey)
+        execute(job(FlowNodes.EventContractSigned.ELEMENT_ID, instance)) // forks into insurance + bike order
         engine.completeExternalTask(ServiceTasks.BIKE_LEASING_ISSUE_INSURANCE_POLICY)
+        execute(job(FlowNodes.ServiceTaskIssueInsurancePolicy.ELEMENT_ID, instance))
+        execute(job(FlowNodes.GatewayJoin.ELEMENT_ID, instance))
         engine.completeExternalTask(ServiceTasks.BIKE_LEASING_ORDER_BIKE, orderPlaced)
-
-        // withdrawing triggers compensation; the dealer refuses to cancel the order, so it parks on the
-        // cancelBikeOrder sub-process' user task
+        execute(job(FlowNodes.ServiceTaskOrderBike.ELEMENT_ID, instance))
+        execute(job(FlowNodes.GatewayJoin.ELEMENT_ID, instance)) // -> handover wait state
         engine.correlateMessage(Messages.MIRAVELO_APPLICATION_WITHDRAWN, businessKey)
-        engine.drainToWaitState(compensationOutputs(cancellationPossible = false))
+        execute(job(FlowNodes.StartEventApplicationWithdrawn.ELEMENT_ID, instance)) // -> compensation
+        execute(job(CancelBikeOrderProcessApi.FlowNodes.StartEventCancellationRequired.ELEMENT_ID, calledProcessInstance(instance)))
+        engine.completeExternalTask(ServiceTasks.BIKE_LEASING_CANCEL_POLICY)
+        engine.completeExternalTask(ServiceTasks.BIKE_LEASING_CANCEL_CONTRACT)
+        engine.completeExternalTask(ServiceTasks.BIKE_LEASING_REQUEST_CANCELLATION, mapOf(CancelBikeOrderProcessApi.FlowNodes.ServiceTaskRequestCancellation.Variables.CANCELLATION_POSSIBLE.value to false)) // the dealer refuses to cancel the order
+        execute(job(CancelBikeOrderProcessApi.FlowNodes.ServiceTaskRequestCancellation.ELEMENT_ID, calledProcessInstance(instance))) // -> parks on the clarify-return task
         engine.completeUserTask(CancelBikeOrderProcessApi.FlowNodes.UserTaskClarifyReturn.ELEMENT_ID)
-        engine.drainToWaitState(compensationOutputs(cancellationPossible = false)) // -> bookCosts -> sendCancellationConfirmation -> end cancelled
+        execute(job(CancelBikeOrderProcessApi.FlowNodes.UserTaskClarifyReturn.ELEMENT_ID, calledProcessInstance(instance)))
+        engine.completeExternalTask(ServiceTasks.BIKE_LEASING_BOOK_COSTS)
+        execute(job(CancelBikeOrderProcessApi.FlowNodes.ServiceTaskBookCosts.ELEMENT_ID, calledProcessInstance(instance)))
+        execute(job(CancelBikeOrderProcessApi.FlowNodes.GatewayJoin.ELEMENT_ID, calledProcessInstance(instance)))
+        engine.completeExternalTask(ServiceTasks.BIKE_LEASING_SEND_CANCELLATION_CONFIRMATION)
+        execute(job(FlowNodes.ServiceTaskSendCancellationConfirmation.ELEMENT_ID, instance)) // -> end cancelled
 
+        // then
         assertThat(instance)
             .isEnded
             .hasPassed(
@@ -285,26 +322,33 @@ class BikeLeasingProcessTest {
 
     @Test
     fun `bike unavailable - clarifying an alternative re-orders and leasing becomes active`() {
+        // given
         val businessKey = submit(age = 35, income = 3500.0)
         val instance = engine.findInstance(businessKey)
 
+        // when
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance))
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance))
         engine.completeExternalTask(ServiceTasks.BIKE_LEASING_SEND_CONTRACT)
+        execute(job(FlowNodes.ServiceTaskSendContract.ELEMENT_ID, instance)) // -> signature wait state
         engine.correlateMessage(Messages.MIRAVELO_CONTRACT_SIGNED, businessKey)
+        execute(job(FlowNodes.EventContractSigned.ELEMENT_ID, instance)) // forks into insurance + bike order
         engine.completeExternalTask(ServiceTasks.BIKE_LEASING_ISSUE_INSURANCE_POLICY)
-
-        // the first order finds the requested bike unavailable -> parks on the clarify-alternative task
-        engine.raiseBpmnErrorOnExternalTask(ServiceTasks.BIKE_LEASING_ORDER_BIKE, Errors.BIKE_UNAVAILABLE)
+        execute(job(FlowNodes.ServiceTaskIssueInsurancePolicy.ELEMENT_ID, instance))
+        execute(job(FlowNodes.GatewayJoin.ELEMENT_ID, instance))
+        engine.raiseBpmnErrorOnExternalTask(ServiceTasks.BIKE_LEASING_ORDER_BIKE, Errors.BIKE_UNAVAILABLE) // -> parks on the clarify-alternative task
         engine.acceptAlternative()
-        assertThat(instance).variables().containsEntry(FlowNodes.UserTaskClarifyAlternative.Variables.BIKE_ID.value, "BIKE-ALT")
-        Assertions.assertThat(engine.bikeRequestedByWaitingOrder()).isEqualTo("BIKE-ALT")
-
-        // the re-order succeeds -> parallel join -> handover wait state
-        engine.completeExternalTask(ServiceTasks.BIKE_LEASING_ORDER_BIKE, orderPlaced)
-
+        execute(job(FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID, instance))
+        engine.completeExternalTask(ServiceTasks.BIKE_LEASING_ORDER_BIKE, orderPlaced) // the re-order succeeds
+        execute(job(FlowNodes.ServiceTaskOrderBike.ELEMENT_ID, instance))
+        execute(job(FlowNodes.GatewayJoin.ELEMENT_ID, instance)) // -> handover wait state
         engine.correlateMessage(Messages.MIRAVELO_HANDOVER_REPORTED, businessKey)
+        execute(job(FlowNodes.EventHandoverReported.ELEMENT_ID, instance)) // -> withdrawal-period timer
         engine.fireTimer(FlowNodes.EventWithdrawalPeriodElapsed)
         engine.completeExternalTask(ServiceTasks.BIKE_LEASING_ACTIVATE_LEASING)
+        execute(job(FlowNodes.ServiceTaskActivateLeasing.ELEMENT_ID, instance)) // -> end
 
+        // then
         assertThat(instance)
             .isEnded
             .hasPassedInOrder(
@@ -337,19 +381,27 @@ class BikeLeasingProcessTest {
                 FlowNodes.EndEventContractCancelled.ELEMENT_ID,
                 FlowNodes.EndEventApplicationRejected.ELEMENT_ID,
             )
+        Assertions.assertThat(engine.bikeOrderedBy(instance)).isEqualTo("BIKE-ALT")
     }
 
     @Test
     fun `bike unavailable - declining the alternative reverses contract and policy without cancelling an order`() {
+        // given
         val businessKey = submitUntilBikeUnavailable()
         val instance = engine.findInstance(businessKey)
 
+        // when
         engine.completeUserTask(
             FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID,
             mapOf(FlowNodes.UserTaskClarifyAlternative.Variables.ALTERNATIVE_FOUND.value to false),
         )
-        engine.drainToWaitState() // -> compensation -> sendCancellationConfirmation -> end cancelled
+        execute(job(FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID, instance)) // -> compensation
+        engine.completeExternalTask(ServiceTasks.BIKE_LEASING_CANCEL_POLICY)
+        engine.completeExternalTask(ServiceTasks.BIKE_LEASING_CANCEL_CONTRACT)
+        engine.completeExternalTask(ServiceTasks.BIKE_LEASING_SEND_CANCELLATION_CONFIRMATION)
+        execute(job(FlowNodes.ServiceTaskConfirmContractCancellation.ELEMENT_ID, instance)) // -> end cancelled
 
+        // then
         assertThat(instance)
             .isEnded
             .hasPassed(
@@ -384,12 +436,19 @@ class BikeLeasingProcessTest {
 
     @Test
     fun `abort while clarifying an alternative - compensates contract and policy without cancelling an order`() {
+        // given
         val businessKey = submitUntilBikeUnavailable()
         val instance = engine.findInstance(businessKey)
 
+        // when
         engine.correlateMessage(Messages.MIRAVELO_APPLICATION_WITHDRAWN, businessKey)
-        engine.drainToWaitState() // -> compensation -> sendCancellationConfirmation -> end cancelled
+        execute(job(FlowNodes.StartEventApplicationWithdrawn.ELEMENT_ID, instance)) // -> compensation
+        engine.completeExternalTask(ServiceTasks.BIKE_LEASING_CANCEL_POLICY)
+        engine.completeExternalTask(ServiceTasks.BIKE_LEASING_CANCEL_CONTRACT)
+        engine.completeExternalTask(ServiceTasks.BIKE_LEASING_SEND_CANCELLATION_CONFIRMATION)
+        execute(job(FlowNodes.ServiceTaskSendCancellationConfirmation.ELEMENT_ID, instance)) // -> end cancelled
 
+        // then
         assertThat(instance)
             .isEnded
             .hasPassed(
@@ -421,15 +480,28 @@ class BikeLeasingProcessTest {
 
     @Test
     fun `abort after an accepted alternative - cancels the one placed order exactly once`() {
+        // given
         val businessKey = submitUntilBikeUnavailable()
         val instance = engine.findInstance(businessKey)
 
+        // when
         engine.acceptAlternative()
-        engine.completeExternalTask(ServiceTasks.BIKE_LEASING_ORDER_BIKE, orderPlaced) // -> handover wait state
-
+        execute(job(FlowNodes.UserTaskClarifyAlternative.ELEMENT_ID, instance))
+        engine.completeExternalTask(ServiceTasks.BIKE_LEASING_ORDER_BIKE, orderPlaced) // the re-order succeeds
+        execute(job(FlowNodes.ServiceTaskOrderBike.ELEMENT_ID, instance))
+        execute(job(FlowNodes.GatewayJoin.ELEMENT_ID, instance)) // -> handover wait state
         engine.correlateMessage(Messages.MIRAVELO_APPLICATION_WITHDRAWN, businessKey)
-        engine.drainToWaitState(compensationOutputs(cancellationPossible = true)) // the dealer cancels the order -> order reversed without a return to clarify
+        execute(job(FlowNodes.StartEventApplicationWithdrawn.ELEMENT_ID, instance)) // -> compensation
+        execute(job(CancelBikeOrderProcessApi.FlowNodes.StartEventCancellationRequired.ELEMENT_ID, calledProcessInstance(instance)))
+        engine.completeExternalTask(ServiceTasks.BIKE_LEASING_CANCEL_POLICY)
+        engine.completeExternalTask(ServiceTasks.BIKE_LEASING_CANCEL_CONTRACT)
+        engine.completeExternalTask(ServiceTasks.BIKE_LEASING_REQUEST_CANCELLATION, mapOf(CancelBikeOrderProcessApi.FlowNodes.ServiceTaskRequestCancellation.Variables.CANCELLATION_POSSIBLE.value to true)) // the dealer cancels the order
+        execute(job(CancelBikeOrderProcessApi.FlowNodes.ServiceTaskRequestCancellation.ELEMENT_ID, calledProcessInstance(instance)))
+        execute(job(CancelBikeOrderProcessApi.FlowNodes.GatewayJoin.ELEMENT_ID, calledProcessInstance(instance))) // -> order reversed without a return to clarify
+        engine.completeExternalTask(ServiceTasks.BIKE_LEASING_SEND_CANCELLATION_CONFIRMATION)
+        execute(job(FlowNodes.ServiceTaskSendCancellationConfirmation.ELEMENT_ID, instance)) // -> end cancelled
 
+        // then
         assertThat(instance).isEnded.hasPassed(FlowNodes.EndEventApplicationCancelled.ELEMENT_ID)
         val orderCancellations = engine.historyService.createHistoricProcessInstanceQuery()
             .processDefinitionKey(CancelBikeOrderProcessApi.PROCESS_ID.value)
@@ -441,10 +513,17 @@ class BikeLeasingProcessTest {
     /** Drives a signed, insured application to the clarify-alternative task: the dealer has no bike. */
     private fun submitUntilBikeUnavailable(): String {
         val businessKey = submit(age = 35, income = 3500.0)
+        val instance = engine.findInstance(businessKey)
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance))
+        execute(job(FlowNodes.StartEventLeasingRequestReceived.ELEMENT_ID, instance))
         engine.completeExternalTask(ServiceTasks.BIKE_LEASING_SEND_CONTRACT)
+        execute(job(FlowNodes.ServiceTaskSendContract.ELEMENT_ID, instance)) // -> signature wait state
         engine.correlateMessage(Messages.MIRAVELO_CONTRACT_SIGNED, businessKey)
+        execute(job(FlowNodes.EventContractSigned.ELEMENT_ID, instance)) // forks into insurance + bike order
         engine.completeExternalTask(ServiceTasks.BIKE_LEASING_ISSUE_INSURANCE_POLICY)
-        engine.raiseBpmnErrorOnExternalTask(ServiceTasks.BIKE_LEASING_ORDER_BIKE, Errors.BIKE_UNAVAILABLE)
+        execute(job(FlowNodes.ServiceTaskIssueInsurancePolicy.ELEMENT_ID, instance))
+        execute(job(FlowNodes.GatewayJoin.ELEMENT_ID, instance))
+        engine.raiseBpmnErrorOnExternalTask(ServiceTasks.BIKE_LEASING_ORDER_BIKE, Errors.BIKE_UNAVAILABLE) // -> parks on the clarify-alternative task
         return businessKey
     }
 
@@ -469,11 +548,13 @@ class BikeLeasingProcessTest {
                     .count()
             }
 
-    /** The bike the waiting `orderBike` external task hands to its worker. */
-    private fun ProcessEngine.bikeRequestedByWaitingOrder(): Any? {
-        val order = externalTaskService.createExternalTaskQuery().topicName(ServiceTasks.BIKE_LEASING_ORDER_BIKE).singleResult()
-        return runtimeService.getVariable(order.executionId, FlowNodes.ServiceTaskOrderBike.Variables.BIKE_ID.value)
-    }
+    /** The bike [instance] carried when it ended — the one its last `orderBike` external task handed to the worker. */
+    private fun ProcessEngine.bikeOrderedBy(instance: ProcessInstance): Any? =
+        historyService.createHistoricVariableInstanceQuery()
+            .processInstanceId(instance.id)
+            .variableName(FlowNodes.ServiceTaskOrderBike.Variables.BIKE_ID.value)
+            .singleResult()
+            .value
 
     /** Starts the process through its message start event, keyed by a fresh application business key. */
     private fun submit(age: Int, income: Double, bikeId: String = "BIKE-TEST"): String {

@@ -3,6 +3,7 @@ import { dirname, join, relative } from 'node:path';
 import { repositorySlug, starterCatalog, renderCatalog } from './lib/catalog.mjs';
 import { dependabotConfig, renderDependabot } from './lib/dependabot.mjs';
 import { loadExamples, repoRoot } from './lib/examples.mjs';
+import { renderIdeaGradle, renderIdeaMisc } from './lib/idea.mjs';
 import { withGeneratedBlocks } from './lib/readme.mjs';
 import { ciWorkflow, exampleWorkflows, nightlyWorkflow, renderWorkflow, reusableWorkflow } from './lib/workflows.mjs';
 
@@ -22,6 +23,8 @@ function expectedFiles(examples) {
   files.set('.github/workflows/nightly.yml', renderWorkflow(header('examples/*/blueprint.yaml'), nightlyWorkflow(examples)));
   files.set('.github/dependabot.yml', renderDependabot(header('examples/*/.github/dependabot.yml'), dependabotConfig(examples)));
   files.set('tooling/create-blueprint/catalog.json', renderCatalog(starterCatalog(examples)));
+  files.set('.idea/misc.xml', renderIdeaMisc(examples));
+  files.set('.idea/gradle.xml', renderIdeaGradle(examples));
   files.set('README.md', withGeneratedBlocks(readFileSync(join(repoRoot, 'README.md'), 'utf8'), examples, repositorySlug()));
   return files;
 }

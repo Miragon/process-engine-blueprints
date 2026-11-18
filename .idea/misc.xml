@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="MavenProjectsManager">
+    <option name="originalFiles">
+      <list>
+        <option value="$PROJECT_DIR$/examples/cibseven-embedded/java-maven/pom.xml" />
+        <option value="$PROJECT_DIR$/examples/cibseven-process-engine-api/java-maven/pom.xml" />
+        <option value="$PROJECT_DIR$/examples/cibseven-remote/java-maven/pom.xml" />
+        <option value="$PROJECT_DIR$/examples/fluxnova-embedded/java-maven/pom.xml" />
+        <option value="$PROJECT_DIR$/examples/operaton-embedded/java-maven/pom.xml" />
+        <option value="$PROJECT_DIR$/examples/operaton-process-engine-api/pom.xml" />
+        <option value="$PROJECT_DIR$/examples/operaton-remote/java-maven/pom.xml" />
+        <option value="$PROJECT_DIR$/examples/zeebe-native/java-maven/pom.xml" />
+        <option value="$PROJECT_DIR$/examples/zeebe-process-engine-api/java-maven/pom.xml" />
+        <option value="$PROJECT_DIR$/examples/zeebe-vanillabp/java-maven/pom.xml" />
+      </list>
+    </option>
+  </component>
+</project>

@@ -11,8 +11,11 @@
 | `.github/dependabot.yml` | `examples/*/.github/dependabot.yml` |
 | `tooling/create-blueprint/catalog.json` | `examples/*/blueprint.yaml` and the root `package.json` |
 | `README.md` (badges, quick start, examples table) | `examples/*/blueprint.yaml` and the root `package.json` |
+| `.idea/misc.xml`, `.idea/gradle.xml` | the `variants` of `examples/*/blueprint.yaml` |
 
 The example's own files stay what a starter gets; the root copies only make them run in the monorepo.
+
+The two `.idea` files let IntelliJ import every variant when the repository root is opened: each Maven or Gradle build is linked on its own and keeps its own wrapper, nothing is shared at build time.
 
 ## Branch rules
 
